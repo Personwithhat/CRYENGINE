@@ -78,7 +78,6 @@ IRenderer* Cry3DEngineBase::m_pRenderer = 0;
 #else
 IRenderer* const Cry3DEngineBase::m_pRenderer = 0;
 #endif
-ITimer* Cry3DEngineBase::m_pTimer = 0;
 ILog* Cry3DEngineBase::m_pLog = 0;
 IPhysicalWorld* Cry3DEngineBase::m_pPhysicalWorld = 0;
 CTerrain* Cry3DEngineBase::m_pTerrain = 0;
@@ -155,7 +154,6 @@ C3DEngine::C3DEngine(ISystem* pSystem)
 #if !defined(DEDICATED_SERVER)
 	Cry3DEngineBase::m_pRenderer = gEnv->pRenderer;
 #endif
-	Cry3DEngineBase::m_pTimer = gEnv->pTimer;
 	Cry3DEngineBase::m_pLog = gEnv->pLog;
 	Cry3DEngineBase::m_pPhysicalWorld = gEnv->pPhysicalWorld;
 	Cry3DEngineBase::m_pConsole = gEnv->pConsole;
@@ -297,7 +295,7 @@ C3DEngine::C3DEngine(ISystem* pSystem)
 	 */
 	m_bResetRNTmpDataPool = false;
 
-	m_fSunDirUpdateTime = 0;
+	m_fSunDirUpdateTime.SetSeconds(0);
 	m_vSunDirNormalized.zero();
 
 	m_volFogRamp = Vec3(0, 100.0f, 0);
@@ -339,10 +337,10 @@ C3DEngine::C3DEngine(ISystem* pSystem)
 	m_vFogColor = Vec3(1.0f, 1.0f, 1.0f);
 	m_vAmbGroundCol = Vec3(0.0f, 0.0f, 0.0f);
 
-	m_dawnStart = 350.0f / 60.0f;
-	m_dawnEnd = 360.0f / 60.0f;
-	m_duskStart = 12.0f + 360.0f / 60.0f;
-	m_duskEnd = 12.0f + 370.0f / 60.0f;
+	m_dawnStart.SetSeconds(mpfloat(350) / 60);
+	m_dawnEnd.SetSeconds(  mpfloat(360) / 60);
+	m_duskStart.SetSeconds(12 + mpfloat(360) / 60);
+	m_duskEnd.SetSeconds(  12 + mpfloat(370) / 60);
 
 	m_fCloudShadingSunLightMultiplier = 0;
 	m_fCloudShadingSkyLightMultiplier = 0;
@@ -649,7 +647,7 @@ void C3DEngine::Update()
 		CRoadRenderNode::FreeStaticMemoryUsage();
 
 	if (m_pDecalManager)
-		m_pDecalManager->Update(GetTimer()->GetFrameTime());
+		m_pDecalManager->Update(gEnv->pTimer->GetFrameTime());
 
 	if (GetCVars()->e_PrecacheLevel == 3)
 		PrecacheLevel(true, 0, 0);
@@ -919,8 +917,8 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 	static PodArray<ITexture*> arrTestTextures;
 	static ITexture* pTestTexture = 0;
 	static ITexture* pLastNotReadyTexture = 0;
-	static float fStartTime = 0;
-	static float fDelayStartTime = 0;
+	static CTimeValue fStartTime;
+	static CTimeValue fDelayStartTime;
 	static size_t nMaxTexUsage = 0;
 
 	static int nOpenRequestCount = 0;
@@ -937,7 +935,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 	{
 		// Init waiting few seconds until streaming is stabilized and all required textures are loaded
 		PrintMessage("======== Starting streaming latency test ========");
-		fDelayStartTime = GetCurTimeSec();
+		fDelayStartTime = gEnv->pTimer->GetFrameStartTime();
 		nMaxTexUsage = 0;
 		GetCVars()->e_SQTestBegin = 2;
 		PrintMessage("Waiting %.1f seconds and zero requests and no camera movement", GetCVars()->e_SQTestDelay);
@@ -950,7 +948,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 	else if (GetCVars()->e_SQTestBegin == 2)
 	{
 		// Perform waiting
-		if (GetCurTimeSec() - fDelayStartTime > GetCVars()->e_SQTestDelay && !nOpenRequestCount && m_fAverageCameraSpeed < .01f)
+		if (gEnv->pTimer->GetFrameStartTime() - fDelayStartTime > GetCVars()->e_SQTestDelay && !nOpenRequestCount && m_fAverageCameraSpeed < .01f)
 		{
 			pTSFlush->Set(0);
 			GetCVars()->e_SQTestBegin = 3;
@@ -1002,9 +1000,9 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 	else if (GetCVars()->e_SQTestBegin == 4)
 	{
 		// Init waiting few seconds until streaming is stabilized and all required textures are loaded
-		fDelayStartTime = GetCurTimeSec();
+		fDelayStartTime = gEnv->pTimer->GetFrameStartTime();
 		GetCVars()->e_SQTestBegin = 5;
-		PrintMessage("Waiting %.1f seconds and zero requests and no camera movement", GetCVars()->e_SQTestDelay);
+		PrintMessage("Waiting %.1f seconds and zero requests and no camera movement", (float)GetCVars()->e_SQTestDelay.GetSeconds());
 	}
 	else if (GetCVars()->e_SQTestBegin == 5)
 	{
@@ -1014,7 +1012,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 		mat.SetTranslation(vPos);
 		camOut.SetMatrix(mat);
 
-		if (GetCurTimeSec() - fDelayStartTime > GetCVars()->e_SQTestDelay && !nOpenRequestCount && m_fAverageCameraSpeed < .01f)
+		if (gEnv->pTimer->GetFrameStartTime() - fDelayStartTime > GetCVars()->e_SQTestDelay && !nOpenRequestCount && m_fAverageCameraSpeed < .01f)
 		{
 			PrintMessage("Begin camera movement");
 			GetCVars()->e_SQTestBegin = 6;
@@ -1031,7 +1029,8 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 		mat.SetTranslation(vPos);
 		camOut.SetMatrix(mat);
 
-		fSQTestOffset -= GetTimer()->GetFrameTime() * (float)GetCVars()->e_SQTestMoveSpeed;
+		// Float inaccuracy is fine, debug/profiling
+		fSQTestOffset -= float(gEnv->pTimer->GetFrameTime().GetSeconds() * GetCVars()->e_SQTestMoveSpeed);
 
 		STextureStreamingStats statsTex(true);
 		m_pRenderer->EF_Query(EFQ_GetTexStreamingInfo, statsTex);
@@ -1040,7 +1039,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 		if (fSQTestOffset <= 0)
 		{
 			PrintMessage("Finished camera movement");
-			fStartTime = GetCurTimeSec();
+			fStartTime = gEnv->pTimer->GetFrameStartTime();
 			PrintMessage("Waiting for %d textures to stream in ...", arrTestTextures.Count());
 
 			GetCVars()->e_SQTestBegin = 7;
@@ -1059,7 +1058,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 		{
 			if (pTestTexture->GetMinLoadedMip() <= GetCVars()->e_SQTestMip)
 			{
-				PrintMessage("BINGO: Selected test texture loaded in %.1f sec", GetCurTimeSec() - fStartTime);
+				PrintMessage("BINGO: Selected test texture loaded in %.1f sec", (float)(gEnv->pTimer->GetFrameStartTime() - fStartTime).GetSeconds());
 				pTestTexture = NULL;
 				if (!arrTestTextures.Count())
 				{
@@ -1082,7 +1081,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 
 			if (nFinishedNum == arrTestTextures.Count())
 			{
-				PrintMessage("BINGO: %d of %d test texture loaded in %.1f sec", nFinishedNum, arrTestTextures.Count(), GetCurTimeSec() - fStartTime);
+				PrintMessage("BINGO: %d of %d test texture loaded in %.1f sec", nFinishedNum, arrTestTextures.Count(), (float)(gEnv->pTimer->GetFrameTime() - fStartTime).GetSeconds());
 				if (pLastNotReadyTexture)
 					PrintMessage("LastNotReadyTexture: %s [%d x %d]", pLastNotReadyTexture->GetName(), pLastNotReadyTexture->GetWidth(), pLastNotReadyTexture->GetHeight());
 				PrintMessage("MaxTexUsage: %" PRISIZE_T " MB", nMaxTexUsage / 1024 / 1024);
@@ -1091,7 +1090,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 				GetCVars()->e_SQTestBegin = 0;
 				GetConsole()->GetCVar("e_SQTestBegin")->Set(0);
 
-				m_arrProcessStreamingLatencyTestResults.Add(GetCurTimeSec() - fStartTime);
+				m_arrProcessStreamingLatencyTestResults.Add(gEnv->pTimer->GetFrameTime() - fStartTime);
 				m_arrProcessStreamingLatencyTexNum.Add(nFinishedNum);
 
 				if (GetCVars()->e_SQTestCount == 0)
@@ -1103,7 +1102,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 
 					if (FILE* f = ::fopen(path, "wb"))
 					{
-						float fAverTime = 0;
+						CTimeValue fAverTime;
 						for (int i = 0; i < m_arrProcessStreamingLatencyTestResults.Count(); i++)
 							fAverTime += m_arrProcessStreamingLatencyTestResults[i];
 						fAverTime /= m_arrProcessStreamingLatencyTestResults.Count();
@@ -1120,7 +1119,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 						        "<metric name=\"AvrTexNum\" value=\"%d\"/>\n"
 						        "</metrics>\n"
 						        "</phase>\n",
-						        fAverTime,
+						        (float)fAverTime.GetSeconds(),
 						        nAverTexNum);
 
 						::fclose(f);
@@ -1132,7 +1131,7 @@ void C3DEngine::ProcessStreamingLatencyTest(const CCamera& camIn, CCamera& camOu
 			}
 			else if ((passInfo.GetMainFrameID() & 31) == 0)
 			{
-				PrintMessage("Waiting: %d of %d test texture loaded in %.1f sec", nFinishedNum, arrTestTextures.Count(), GetCurTimeSec() - fStartTime);
+				PrintMessage("Waiting: %d of %d test texture loaded in %.1f sec", nFinishedNum, arrTestTextures.Count(), (float)(gEnv->pTimer->GetFrameTime() - fStartTime).GetSeconds());
 			}
 		}
 	}
@@ -1153,7 +1152,8 @@ void C3DEngine::UpdateRenderingCamera(const char* szCallerName, const SRendering
 	{
 		Matrix34 mat = passInfo.GetCamera().GetMatrix();
 		Matrix33 matRot;
-		matRot.SetRotationZ(-GetCurTimeSec() * GetFloatCVar(e_CameraRotationSpeed));
+
+		matRot.SetRotationZ(-gEnv->pTimer->GetFrameStartTime().BADGetSeconds() * GetFloatCVar(e_CameraRotationSpeed));
 		newCam.SetMatrix(mat * matRot);
 	}
 
@@ -1253,7 +1253,7 @@ void C3DEngine::UpdateRenderingCamera(const char* szCallerName, const SRendering
 
 	/////////////////////////////////////////////////////////////////////////////
 	// Update Foliage
-	float dt = GetTimer()->GetFrameTime();
+	CTimeValue dt = gEnv->pTimer->GetFrameTime();
 	CStatObjFoliage* pFoliage, * pFoliageNext;
 	for (pFoliage = m_pFirstFoliage; &pFoliage->m_next != &m_pFirstFoliage; pFoliage = pFoliageNext)
 	{
@@ -1261,7 +1261,7 @@ void C3DEngine::UpdateRenderingCamera(const char* szCallerName, const SRendering
 		pFoliage->Update(dt, GetRenderingCamera());
 	}
 	for (int i = m_arrEntsInFoliage.size() - 1; i >= 0; i--)
-		if ((m_arrEntsInFoliage[i].timeIdle += dt) > 0.3f)
+		if ((m_arrEntsInFoliage[i].timeIdle += dt).GetSeconds() > mpfloat("0.3"))
 			RemoveEntInFoliage(i);
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -1355,11 +1355,11 @@ bool C3DEngine::CreateDecalInstance(const CryEngineDecalInfo& decal, CDecal* pCa
 void C3DEngine::SelectEntity(IRenderNode* pEntity)
 {
 	static IRenderNode* pSelectedNode;
-	static float fLastTime;
+	static CTimeValue fLastTime;
 	if (pEntity && GetCVars()->e_Decals == 3)
 	{
-		float fCurTime = gEnv->pTimer->GetAsyncCurTime();
-		if (fCurTime - fLastTime < 1.0f)
+		CTimeValue fCurTime = gEnv->pTimer->GetAsyncCurTime();
+		if ((fCurTime - fLastTime).GetSeconds() < 1)
 			return;
 		fLastTime = fCurTime;
 		if (pSelectedNode)
@@ -1389,7 +1389,7 @@ void C3DEngine::CreateDecal(const struct CryEngineDecalInfo& decal)
 
 	if ((GetCVars()->e_DecalsDeferredStatic == 1 && decal.pExplicitRightUpFront) ||
 	    (GetCVars()->e_DecalsDeferredDynamic == 1 && !decal.pExplicitRightUpFront &&
-	     (!decal.ownerInfo.pRenderNode || decal.ownerInfo.pRenderNode->GetRenderNodeType() == eERType_Brush || decal.fGrowTimeAlpha || decal.fSize > GetFloatCVar(e_DecalsDeferredDynamicMinSize)))
+	     (!decal.ownerInfo.pRenderNode || decal.ownerInfo.pRenderNode->GetRenderNodeType() == eERType_Brush || decal.fGrowTimeAlpha != 0 || decal.fSize > GetFloatCVar(e_DecalsDeferredDynamicMinSize)))
 	    && !decal.bForceSingleOwner)
 	{
 		CryEngineDecalInfo decal_adjusted = decal;
@@ -1937,12 +1937,12 @@ void C3DEngine::SetSunDir(const Vec3& newSunDir)
 	Vec3 vSunDirNormalized = newSunDir.normalized();
 	m_vSunDirRealtime = vSunDirNormalized;
 	if (vSunDirNormalized.Dot(m_vSunDirNormalized) < GetFloatCVar(e_SunAngleSnapDot) ||
-	    GetCurTimeSec() - m_fSunDirUpdateTime > GetFloatCVar(e_SunAngleSnapSec))
+		(gEnv->pTimer->GetFrameStartTime() - m_fSunDirUpdateTime > Cry3DEngineBase::GetCVars()->e_SunAngleSnapSec))
 	{
 		m_vSunDirNormalized = vSunDirNormalized;
 		m_vSunDir = m_vSunDirNormalized * DISTANCE_TO_THE_SUN;
 
-		m_fSunDirUpdateTime = GetCurTimeSec();
+		m_fSunDirUpdateTime = gEnv->pTimer->GetFrameStartTime();
 	}
 }
 
@@ -3234,7 +3234,7 @@ void C3DEngine::UpdateWindGridJobEntry(Vec3 vPos)
 		pWindAreas = &m_indoorWindAreas[m_nCurrentWindAreaList];
 	Vec3 vGlobalWind = GetGlobalWind(bIndoors);
 
-	float fElapsedTime = gEnv->pTimer->GetFrameTime();
+	CTimeValue fElapsedTime = gEnv->pTimer->GetFrameTime();
 
 	RasterWindAreas(pWindAreas, vGlobalWind);
 
@@ -3245,7 +3245,7 @@ void C3DEngine::UpdateWindGridJobEntry(Vec3 vPos)
 	for (size_t i = 0; i < pWindAreas->size(); i++)
 	{
 		SOptimizedOutdoorWindArea& WA = (*pWindAreas)[i];
-		WA.windSpeed[4].x *= 1.0f - fElapsedTime;
+		WA.windSpeed[4].x *= 1.0f - fElapsedTime.BADGetSeconds();
 		if (WA.windSpeed->IsZero(0.001f))
 		{
 			pWindAreas->erase(pWindAreas->begin() + i);
@@ -3273,7 +3273,7 @@ void C3DEngine::RasterWindAreas(std::vector<SOptimizedOutdoorWindArea>* pWindAre
 	Vec3 vHalfSize = Vec3(fSize * 0.5f, fSize * 0.5f, 0.0f);
 	AABB windBox(rWindGrid.m_vCentr - vHalfSize, rWindGrid.m_vCentr + vHalfSize);
 
-	float fInterp = min(gEnv->pTimer->GetFrameTime() * 0.8f, 1.f);
+	float fInterp = BADF min(gEnv->pTimer->GetFrameTime().GetSeconds() * mpfloat("0.8"), mpfloat(1));
 
 	int nFrame = gEnv->nMainFrameID;
 
@@ -3424,7 +3424,7 @@ void C3DEngine::UpdateWindGridArea(SWindGrid& rWindGrid, const SOptimizedOutdoor
 
 	Vec3 vGlobalWind = GetGlobalWind(false) * GetCVars()->e_WindBendingStrength;
 
-	float fInterp = min(gEnv->pTimer->GetFrameTime() * 0.8f, 1.f);
+	float fInterp = BADF min(gEnv->pTimer->GetFrameTime().GetSeconds() * mpfloat("0.8"), mpfloat(1));
 
 	int nFrame = gEnv->nMainFrameID;
 
@@ -5304,7 +5304,7 @@ void C3DEngine::OverrideCameraPrecachePoint(const Vec3& vPos)
 	}
 }
 
-int C3DEngine::AddPrecachePoint(const Vec3& vPos, const Vec3& vDir, float fTimeOut, float fImportanceFactor)
+int C3DEngine::AddPrecachePoint(const Vec3& vPos, const Vec3& vDir, const CTimeValue& fTimeOut, float fImportanceFactor)
 {
 	if (m_pObjManager)
 	{
@@ -5334,7 +5334,7 @@ int C3DEngine::AddPrecachePoint(const Vec3& vPos, const Vec3& vDir, float fTimeO
 
 		SObjManPrecachePoint pp;
 		pp.nId = m_pObjManager->m_nNextPrecachePointId++;
-		pp.expireTime = gEnv->pTimer->GetAsyncTime() + CTimeValue(fTimeOut);
+		pp.expireTime = gEnv->pTimer->GetAsyncTime() + fTimeOut;
 		SObjManPrecacheCamera pc;
 		pc.vPosition = vPos;
 		pc.bbox = AABB(vPos, GetCVars()->e_StreamPredictionBoxRadius);
@@ -5467,7 +5467,8 @@ void static DrawMeter(float scale, float& x, float& y, int nWidth, int nHeight, 
 		}
 		else
 		{
-			float time(gEnv->pTimer->GetAsyncCurTime());
+			// Float inaccuracy is fine, debug/profiling
+			float time(gEnv->pTimer->GetAsyncCurTime().GetSeconds());
 			float blink(sinf(time * 6.28f) * 0.5f + 0.5f);
 			color[0] = 1;
 			color[1] = blink;
@@ -5526,7 +5527,8 @@ void static DrawMeter(float scale, float& x, float& y, int nWidth, int nHeight, 
 		}
 		else
 		{
-			float time(gEnv->pTimer->GetAsyncCurTime());
+			// Float inaccuracy is fine, debug/profiling
+			float time(gEnv->pTimer->GetAsyncCurTime().GetSeconds());
 			float blink(sinf(time * 6.28f) * 0.5f + 0.5f);
 			color[0] = 1;
 			color[1] = blink;

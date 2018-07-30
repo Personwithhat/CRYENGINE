@@ -103,12 +103,12 @@ public:
 	TParticleFeatures&        GetFeatures()                { return m_emitterFeatures; }
 	const ParticleTarget&     GetTarget() const            { return m_target; }
 	float                     GetViewDistRatio() const     { return m_viewDistRatio; }
-	float                     GetTimeScale() const         { return Cry3DEngineBase::GetCVars()->e_ParticlesDebug & AlphaBit('z') ? 0.0f : m_spawnParams.fTimeScale; }
+	mpfloat                   GetTimeScale() const         { return Cry3DEngineBase::GetCVars()->e_ParticlesDebug & AlphaBit('z') ? 0 : m_spawnParams.fTimeScale; }
 	CRenderObject*            GetRenderObject(uint threadId, uint renderObjectIdx);
 	void                      SetRenderObject(CRenderObject* pRenderObject, _smart_ptr<IMaterial>&& material, uint threadId, uint renderObjectIdx);
-	float                     GetDeltaTime() const         { return m_deltaTime; }
-	float                     GetTime() const              { return m_time; }
-	float                     GetAge() const               { return m_time - m_timeCreated; }
+	const CTimeValue&         GetDeltaTime() const         { return m_deltaTime; }
+	const CTimeValue&         GetTime() const              { return m_time; }
+	CTimeValue                GetAge() const               { return m_time - m_timeCreated; }
 	void                      SetAlive()                   { m_alive = true; }
 	uint32                    GetInitialSeed() const       { return m_initialSeed; }
 	uint32                    GetCurrentSeed() const       { return m_currentSeed; }
@@ -123,7 +123,7 @@ public:
 	void                      AccumStats(SParticleStats& statsCPU, SParticleStats& statsGPU);
 
 private:
-	void     UpdateBoundingBox(const float frameTime);
+	void     UpdateBoundingBox(const CTimeValue& frameTime);
 	void     UpdateRuntimes();
 	void     AddInstance();
 	void     UpdateFromEntity();
@@ -152,11 +152,11 @@ private:
 	int                                    m_emitterGeometrySlot;
 	ColorF                                 m_profilerColor;
 	float                                  m_viewDistRatio;
-	float                                  m_time;
-	float                                  m_deltaTime;
-	float                                  m_primeTime;
-	float                                  m_timeCreated;
-	float                                  m_timeLastRendered;
+	CTimeValue                             m_time;
+	CTimeValue                             m_deltaTime;
+	CTimeValue                             m_primeTime;
+	CTimeValue                             m_timeCreated;
+	CTimeValue                             m_timeLastRendered;
 	int                                    m_emitterEditVersion;
 	int                                    m_effectEditVersion;
 	uint                                   m_initialSeed;

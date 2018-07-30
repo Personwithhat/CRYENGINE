@@ -31,11 +31,11 @@ CParticleEmitter::CParticleEmitter(CParticleEffect* pEffect, uint emitterId)
 	, m_entityOwner(nullptr)
 	, m_entitySlot(-1)
 	, m_emitterGeometrySlot(-1)
-	, m_time(0.0f)
-	, m_deltaTime(0.0f)
-	, m_primeTime(0.0f)
-	, m_timeCreated(0.0f)
-	, m_timeLastRendered(0.0f)
+	, m_time(0)
+	, m_deltaTime(0)
+	, m_primeTime(0)
+	, m_timeCreated(0)
+	, m_timeLastRendered(0)
 	, m_updateFrame(0)
 	, m_initialSeed(0)
 	, m_emitterId(emitterId)
@@ -135,7 +135,7 @@ void CParticleEmitter::Update()
 
 	m_deltaTime = gEnv->pTimer->GetFrameTime() * GetTimeScale();
 	m_deltaTime = max(m_deltaTime, m_primeTime);
-	m_primeTime = 0.0f;
+	m_primeTime.SetSeconds(0);
 	m_time += m_deltaTime;
 	++m_currentSeed;
 
@@ -163,7 +163,7 @@ namespace Bounds
 	static float ShrinkThreshold = 0.5f;
 }
 
-void CParticleEmitter::UpdateBoundingBox(const float frameTime)
+void CParticleEmitter::UpdateBoundingBox(const CTimeValue& frameTime)
 {
 	CRY_PFX2_PROFILE_DETAIL;
 
@@ -361,17 +361,17 @@ void CParticleEmitter::InitSeed()
 	if (m_spawnParams.nSeed != -1)
 	{
 		m_initialSeed = uint32(m_spawnParams.nSeed);
-		m_time = 0.0f;
+		m_time.SetSeconds(0);
 	}
 	else if (forcedSeed != 0)
 	{
 		m_initialSeed = forcedSeed;
-		m_time = 0.0f;
+		m_time.SetSeconds(0);
 	}
 	else
 	{
 		m_initialSeed = cry_random_uint32();
-		m_time = gEnv->pTimer->GetCurrTime();
+		m_time = gEnv->pTimer->GetFrameStartTime();
 	}
 	m_timeCreated = m_time;
 	m_timeLastRendered = m_time;
@@ -392,7 +392,7 @@ void CParticleEmitter::Activate(bool activate)
 		if (m_spawnParams.bPrime)
 		{
 			if (!(GetCVars()->e_ParticlesDebug & AlphaBit('p')))
-				m_primeTime = m_pEffect->GetEquilibriumTime();
+				m_primeTime = BADTIME(m_pEffect->GetEquilibriumTime());
 		}
 	}
 	else
@@ -442,8 +442,8 @@ void CParticleEmitter::SetLocation(const QuatTS& loc)
 
 	if (m_registered)
 	{
-		const float deltaTime = gEnv->pTimer->GetFrameTime();
-		const float invDeltaTime = abs(deltaTime) > FLT_EPSILON ? rcp_fast(deltaTime) : 0.0f;
+		const CTimeValue deltaTime = gEnv->pTimer->GetFrameTime();
+		const float invDeltaTime = abs(deltaTime).BADGetSeconds() > FLT_EPSILON ? rcp_fast(deltaTime.BADGetSeconds()) : 0.0f;
 		const Vec3 velocity0 = m_parentContainer.GetIOVec3Stream(EPVF_Velocity).Load(0);
 		const Vec3 angularVelocity0 = m_parentContainer.GetIOVec3Stream(EPVF_AngularVelocity).Load(0);
 

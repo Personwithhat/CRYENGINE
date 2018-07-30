@@ -82,7 +82,7 @@ private:
 	class CREOcclusionQuery* m_pREOcclusionQueries[CYCLE_BUFFERS_NUM];
 	IShader*                 m_pShaderOcclusionQuery;
 	float                    m_fLastFov;
-	float                    m_fLastVisibleFrameTime;
+	CTimeValue               m_fLastVisibleFrameTime;
 	int32                    m_nLastVisibleFrameId;
 	static uint32            m_nVisiblePixelsCount;
 

@@ -226,7 +226,7 @@ COcean::COcean(IMaterial* pMat)
 
 	m_pMaterial = pMat;
 	m_fLastFov = 0;
-	m_fLastVisibleFrameTime = 0.0f;
+	m_fLastVisibleFrameTime.SetSeconds(0);
 
 	m_pShaderOcclusionQuery = GetRenderer() ?
 	                          GetRenderer()->EF_LoadShader("OcclusionTest", 0) : nullptr;
@@ -764,12 +764,12 @@ void COcean::RenderFog(const SRenderingPassInfo& passInfo)
 bool COcean::IsVisible(const SRenderingPassInfo& passInfo)
 {
 	if (abs(m_nLastVisibleFrameId - passInfo.GetFrameID()) <= 2)
-		m_fLastVisibleFrameTime = 0.0f;
+		m_fLastVisibleFrameTime.SetSeconds(0);
 
 	ITimer* pTimer(gEnv->pTimer);
 	m_fLastVisibleFrameTime += gEnv->pTimer->GetFrameTime();
 
-	if (m_fLastVisibleFrameTime > 2.0f)                                 // at least 2 seconds
+	if (m_fLastVisibleFrameTime.GetSeconds() > 2)                        // at least 2 seconds
 		return (abs(m_nLastVisibleFrameId - passInfo.GetFrameID()) < 64); // and at least 64 frames
 
 	return true; // keep water visible for a couple frames - or at least 1 second - minimizes popping during fast camera movement
@@ -871,7 +871,7 @@ float COcean::GetWave(const Vec3& pPos, int32 nFrameID)
 	float fPhase = sqrt_tpl(pPos.x * pPos.x + pPos.y * pPos.y);
 	Vec4 vCosPhase = vPhases * (fPhase + pPos.x);
 
-	Vec4 vWaveFreq = vFrequencies * m_pOceanTimer->GetCurrTime();
+	Vec4 vWaveFreq = vFrequencies * m_pOceanTimer->GetFrameStartTime().BADGetSeconds();
 
 	Vec4 vCosWave = Vec4(cos_tpl(vWaveFreq.x * vFlowDir.x + vCosPhase.x),
 	                     cos_tpl(vWaveFreq.y * vFlowDir.x + vCosPhase.y),

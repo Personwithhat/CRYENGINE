@@ -69,9 +69,9 @@ char* CSvoManager::GetStatusString(int lineId)
 		            s_briUpdatesInProgressLast, s_texUpdatesInProgressLast, SVO_VOX_BRICK_MAX_SIZE,
 		            gSvoEnv->m_dynNodeCounter, gSvoEnv->m_dynNodeCounter_DYNL);
 
-		float curTime = Cry3DEngineBase::Get3DEngine()->GetCurTimeSec();
-		static float s_lastTime = Cry3DEngineBase::Get3DEngine()->GetCurTimeSec();
-		if (curTime > s_lastTime + 0.1f)
+		CTimeValue curTime = gEnv->pTimer->GetFrameStartTime();
+		static CTimeValue s_lastTime = gEnv->pTimer->GetFrameStartTime();
+		if (curTime > s_lastTime + "0.1")
 		{
 			if (s_texUpdatesInProgressLast)
 				s_texUpdatesInProgressLast -= 4;
@@ -232,7 +232,7 @@ void CSvoManager::Render()
 					CrySleep(5);
 				}
 
-				gSvoEnv->m_svoFreezeTime = -1;
+				gSvoEnv->m_svoFreezeTime.SetSeconds(-1);
 			}
 			else
 			{

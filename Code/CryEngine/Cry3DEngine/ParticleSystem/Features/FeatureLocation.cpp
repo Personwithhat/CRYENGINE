@@ -103,7 +103,7 @@ public:
 	virtual void UpdateGPUParams(const SUpdateContext& context, gpu_pfx2::SUpdateParams& params) override
 	{
 		params.offset = m_offset;
-		params.scale.x = m_scale.GetValueRange(context)(0.5f);
+		params.scale.x = m_scale.GetValueRange(context)("0.5");
 		params.initFlags |= gpu_pfx2::eFeatureInitializationFlags_LocationOffset;
 	}
 
@@ -184,7 +184,7 @@ public:
 	virtual void UpdateGPUParams(const SUpdateContext& context, gpu_pfx2::SUpdateParams& params) override
 	{
 		params.box = m_box;
-		params.scale.x = m_scale.GetValueRange(context)(0.5f);
+		params.scale.x = m_scale.GetValueRange(context)("0.5");
 		params.initFlags |= gpu_pfx2::eFeatureInitializationFlags_LocationBox;
 	}
 
@@ -245,8 +245,8 @@ public:
 	virtual void UpdateGPUParams(const SUpdateContext& context, gpu_pfx2::SUpdateParams& params) override
 	{
 		params.scale = m_axisScale;
-		params.radius = m_radius.GetValueRange(context)(0.5f);
-		params.velocity = m_velocity.GetValueRange(context)(0.5f);
+		params.radius = m_radius.GetValueRange(context)("0.5");
+		params.velocity = m_velocity.GetValueRange(context)("0.5");
 		params.initFlags |= gpu_pfx2::eFeatureInitializationFlags_LocationSphere;
 	}
 
@@ -364,8 +364,8 @@ public:
 	{
 		params.scale.x = m_axisScale.x;
 		params.scale.y = m_axisScale.y;
-		params.radius = m_radius.GetValueRange(context)(0.5f);
-		params.velocity = m_velocity.GetValueRange(context)(0.5f);
+		params.radius = m_radius.GetValueRange(context)("0.5");
+		params.velocity = m_velocity.GetValueRange(context)("0.5");
 		params.initFlags |= gpu_pfx2::eFeatureInitializationFlags_LocationCircle;
 	}
 
@@ -769,7 +769,7 @@ public:
 
 	virtual void UpdateGPUParams(const SUpdateContext& context, gpu_pfx2::SUpdateParams& params) override
 	{
-		params.amplitude = m_amplitude.GetValueRange(context)(0.5f);
+		params.amplitude = m_amplitude.GetValueRange(context)("0.5");
 		params.noiseSize = m_size;
 		params.rate = m_rate;
 		params.octaves = m_octaves;

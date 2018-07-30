@@ -20,6 +20,8 @@ namespace pfx2
 class CParticleComponentRuntime;
 class CParticleContainer;
 
+// PERSONAL NOTE: Modifying the update context times to CTimeValue = change FeatureSpawn.cpp, FeatureSecondGen.cpp, etc. etc.
+// Considering this system is optimized heavily, out of scope for current changes.
 struct SUpdateContext
 {
 	explicit SUpdateContext(CParticleComponentRuntime* pRuntime);

@@ -53,7 +53,7 @@ public:
 	{
 		for (int i = 0; i < numSamples; ++i)
 		{
-			const float point = (float)i / numSamples;
+			const mpfloat point = (mpfloat)i / numSamples;
 			float dataIn = samples[i];
 			float spline = m_spline.Interpolate(point);
 			float dataOut = dataIn * spline;
