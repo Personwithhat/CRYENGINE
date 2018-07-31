@@ -19,8 +19,8 @@
 //------------------------------------------------------------------------
 CGameplayRecorder::CGameplayRecorder(CCryAction* pGameFramework)
 	: m_pGameFramework(pGameFramework),
-	m_lastdiscreet(0.0f),
-	m_sampleinterval(0.5f),
+	m_lastdiscreet(0),
+	m_sampleinterval("0.5"),
 	m_pGameStateRecorder(NULL)
 {
 	//m_pMetadataRecorder->InitSave("GameData.meta");
@@ -39,7 +39,7 @@ void CGameplayRecorder::Init()
 }
 
 //------------------------------------------------------------------------
-void CGameplayRecorder::Update(float frameTime)
+void CGameplayRecorder::Update(const CTimeValue& frameTime)
 {
 	// modify this as you wish
 	//m_example.RecordGameData();
@@ -113,10 +113,11 @@ void CGameplayRecorder::CExampleMetadataListener::RecordGameData()
 	IGameplayRecorder* pRecorder = CCryAction::GetCryAction()->GetIGameplayRecorder();
 
 	{
-		int64 t = gEnv->pTimer->GetFrameStartTime().GetValue();
+		// PERSONAL VERIFY: Verify that composite types work....along with other serializations etc.
+		CTimeValue t = gEnv->pTimer->GetFrameStartTime();
 		IMetadataPtr pMetadata;
 		pMetadata->SetTag(eDT_frame);
-		pMetadata->SetValue(eBT_i64, (uint8*)&t, 8);
+		pMetadata->SetValue(eBT_TVal, (uint8*)&t, 8);
 		//m_pMetadataRecorder->RecordIt( pMetadata.get() );
 		pRecorder->OnGameData(pMetadata.get());
 	}
@@ -211,9 +212,9 @@ void CGameplayRecorder::CExampleMetadataListener::OnData(const IMetadata* metada
 	case eDT_frame:
 		{
 			CTimeValue tv;
-			if (const int64* temp = boost::get<const int64>(&data.GetValue()))
+			if (const CTimeValue* temp = boost::get<const CTimeValue>(&data.GetValue()))
 				tv = *temp;
-			CryLog("frame %f", tv.GetSeconds());
+			CryLog("frame %f", (float)tv.GetSeconds());
 		}
 		break;
 

@@ -396,7 +396,7 @@ IEntityComponent* CGameObjectSystem::CreateGameObjectWithPreactivatedExtension(I
 	return pGameObject;
 }
 
-void CGameObjectSystem::PostUpdate(float frameTime)
+void CGameObjectSystem::PostUpdate(const CTimeValue& frameTime)
 {
 	m_tempObjects = m_postUpdateObjects;
 	for (std::vector<IGameObject*>::const_iterator iter = m_tempObjects.begin(); iter != m_tempObjects.end(); ++iter)

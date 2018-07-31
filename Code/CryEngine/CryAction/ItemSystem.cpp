@@ -69,7 +69,7 @@ CItemSystem::CItemSystem(IGameFramework* pGameFramework, ISystem* pSystem)
 	m_pSystem(pSystem),
 	m_pEntitySystem(gEnv->pEntitySystem),
 	m_spawnCount(0),
-	m_precacheTime(0.0f),
+	m_precacheTime(0),
 	m_reloading(false),
 	m_recursing(false),
 	m_listeners(2)

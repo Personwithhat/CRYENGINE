@@ -132,7 +132,7 @@ void CGroundEffect::Update()
 
 		if (m_interpSpeed > 0.0f)
 		{
-			float dt = gEnv->pTimer->GetFrameTime();
+			CTimeValue dt = gEnv->pTimer->GetFrameTime();
 
 			Interpolate(m_sizeScale, m_sizeGoal, m_interpSpeed, dt);
 

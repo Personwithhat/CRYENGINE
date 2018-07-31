@@ -907,13 +907,13 @@ CLevelSystem::CLevelSystem(ISystem* pSystem)
 
 	// register with system to get loading progress events
 	m_pSystem->SetLoadingProgressListener(this);
-	m_fLastLevelLoadTime = 0;
+	m_fLastLevelLoadTime.SetSeconds(0);
 	m_fFilteredProgress = 0;
-	m_fLastTime = 0;
+	m_fLastTime.SetSeconds(0);
 	m_bLevelLoaded = false;
 	m_bRecordingFileOpens = false;
 
-	m_levelLoadStartTime.SetValue(0);
+	m_levelLoadStartTime.SetSeconds(0);
 
 	m_nLoadedLevelsCount = 0;
 
@@ -1661,7 +1661,7 @@ void CLevelSystem::OnLoadingComplete(ILevelInfo* pLevelInfo)
 	}
 
 	CTimeValue t = gEnv->pTimer->GetAsyncTime();
-	m_fLastLevelLoadTime = (t - m_levelLoadStartTime).GetSeconds();
+	m_fLastLevelLoadTime = t - m_levelLoadStartTime;
 
 	if (!gEnv->IsEditor())
 	{
@@ -1731,6 +1731,9 @@ void CLevelSystem::OnUnloadComplete(ILevelInfo* pLevel)
 	}
 }
 
+/*
+	<3 CryTek thanks for reviewing my code!
+*/
 //------------------------------------------------------------------------
 void CLevelSystem::OnLoadingProgress(int steps)
 {
@@ -1738,11 +1741,11 @@ void CLevelSystem::OnLoadingProgress(int steps)
 
 	m_fFilteredProgress = min(m_fFilteredProgress, fProgress);
 
-	float fFrameTime = gEnv->pTimer->GetAsyncCurTime() - m_fLastTime;
+	CTimeValue fFrameTime = gEnv->pTimer->GetAsyncCurTime() - m_fLastTime;
 
-	float t = CLAMP(fFrameTime * .25f, 0.0001f, 1.0f);
+	float t = BADF CLAMP(fFrameTime * ".25", "0.0001", 1).GetSeconds();
 
-	m_fFilteredProgress = fProgress * t + m_fFilteredProgress * (1.f - t);
+	m_fFilteredProgress = fProgress * t + m_fFilteredProgress * (1 - t);
 
 	m_fLastTime = gEnv->pTimer->GetAsyncCurTime();
 
@@ -1775,7 +1778,7 @@ void CLevelSystem::LogLoadingTime()
 		sChain = " (Chained)";
 
 	string text;
-	text.Format("\n[%s] Level %s loaded in %d seconds%s", vers, m_lastLevelName.c_str(), (int)m_fLastLevelLoadTime, sChain);
+	text.Format("\n[%s] Level %s loaded in %f seconds%s", vers, m_lastLevelName.c_str(), (float)m_fLastLevelLoadTime.GetSeconds(), sChain);
 	fwrite(text.c_str(), text.length(), 1, file);
 	fclose(file);
 

@@ -28,8 +28,8 @@ AllocateConstIntCVar(CFlashUI, CV_gfx_reloadonlanguagechange);
 AllocateConstIntCVar(CFlashUI, CV_gfx_uievents_editorenabled);
 AllocateConstIntCVar(CFlashUI, CV_gfx_ampserver);
 int CFlashUI::CV_gfx_enabled;
-float CFlashUI::CV_gfx_inputevents_triggerstart;
-float CFlashUI::CV_gfx_inputevents_triggerrepeat;
+CTimeValue CFlashUI::CV_gfx_inputevents_triggerstart;
+CTimeValue CFlashUI::CV_gfx_inputevents_triggerrepeat;
 
 ICVar* CFlashUI::CV_gfx_uiaction_log_filter;
 ICVar* CFlashUI::CV_gfx_uiaction_folder;
@@ -86,8 +86,8 @@ CFlashUI::CFlashUI()
 
 	REGISTER_CVAR3("gfx_enabled", CV_gfx_enabled, 1, VF_NULL, "Enables the general FlashUI.");
 
-	REGISTER_CVAR2("gfx_inputevents_triggerstart", &CV_gfx_inputevents_triggerstart, 0.3f, VF_NULL, "Time in seconds to wait until input key triggering starts");
-	REGISTER_CVAR2("gfx_inputevents_triggerrepeat", &CV_gfx_inputevents_triggerrepeat, 0.05f, VF_NULL, "Time in seconds to wait between each input key trigger");
+	REGISTER_CVAR2("gfx_inputevents_triggerstart", &CV_gfx_inputevents_triggerstart, CTimeValue("0.3"), VF_NULL, "Time in seconds to wait until input key triggering starts");
+	REGISTER_CVAR2("gfx_inputevents_triggerrepeat", &CV_gfx_inputevents_triggerrepeat, CTimeValue("0.05"), VF_NULL, "Time in seconds to wait between each input key trigger");
 
 	CV_gfx_uiaction_log_filter = REGISTER_STRING("gfx_uiaction_log_filter", "", VF_NULL, "Filter for logging\n" \
 	  "<string> only log messages\n"                                                                            \
@@ -263,7 +263,7 @@ void CFlashUI::ReloadAll()
 }
 
 //-------------------------------------------------------------------
-void CFlashUI::Update(float fDeltaTime)
+void CFlashUI::Update(const CTimeValue& fDeltaTime)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_ACTION);
 
@@ -441,7 +441,7 @@ void CFlashUI::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lpara
 			{
 				m_pFlashUIActionEvents->OnLevelUnload();
 				UpdateFG();
-				Update(0.1f);
+				Update("0.1");
 				StartRenderThread();
 
 				UIACTION_LOG("FlashUI unload start");
@@ -571,7 +571,7 @@ void CFlashUI::OnLoadingProgress(ILevelInfo* pLevel, int progressAmount)
 			if (bStandAlone)
 				gEnv->pSystem->RenderBegin(0);
 
-			const float currTime = gEnv->pTimer->GetAsyncCurTime();
+			const CTimeValue currTime = gEnv->pTimer->GetAsyncCurTime();
 			OnPostUpdate(currTime - m_fLastAdvance);
 			m_fLastAdvance = currTime;
 
@@ -584,7 +584,7 @@ void CFlashUI::OnLoadingProgress(ILevelInfo* pLevel, int progressAmount)
 }
 
 //------------------------------------------------------------------------------------
-void CFlashUI::LoadtimeUpdate(float fDeltaTime)
+void CFlashUI::LoadtimeUpdate(const CTimeValue& fDeltaTime)
 {
 	LOADING_TIME_PROFILE_SECTION
 
@@ -855,7 +855,7 @@ bool CFlashUI::OnInputEventUI(const SUnicodeEvent& event)
 //-------------------------------------------------------------------
 void CFlashUI::TriggerEvent(const SInputEvent& event)
 {
-	const float currtime = gEnv->pTimer->GetAsyncCurTime();
+	const CTimeValue currtime = gEnv->pTimer->GetAsyncCurTime();
 	if (currtime > m_lastTimeTriggered + CV_gfx_inputevents_triggerrepeat)
 	{
 		SInputEvent evt = event;
@@ -2110,11 +2110,11 @@ struct SStackInfo
 		eStack,
 		eRemoved,
 	};
-	SStackInfo(float t = 0) : time(t), index(-1), type(eDefault), id(-1) {}
-	SStackInfo(const char* str, float t) : info(str), time(t), index(-1), type(eDefault), id(-1) {}
-	SStackInfo(const char* str, float t, int i, EType tp, int idx) : info(str), time(t), index(i), type(tp), id(idx) {}
+	SStackInfo(const CTimeValue& t = 0) : time(t), index(-1), type(eDefault), id(-1) {}
+	SStackInfo(const char* str, const CTimeValue& t) : info(str), time(t), index(-1), type(eDefault), id(-1) {}
+	SStackInfo(const char* str, const CTimeValue& t, int i, EType tp, int idx) : info(str), time(t), index(i), type(tp), id(idx) {}
 	string info;
-	float  time;
+	CTimeValue  time;
 	int    index;
 	EType  type;
 	int    id;
@@ -2129,7 +2129,7 @@ void RenderStackDebugInfo(bool render, const char* label, int loop)
 		static std::vector<int> currStack;
 		static std::map<int, const char*> lastStack;
 
-		const float time = gEnv->pTimer->GetAsyncCurTime();
+		const CTimeValue time = gEnv->pTimer->GetAsyncCurTime();
 
 		const std::map<int, const char*>& stack = CUIFGStackMan::GetStack();
 		if (lastStack != stack)
@@ -2184,7 +2184,7 @@ void RenderStackDebugInfo(bool render, const char* label, int loop)
 			empty = true;
 		}
 
-		const float displayTime = 20;
+		const CTimeValue displayTime = 20;
 		const int itemsPerRow = 140;
 
 		const float dy = 8;
@@ -2214,7 +2214,7 @@ void RenderStackDebugInfo(bool render, const char* label, int loop)
 
 		for (int i = 0; i < count; ++i)
 		{
-			float alpha = (displayTime + stacklist[i].time - time) / displayTime;
+			float alpha = BADF((displayTime + stacklist[i].time - time) / displayTime);
 			if (alpha <= 0.05)
 			{
 				stacklist.resize(i);

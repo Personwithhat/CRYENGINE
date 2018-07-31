@@ -394,11 +394,11 @@ void CGameServerNub::BanPlayer(uint16 channelId, const char* reason)
 		timeout = pV->GetIVal();
 	if (userId)
 	{
-		m_banned.push_back(SBannedPlayer(userId, 0, gEnv->pTimer->GetFrameStartTime() + CTimeValue(timeout * 60.0f)));
+		m_banned.push_back(SBannedPlayer(userId, 0, gEnv->pTimer->GetFrameStartTime() + CTimeValue(timeout * 60)));
 	}
 	else if (ip)
 	{
-		m_banned.push_back(SBannedPlayer(0, ip, gEnv->pTimer->GetFrameStartTime() + CTimeValue(timeout * 60.0f)));
+		m_banned.push_back(SBannedPlayer(0, ip, gEnv->pTimer->GetFrameStartTime() + CTimeValue(timeout * 60)));
 	}
 }
 
@@ -439,7 +439,7 @@ void CGameServerNub::BannedStatus()
 		}
 		else
 		{
-			int left = int((m_banned[i].time - gEnv->pTimer->GetFrameStartTime()).GetSeconds() + 0.5f);
+			int left = int((m_banned[i].time - gEnv->pTimer->GetFrameStartTime()).GetSeconds() + "0.5");
 			CryLogAlways("profile : %d, time left : %d:%02d", m_banned[i].profileId, left / 60, left % 60);
 		}
 	}
