@@ -574,7 +574,7 @@ void CCoverSystem::DrawSurface(const CoverSurfaceID& surfaceID)
 	}
 }
 
-void CCoverSystem::Update(float updateTime)
+void CCoverSystem::Update(const CTimeValue& updateTime)
 {
 	for (auto& coverUser : m_coverUsers)
 	{
@@ -758,7 +758,7 @@ void CCoverSystem::DebugDraw()
 
 					if (sampler->StartSampling(params) == ICoverSampler::InProgress)
 					{
-						while (sampler->Update(0.0001f) == ICoverSampler::InProgress)
+						while (sampler->Update("0.0001") == ICoverSampler::InProgress)
 							;
 
 						sampler->DebugDraw();

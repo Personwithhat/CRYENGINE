@@ -33,7 +33,7 @@
 #include "Navigation/NavigationSystem/NavigationSystem.h"
 
 // Maximum time that an async query can execute before it is aborted as an error
-const float MAX_SYNC_TIME_MS = 20;
+const int MAX_SYNC_TIME_MS = 20;
 
 CTacticalPointSystem::CVarsDef CTacticalPointSystem::CVars;
 
@@ -507,7 +507,7 @@ int CTacticalPointSystem::SyncQueryShortlist
 	// It is very important that synchronous queries are completed in a timely manner
 	// However, for development purposes, set a very high time limit, then check the actual time taken to issue a warning
 	CTimeValue startTime = gEnv->pTimer->GetAsyncTime();
-	CTimeValue timeLimit = startTime + 1.0f;   // Up to 1 second!
+	CTimeValue timeLimit = startTime + 1;   // Up to 1 second!
 	bOk = ContinueQueryEvaluation(evaluation, timeLimit);
 
 	// Check the actual time taken and issue a warning below
@@ -521,7 +521,7 @@ int CTacticalPointSystem::SyncQueryShortlist
 		return -1;
 	}
 #ifdef CRYAISYSTEM_DEBUG
-	if (elapsed.GetMilliSecondsAsInt64() >= MAX_SYNC_TIME_MS)
+	if (elapsed.GetMilliSeconds() >= MAX_SYNC_TIME_MS)
 	{
 		AIWarningID("<TacticalPointSystem> ", "Query '%s' performed by '%s' took too long! (%dms >= %dms)",
 		            pQuery->GetName(), pAIActor ? pAIActor->GetName() : "<null>", (uint32)elapsed.GetMilliSeconds(), (uint32)(MAX_SYNC_TIME_MS));
@@ -588,7 +588,7 @@ void CTacticalPointSystem::AddQueryForDebug(SQueryEvaluation& evaluation)
 	evaluation.owner = targetAI;
 	evaluation.timePlaced = gEnv->pTimer->GetAsyncTime(); // (MATT) Would use frame time, but that appears junk! {2009/11/22}
 	evaluation.timeErase = evaluation.timePlaced;
-	evaluation.timeErase += CTimeValue(CVars.TacticalPointsDebugTime);
+	evaluation.timeErase += CVars.TacticalPointsDebugTime;
 
 	// Find any existing entry for this entity
 	std::list<SQueryEvaluation>::iterator it = m_lstQueryEvaluationsForDebug.begin();
@@ -1509,11 +1509,11 @@ bool CTacticalPointSystem::GenerateInternal(TTacticalPointQuery query, const Que
 								location.z += effectiveCoverHeight;
 
 								if (pPD)
-									pPD->AddCone(location, Vec3(0.0f, 0.0f, -1.0f), 0.25f, effectiveCoverHeight, Col_Red, 3.5f);
+									pPD->AddCone(location, Vec3(0.0f, 0.0f, -1.0f), 0.25f, effectiveCoverHeight, Col_Red, "3.5");
 							}
 						}
 						else if (pPD)
-							pPD->AddSphere(location, fAgentRadius, Col_Red, 3.5f);
+							pPD->AddSphere(location, fAgentRadius, Col_Red, "3.5");
 					}
 				}
 				else
@@ -1528,7 +1528,7 @@ bool CTacticalPointSystem::GenerateInternal(TTacticalPointQuery query, const Que
 						if (surface.IsCircleInCover(vObjectAuxPos, location, fAgentRadius))
 							accumulator.push_back(CTacticalPoint(coverID, location));
 						else if (pPD)
-							pPD->AddSphere(location, 0.75f, Col_Red, 3.0f);
+							pPD->AddSphere(location, 0.75f, Col_Red, 3);
 					}
 				}
 			}
@@ -2083,7 +2083,7 @@ ETacticalPointDeferredState CTacticalPointSystem::DeferredBoolTestInternal(TTact
 				{
 					IPersistantDebug* debug = gEnv->pGameFramework->GetIPersistantDebug();
 					debug->Begin("eTPQ_T_Visible", false);
-					debug->AddLine(vWaistPos, vWaistPos + vDelta, (result ? Col_Green : Col_Red), 10.0f);
+					debug->AddLine(vWaistPos, vWaistPos + vDelta, (result ? Col_Green : Col_Red), 10);
 				}
 			}
 
@@ -2127,7 +2127,7 @@ ETacticalPointDeferredState CTacticalPointSystem::DeferredBoolTestInternal(TTact
 					{
 						IPersistantDebug* debug = gEnv->pGameFramework->GetIPersistantDebug();
 						debug->Begin("eTPQ_T_CanShoot", false);
-						debug->AddLine(vPoint, vPoint + vDelta, Col_Blue, 10.0f);
+						debug->AddLine(vPoint, vPoint + vDelta, Col_Blue, 10);
 					}
 
 				}
@@ -2213,8 +2213,8 @@ ETacticalPointDeferredState CTacticalPointSystem::DeferredBoolTestInternal(TTact
 				{
 					IPersistantDebug* debug = gEnv->pGameFramework->GetIPersistantDebug();
 					debug->Begin("eTPQ_T_CanShootTwoRayTest", false);
-					debug->AddLine(vPointRight, vPointRight + vDeltaRight, Col_Blue, 10.0f);
-					debug->AddLine(vPointLeft, vPointLeft + vDeltaLeft, Col_Blue, 10.0f);
+					debug->AddLine(vPointRight, vPointRight + vDeltaRight, Col_Blue, 10);
+					debug->AddLine(vPointLeft, vPointLeft + vDeltaLeft, Col_Blue, 10);
 				}
 			}
 
@@ -3460,12 +3460,12 @@ void CTacticalPointSystem::DestroyAllQueries()
 	m_mQueryEvaluationsInProgress.clear();
 }
 
-void CTacticalPointSystem::Update(const float fBudgetSeconds)
+void CTacticalPointSystem::Update(const CTimeValue& fBudgetSeconds)
 {
 	// Convert to absolute integer values time limit for precision and efficiency
 	// Convert to floats only for debugging
 	CTimeValue timeStart = gEnv->pTimer->GetAsyncTime();
-	CTimeValue timeLimit = timeStart + CTimeValue(fBudgetSeconds);
+	CTimeValue timeLimit = timeStart + fBudgetSeconds;
 	CTimeValue lastTime = timeStart;
 
 	int nQueriesProcessed = 0;
@@ -3961,12 +3961,12 @@ void CTacticalPointSystem::DebugDraw() const
 		if (!iDrawMode)
 			continue;
 
-		float fPercentageLifetime = (timeNow - sEntry.timePlaced).GetSeconds() / (sEntry.timeErase - sEntry.timePlaced).GetSeconds();
-		fPercentageLifetime = clamp_tpl(fPercentageLifetime, 0.0f, 1.0f);
+		nTime fPercentageLifetime = (timeNow - sEntry.timePlaced) / (sEntry.timeErase - sEntry.timePlaced);
+		fPercentageLifetime = CLAMP(fPercentageLifetime, 0, 1);
 
 		//	Disapparation effect when time nearly up
-		float fPercentageDisapparation = 0.1f;
-		if (!sEntry.bPersistent && (1.0f - fPercentageLifetime) < fPercentageDisapparation)
+		nTime fPercentageDisapparation = "0.1";
+		if (!sEntry.bPersistent && (1 - fPercentageLifetime) < fPercentageDisapparation)
 		{
 			switch (iFadeMode)
 			{
@@ -3974,11 +3974,11 @@ void CTacticalPointSystem::DebugDraw() const
 				break;
 
 			case 2: // Alpha fade
-				fAlphaModifier = (1.0f - fPercentageLifetime) / fPercentageDisapparation;
+				fAlphaModifier = BADF((1 - fPercentageLifetime) / fPercentageDisapparation);
 				break;
 
 			case 3: // Blink
-				if ((timeNow - sEntry.timePlaced).GetPeriodicFraction(CTimeValue(0.2f)) > 0.5f)
+				if ((timeNow - sEntry.timePlaced).GetPeriodicFraction("0.2") > "0.5")
 					continue; // Don't display points in 'off' part of blink cycle
 				break;
 			}

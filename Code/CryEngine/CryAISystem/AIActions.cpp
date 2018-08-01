@@ -986,7 +986,7 @@ void CAIActionManager::ReloadActions()
 	}
 
 	CTimeValue t2 = gEnv->pTimer->GetAsyncTime();
-	AILogComment("All AI Actions reloaded in %g mSec.", (t2 - t1).GetMilliSeconds());
+	AILogComment("All AI Actions reloaded in %g mSec.", (float)(t2 - t1).GetMilliSeconds());
 }
 
 void CActiveAction::Serialize(TSerialize ser)

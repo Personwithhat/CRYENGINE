@@ -70,7 +70,7 @@ struct MNMProfiler
 	inline void StopTimer(TimerNames timer)
 	{
 		CTimeValue end = gEnv->pTimer->GetAsyncTime();
-		assert(runningTimer[timer].GetValue() != 0);
+		assert(runningTimer[timer] != 0);
 
 		CTimeValue timerElapsed = end - runningTimer[timer];
 		timers[timer].elapsed += timerElapsed;
