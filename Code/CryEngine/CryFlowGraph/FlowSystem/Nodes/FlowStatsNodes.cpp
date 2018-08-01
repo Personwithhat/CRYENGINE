@@ -99,8 +99,8 @@ public:
 			{ 0 }
 		};
 		static const SOutputPortConfig out_config[] = {
-			OutputPortConfig<float>("frametime"),
-			OutputPortConfig<float>("framerate"),
+			OutputPortConfig<mpfloat>("frametime"),
+			OutputPortConfig<mpfloat>("framerate"),
 			OutputPortConfig<int>("frameid"),
 			{ 0 }
 		};
@@ -121,8 +121,8 @@ public:
 				ISystem* pSystem = GetISystem();
 				IRenderer* pRenderer = gEnv->pRenderer;
 
-				float frameTime = gEnv->pTimer->GetFrameTime();
-				float frameRate = gEnv->pTimer->GetFrameRate();
+				CTimeValue frameTime = gEnv->pTimer->GetFrameTime();
+				mpfloat frameRate = gEnv->pTimer->GetFrameRate().conv<mpfloat>();
 				int frameId = pRenderer->GetFrameID(false);
 
 				ActivateOutput(pActInfo, OUT_FRAMETIME, frameTime);
@@ -178,12 +178,12 @@ public:
 			{ 0 }
 		};
 		static const SOutputPortConfig out_config[] = {
-			OutputPortConfig<float>("FrameTime",        _HELP("Current frame time")),
-			OutputPortConfig<float>("FrameRate",        _HELP("Current frame rate")),
+			OutputPortConfig<mpfloat>("FrameTime",        _HELP("Current frame time")),
+			OutputPortConfig<mpfloat>("FrameRate",        _HELP("Current frame rate")),
 			OutputPortConfig<int>("FrameId",            _HELP("Current frame id")),
-			OutputPortConfig<float>("MinFrameRate",     _HELP("Minimum frame rate")),
-			OutputPortConfig<float>("MaxFrameRate",     _HELP("Maximum frame rate")),
-			OutputPortConfig<float>("AverageFrameRate", _HELP("Average frame rate")),
+			OutputPortConfig<mpfloat>("MinFrameRate",     _HELP("Minimum frame rate")),
+			OutputPortConfig<mpfloat>("MaxFrameRate",     _HELP("Maximum frame rate")),
+			OutputPortConfig<mpfloat>("AverageFrameRate", _HELP("Average frame rate")),
 			{ 0 }
 		};
 
@@ -227,8 +227,8 @@ public:
 			{
 				IRenderer* pRenderer = gEnv->pRenderer;
 
-				float fFrameTime = gEnv->pTimer->GetFrameTime();
-				float fFrameRate = gEnv->pTimer->GetFrameRate();
+				CTimeValue fFrameTime = gEnv->pTimer->GetFrameTime();
+				mpfloat fFrameRate = gEnv->pTimer->GetFrameRate().conv<mpfloat>();
 				int fFrameId = pRenderer->GetFrameID(false);
 
 				m_fMinFrameRate = min(fFrameRate, m_fMinFrameRate);
@@ -252,9 +252,9 @@ public:
 
 	void Reset()
 	{
-		m_fMinFrameRate = FLT_MAX;
-		m_fMaxFrameRate = 0.0f;
-		m_fSumFrameRate = 0.0f;
+		m_fMinFrameRate = mpfloat::Max();
+		m_fMaxFrameRate = 0;
+		m_fSumFrameRate = 0;
 		m_lFrameCounter = 0;
 	}
 
@@ -264,9 +264,9 @@ public:
 	}
 
 private:
-	float         m_fMinFrameRate;
-	float         m_fMaxFrameRate;
-	float         m_fSumFrameRate;
+	mpfloat         m_fMinFrameRate; // PERSONAL VERIFY: Update this to rTime once supported
+	mpfloat         m_fMaxFrameRate;
+	mpfloat         m_fSumFrameRate;
 	unsigned long m_lFrameCounter;
 };
 

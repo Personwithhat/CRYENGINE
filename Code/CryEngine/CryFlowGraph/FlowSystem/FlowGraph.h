@@ -582,4 +582,12 @@ public:
 	{
 		CFlowGraphBase::PerformActivation(address, value.value);
 	}
+	virtual void DoActivatePort(const SFlowAddress address, const NFlowSystemUtils::Wrapper<CTimeValue>& value)
+	{
+		CFlowGraphBase::PerformActivation(address, value.value);
+	}
+	virtual void DoActivatePort(const SFlowAddress address, const NFlowSystemUtils::Wrapper<mpfloat>& value)
+	{
+		CFlowGraphBase::PerformActivation(address, value.value);
+	}
 };

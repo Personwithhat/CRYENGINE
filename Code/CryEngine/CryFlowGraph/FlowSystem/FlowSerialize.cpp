@@ -23,6 +23,17 @@ public:
 		m_ok = 1 == sscanf(m_data, "%u", &i);
 	}
 
+	void Visit(mpfloat& i)
+	{
+		m_ok = 1 == (i = m_data);
+	}
+
+	void Visit(CTimeValue& i)
+	{
+		m_ok = 1;
+		i.SetSeconds(m_data); // PERSONAL VERIFY: Urgh...how to do zie checks/etc. instead fo sscanf??
+	}
+
 	void Visit(Vec3& i)
 	{
 		m_ok = 3 == sscanf(m_data, "%f,%f,%f", &i.x, &i.y, &i.z);
@@ -102,6 +113,16 @@ public:
 	void Visit(EntityId i)
 	{
 		m_out.Format("%u", i);
+	}
+
+	void Visit(mpfloat i)
+	{
+		m_out = i.str();
+	}
+
+	void Visit(CTimeValue i)
+	{
+		m_out = i.GetSeconds().str();
 	}
 
 	void Visit(Vec3 i)
