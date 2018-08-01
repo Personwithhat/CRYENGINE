@@ -686,8 +686,8 @@ CScriptSystem::CScriptSystem()
 	, m_pPreCacheBufferTable(nullptr)
 	, m_pErrorHandlerFunc(nullptr)
 	, m_pSystem(nullptr)
-	, m_fGCFreq(10.0f)
-	, m_lastGCTime(0.0f)
+	, m_fGCFreq(10)
+	, m_lastGCTime(0)
 	, m_nLastGCCount(0)
 	, m_forceReloadCount(0)
 	, m_pScriptTimerMgr(nullptr)
@@ -2144,8 +2144,8 @@ void CScriptSystem::Update()
 
 	// Might need to check for new lua code needing hooks
 
-	float currTime = pTimer->GetCurrTime();
-	float frameTime = pTimer->GetFrameTime();
+	CTimeValue currTime = pTimer->GetFrameStartTime();
+	CTimeValue frameTime = pTimer->GetFrameTime();
 
 	IScriptSystem* pScriptSystem = m_pSystem->GetIScriptSystem();
 
@@ -2199,11 +2199,11 @@ void CScriptSystem::Update()
 		//TRACE("--[after coll]GC DELTA %d [time =%f]",m_pScriptSystem->GetCGCount()-nStartGC,fTimeAfter-fTimeBefore);
 	}
 
-	m_pScriptTimerMgr->Update(nCurTime.GetMilliSecondsAsInt64());
+	m_pScriptTimerMgr->Update(nCurTime);
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CScriptSystem::SetGCFrequency(const float fRate)
+void CScriptSystem::SetGCFrequency(const CTimeValue& fRate)
 {
 	if (fRate >= 0)
 		m_fGCFreq = fRate;

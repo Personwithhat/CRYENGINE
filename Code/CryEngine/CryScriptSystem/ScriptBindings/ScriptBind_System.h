@@ -96,9 +96,9 @@ public:
 	//! <description>Checks if the system is in pure editor mode, i.e. not editor game mode.</description>
 	int IsEditing(IFunctionHandler* pH);
 
-	//! <code>System.GetCurrTime()</code>
+	//! <code>System.GetFrameStartTime()</code>
 	//! <description>Gets the current time.</description>
-	int GetCurrTime(IFunctionHandler* pH);
+	int GetFrameStartTime(IFunctionHandler* pH);
 
 	//! <code>System.GetCurrAsyncTime()</code>
 	//! <description>Gets the current asynchronous time.</description>
