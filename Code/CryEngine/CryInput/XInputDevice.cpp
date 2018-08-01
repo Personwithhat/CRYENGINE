@@ -546,7 +546,6 @@ bool CXInputDevice::SetVibration(USHORT leftMotor, USHORT rightMotor, const CTim
 
 			if (m_fVibrationTimer > 0)
 			{
-				// PERSONAL VERIFY: Undo fsel conversions, keep fsel() working with CTimeValue() etc.!
 				const float oldRumbleRatio = BADF((timing >= 0) ? min(nTime(1), (abs(m_fVibrationTimer - now)/(timing + TV_EPSILON))) : 1);
 
 				//Store only 'basic', without frame part
