@@ -41,21 +41,21 @@ public:
 	virtual void *GetForeignData(int itype=0) const { return 0; }
 	virtual int GetiForeignData() const { return 0; }
 
-	virtual int GetStateSnapshot(class CStream &stm, float time_back=0, int flags=0) { return 0; }
-	virtual int GetStateSnapshot(TSerialize ser, float time_back=0, int flags=0) { return 0; }
+	virtual int GetStateSnapshot(class CStream &stm, const CTimeValue& time_back=0, int flags=0) { return 0; }
+	virtual int GetStateSnapshot(TSerialize ser, const CTimeValue&  time_back=0, int flags=0) { return 0; }
 	virtual int SetStateFromSnapshot(class CStream &stm, int flags=0) { return 0; }
 	virtual int SetStateFromSnapshot(TSerialize ser, int flags=0) { return 0; }
 	virtual int SetStateFromTypedSnapshot(TSerialize ser, int type, int flags/* =0 */) {return 0;}
 	virtual int PostSetStateFromSnapshot() { return 0; }
-	virtual int GetStateSnapshotTxt(char *txtbuf,int szbuf, float time_back=0) { return 0; }
+	virtual int GetStateSnapshotTxt(char *txtbuf,int szbuf, const CTimeValue&  time_back=0) { return 0; }
 	virtual void SetStateFromSnapshotTxt(const char *txtbuf,int szbuf) {}
 	virtual unsigned int GetStateChecksum() { return 0; }
 	virtual void SetNetworkAuthority(int authoritive, int paused) {}
 
-	virtual void StartStep(float time_interval) {}
-	virtual int Step(float time_interval) { return 0; }
-	virtual int DoStep(float time_interval, int iCaller) { return 0; }
-	virtual void StepBack(float time_interval) {}
+	virtual void StartStep(const CTimeValue&  time_interval) {}
+	virtual int Step(const CTimeValue&  time_interval) { return 0; }
+	virtual int DoStep(const CTimeValue&  time_interval, int iCaller) { return 0; }
+	virtual void StepBack(const CTimeValue&  time_interval) {}
 	virtual IPhysicalWorld *GetWorld() const { return 0; }
 
 	virtual void GetMemoryStatistics(ICrySizer *pSizer) const {}
@@ -1087,7 +1087,7 @@ int CPhysArea::OnBBoxOverlap(const EventPhysBBoxOverlap *pEvent)
 	return 0;
 }
 
-void CPhysArea::Update(float dt)
+void CPhysArea::Update(const CTimeValue& dt)
 {
 	int iCaller = get_iCaller();
 	Release(); // since it was addreffed by an update request
@@ -1249,7 +1249,7 @@ void CPhysArea::Update(float dt)
 				m_pb.waterPlane.n = -g;
 			m_BBox[0]=m_BBox[1] = loc*Vec3(m_pt[0]);
 			float diff = m_pb.waterPlane.n*(m_BBox[0]-m_pb.waterPlane.origin);
-			if (diff>m_sleepVel*dt || (m_moveAccum+=diff)>m_sleepVel*dt) {
+			if (diff>m_sleepVel*dt.BADGetSeconds() || (m_moveAccum+=diff)>m_sleepVel*dt.BADGetSeconds()) {
 				m_moveAccum=0; m_nSleepFrames=0;
 			}	else if ((++m_nSleepFrames&3)==3)
 				m_moveAccum = 0; 
