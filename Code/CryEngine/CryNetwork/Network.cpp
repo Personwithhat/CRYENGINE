@@ -201,7 +201,7 @@ CNetwork::CNetwork()
 	, m_pMMM(NULL)
 	, m_bufferWakeups(0)
 	, m_wokenUp(false)
-	, m_nextCleanup(0.0f)
+	, m_nextCleanup(0)
 	, m_cleanupMember(0)
 	, m_multithreadedMode(NETWORK_MT_OFF)
 	, m_occasionalCounter(OCCASIONAL_TICKS)
@@ -259,7 +259,7 @@ CNetwork::CNetwork()
 		frequency = MIN_LOBBY_TICK_FREQUENCY;
 	}
 
-	m_lobbyTimerInterval = CTimeValue(1.0f / static_cast<float>(frequency));
+	m_lobbyTimerInterval = CTimeValue(mpfloat(1) / frequency);
 	m_lobbyTimer = TIMER.ADDTIMER(g_time + m_lobbyTimerInterval, LobbyTimerCallback, this, "LobbyTimer");
 }
 
@@ -454,12 +454,12 @@ LINK_SYSTEM_LIBRARY("IPHlpApi.lib")
 
 bool CNetwork::CNetworkConnectivityDetection::HasNetworkConnectivity()
 {
-	float detectionInterval = std::max(1.0f, CVARS.NetworkConnectivityDetectionInterval);
+	CTimeValue detectionInterval = std::max(CTimeValue(1), CVARS.NetworkConnectivityDetectionInterval);
 	// if we've received a packet recently, then assume that we still have connectivity
-	if ((g_time - m_lastPacketReceived).GetSeconds() < detectionInterval)
+	if (g_time - m_lastPacketReceived < detectionInterval)
 		m_hasNetworkConnectivity = true;
 	// otherwise, if we've not checked for some time, check again (also triggers the first time this routine is called normally)
-	else if ((g_time - m_lastCheck).GetSeconds() > detectionInterval)
+	else if (g_time - m_lastCheck > detectionInterval)
 	{
 		DetectNetworkConnectivity();
 		m_lastCheck = g_time;
@@ -1064,8 +1064,8 @@ void CNetwork::SyncWithGame(ENetworkGameSync type)
 
 		CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
 
-		int64 lobbyTick = (endTime - middleTime).GetMilliSecondsAsInt64();
-		int64 normalTick = (middleTime - startTime).GetMilliSecondsAsInt64();
+		int64 lobbyTick  = (int64)(endTime - middleTime).GetMilliSeconds();
+		int64 normalTick = (int64)(middleTime - startTime).GetMilliSeconds();
 		int64 total = lobbyTick + normalTick;
 
 		if (total > 50LL)
@@ -1129,7 +1129,7 @@ void CNetwork::GetPerformanceStatistics(SNetworkPerformance* pSizer)
 #ifdef NET_THREAD_TIMING
 	pSizer->m_threadTime = m_threadTime;
 #else
-	pSizer->m_threadTime = 0.0f;
+	pSizer->m_threadTime.SetSeconds(0);
 #endif
 }
 
@@ -1389,7 +1389,7 @@ bool CNetwork::UpdateTick(bool mt)
 		CTimeValue afterSleep = gEnv->pTimer->GetAsyncCurTime();
 		if (!inTime)
 		{
-			NetLog("CNetwork::UpdateTick(): stall detected, semaphore sleep was %" PRIi64, (afterSleep - beforeSleep).GetMilliSecondsAsInt64());
+			NetLog("CNetwork::UpdateTick(): stall detected, semaphore sleep was %" PRIi64, (int64)(afterSleep - beforeSleep).GetMilliSeconds());
 		}
 	#endif // LOG_SOCKET_TIMEOUTS
 	}
@@ -1418,7 +1418,7 @@ bool CNetwork::UpdateTick(bool mt)
 CNetwork::eTickReturnState CNetwork::DoMainTick(bool mt)
 {
 	eTickReturnState ret = eTRS_Continue;
-	uint32 waitTime = 0;
+	CTimeValue waitTime;
 
 	ITimer* pTimer = gEnv->pTimer;
 	bool mustLock = m_forceLock || m_bDelayedExternalWork;
@@ -1462,14 +1462,14 @@ CNetwork::eTickReturnState CNetwork::DoMainTick(bool mt)
 #if USE_ACCURATE_NET_TIMERS
 		if (mt)
 		{
-			waitTime = static_cast<uint32>(max((TIMER.Update() - g_time).GetMilliSeconds(), 1.0f));
+			waitTime = max((TIMER.Update() - g_time), CTimeValue("0.001"));
 		}
 		else
 		{
 			TIMER.Update();
 		}
 #else
-		waitTime = static_cast<uint32>((TIMER.Update() - g_time).GetSeconds());
+		waitTime = (TIMER.Update() - g_time);
 		ACCURATE_NET_TIMER.Update();
 #endif // USE_ACCURATE_NET_TIMERS
 
@@ -1508,15 +1508,7 @@ CNetwork::eTickReturnState CNetwork::DoMainTick(bool mt)
 		CSimpleHttpServer::GetSingleton().Tick();
 
 #if !USE_ACCURATE_NET_TIMERS
-	#define WAIT_TIME_MIN (1) //in milliseconds
-
-		waitTime *= 1000;
-
-		if (waitTime > 100)
-			waitTime = 100;
-		else if (waitTime < WAIT_TIME_MIN)
-			waitTime = WAIT_TIME_MIN;
-
+		waitTime = CLAMP(waitTime, "0.01", "0.1"); // 1ms < X < 100ms
 		if (!mt)
 			waitTime = 0;
 #endif // !USE_ACCURATE_NET_TIMERS
@@ -1530,7 +1522,7 @@ CNetwork::eTickReturnState CNetwork::DoMainTick(bool mt)
 	else
 	{
 #if !USE_ACCURATE_NET_TIMERS
-		waitTime = 1;
+		waitTime.SetSeconds(1);
 #endif // !USE_ACCURATE_NET_TIMERS
 		g_systemBranchCounters.updateTickSkip++;
 	}
@@ -1545,7 +1537,7 @@ CNetwork::eTickReturnState CNetwork::DoMainTick(bool mt)
 	if (gEnv->bMultiplayer && !gEnv->IsEditor())
 	{
 		waitTime = CNetCVars::Get().socketMaxTimeoutMultiplayer;
-		timeout = (CNetCVars::Get().socketMaxTimeout + CNetCVars::Get().socketMaxTimeoutMultiplayer - 1) / CNetCVars::Get().socketMaxTimeoutMultiplayer;
+		timeout = int((CNetCVars::Get().socketMaxTimeout + CNetCVars::Get().socketMaxTimeoutMultiplayer - 1) / CNetCVars::Get().socketMaxTimeoutMultiplayer);
 	}
 	else
 	{
@@ -1582,12 +1574,11 @@ CNetwork::eTickReturnState CNetwork::DoMainTick(bool mt)
 #endif
 	if (!mt)
 	{
-		waitTime = 0;
+		waitTime.SetSeconds(0);
 	}
 
 #if LOG_SOCKET_POLL_TIME
-	float milliseconds = 0;
-	float timeTaken = 0;
+	CTimeValue timeTaken;
 #endif // LOG_SOCKET_POLL_TIME
 
 	while (shouldPoll)
@@ -1693,8 +1684,7 @@ CNetwork::eTickReturnState CNetwork::DoMainTick(bool mt)
 
 #if LOG_SOCKET_POLL_TIME
 			timeTaken += gEnv->pTimer->GetAsyncCurTime();
-			milliseconds = timeTaken * 1000.0f;
-			NetLog("[POLL]: poll time %fms", milliseconds);
+			NetLog("[POLL]: poll time %sms", timeTaken.GetMilliSeconds().str());
 #endif // LOG_SOCKET_POLL_TIME
 		}
 	}
@@ -2042,8 +2032,8 @@ void CNetwork::GetProfilingStatistics(SNetworkProfilingStats* const pStats)
 #endif // #ifdef ENABLE_PROFILING_CODE
 
 #if INTERNET_SIMULATOR
-	pStats->m_InternetSimulatorStats.m_packetSends = g_socketBandwidth.simPacketSends;
-	pStats->m_InternetSimulatorStats.m_packetDrops = g_socketBandwidth.simPacketDrops;
+	pStats->m_InternetSimulatorStats.m_packetSends   = g_socketBandwidth.simPacketSends;
+	pStats->m_InternetSimulatorStats.m_packetDrops   = g_socketBandwidth.simPacketDrops;
 	pStats->m_InternetSimulatorStats.m_lastPacketLag = g_socketBandwidth.simLastPacketLag;
 #endif
 
@@ -2316,7 +2306,7 @@ void CNetwork::ThreadTimerStop()
 void CNetwork::ThreadTimerTick()
 {
 	assert(m_threadTimeDepth == 1); // 1 stop
-	m_threadTime = m_threadTimeCur.GetSeconds();
+	m_threadTime = m_threadTimeCur;
 	m_threadTimeCur = -gEnv->pTimer->GetAsyncTime();
 	m_threadTimeDepth = 0;
 }

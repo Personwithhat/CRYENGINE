@@ -32,7 +32,7 @@ CLanQueryListener::CLanQueryListener(IGameQueryListener* pListener)
 {
 	m_pTimer = gEnv->pTimer;
 	m_lastPingCleanUp = m_lastPingRefresh = m_pTimer->GetAsyncCurTime();
-	m_lastBroadcast = m_lastServerListUpdate = 0;
+	m_lastBroadcast = m_lastServerListUpdate.SetSeconds(0);
 }
 
 CLanQueryListener::~CLanQueryListener()
@@ -114,7 +114,7 @@ void CLanQueryListener::TimerCallback(NetTimerId id, void* pUser, CTimeValue tim
 	CLanQueryListener* pThis = static_cast<CLanQueryListener*>(pUser);
 	NET_ASSERT(pThis->m_timer == id);
 
-	float now = pThis->m_pTimer->GetAsyncCurTime();
+	CTimeValue now = pThis->m_pTimer->GetAsyncCurTime();
 
 	if (now - pThis->m_lastPingCleanUp > 30) //clear old pings once in a while
 		pThis->CleanUpPings();
@@ -142,7 +142,7 @@ void CLanQueryListener::UpdateTimer(CTimeValue time)
 {
 	if (m_timer)
 		TIMER.CancelTimer(m_timer);
-	m_timer = TIMER.ADDTIMER(g_time + 1.0f, TimerCallback, this, "CLanQueryListener::UpdateTimer() m_timer");
+	m_timer = TIMER.ADDTIMER(g_time + 1, TimerCallback, this, "CLanQueryListener::UpdateTimer() m_timer");
 }
 
 void CLanQueryListener::DeleteNetQueryListener()
@@ -171,8 +171,8 @@ void CLanQueryListener::ProcessPongFrom(const uint8* buffer, size_t bufferLength
 		return;
 	if (0 != memcmp(PONG, buffer, PONG_LENGTH))
 		return;
-	int64 serNumber;
-#if defined(__GNUC__)
+	string serNumber;
+/*#if defined(__GNUC__)
 	{
 		char serNumBuffer[bufferLength - PONG_LENGTH + 1];
 		memcpy(serNumBuffer, buffer + PONG_LENGTH, bufferLength - PONG_LENGTH);
@@ -182,12 +182,12 @@ void CLanQueryListener::ProcessPongFrom(const uint8* buffer, size_t bufferLength
 			return;
 		serNumber = (int64)num;
 	}
-#else
-	if (1 != _snscanf((const char*)buffer + PONG_LENGTH, bufferLength - PONG_LENGTH, "%I64d", &serNumber))
+#else*/
+	if (1 != _snscanf((const char*)buffer + PONG_LENGTH, bufferLength - PONG_LENGTH, "%s", &serNumber))
 		return;
-#endif
+//#endif
 
-	CTimeValue when(serNumber);
+	CTimeValue when(serNumber.c_str());
 	// make sure it matches what we stored
 	if (when != iter->second)
 		return;
@@ -196,8 +196,8 @@ void CLanQueryListener::ProcessPongFrom(const uint8* buffer, size_t bufferLength
 	m_outstandingPings.erase(iter->first);
 
 	// add the ping to our data structure...
-	int64 now = m_pTimer->GetAsyncTime().GetValue();
-	uint32 ping = int32((now - when.GetValue()) * 0.01f);
+	CTimeValue now = m_pTimer->GetAsyncTime();
+	CTimeValue ping = now - when;
 	CNetAddressResolver res;
 	string address = res.ToString(addr);
 
@@ -253,7 +253,8 @@ void CLanQueryListener::BroadcastQuery()
 	m_pSocket->Send(Frame_IDToHeader + eH_QueryLan, 1, TNetAddress(SIPv4Addr(0xffffffffu, m_port)));
 	m_lastBroadcast = m_pTimer->GetAsyncCurTime();
 }
-
+// POINT OF INTEREST
+// Simple net messages/setups etc. here via socket.
 void CLanQueryListener::SendPingTo(const char* addr)
 {
 	SCOPED_GLOBAL_LOCK;
@@ -288,14 +289,9 @@ void CLanQueryListener::GQ_SendPingTo(CNameRequestPtr pReq)
 	//NET_ASSERT( GetFrameType(PING_SERVER[0]) == QueryFrameHeader );
 	char buffer[64];
 	CTimeValue when = g_time;
-	int64 serNumber = when.GetValue();
-	cry_sprintf(buffer, "%s %" PRIi64, "PING",
-#if defined(__GNUC__)
-	            (long long)serNumber
-#else
-	            serNumber
-#endif
-	            );
+	string serNumber = when.GetSeconds().str();
+	cry_sprintf(buffer, "%s %s", "PING", serNumber);
+
 	m_pSocket->Send((const uint8*)buffer, strlen(buffer), addrVec[0]);
 	m_outstandingPings[addrVec[0]] = when;
 }
@@ -322,7 +318,7 @@ void CLanQueryListener::NQ_AddServer(SLANServerDetails msg)
 	m_pGameQueryListener->AddServer(msg.m_description.c_str(), msg.m_target.c_str(), msg.m_additionalText, 0);
 }
 
-void CLanQueryListener::NQ_AddPong(string address, uint32 ping)
+void CLanQueryListener::NQ_AddPong(string address, CTimeValue ping)
 {
 	m_pGameQueryListener->AddPong(address, ping);
 }

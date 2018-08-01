@@ -20,7 +20,7 @@ ILINE static uint32 GetRandomNumber()
 }
 
 SAuthenticationSalt::SAuthenticationSalt() :
-	fTime(gEnv->pTimer->GetCurrTime()),
+	fTime(gEnv->pTimer->GetFrameStartTime()),
 	nRand(GetRandomNumber())
 {
 }
@@ -33,9 +33,9 @@ void SAuthenticationSalt::SerializeWith(TSerialize ser)
 
 CWhirlpoolHash SAuthenticationSalt::Hash(const string& password) const
 {
-	char n1[32];
+	//char n1[32];
 	char n2[32];
-	cry_sprintf(n1, "%f", fTime);
+	const char* n1 = fTime.GetSeconds().str(); // PERSONAL VERIFY: Will this hashing/etc. work properly?
 	cry_sprintf(n2, "%.8x", nRand);
 	string buffer = password + ":" + n1 + ":" + n2;
 	return CWhirlpoolHash(buffer);

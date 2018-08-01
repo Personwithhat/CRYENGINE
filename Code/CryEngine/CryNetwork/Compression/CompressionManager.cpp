@@ -269,7 +269,7 @@ void CCompressionManager::ManagePolicies()
 
 	CTimeValue val = gEnv->pTimer->GetAsyncTime();
 
-	if (val.GetDifferenceInSeconds(m_timeValue) < m_manageIntervalSeconds)
+	if (val - m_timeValue < m_manageIntervalSeconds)
 		return;
 
 	CErrorDistribution::LogPerformance();

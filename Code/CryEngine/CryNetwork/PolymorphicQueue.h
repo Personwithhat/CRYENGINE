@@ -15,7 +15,7 @@ public:
 	CEnsureRealtime() : m_begin(gEnv->pTimer->GetAsyncTime()) {}
 	~CEnsureRealtime()
 	{
-		if ((gEnv->pTimer->GetAsyncTime() - m_begin).GetSeconds() > 1.0f)
+		if ((gEnv->pTimer->GetAsyncTime() - m_begin).GetSeconds() > 1)
 			Failed();
 	}
 
