@@ -21,7 +21,7 @@ float g_YLine = 0.0f;
 #define CHR_LEVEL_CACHE_PAK     "chr.pak"
 #define CGA_LEVEL_CACHE_PAK     "cga.pak"
 
-#define DBA_UNLOAD_MAX_DELTA_MS 2000
+#define DBA_UNLOAD_MAX_DELTA CTimeValue(2)
 
 #define INVALID_CDF_ID          ~0
 /*
@@ -38,10 +38,6 @@ uint32 CharacterManager::s_renderFrameIdLocal = 0;
 CharacterManager::CharacterManager()
 {
 	m_AllowStartOfAnimation = 1;
-	m_arrFrameTimes.resize(200);
-	for (uint32 i = 0; i < 200; i++)
-		m_arrFrameTimes[i] = 0.014f;
-
 	m_pFacialAnimation = new CFacialAnimation();
 	m_nUpdateCounter = 0;
 	m_InitializedByIMG = 0;
@@ -213,9 +209,9 @@ void CharacterManager::PreloadModelsCHR()
 
 	CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
 
-	float dt = (endTime - startTime).GetSeconds();
+	mpfloat dt = (endTime - startTime).GetSeconds();
 
-	CryLog("===== Finished Preloading %d Characters in %.2f seconds ====", nChrCounter, dt);
+	CryLog("===== Finished Preloading %d Characters in %.2f seconds ====", nChrCounter, (float)dt);
 
 	//GetISystem()->GetIResourceManager()->UnloadLevelCachePak( CHR_LEVEL_CACHE_PAK );
 }
@@ -295,8 +291,8 @@ void CharacterManager::PreloadModelsCGA()
 
 	CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
 
-	float dt = (endTime - startTime).GetSeconds();
-	CryLog("===== Finished Preloading %d CGAs in %.2f seconds ====", nChrCounter, dt);
+	mpfloat dt = (endTime - startTime).GetSeconds();
+	CryLog("===== Finished Preloading %d CGAs in %.2f seconds ====", nChrCounter, (float)dt);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -339,8 +335,8 @@ void CharacterManager::PreloadModelsCDF()
 
 	CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
 
-	float dt = (endTime - startTime).GetSeconds();
-	CryLog("===== Finished Preloading %d CDFs in %.2f seconds ====", nCounter, dt);
+	mpfloat dt = (endTime - startTime).GetSeconds();
+	CryLog("===== Finished Preloading %d CDFs in %.2f seconds ====", nCounter, (float)dt);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1588,43 +1584,6 @@ void CharacterManager::CleanupModelCache(bool bForceCleanup)
 	CFacialModel::ClearResources();
 }
 
-//------------------------------------------------------------------------
-//--  average frame-times to avoid stalls and peaks in framerate
-//------------------------------------------------------------------------
-f32 CharacterManager::GetAverageFrameTime(f32 sec, f32 FrameTime, f32 fTimeScale, f32 LastAverageFrameTime)
-{
-	uint32 numFT = m_arrFrameTimes.size();
-	for (int32 i = (numFT - 2); i > -1; i--)
-		m_arrFrameTimes[i + 1] = m_arrFrameTimes[i];
-
-	m_arrFrameTimes[0] = FrameTime;
-
-	//get smoothed frame
-	uint32 FrameAmount = 1;
-	if (LastAverageFrameTime)
-	{
-		FrameAmount = uint32(sec / LastAverageFrameTime * fTimeScale + 0.5f);         //average the frame-times for a certain time-period (sec)
-		if (FrameAmount > numFT)  FrameAmount = numFT;
-		if (FrameAmount < 1)  FrameAmount = 1;
-	}
-
-	f32 AverageFrameTime = 0;
-	for (uint32 i = 0; i < FrameAmount; i++)
-		AverageFrameTime += m_arrFrameTimes[i];
-	AverageFrameTime /= FrameAmount;
-
-	//don't smooth if we pase the game
-	if (FrameTime < 0.0001f)
-		AverageFrameTime = FrameTime;
-
-	//	g_YLine+=66.0f;
-	//	float fColor[4] = {1,0,1,1};
-	//	g_pAuxGeom->Draw2dLabel( 1,g_YLine, 1.3f, fColor, false,"AverageFrameTime:  Frames:%d  FrameTime:%f  AverageTime:%f", FrameAmount, FrameTime, AverageFrameTime);
-	//	g_YLine+=16.0f;
-
-	return AverageFrameTime;
-}
-
 uint32 CharacterManager::GetRendererThreadId()
 {
 	bool bIsMultithreadedRenderer = false;
@@ -1687,7 +1646,7 @@ void CharacterManager::Update(bool bPaused)
 	if (!bIsMultithreadedRenderer && !s_bPaused)
 		s_renderFrameIdLocal++;
 
-	g_fCurrTime = g_pITimer->GetCurrTime();
+	g_fCurrTime = g_pITimer->GetFrameStartTime();
 
 	if (m_InitializedByIMG == 0)
 	{
@@ -1696,11 +1655,7 @@ void CharacterManager::Update(bool bPaused)
 		//LoadAnimationImageFile( "animations/animations.img","animations/DirectionalBlends.img" );
 	}
 
-	f32 fTimeScale = g_pITimer->GetTimeScale();
-	f32 fFrameTime = g_pITimer->GetFrameTime();
-	if (fFrameTime > 0.2f) fFrameTime = 0.2f;
-	if (fFrameTime < 0.0f) fFrameTime = 0.0f;
-	g_AverageFrameTime = GetAverageFrameTime(0.25f, fFrameTime, fTimeScale, g_AverageFrameTime);
+	g_AverageFrameTime = g_pITimer->GetAverageFrameTime();
 
 	CVertexAnimation::ClearSoftwareRenderMeshes();
 
@@ -2438,7 +2393,7 @@ void CharacterManager::DatabaseUnloading()
 				if (nCRC32 == parrGlobalDBA[d].m_FilePathDBACRC32)
 				{
 					parrGlobalDBA[d].m_nUsedAnimations++;
-					parrGlobalDBA[d].m_nLastUsedTimeDelta = 0;
+					parrGlobalDBA[d].m_nLastUsedTimeDelta.SetSeconds(0);
 				}
 			}
 		}
@@ -2455,7 +2410,7 @@ void CharacterManager::DatabaseUnloading()
 	//	g_pAuxGeom->Draw2dLabel( 1,g_YLine, 1.2f, fColor, false,"DatabaseUnloading");
 	//	g_YLine+=12.0f;
 
-	uint32 timeDelta = GetDatabaseUnloadTimeDelta();
+	CTimeValue timeDelta = GetDatabaseUnloadTimeDelta();
 
 	for (uint32 d = 0; d < numHeadersDBA; d++)
 	{
@@ -2467,13 +2422,13 @@ void CharacterManager::DatabaseUnloading()
 		uint32 nDBACRC32 = rGHDBA.m_FilePathDBACRC32;
 		if (rGHDBA.m_nUsedAnimations || rGHDBA.m_bDBALock)
 		{
-			rGHDBA.m_nLastUsedTimeDelta = 0;
+			rGHDBA.m_nLastUsedTimeDelta.SetSeconds(0);
 			continue;
 		}
 
 		rGHDBA.m_nLastUsedTimeDelta += timeDelta;
 
-		if (rGHDBA.m_nLastUsedTimeDelta <= (uint32) Console::GetInst().ca_DBAUnloadUnregisterTime * 1000)
+		if (rGHDBA.m_nLastUsedTimeDelta <= Console::GetInst().ca_DBAUnloadUnregisterTime)
 			continue;
 
 		//	g_pAuxGeom->Draw2dLabel( 1,g_YLine, 1.2f, fColor, false,"Scanning: %s",pName );
@@ -2494,7 +2449,7 @@ void CharacterManager::DatabaseUnloading()
 		CGlobalHeaderDBA& rGHDBA = g_AnimationManager.m_arrGlobalHeaderDBA[d];
 		if (rGHDBA.m_pDatabaseInfo == 0)
 			continue;
-		if (rGHDBA.m_nLastUsedTimeDelta <= (uint32) Console::GetInst().ca_DBAUnloadRemoveTime * 1000)
+		if (rGHDBA.m_nLastUsedTimeDelta <= Console::GetInst().ca_DBAUnloadRemoveTime)
 			continue;
 		if (rGHDBA.m_nUsedAnimations)
 			continue;
@@ -3889,18 +3844,18 @@ const char* CharacterManager::GetDBAFilePathByGlobalID(int32 globalID) const
 
 void CharacterManager::UpdateDatabaseUnloadTimeStamp()
 {
-	// sets a timestep in milliseconds from game startup
-	m_lastDatabaseUnloadTimeStamp = uint32(1000.0f * gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI));
+	// sets a timestep from game startup
+	m_lastDatabaseUnloadTimeStamp = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
 }
 
-uint32 CharacterManager::GetDatabaseUnloadTimeDelta() const
+CTimeValue CharacterManager::GetDatabaseUnloadTimeDelta() const
 {
-	uint32 currTimeStamp = uint32(1000.0f * gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI));
+	CTimeValue currTimeStamp = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
 	assert(m_lastDatabaseUnloadTimeStamp <= currTimeStamp);
-	uint32 delta = currTimeStamp - m_lastDatabaseUnloadTimeStamp;
-	if (delta > DBA_UNLOAD_MAX_DELTA_MS)
-		delta = DBA_UNLOAD_MAX_DELTA_MS;
-	// return time delta in milliseconds from the last call to UpdateDatabseUnloadTimeStep()
+	CTimeValue delta = currTimeStamp - m_lastDatabaseUnloadTimeStamp;
+	if (delta > DBA_UNLOAD_MAX_DELTA)
+		delta = DBA_UNLOAD_MAX_DELTA;
+	// return time delta from the last call to UpdateDatabseUnloadTimeStep()
 	// we cap this at a maximum delta, to prevent skipping of CAF Unregister events if a frame
 	// takes too long
 	return delta;
@@ -4055,13 +4010,13 @@ void CharacterManager::RenderBlendSpace(const SRenderingPassInfo& passInfo, ICha
 	if (pSampler)
 	{
 		if (pSampler->m_numDimensions == 1)
-			pSampler->BlendSpace1DVisualize(rLMG, *pAnimation, pAnimationSet, 1.0f, 0, debugFlags, fCharacterScale);
+			pSampler->BlendSpace1DVisualize(rLMG, *pAnimation, pAnimationSet, 1, 0, debugFlags, fCharacterScale);
 		else if (pSampler->m_numDimensions == 2)
-			pSampler->BlendSpace2DVisualize(rLMG, *pAnimation, pAnimationSet, 1.0f, 0, debugFlags, fCharacterScale);
+			pSampler->BlendSpace2DVisualize(rLMG, *pAnimation, pAnimationSet, 1, 0, debugFlags, fCharacterScale);
 		else if (pSampler->m_numDimensions == 3)
-			pSampler->BlendSpace3DVisualize(rLMG, *pAnimation, pAnimationSet, 1.0f, 0, debugFlags, fCharacterScale);
+			pSampler->BlendSpace3DVisualize(rLMG, *pAnimation, pAnimationSet, 1, 0, debugFlags, fCharacterScale);
 		else
-			pSampler->VisualizeBlendSpace(pAnimationSet, *pAnimation, 1.0f, 0, rLMG, ZERO, 0, fCharacterScale);
+			pSampler->VisualizeBlendSpace(pAnimationSet, *pAnimation, 1, 0, rLMG, ZERO, 0, fCharacterScale);
 	}
 
 	if (fCharacterScale != 0.0f)

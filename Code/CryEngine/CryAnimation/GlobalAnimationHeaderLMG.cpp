@@ -1079,10 +1079,10 @@ bool GlobalAnimationHeaderLMG::Export2HTR(const char* szAnimationName, const cha
 	//fetch and sum up all CAFs in this LMG
 	const CAnimationSet* pAnimationSet = pDefaultSkeleton->m_pAnimationSet;
 	SParametricSamplerInternal& lmg = *(SParametricSamplerInternal*)(Animation.GetParametricSampler());
-	f32 fTWNDeltaTime = lmg.Parameterizer(pAnimationSet, pDefaultSkeleton, Animation, 1.0f / ANIMATION_30Hz, 1.0f, 0);
+	nTime fTWNDeltaTime = lmg.Parameterizer(pAnimationSet, pDefaultSkeleton, Animation, ANIMATION_FSTEP, 1, 0);
 
-	uint32 nFrames = uint32(1.0f / fTWNDeltaTime + 1.5f);
-	f32 timestep = 1.0f / f32(nFrames - 1);
+	uint32 nFrames = uint32(1 / fTWNDeltaTime + nTime("1.5"));
+	nTime timestep = 1 / nTime(nFrames - 1); // Normalized
 
 	std::vector<DynArray<QuatT>> arrAnimation;
 
@@ -1107,8 +1107,8 @@ bool GlobalAnimationHeaderLMG::Export2HTR(const char* szAnimationName, const cha
 	for (uint32 a = 0; a < lmg.m_numExamples; a++)
 	{
 		int nAnimID = lmg.m_nAnimID[a];
-		f32 fWeight = lmg.m_fBlendWeight[a];
-		if (fWeight == 0.0f)
+		mpfloat fWeight = lmg.m_fBlendWeight[a];
+		if (fWeight == 0)
 			continue;
 		const ModelAnimationHeader* pAnim = pAnimationSet->GetModelAnimationHeader(nAnimID);
 		assert(pAnim->m_nAssetType == CAF_File);
@@ -1117,7 +1117,7 @@ bool GlobalAnimationHeaderLMG::Export2HTR(const char* szAnimationName, const cha
 		const CDefaultSkeleton::SJoint* pJointRoot = &pDefaultSkeleton->m_arrModelJoints[0];
 		assert(pJointRoot);
 		IController* pControllerRoot = rCAF.GetControllerByJointCRC32(pJointRoot->m_nJointCRC32);
-		f32 t = timestep;
+		nTime t = timestep;
 		arrAnimation[0][0].q.SetIdentity();
 		for (uint32 k = 1; k < nFrames; k++)
 		{
@@ -1131,8 +1131,8 @@ bool GlobalAnimationHeaderLMG::Export2HTR(const char* szAnimationName, const cha
 				qtnew.q *= fsgnnz(parrDefJoints[0].q | qtnew.q);  //this could be optimized at loading-time
 			}
 			QuatT rel = qtold.GetInverted() * qtnew;
-			arrAnimation[0][k].q += fWeight * rel.q;
-			arrAnimation[0][k].t += fWeight * rel.t;
+			arrAnimation[0][k].q += BADF fWeight * rel.q;
+			arrAnimation[0][k].t += BADF fWeight * rel.t;
 			t += timestep;
 		}
 
@@ -1141,7 +1141,7 @@ bool GlobalAnimationHeaderLMG::Export2HTR(const char* szAnimationName, const cha
 			const CDefaultSkeleton::SJoint* pJoint = &pDefaultSkeleton->m_arrModelJoints[j];
 			assert(pJoint);
 			IController* pController = rCAF.GetControllerByJointCRC32(pJoint->m_nJointCRC32);
-			t = 0.0f;
+			t = 0;
 			for (uint32 k = 0; k < nFrames; k++)
 			{
 				QuatT qt = parrDefJoints[j];
@@ -1150,8 +1150,8 @@ bool GlobalAnimationHeaderLMG::Export2HTR(const char* szAnimationName, const cha
 					pController->GetOP(rCAF.NTime2KTime(t), qt.q, qt.t);
 					qt.q *= fsgnnz(parrDefJoints[j].q | qt.q);  //this could be optimized at loading-time
 				}
-				arrAnimation[j][k].q += fWeight * qt.q;
-				arrAnimation[j][k].t += fWeight * qt.t;
+				arrAnimation[j][k].q += BADF fWeight * qt.q;
+				arrAnimation[j][k].t += BADF fWeight * qt.t;
 				t += timestep;
 			}
 		}
@@ -1258,8 +1258,8 @@ void GlobalAnimationHeaderLMG::Init_MoveSpeed(const CAnimationSet* pAnimationSet
 		IController* pController = rCAF.GetControllerByJointCRC32(pRootJoint->m_nJointCRC32);
 		if (pController == 0)
 			continue;
-		f32 duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
-		uint32 numKeys = uint32(duration * ANIMATION_30Hz + 1);
+		CTimeValue duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
+		uint32 numKeys = uint32(duration.GetSeconds() * ANIMATION_30Hz + 1);
 		if (numKeys == 1)
 			continue;
 		init_count++;
@@ -1268,8 +1268,8 @@ void GlobalAnimationHeaderLMG::Init_MoveSpeed(const CAnimationSet* pAnimationSet
 		DynArray<Vec3> root_keys;
 		root_keys.resize(numKeys);
 
-		f32 fk = rCAF.m_fStartSec * ANIMATION_30Hz;
-		for (uint32 k = 0; k < numKeys; k++, fk += 1.0f)
+		kTime fk = (rCAF.m_fStartSec.GetSeconds() * ANIMATION_30Hz).conv<kTime>();
+		for (uint32 k = 0; k < numKeys; k++, fk += 1)
 			pController->GetP(fk, root_keys[k]);
 
 		uint32 skey = uint32(m_DimPara[dim].m_skey * (numKeys - 1));
@@ -1285,7 +1285,7 @@ void GlobalAnimationHeaderLMG::Init_MoveSpeed(const CAnimationSet* pAnimationSet
 		if (poses)
 			movespeed /= poses;
 
-		m_arrParameter[i].m_Para[dim] = movespeed * m_arrParameter[i].m_fPlaybackScale;
+		m_arrParameter[i].m_Para[dim] = movespeed * BADF m_arrParameter[i].m_fPlaybackScale;
 	}
 	if (init_count == numAssets)
 		m_DimPara[dim].m_nInitialized = true;
@@ -1315,8 +1315,8 @@ void GlobalAnimationHeaderLMG::Init_TurnSpeed(const CAnimationSet* pAnimationSet
 		IController* pController = rCAF.GetControllerByJointCRC32(pRootJoint->m_nJointCRC32);
 		if (pController == 0)
 			continue;
-		f32 duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
-		uint32 numKeys = uint32(duration * ANIMATION_30Hz + 1);
+		CTimeValue duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
+		uint32 numKeys = uint32(duration.GetSeconds() * ANIMATION_30Hz + 1);
 		if (numKeys == 1)
 			continue;
 		init_count++;
@@ -1327,8 +1327,8 @@ void GlobalAnimationHeaderLMG::Init_TurnSpeed(const CAnimationSet* pAnimationSet
 		DynArray<Quat> rot_keys;
 		pos_keys.resize(numKeys);
 		rot_keys.resize(numKeys);
-		f32 fk = rCAF.m_fStartSec * ANIMATION_30Hz;
-		for (uint32 k = 0; k < numKeys; k++, fk += 1.0f)
+		kTime fk = (rCAF.m_fStartSec.GetSeconds() * ANIMATION_30Hz).conv<kTime>();
+		for (uint32 k = 0; k < numKeys; k++, fk += 1)
 			pController->GetOP(fk, rot_keys[k], pos_keys[k]);
 
 		uint32 skey = uint32(m_DimPara[dim].m_skey * (numKeys - 1));
@@ -1381,15 +1381,15 @@ void GlobalAnimationHeaderLMG::Init_TurnAngle(const CAnimationSet* pAnimationSet
 		if (m_arrParameter[i].m_PreInitialized[dim])
 			continue;  //already pre-initialized
 
-		f32 duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
-		uint32 numKeys = uint32(duration * ANIMATION_30Hz + 1);
+		CTimeValue duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
+		uint32 numKeys = uint32(duration.GetSeconds() * ANIMATION_30Hz + 1);
 		if (numKeys == 1)
 			continue;
 
 		DynArray<Quat> rot_keys;
 		rot_keys.resize(numKeys);
-		f32 fk = rCAF.m_fStartSec * ANIMATION_30Hz;
-		for (uint32 k = 0; k < numKeys; k++, fk += 1.0f)
+		kTime fk = (rCAF.m_fStartSec.GetSeconds() * ANIMATION_30Hz).conv<kTime>();
+		for (uint32 k = 0; k < numKeys; k++, fk += 1)
 			pController->GetO(fk, rot_keys[k]);
 
 		uint32 skey = uint32(m_DimPara[dim].m_skey * (numKeys - 1));
@@ -1433,8 +1433,8 @@ void GlobalAnimationHeaderLMG::Init_TravelAngle(const CAnimationSet* pAnimationS
 		IController* pController = rCAF.GetControllerByJointCRC32(pRootJoint->m_nJointCRC32);
 		if (pController == 0)
 			continue;
-		f32 duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
-		uint32 numKeys = uint32(duration * ANIMATION_30Hz + 1);
+		CTimeValue duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
+		uint32 numKeys = uint32(duration.GetSeconds() * ANIMATION_30Hz + 1);
 		if (numKeys == 1)
 			continue;
 		init_count++;
@@ -1444,8 +1444,8 @@ void GlobalAnimationHeaderLMG::Init_TravelAngle(const CAnimationSet* pAnimationS
 		DynArray<Quat> rot_keys;
 		pos_keys.resize(numKeys);
 		rot_keys.resize(numKeys);
-		f32 fk = rCAF.m_fStartSec * ANIMATION_30Hz;
-		for (uint32 k = 0; k < numKeys; k++, fk += 1.0f)
+		kTime fk = (rCAF.m_fStartSec.GetSeconds() * ANIMATION_30Hz).conv<kTime>();
+		for (uint32 k = 0; k < numKeys; k++, fk += 1)
 			pController->GetOP(fk, rot_keys[k], pos_keys[k]);
 
 		uint32 skey = uint32(m_DimPara[dim].m_skey * (numKeys - 1));
@@ -1490,8 +1490,8 @@ void GlobalAnimationHeaderLMG::Init_SlopeAngle(const CAnimationSet* pAnimationSe
 		IController* pController = rCAF.GetControllerByJointCRC32(pRootJoint->m_nJointCRC32);
 		if (pController == 0)
 			continue;
-		f32 duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
-		uint32 numKeys = uint32(duration * ANIMATION_30Hz + 1);
+		CTimeValue duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
+		uint32 numKeys = uint32(duration.GetSeconds() * ANIMATION_30Hz + 1);
 		if (numKeys == 1)
 			continue;
 		init_count++;
@@ -1501,9 +1501,8 @@ void GlobalAnimationHeaderLMG::Init_SlopeAngle(const CAnimationSet* pAnimationSe
 		DynArray<Quat> rot_keys;
 		pos_keys.resize(numKeys);
 		rot_keys.resize(numKeys);
-		f32 fk = rCAF.m_fStartSec * ANIMATION_30Hz;
-		;
-		for (uint32 k = 0; k < numKeys; k++, fk += 1.0f)
+		kTime fk = (rCAF.m_fStartSec.GetSeconds() * ANIMATION_30Hz).conv<kTime>();
+		for (uint32 k = 0; k < numKeys; k++, fk += 1)
 			pController->GetOP(fk, rot_keys[k], pos_keys[k]);
 
 		uint32 skey = uint32(m_DimPara[dim].m_skey * (numKeys - 1));
@@ -1551,8 +1550,8 @@ void GlobalAnimationHeaderLMG::Init_TravelDist(const CAnimationSet* pAnimationSe
 		IController* pController = rCAF.GetControllerByJointCRC32(pRootJoint->m_nJointCRC32);
 		if (pController == 0)
 			continue;
-		f32 duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
-		uint32 numKeys = uint32(duration * ANIMATION_30Hz + 1);
+		CTimeValue duration = rCAF.m_fEndSec - rCAF.m_fStartSec;
+		uint32 numKeys = uint32(duration.GetSeconds() * ANIMATION_30Hz + 1);
 		if (numKeys == 1)
 			continue;
 		init_count++;
@@ -1560,7 +1559,7 @@ void GlobalAnimationHeaderLMG::Init_TravelDist(const CAnimationSet* pAnimationSe
 			continue;  //already pre-initialized
 
 		QuatT key0;
-		pController->GetOP(0.0f, key0.q, key0.t);
+		pController->GetOP(0, key0.q, key0.t);
 		QuatT key1;
 		pController->GetOP(rCAF.NTime2KTime(1), key1.q, key1.t);
 
