@@ -45,7 +45,7 @@ struct SEntityTimerEvent
 {
 	EntityId entityId;
 	int      nTimerId;
-	int      nMilliSeconds;
+	CTimeValue nTime;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -260,7 +260,7 @@ public:
 private:
 	bool ValidateSpawnParameters(SEntitySpawnParams& params);
 
-	void UpdateEntityComponents(float fFrameTime);
+	void UpdateEntityComponents(const CTimeValue& fFrameTime);
 
 	void DeleteEntity(CEntity* pEntity);
 	void UpdateTimers();
@@ -370,8 +370,8 @@ public:
 public:
 	struct SLayerProfile
 	{
-		float         fTimeMS;
-		float         fTimeOn;
+		CTimeValue    fTime;
+		CTimeValue    fTimeOn;
 		bool          isEnable;
 		CEntityLayer* pLayer;
 	};

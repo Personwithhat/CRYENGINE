@@ -1028,7 +1028,7 @@ void CEntity::UpdateComponentEventListeners(const SEntityComponentRecord& compon
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CEntity::SetTimer(int nTimerId, int nMilliSeconds)
+int CEntity::SetTimer(int nTimerId, const CTimeValue& nTime)
 {
 	if (nTimerId == IEntity::CREATE_NEW_UNIQUE_TIMER_ID)  // generate a new entity-unique timerId
 	{
@@ -1042,7 +1042,7 @@ int CEntity::SetTimer(int nTimerId, int nMilliSeconds)
 	SEntityTimerEvent timeEvent;
 	timeEvent.entityId = m_id;
 	timeEvent.nTimerId = nTimerId;
-	timeEvent.nMilliSeconds = nMilliSeconds;
+	timeEvent.nTime = nTime;
 	g_pIEntitySystem->AddTimerEvent(timeEvent);
 
 	return timeEvent.nTimerId;
@@ -2794,7 +2794,7 @@ int CEntity::LoadFogVolume(int nSlot, const SFogVolumeProperties& properties)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CEntity::FadeGlobalDensity(int nSlot, float fadeTime, float newGlobalDensity)
+int CEntity::FadeGlobalDensity(int nSlot, const CTimeValue& fadeTime, float newGlobalDensity)
 {
 	return m_render.FadeGlobalDensity(nSlot, fadeTime, newGlobalDensity);
 }
@@ -3065,8 +3065,7 @@ void CEntity::LogEvent(const SEntityEvent& event, CTimeValue dt)
 	}
 	s_LastLoggedFrame = nFrameId;
 
-	float fTimeMs = dt.GetMilliSeconds();
-	CryLogAlways("<Frame:%d><EntityEvent> [%s](%X)\t[%.2fms]\t%s", nFrameId, sName, (int)event.nParam[0], fTimeMs, GetEntityTextDescription().c_str());
+	CryLogAlways("<Frame:%d><EntityEvent> [%s](%X)\t[%.2fms]\t%s", nFrameId, sName, (int)event.nParam[0], (float)dt.GetMilliSeconds(), GetEntityTextDescription().c_str());
 }
 
 IAIObject* CEntity::GetAIObject() const
@@ -3249,7 +3248,7 @@ void CEntity::OnRenderNodeVisibilityChange(bool bBecomeVisible)
 }
 
 //////////////////////////////////////////////////////////////////////////
-float CEntity::GetLastSeenTime() const
+const CTimeValue& CEntity::GetLastSeenTime() const
 {
 	return m_render.GetLastSeenTime();
 }
