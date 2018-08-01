@@ -575,7 +575,7 @@ namespace Schematyc2
 		m_relevanceGrid.SetUpdateScheduler(this);
 		for(size_t bucketIdx = 0; bucketIdx < s_bucketCount; ++ bucketIdx)
 		{
-			m_frameTimes[bucketIdx] = 0.0f;
+			m_frameTimes[bucketIdx].SetSeconds(0);
 		}
 	}
 
@@ -675,7 +675,7 @@ namespace Schematyc2
 	}
 
 	////////////////////////////////////////////////////////////////
-	bool CUpdateScheduler::BeginFrame(float frameTime)
+	bool CUpdateScheduler::BeginFrame(const CTimeValue& frameTime)
 	{
 		CRY_PROFILE_FUNCTION(PROFILE_GAME);
 		CRY_ASSERT(!m_bInFrame);
@@ -721,7 +721,7 @@ namespace Schematyc2
 
 			if (gEnv->pTimer)
 			{
-				updateStats.updateTime = CTimeValue(gEnv->pTimer->TicksToSeconds(endTimeTicks - startTimeTicks));
+				updateStats.updateTime = gEnv->pTimer->TicksToTime(endTimeTicks - startTimeTicks);
 			}
 
 			m_stats.Add(updateStats);
@@ -753,7 +753,7 @@ namespace Schematyc2
 		for(size_t bucketIdx = 0; bucketIdx < s_bucketCount; ++ bucketIdx)
 		{
 			m_buckets[bucketIdx].Reset();
-			m_frameTimes[bucketIdx] = 0.0f;
+			m_frameTimes[bucketIdx].SetSeconds(0);
 		}
 		m_currentBucketIdx = 0;
 		m_bInFrame         = false;
