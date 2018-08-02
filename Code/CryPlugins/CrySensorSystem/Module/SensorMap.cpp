@@ -28,7 +28,7 @@ namespace Cry
 
 		CSensorMap::SUpdateStats::SUpdateStats()
 			: queryCount(0)
-			, time(0.0f)
+			, time(0)
 		{}
 
 		CSensorMap::CSensorMap(ISensorTagLibrary& tagLibrary, const SSensorMapParams& params)
@@ -232,7 +232,7 @@ namespace Cry
 			}
 
 			const CTimeValue deltaTime = gEnv->pTimer->GetAsyncTime() - startTime;
-			m_updateStats.time = deltaTime.GetMilliSeconds();
+			m_updateStats.time = deltaTime;
 		}
 
 		void CSensorMap::Debug(float drawRange, const SensorMapDebugFlags& flags)
@@ -480,7 +480,7 @@ namespace Cry
 			stack_string text = "Sensor Map Stats\n";
 			{
 				stack_string line;
-				line.Format("[Update] queries = %d, time = %f(ms)\n", m_updateStats.queryCount, m_updateStats.time);
+				line.Format("[Update] queries = %d, time = %f(ms)\n", m_updateStats.queryCount, (float)m_updateStats.time.GetMilliSeconds());
 				text.append(line);
 			}
 			{
