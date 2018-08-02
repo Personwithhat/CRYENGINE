@@ -3476,7 +3476,7 @@ Start:
 		{
 			if (SShaderAsyncInfo::s_nPendingAsyncShaders <= 0)
 				break;
-			int n = (int)iTimer->GetAsyncCurTime();
+			int n = (int)iTimer->GetAsyncCurTime().GetSeconds();
 			if (!(n % 2))
 				iLog->Update();
 			if (!(n % 8))
@@ -4159,7 +4159,7 @@ bool CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags, FXShaderToken* Table
 		// undefined behaviour
 		char nameCacheUnstripped[256];
 		char nameCache[256];
-		float t0 = gEnv->pTimer->GetAsyncCurTime();
+		CTimeValue t0 = gEnv->pTimer->GetAsyncCurTime();
 
 		/*if (CRenderer::CV_r_shaderspreactivate == 2 || (nFlags & HWSF_STORECOMBINATION))
 		   {
@@ -4235,7 +4235,7 @@ bool CHWShader_D3D::mfActivate(CShader* pSH, uint32 nFlags, FXShaderToken* Table
 		   int nnn = 0;
 		   }*/
 
-		float fTime0 = iTimer->GetAsyncCurTime();
+		CTimeValue fTime0 = iTimer->GetAsyncCurTime();
 		D3DBlob* pShader = NULL;
 		void* pConstantTable = NULL;
 		D3DBlob* pErrorMsgs = NULL;

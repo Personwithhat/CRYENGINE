@@ -1599,7 +1599,7 @@ void CShaderMan::AddRTCombinations(FXShaderCacheCombinations& CmbsMap, CHWShader
 
 void CShaderMan::_PrecacheShaderList(bool bStatsOnly)
 {
-	float t0 = gEnv->pTimer->GetAsyncCurTime();
+	CTimeValue t0 = gEnv->pTimer->GetAsyncCurTime();
 
 	if (!m_pGlobalExt)
 		return;
@@ -1906,8 +1906,8 @@ void CShaderMan::_PrecacheShaderList(bool bStatsOnly)
 
 	gRenDev->m_Features = nSaveFeatures;
 
-	float t1 = gEnv->pTimer->GetAsyncCurTime();
-	CryLogAlways("All shaders combinations compiled in %.2f seconds", (t1 - t0));
+	CTimeValue t1 = gEnv->pTimer->GetAsyncCurTime();
+	CryLogAlways("All shaders combinations compiled in %.2f seconds", (float)(t1 - t0).GetSeconds());
 	CryLogAlways("Combinations: (Material: %d, Processed: %d; Compiled: %d; Removed: %d)", nMaterialCombinations, nProcessed, nCompiled, nEmpty);
 	CryLogAlways("-- Shader cache overall stats: Entries: %d, Unique Entries: %d, Size: %d, Compressed Size: %d, Token data size: %d", Stats.nEntries, Stats.nUniqueEntries, Stats.nSizeUncompressed, Stats.nSizeCompressed, Stats.nTokenDataSize);
 
@@ -2025,7 +2025,7 @@ void CShaderMan::mfOptimiseShaders(const char* szFolder, bool bForce)
 {
 	CHWShader::mfFlushPendedShadersWait(-1);
 
-	float t0 = gEnv->pTimer->GetAsyncCurTime();
+	CTimeValue t0 = gEnv->pTimer->GetAsyncCurTime();
 	SShaderCache* pCache;
 	uint32 i;
 
@@ -2052,8 +2052,8 @@ void CShaderMan::mfOptimiseShaders(const char* szFolder, bool bForce)
 		pCache->Release();
 	}
 
-	float t1 = gEnv->pTimer->GetAsyncCurTime();
-	CryLog("-- All shaders combinations optimized in %.2f seconds", t1 - t0);
+	CTimeValue t1 = gEnv->pTimer->GetAsyncCurTime();
+	CryLog("-- All shaders combinations optimized in %.2f seconds", (float)(t1 - t0).GetSeconds());
 	CryLog("-- Shader cache overall stats: Entries: %d, Unique Entries: %d, Size: %.3f, Compressed Size: %.3f, Token data size: %.3f, Directory Size: %.3f Mb", Stats.nEntries, Stats.nUniqueEntries, Stats.nSizeUncompressed / 1024.0f / 1024.0f, Stats.nSizeCompressed / 1024.0f / 1024.0f, Stats.nTokenDataSize / 1024.0f / 1024.0f, Stats.nDirDataSize / 1024.0f / 1024.0f);
 }
 

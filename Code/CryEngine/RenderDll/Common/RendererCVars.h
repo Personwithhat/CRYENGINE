@@ -196,8 +196,8 @@ public:
 	DeclareStaticConstIntCVar(CV_r_stats, 0);
 	DeclareStaticConstIntCVar(CV_r_statsMinDrawcalls, 0);
 	DeclareStaticConstIntCVar(CV_r_profiler, 0);
-	static float CV_r_profilerTargetFPS;
-	static float CV_r_profilerSmoothingWeight;
+	static rTime CV_r_profilerTargetFPS;
+	static mpfloat CV_r_profilerSmoothingWeight;
 	DeclareStaticConstIntCVar(CV_r_ShadowPoolMaxFrames, 30);
 	DeclareStaticConstIntCVar(CV_r_log, 0);
 	DeclareStaticConstIntCVar(CV_r_logTexStreaming, 0);
@@ -461,7 +461,7 @@ public:
 	static float CV_r_ThermalVisionViewDistance;
 	static float CV_r_ThermalVisionViewCloakFlickerMinIntensity;
 	static float CV_r_ThermalVisionViewCloakFlickerMaxIntensity;
-	static float CV_r_PostprocessParamsBlendingTimeScale;
+	static mpfloat CV_r_PostprocessParamsBlendingTimeScale;
 	static float CV_r_PostProcessHUD3DShadowAmount;
 	static float CV_r_PostProcessHUD3DGlowAmount;
 	static float CV_r_normalslength;
@@ -471,7 +471,7 @@ public:
 	static float CV_r_TexturesStreamingMipBias;
 	static int   CV_r_TexturesStreamingMipClampDVD;
 	static int   CV_r_TexturesStreamingDisableNoStreamDuringLoad;
-	static float CV_r_envtexupdateinterval;
+	static CTimeValue CV_r_envtexupdateinterval;
 	static float CV_r_TextureLodDistanceRatio;
 	static float CV_r_water_godrays_distortion;
 	static float CV_r_waterupdateFactor;

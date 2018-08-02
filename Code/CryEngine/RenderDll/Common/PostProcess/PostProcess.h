@@ -411,7 +411,7 @@ typedef std::vector<CPostEffect*>       CPostEffectVec;
 typedef CPostEffectVec::iterator        CPostEffectItor;
 
 #ifndef _RELEASE
-	#define POSTSEFFECTS_DEBUGINFO_TIMEOUT (1.0f)
+	#define POSTSEFFECTS_DEBUGINFO_TIMEOUT (CTimeValue(1))
 struct SPostEffectsDebugInfo
 {
 	SPostEffectsDebugInfo(CPostEffect* _pEffect) : pEffect(_pEffect), szParamName(NULL), fParamVal(0.0f), fTimeOut(POSTSEFFECTS_DEBUGINFO_TIMEOUT){}
@@ -419,7 +419,7 @@ struct SPostEffectsDebugInfo
 	CPostEffect* pEffect;
 	string       szParamName;
 	float        fParamVal;
-	float        fTimeOut;
+	CTimeValue   fTimeOut;
 };
 typedef std::vector<SPostEffectsDebugInfo> CPostEffectDebugVec;
 #endif

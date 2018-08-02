@@ -33,9 +33,9 @@ protected:
 	struct SProfilerSection
 	{
 		char            name[31]; 
-		float           gpuTime;
-		float           gpuTimeSmoothed;
-		float           cpuTimeSmoothed;
+		CTimeValue      gpuTime;
+		CTimeValue      gpuTimeSmoothed;
+		CTimeValue      cpuTimeSmoothed;
 		CTimeValue      startTimeCPU, endTimeCPU;
 		uint32          startTimestamp, endTimestamp;
 		CCryNameTSCRC   path;
@@ -62,21 +62,21 @@ protected:
 
 	struct SThreadTimings
 	{
-		float waitForMain;
-		float waitForRender;
-		float waitForGPU;
+		CTimeValue waitForMain;
+		CTimeValue waitForRender;
+		CTimeValue waitForGPU;
 		float gpuIdlePerc;
-		float gpuFrameTime;
-		float frameTime;
-		float renderTime;
+		CTimeValue gpuFrameTime;
+		CTimeValue frameTime;
+		CTimeValue renderTime;
 
 		SThreadTimings()
 			: waitForMain(0)
 			, waitForRender(0)
 			, waitForGPU(0)
 			, gpuIdlePerc(0)
-			, gpuFrameTime(33.0f)
-			, frameTime(33.0f)
+			, gpuFrameTime("0.033")
+			, frameTime("0.033")
 			, renderTime(0)
 		{
 		}
@@ -116,7 +116,7 @@ protected:
 	std::vector<uint32> m_stack;
 	SFrameData          m_frameData[kNumPendingFrames];
 	uint32              m_frameDataIndex;
-	float               m_avgFrameTime;
+	CTimeValue          m_avgFrameTime;
 	bool                m_enabled;
 	bool                m_recordData;
 

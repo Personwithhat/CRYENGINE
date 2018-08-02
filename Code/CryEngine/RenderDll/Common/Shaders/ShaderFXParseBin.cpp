@@ -3875,7 +3875,7 @@ bool CShaderManBin::ParseBinFX_LightStyle(CParserBin& Parser, SParserFrame& Fram
 	if (!ls)
 	{
 		ls = new CLightStyle;
-		ls->m_LastTime = 0;
+		ls->m_LastTime.SetSeconds(0);
 		ls->m_Color = Col_White;
 		CLightStyle::s_LStyles[nStyle] = ls;
 	}
@@ -3908,7 +3908,7 @@ bool CShaderManBin::ParseBinFX_LightStyle(CParserBin& Parser, SParserFrame& Fram
 			break;
 
 		case eT_Speed:
-			ls->m_TimeIncr = Parser.GetFloat(Parser.m_Data);
+			ls->m_TimeIncr = BADMP(Parser.GetFloat(Parser.m_Data));
 			break;
 		default:
 			assert(0);
@@ -4164,7 +4164,7 @@ SShaderTechnique* CShaderManBin::ParseBinFX_Technique(CParserBin& Parser, SParse
 	return pShTech;
 }
 
-float g_fTimeA;
+CTimeValue g_fTimeA;
 
 bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
 {
@@ -4172,7 +4172,7 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
 
 	bool bRes = true;
 
-	float fTimeA = iTimer->GetAsyncCurTime();
+	CTimeValue fTimeA = iTimer->GetAsyncCurTime();
 
 #if !defined(SHADER_NO_SOURCES)
 	CParserBin Parser(pBin, ef);
@@ -5190,9 +5190,9 @@ void CShaderMan::mfPostLoadFX(CShader* ef, std::vector<SShaderTechParseParams>& 
 
 bool STexSamplerRT::Update()
 {
-	if (m_pAnimInfo && m_pAnimInfo->m_Time && gRenDev->m_bPauseTimer == 0)
+	if (m_pAnimInfo && m_pAnimInfo->m_Time != 0 && gRenDev->m_bPauseTimer == 0)
 	{
-		float time = gRenDev->GetFrameSyncTime().GetSeconds();
+		CTimeValue time = gRenDev->GetFrameSyncTime();
 		assert(time >= 0);
 		uint32 m = (uint32)(time / m_pAnimInfo->m_Time) % (m_pAnimInfo->m_NumAnimTexs);
 		assert(m < (uint32)m_pAnimInfo->m_TexPics.Num());

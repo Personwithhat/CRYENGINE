@@ -37,11 +37,11 @@ static int gaussian_use_last = 0;
 struct SWaterUpdateThreadInfo
 {
 	int   nFrameID;
-	float fTime;
+	CTimeValue fTime;
 	bool  bOnlyHeight;
 };
 
-void WaterAsyncUpdate(CWaterSim*, int, float, bool, void*);
+void WaterAsyncUpdate(CWaterSim*, int, const CTimeValue&, bool, void*);
 DECLARE_JOB("WaterUpdate", TWaterUpdateJob, WaterAsyncUpdate);
 
 class CRY_ALIGN(128) CWaterSim
@@ -435,7 +435,7 @@ public:
 	void Update(SWaterUpdateThreadInfo& pThreadInfo)
 	{
 		int nFrameID = pThreadInfo.nFrameID;
-		float fTime = pThreadInfo.fTime;
+		CTimeValue fTime = pThreadInfo.fTime;
 		bool bOnlyHeight = pThreadInfo.bOnlyHeight;
 
 		PROFILE_FRAME(CWaterSim::Update);
@@ -453,7 +453,7 @@ public:
 				Vec4 pK = m_pLUTK[offset];
 
 				float fKLen = pK.z;                //pK.GetLength();
-				float fAngularFreq = pK.w * fTime; //GetTermAngularFreq(fKLen)
+				float fAngularFreq = pK.w * fTime.BADGetSeconds(); //GetTermAngularFreq(fKLen)
 
 				float fAngularFreqSin = 0, fAngularFreqCos = 0;
 #if CRY_PLATFORM_ORBIS // Workaround for bug in Orbis maths library which means sinf becomes orders of magnitude slower for big numbers
@@ -524,7 +524,7 @@ public:
 		}
 	}
 
-	void Update(int nFrameID, float fTime, bool bOnlyHeight)
+	void Update(int nFrameID, const CTimeValue& fTime, bool bOnlyHeight)
 	{
 		CRenderer* rd = gRenDev;
 
@@ -572,7 +572,7 @@ public:
 		pSizer->AddObject(this, sizeof(*this));
 	}
 
-	void SpawnUpdateJob(int nFrameID, float fTime, bool bOnlyHeight, void* pRawPtr)
+	void SpawnUpdateJob(int nFrameID, const CTimeValue& fTime, bool bOnlyHeight, void* pRawPtr)
 	{
 		if (nFrameID != m_nFrameID)
 			m_nFrameID = nFrameID;
@@ -624,7 +624,7 @@ protected:
 	SWaterUpdateThreadInfo m_JobInfo[2];
 };
 
-void WaterAsyncUpdate(CWaterSim* pWaterSim, int nFrameID, float fTime, bool bOnlyHeight, void* pRawPtr)
+void WaterAsyncUpdate(CWaterSim* pWaterSim, int nFrameID, const CTimeValue& fTime, bool bOnlyHeight, void* pRawPtr)
 {
 	if (pWaterSim == NULL)
 		return;
@@ -664,7 +664,7 @@ void CWater::SaveToDisk(const char* pszFileName)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-void CWater::Update(int nFrameID, float fTime, bool bOnlyHeight, void* pRawPtr)
+void CWater::Update(int nFrameID, const CTimeValue& fTime, bool bOnlyHeight, void* pRawPtr)
 {
 	if (m_pWaterSim)
 		m_pWaterSim->SpawnUpdateJob(nFrameID, fTime, bOnlyHeight, pRawPtr);

@@ -30,7 +30,7 @@ public:
 
 protected:
 	void ResetGPUUsageHistory();
-	void TrackGPUUsage(float gpuLoad, float frameTimeMs, int totalDPs);
+	void TrackGPUUsage(float gpuLoad, const CTimeValue& frameTimeMs, int totalDPs);
 
 	static const int   GPU_HISTORY_LENGTH = 10;
 	static const int   SCREEN_SHOT_FREQ = 60;
@@ -39,9 +39,9 @@ protected:
 
 	CD3D9Renderer*     m_pRenderer;
 	std::vector<float> m_gpuUsageHistory;
-	std::vector<float> m_frameTimeHistory;
+	std::vector<CTimeValue> m_frameTimeHistory;
 	int                m_nFramesGPULmited;
-	float              m_totFrameTime;
+	CTimeValue         m_totFrameTime;
 	int                m_lastFrameScreenShotRequested;
 	int                m_cvarScreenCapWhenGPULimited;
 };

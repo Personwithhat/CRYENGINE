@@ -137,7 +137,7 @@ REINST(Implement a ISoundSystemEventListener)
 //		SSonarHintsLstIter pEndIt = m_pSonarHints.end();
 //		while( pCurr != pEndIt /*; ++pCurr*/ )
 //		{
-//			if( (gEnv->pTimer->GetCurrTime() - pCurr->fTimeStarted) > pCurr->fLifetime )
+//			if( (gEnv->pTimer->GetFrameStartTime() - pCurr->fTimeStarted) > pCurr->fLifetime )
 //			{
 //				pCurr = m_pSonarHints.erase( pCurr );
 //			}
@@ -161,7 +161,7 @@ REINST(Implement a ISoundSystemEventListener)
 //			static const uint32 nSonarSoundSemantincs = (eSoundSemantic_Explosion|eSoundSemantic_Physics_Collision|eSoundSemantic_Physics_Footstep|eSoundSemantic_Vehicle|eSoundSemantic_Weapon);
 //		  if( pSound->GetSemantic() & nSonarSoundSemantincs )
 //			{
-//				const float fCurrTime = gEnv->pTimer->GetCurrTime();
+//				const float fCurrTime = gEnv->pTimer->GetFrameStartTime();
 //				if( (fCurrTime - m_fLastTimeHintsUpdate) < 1.0f / 30.0f)//m_fTimeUpdateThreshold)
 //					return;
 //
@@ -286,7 +286,7 @@ void CSonarVision::SoundHintsPass()
 
 	//	gcpRendD3D->FX_SetState(GS_NODEPTHTEST|GS_BLSRC_ONE | GS_BLDST_ONE);
 
-	//	vParamsPS = Vec4( pCurr->vPos.x, pCurr->vPos.y, pCurr->vPos.z, ((gEnv->pTimer->GetCurrTime() - pCurr->fTimeStarted) /pCurr->fLifetime) );
+	//	vParamsPS = Vec4( pCurr->vPos.x, pCurr->vPos.y, pCurr->vPos.z, ((gEnv->pTimer->GetFrameStartTime() - pCurr->fTimeStarted) /pCurr->fLifetime) );
 	//	CShaderMan::s_shPostEffectsRenderModes->FXSetPSFloat(m_pszParamNamePS, &vParamsPS, 1);
 
 	//	PostProcessUtils().SetTexture(CRendererResources::s_ptexZTarget, 0, FILTER_POINT);
@@ -353,7 +353,7 @@ void CSonarVision::FinalComposePass()
 	PostProcessUtils().StretchRect(CRendererResources::s_ptexBackBuffer, CRendererResources::s_ptexBackBufferScaled[0]); // Todo: use msaa trickery for x360
 
 	// Clean up..
-	float fCurrTime = gEnv->pTimer->GetCurrTime() * 10.0f;
+	float fCurrTime = gEnv->pTimer->GetFrameStartTime() * 10.0f;
 	float fCurrAnim = 0.25f * fabs((ceil(fCurrTime * 0.05f) - fCurrTime * 0.05f)) * 2.0f - 1.0f + fabs((ceil(fCurrTime * 0.45f + 0.25f) - (fCurrTime * 0.45f + 0.25f)) * 2.0f - 1.0f);
 	PostProcessUtils().TexBlurDirectional(CRendererResources::s_ptexBackBufferScaled[0], Vec2(cry_random(0.0f, 0.125f), cry_random(2.0f, 3.0f)) * fCurrAnim * 4.0f, 1);
 

@@ -957,7 +957,7 @@ int CRenderer::EF_AddDeferredLight(const SRenderLight& pLight, float fMult, cons
 
 	int nThreadID = gRenDev->GetMainFrameID();
 	float mipFactor = (passInfo.GetCamera().GetPosition() - pLight.m_Origin).GetLengthSquared() / max(0.001f, pLight.m_fRadius * pLight.m_fRadius);
-	EF_PrecacheResource(const_cast<SRenderLight*>(&pLight), mipFactor, 0.1f, FPR_STARTLOADING, gRenDev->GetStreamZoneRoundId(1));
+	EF_PrecacheResource(const_cast<SRenderLight*>(&pLight), mipFactor, "0.1", FPR_STARTLOADING, gRenDev->GetStreamZoneRoundId(1));
 	return nLightID;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
