@@ -78,9 +78,9 @@ CFrameProfileSystem::CFrameProfileSystem()
 	, m_nCallOverheadTotal(0)
 	, m_nCallOverheadRemainder(0)
 	, m_nCallOverheadCalls(0)
-	, m_frameSecAvg(0.0f)
-	, m_frameLostSecAvg(0.0f)
-	, m_frameOverheadSecAvg(0.0f)
+	, m_frameSecAvg(0)
+	, m_frameLostSecAvg(0)
+	, m_frameOverheadSecAvg(0)
 	, m_ProfilerThreads(GetCurrentThreadId())
 	, m_pCurrentCustomSection(nullptr)
 	, m_bDisplayedProfilersValid(false)
@@ -272,9 +272,9 @@ void CFrameProfileSystem::Init()
 		"Enable drawing of page faults graph.");
 	REGISTER_CVAR(profile_network, 0, 0,
 		"Enables network profiling");
-	REGISTER_CVAR(profile_peak, PEAK_TOLERANCE, 0,
+	REGISTER_CVAR(profile_peak, PEAK_TOLERANCE, 0, // PERSONAL VERIFY: Although, perhaps, this milliseconds IS milliseconds and not memory bytes etc.????
 		"Profiler Peaks Tolerance in Milliseconds");
-	REGISTER_CVAR(profile_peak_display, 8.0f, 0,
+	REGISTER_CVAR(profile_peak_display, CTimeValue(8), 0,
 		"hot to cold time for peak display");
 	REGISTER_CVAR(profile_min_display_ms, 0.01f, 0,
 		"Minimum time in ms for displayed functions");
@@ -490,9 +490,9 @@ void CFrameProfileSystem::Reset()
 	m_nCallOverheadTotal = 0;
 	m_nCallOverheadRemainder = 0;
 	m_nCallOverheadCalls = 0;
-	m_frameSecAvg = 0.f;
-	m_frameLostSecAvg = 0.f;
-	m_frameOverheadSecAvg = 0.f;
+	m_frameSecAvg.SetSeconds(0);
+	m_frameLostSecAvg.SetSeconds(0);
+	m_frameOverheadSecAvg.SetSeconds(0);
 	m_bCollectionPaused = false;
 
 	// Iterate over all profilers update their history and reset them.
@@ -754,7 +754,7 @@ void CFrameProfileSystem::AccumulateProfilerSection(CFrameProfilerSection* pSect
 	{
 		if (pProfiler == s_pFrameProfileSystem->m_pGraphProfiler)
 		{
-			float fMillis = 1000.f * gEnv->pTimer->TicksToSeconds(totalTime);
+			float fMillis = (float)gEnv->pTimer->TicksToTime(totalTime).GetMilliSeconds();
 			CryLogAlways("Function Profiler: %s  (time=%.2fms)", s_pFrameProfileSystem->GetFullName(pSection->m_pFrameProfiler), fMillis);
 			GetISystem()->debug_LogCallStack();
 		}
@@ -920,8 +920,9 @@ void CFrameProfileSystem::StartFrame()
 //////////////////////////////////////////////////////////////////////////
 float CFrameProfileSystem::TranslateToDisplayValue(int64 val)
 {
+	// Float inaccuracy is fine, debug/profiling
 	if (!profile_network && !m_bMemoryProfiling)
-		return gEnv->pTimer->TicksToSeconds(val) * 1000;
+		return (float)gEnv->pTimer->TicksToTime(val).GetMilliSeconds();
 	else if (m_displayQuantity == ALLOCATED_MEMORY)
 		return (float)(val >> 10); // In Kilobytes
 	else if (m_displayQuantity == ALLOCATED_MEMORY_BYTES)
@@ -1092,8 +1093,8 @@ void CFrameProfileSystem::EndFrame()
 
 	CRY_PROFILE_FUNCTION(PROFILE_SYSTEM);
 
-	float smoothTime = gEnv->pTimer->TicksToSeconds(m_totalProfileTime);
-	float smoothFactor = 1.f - gEnv->pTimer->GetProfileFrameBlending(&smoothTime);
+	CTimeValue smoothTime = gEnv->pTimer->TicksToTime(m_totalProfileTime);
+	mpfloat smoothFactor = 1 - gEnv->pTimer->GetProfileFrameBlending(&smoothTime);
 
 	int64 endTime = CryGetTicks();
 	m_frameTime = endTime - m_frameStartTime;
@@ -1148,11 +1149,12 @@ void CFrameProfileSystem::EndFrame()
 			pfGetProcessMemoryInfo(GetCurrentProcess(), &pc, sizeof(pc));
 			m_nPagesFaultsLastFrame = (int)(pc.PageFaultCount - m_nLastPageFaultCount);
 			m_nLastPageFaultCount = pc.PageFaultCount;
-			static float fLastPFTime = 0;
+			static CTimeValue fLastPFTime = 0;
 			static int nPFCounter = 0;
 			nPFCounter += m_nPagesFaultsLastFrame;
-			float fCurr = gEnv->pTimer->TicksToSeconds(endTime);
-			if ((fCurr - fLastPFTime) >= 1.f)
+
+			CTimeValue fCurr = gEnv->pTimer->TicksToTime(endTime);
+			if ((fCurr - fLastPFTime) >= 1)
 			{
 				fLastPFTime = fCurr;
 				m_nPagesFaultsPerSec = nPFCounter;
@@ -1329,7 +1331,7 @@ void CFrameProfileSystem::EndFrame()
 					peak.count = pFrameProfiler->m_count;
 					peak.pageFaults = m_nPagesFaultsLastFrame;
 					peak.waiting = pFrameProfiler->m_description & EProfileDescription::WAITING;
-					peak.when = gEnv->pTimer->TicksToSeconds(m_totalProfileTime);
+					peak.when = gEnv->pTimer->TicksToTime(m_totalProfileTime);
 					AddPeak(peak);
 
 					// Call peak callbacks.
@@ -1346,9 +1348,10 @@ void CFrameProfileSystem::EndFrame()
 			pFrameProfiler->m_selfTimeHistory.Add(fDisplay_SelfTime);
 			pFrameProfiler->m_countHistory.Add(pFrameProfiler->m_count);
 
-			pFrameProfiler->m_displayedValue = pFrameProfiler->m_displayedValue * smoothFactor + currentValue * (1.0f - smoothFactor);
+			// Float inaccuracy is fine, debug/profiling
+			pFrameProfiler->m_displayedValue = pFrameProfiler->m_displayedValue * (float)smoothFactor + currentValue * (1.0f - (float)smoothFactor);
 			float variance = square(currentValue - aveValue);
-			pFrameProfiler->m_variance = pFrameProfiler->m_variance * smoothFactor + variance * (1.0f - smoothFactor);
+			pFrameProfiler->m_variance = pFrameProfiler->m_variance * (float)smoothFactor + variance * (1.0f - (float)smoothFactor);
 
 			if (m_bMemoryProfiling)
 			{
@@ -1403,19 +1406,19 @@ void CFrameProfileSystem::EndFrame()
 		m_subsystems[i].maxTime = (float)__fsel(m_subsystems[i].maxTime - m_subsystems[i].selfTime, m_subsystems[i].maxTime, m_subsystems[i].selfTime);
 	}
 
-	float frameSec = gEnv->pTimer->TicksToSeconds(m_frameTime);
-	m_frameSecAvg = m_frameSecAvg * smoothFactor + frameSec * (1.0f - smoothFactor);
+	CTimeValue frameSec = gEnv->pTimer->TicksToTime(m_frameTime);
+	m_frameSecAvg = m_frameSecAvg * smoothFactor + frameSec * (1 - smoothFactor);
 
-	float frameLostSec = gEnv->pTimer->TicksToSeconds(m_frameTime - selfAccountedTime);
-	m_frameLostSecAvg = m_frameLostSecAvg * smoothFactor + frameLostSec * (1.0f - smoothFactor);
+	CTimeValue frameLostSec = gEnv->pTimer->TicksToTime(m_frameTime - selfAccountedTime);
+	m_frameLostSecAvg = m_frameLostSecAvg * smoothFactor + frameLostSec * (1 - smoothFactor);
 
-	float overheadtime = gEnv->pTimer->TicksToSeconds(numProfileCalls * m_nCallOverheadTotal / m_nCallOverheadCalls);
-	m_frameOverheadSecAvg = m_frameOverheadSecAvg * smoothFactor + overheadtime * (1.0f - smoothFactor);
+	CTimeValue overheadtime = gEnv->pTimer->TicksToTime(numProfileCalls * m_nCallOverheadTotal / m_nCallOverheadCalls);
+	m_frameOverheadSecAvg = m_frameOverheadSecAvg * smoothFactor + overheadtime * (1 - smoothFactor);
 
 	if (m_nCurSample >= 0)
 	{
 		// Keep offline global time history.
-		m_frameTimeOfflineHistory.m_selfTime.push_back(FtoI(frameSec * 1e6f));
+		m_frameTimeOfflineHistory.m_selfTime.push_back(frameSec);
 		m_frameTimeOfflineHistory.m_count.push_back(1);
 		m_nCurSample++;
 	}
@@ -1445,11 +1448,11 @@ void CFrameProfileSystem::UpdateOfflineHistory(CFrameProfiler* pProfiler)
 	pProfiler->m_pOfflineHistory->m_selfTime.resize(newCount);
 	pProfiler->m_pOfflineHistory->m_count.resize(newCount);
 
-	uint32 micros = FtoI(gEnv->pTimer->TicksToSeconds(pProfiler->m_selfTime) * 1e6f);
+	CTimeValue time = gEnv->pTimer->TicksToTime(pProfiler->m_selfTime);
 	uint16 count = pProfiler->m_count;
 	for (int i = prevCont; i < newCount; i++)
 	{
-		pProfiler->m_pOfflineHistory->m_selfTime[i] = micros;
+		pProfiler->m_pOfflineHistory->m_selfTime[i] = time;
 		pProfiler->m_pOfflineHistory->m_count[i] = count;
 	}
 }

@@ -698,7 +698,7 @@ void CResourceManager::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_P
 
 			m_bLevelTransitioning = !m_sLevelName.empty();
 
-			m_lastLevelLoadTime.SetValue(0);
+			m_lastLevelLoadTime.SetSeconds(0);
 			m_beginLevelLoadTime = gEnv->pTimer->GetAsyncTime();
 			if (g_cvars.pakVars.nSaveLevelResourceList || g_cvars.pakVars.nSaveTotalResourceList)
 			{

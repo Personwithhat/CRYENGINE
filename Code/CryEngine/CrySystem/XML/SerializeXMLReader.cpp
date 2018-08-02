@@ -212,10 +212,10 @@ bool CSerializeXMLReaderImpl::Value(const char* name, CTimeValue& value)
 	if (!nodeRef)
 		return false;
 	if (0 == strcmp("zero", nodeRef->getAttr(name)))
-		value = CTimeValue(0.0f);
+		value = CTimeValue(0);
 	else
 	{
-		float delta;
+		CTimeValue delta;
 		if (!GetAttr(nodeRef, name, delta))
 		{
 			//CryWarning( VALIDATOR_MODULE_SYSTEM,VALIDATOR_WARNING,"Failed to read time value %s", name);
@@ -226,7 +226,7 @@ bool CSerializeXMLReaderImpl::Value(const char* name, CTimeValue& value)
 		}
 		else
 		{
-			value = CTimeValue(gEnv->pTimer->GetFrameStartTime() + delta);
+			value = gEnv->pTimer->GetFrameStartTime() + delta;
 		}
 	}
 	return true;

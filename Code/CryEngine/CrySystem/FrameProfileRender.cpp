@@ -438,7 +438,7 @@ void CFrameProfileSystem::Render()
 
 	float fpeaksLastRow = 0;
 
-	if (m_peaks.size() > 0 && m_displayQuantity != PEAK_TIME && profile_peak_display > 0.0f)
+	if (m_peaks.size() > 0 && m_displayQuantity != PEAK_TIME && profile_peak_display > 0)
 	{
 		fpeaksLastRow = RenderPeaks();
 	}
@@ -474,7 +474,7 @@ void CFrameProfileSystem::RenderProfilers(float col, float row, bool bExtended)
 
 	if (CFrameProfileSystem::profile_log)
 	{
-		CryLogAlways("====================Start Profiler Frame %d, Time %.2f ======================", gEnv->pRenderer->GetFrameID(false), m_frameSecAvg * 1000.f);
+		CryLogAlways("====================Start Profiler Frame %d, Time %.2f ======================", gEnv->pRenderer->GetFrameID(false), (float)m_frameSecAvg.GetMilliSeconds());
 		CryLogAlways("|\tCount\t|\tSelf\t|\tTotal\t|\tModule\t|");
 		CryLogAlways("|\t____\t|\t_____\t|\t_____\t|\t_____\t|");
 
@@ -742,7 +742,7 @@ void CFrameProfileSystem::RenderProfilerHeader(float col, float row, bool bExten
 	#endif
 	if (m_displayQuantity != STALL_TIME && m_displayQuantity != PEAKS_ONLY)
 	{
-		cry_sprintf(szText, "FrameTime: %4.2fms, OverheadTime: %4.2fms, LostTime: %4.2fms", m_frameSecAvg * 1000.f, m_frameOverheadSecAvg * 1000.f, m_frameLostSecAvg * 1000.f);
+		cry_sprintf(szText, "FrameTime: %4.2fms, OverheadTime: %4.2fms, LostTime: %4.2fms", (float)m_frameSecAvg.GetMilliSeconds(), (float)m_frameOverheadSecAvg.GetMilliSeconds(), (float)m_frameLostSecAvg.GetMilliSeconds());
 		if (m_nPagesFaultsPerSec)
 		{
 			const size_t len = strlen(szText);
@@ -1012,7 +1012,7 @@ float CFrameProfileSystem::RenderPeaks()
 	float PageFaultsColor[4] = { 1, 0.2f, 1, 1 };
 
 	// changed from define to adjustable value
-	float fHotToColdTime = profile_peak_display;
+	CTimeValue fHotToColdTime = profile_peak_display;
 	float colPeaks = 8.0f;
 	float row = 0.0f;
 	float waitRow = 35.0f;
@@ -1026,7 +1026,7 @@ float CFrameProfileSystem::RenderPeaks()
 	DrawLabel(colPeaks, row, PeakHeaderColor, 0, szText);
 	DrawLabel(colPeaks, waitRow, PeakHeaderColor, 0, szWaitingText);
 
-	float currTimeSec = gEnv->pTimer->TicksToSeconds(m_totalProfileTime);
+	CTimeValue currTimeSec = gEnv->pTimer->TicksToTime(m_totalProfileTime);
 
 	std::vector<SPeakRecord>& rPeaks = m_peaks;
 
@@ -1039,8 +1039,9 @@ float CFrameProfileSystem::RenderPeaks()
 
 		currentRow = peak.waiting ? ++waitRow : ++row;
 
-		float age = (currTimeSec - 1.0f) - peak.when;
-		float ageFactor = age / fHotToColdTime;
+		// Float inaccuracy is fine, setting color
+		CTimeValue age = (currTimeSec - 1) - peak.when;
+		float ageFactor = float(age / fHotToColdTime);
 		if (ageFactor < 0) ageFactor = 0;
 		if (ageFactor > 1) ageFactor = 1;
 		for (int k = 0; k < 4; k++)
@@ -1118,7 +1119,8 @@ void GetColor(float scale, float* pColor)
 	}
 	else
 	{
-		float time(gEnv->pTimer->GetAsyncCurTime());
+		// Float inaccuracy is fine, debug colours.
+		float time(gEnv->pTimer->GetAsyncCurTime().GetSeconds());
 		float blink(sinf(time * 6.28f) * 0.5f + 0.5f);
 		pColor[0] = 1;
 		pColor[1] = blink;

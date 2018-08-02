@@ -33,10 +33,10 @@ CSerializeXMLWriterImpl::~CSerializeXMLWriterImpl()
 //////////////////////////////////////////////////////////////////////////
 bool CSerializeXMLWriterImpl::Value(const char* name, CTimeValue value)
 {
-	if (value == CTimeValue(0.0f))
+	if (value == CTimeValue(0))
 		AddValue(name, "zero");
 	else
-		AddValue(name, (value - m_curTime).GetSeconds());
+		AddValue(name, (value - m_curTime));
 	return true;
 }
 

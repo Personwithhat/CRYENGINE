@@ -951,7 +951,7 @@ void CAsyncIOFileRequest::ComputeSortKey(uint64 nCurrentKeyInProgress)
 			m_nDiskOffset += m_nRequestedOffset;
 
 		// group items by priority, then by snapped request time, then sort by disk offset
-		m_nTimeGroup = (uint64)(gEnv->pTimer->GetAsyncTime().GetSeconds() / max(1, g_cvars.sys_streaming_requests_grouping_time_period));
+		m_nTimeGroup = (uint32)(gEnv->pTimer->GetAsyncTime().GetSeconds() / max(1, g_cvars.sys_streaming_requests_grouping_time_period));
 		m_nSweep = (m_nTimeGroup == nCurrentTG)
 		           ? nCurrentSweep
 		           : 0;

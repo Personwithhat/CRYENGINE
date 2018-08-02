@@ -122,7 +122,7 @@ struct SSystemCVars
 	int    sys_streaming_debug;
 	int    sys_streaming_resetstats;
 	int    sys_streaming_debug_filter;
-	float  sys_streaming_debug_filter_min_time;
+	CTimeValue  sys_streaming_debug_filter_min_time;
 	int    sys_streaming_use_optical_drive_thread;
 	ICVar* sys_streaming_debug_filter_file_name;
 	ICVar* sys_localization_folder;
@@ -141,14 +141,14 @@ struct SSystemCVars
 	int    sys_trackview;
 	int    sys_livecreate;
 	int    sys_vtune;
-	float  sys_update_profile_time;
+	CTimeValue  sys_update_profile_time;
 	int    sys_limit_phys_thread_count;
 	int    sys_usePlatformSavingAPI;
 #ifndef _RELEASE
 	int    sys_usePlatformSavingAPIEncryption;
 #endif
 	int    sys_MaxFPS;
-	float  sys_maxTimeStepForMovieSystem;
+	CTimeValue  sys_maxTimeStepForMovieSystem;
 	int    sys_force_installtohdd_mode;
 
 #ifdef USE_HTTP_WEBSOCKETS
@@ -173,7 +173,8 @@ struct SSystemCVars
 #endif
 
 #if CRY_PLATFORM_WINDOWS
-	int sys_highrestimer;
+	// Target system timer resolution in 100ns increments. 5,000 = 0.5 milliseconds (ms)
+	int sys_timeres;
 #endif
 
 	int sys_vr_support;
@@ -421,7 +422,7 @@ public:
 
 	void                    SleepIfNeeded();
 
-	virtual void            DisplayErrorMessage(const char* acMessage, float fTime, const float* pfColor = 0, bool bHardError = true) override;
+	virtual void            DisplayErrorMessage(const char* acMessage, const CTimeValue& fTime, const float* pfColor = 0, bool bHardError = true) override;
 
 	virtual void            FatalError(const char* format, ...) override PRINTF_PARAMS(2, 3);
 	virtual void            ReportBug(const char* format, ...) override  PRINTF_PARAMS(2, 3);
@@ -638,6 +639,9 @@ public:
 	virtual void OnPLMEvent(EPLM_Event event);
 #endif
 
+	// Current system timer resolution, in units of 100nanoseconds. 5,000 = 0.5 milliseconds (ms)
+	ULONG curTimerRes;
+	const ULONG& GetTimeResolution() const { return curTimerRes; }
 	// -------------------------------------------------------------
 
 	//! attaches the given variable to the given container;
@@ -683,7 +687,7 @@ private: // ------------------------------------------------------
 	int                m_nStrangeRatio;         //!<
 	string             m_sDelayedScreeenshot;   //!< to delay a screenshot call for a frame
 	CCpuFeatures*      m_pCpu;                  //!< CPU features
-	int                m_ttMemStatSS;           //!< Time to memstat screenshot
+	int					 m_ttMemStatSS;           //!< Counter until memstat screenshot
 	string             m_szCmdLine;
 
 	int                m_iTraceAllocations;
@@ -935,7 +939,7 @@ public:
 	void                        CloseLanguageAudioPak(char const* const szLanguage);
 
 	void                        Deltree(const char* szFolder, bool bRecurse);
-	void                        UpdateMovieSystem(const int updateFlags, const float fFrameTime, const bool bPreUpdate);
+	void                        UpdateMovieSystem(const int updateFlags, const CTimeValue& fFrameTime, const bool bPreUpdate);
 
 	// level loading profiling
 	virtual void                          OutputLoadingTimeStats() override;
@@ -1014,7 +1018,7 @@ protected: // -------------------------------------------------------------
 	string                                    m_binariesDir;
 	string                                    m_currentLanguageAudio;
 
-	std::vector<std::pair<CTimeValue, float>> m_updateTimes;
+	std::vector<std::pair<CTimeValue, CTimeValue>> m_updateTimes;
 
 	CMemoryFragmentationProfiler              m_MemoryFragmentationProfiler;
 
@@ -1025,7 +1029,7 @@ protected: // -------------------------------------------------------------
 	struct SErrorMessage
 	{
 		string m_Message;
-		float  m_fTimeToShow;
+		CTimeValue  m_fTimeToShow;
 		float  m_Color[4];
 		bool   m_HardFailure;
 	};

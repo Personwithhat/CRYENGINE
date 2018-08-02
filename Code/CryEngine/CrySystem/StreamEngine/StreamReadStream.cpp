@@ -207,7 +207,7 @@ void CReadStream::SetPriority(EStreamTaskPriority ePriority)
 // unconditionally waits until the callback is called
 // i.e. if the stream hasn't yet finish, it's guaranteed that the user-supplied callback
 // is called before return from this function (unless no callback was specified)
-void CReadStream::Wait(int nMaxWaitMillis)
+void CReadStream::Wait(const CTimeValue& nMaxWait)
 {
 	// lock this object to avoid preliminary destruction
 	CReadStream_AutoPtr pLock(this);
@@ -223,7 +223,7 @@ void CReadStream::Wait(int nMaxWaitMillis)
 
 	CTimeValue t0;
 
-	if (nMaxWaitMillis > 0)
+	if (nMaxWait > 0)
 	{
 		t0 = gEnv->pTimer->GetAsyncTime();
 	}
@@ -239,10 +239,10 @@ void CReadStream::Wait(int nMaxWaitMillis)
 			CrySleep(5);
 		}
 
-		if (nMaxWaitMillis > 0)
+		if (nMaxWait > 0)
 		{
 			CTimeValue t1 = gEnv->pTimer->GetAsyncTime();
-			if (CTimeValue(t1 - t0).GetMilliSeconds() > nMaxWaitMillis)
+			if (t1 - t0 > nMaxWait)
 			{
 				// Break if we are waiting for too long.
 				break;
