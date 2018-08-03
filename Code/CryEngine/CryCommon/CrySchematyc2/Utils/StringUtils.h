@@ -667,6 +667,40 @@ namespace Schematyc2
 			return static_cast<size_t>(UInt64FromString(szInput, defaultOutput));
 		}
 
+		// PERSONAL VERIFY: Why the diff between CryStringUtils and Schematyc utils???
+		// Also, why tbe buffer limit?
+		// Write CTimeValue to string.
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		inline const char* TimeToString(const CTimeValue& input, const CharArrayView& output)
+		{
+			const int32	outputSize = static_cast<int32>(output.size());
+			CRY_ASSERT(outputSize >= s_floatStringBufferSize);
+			if(outputSize >= s_floatStringBufferSize)
+			{
+				cry_sprintf(output.begin(), outputSize, "%s", input.GetSeconds().str());
+			}
+			else if(outputSize > 0)
+			{
+				output[0] = '\0';
+			}
+			return output.begin();
+		}
+
+		// Read CTimeValue from string.
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		inline CTimeValue TimeFromString(const char* szInput, const CTimeValue& defaultOutput = 0)
+		{
+			CTimeValue output = defaultOutput;
+			CRY_ASSERT(szInput);
+			if (szInput)
+			{
+				//const int	itemCount = sscanf(szInput, MPFLOAT_FMT, &output);
+				//CRY_ASSERT(itemCount == 1);
+				output.SetSeconds(szInput);
+			}
+			return output;
+		}
+
 		// Write float to string.
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		inline const char* FloatToString(float input, const CharArrayView& output)

@@ -607,10 +607,13 @@ ILINE int32 decm3(int32 i) { return i - 1 + ((i - 1) >> 31 & 3); }
 template<typename T> ILINE void SmoothCD(
   T& val,
   T& valRate,
-  const float timeDelta,
+  const CTimeValue& timeDeltaIn,
   const T& to,
-  const float smoothTime)
+  const CTimeValue& smoothTimeIn)
 {
+	float timeDelta = timeDeltaIn.BADGetSeconds();
+	float smoothTime = smoothTimeIn.BADGetSeconds();
+
 	if (smoothTime > 0.0f)
 	{
 		const float omega = 2.0f / smoothTime;

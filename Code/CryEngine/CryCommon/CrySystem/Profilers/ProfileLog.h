@@ -22,7 +22,7 @@ struct ILogElement
 {
 	virtual ~ILogElement(){}
 	virtual ILogElement* Log(const char* name, const char* message) = 0;
-	virtual ILogElement* SetTime(float time) = 0;
+	virtual ILogElement* SetTime(const CTimeValue& time) = 0;
 	virtual void         Flush(stack_string& indent) = 0;
 };
 
@@ -30,7 +30,7 @@ struct IProfileLogSystem
 {
 	virtual ~IProfileLogSystem(){}
 	virtual ILogElement* Log(const char* name, const char* msg) = 0;
-	virtual void         SetTime(ILogElement* pElement, float time) = 0;
+	virtual void         SetTime(ILogElement* pElement, const CTimeValue& time) = 0;
 	virtual void         Release() = 0;
 };
 
@@ -51,7 +51,7 @@ struct SHierProfileLogItem
 		if (m_bDoLog)
 		{
 			CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
-			gEnv->pProfileLogSystem->SetTime(m_pLogElement, (endTime - m_startTime).GetMilliSeconds());
+			gEnv->pProfileLogSystem->SetTime(m_pLogElement, (endTime - m_startTime));
 		}
 	}
 

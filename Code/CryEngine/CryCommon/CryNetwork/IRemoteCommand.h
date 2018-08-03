@@ -91,6 +91,12 @@ public:
 		return *this;
 	}
 
+	ILINE IDataWriteStream& operator<<(const mpfloat& val)
+	{
+		Write8(&val);
+		return *this;
+	}
+
 	ILINE IDataWriteStream& operator<<(const float& val)
 	{
 		Write4(&val);
@@ -164,6 +170,19 @@ public:
 	ILINE void WriteFloat(const float val)
 	{
 		Write4(&val);
+	}
+
+	//! PERSONAL VERIFY: Make sure that writing and reading etc. is working properly....
+	//! Write mpfloat value to stream.
+	ILINE void WriteFloatMP(const mpfloat val)
+	{
+		Write8(&val);
+	}
+
+	//! Write CTimeValue to stream.
+	ILINE void WriteTime(const CTimeValue val)
+	{
+		WriteFloatMP(val.GetSeconds());
 	}
 };
 
@@ -254,6 +273,12 @@ public:
 		return *this;
 	}
 
+	ILINE IDataReadStream& operator<<(mpfloat& val)
+	{
+		Read8(&val);
+		return *this;
+	}
+
 	//! Bool is saved by writing an 8 bit value to make it portable.
 	ILINE IDataReadStream& operator<<(bool& val)
 	{
@@ -340,6 +365,20 @@ public:
 		float val = 0.0f;
 		Read4(&val);
 		return val;
+	}
+
+	//! Read mpfloat from stream.
+	ILINE mpfloat ReadFloatMP()
+	{
+		mpfloat val = 0;
+		Read8(&val);
+		return val;
+	}
+
+	//! Read CTimeValue from stream.
+	ILINE CTimeValue ReadTime()
+	{
+		return CTimeValue(ReadFloatMP());
 	}
 };
 

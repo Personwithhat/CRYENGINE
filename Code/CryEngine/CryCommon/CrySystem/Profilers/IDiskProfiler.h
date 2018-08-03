@@ -36,8 +36,8 @@ enum EDiskProfileOperationType
 //! Disk Profiler statistics.
 struct SDiskProfileStatistics
 {
-	float    m_beginIOTime;
-	float    m_endIOTime;
+	CTimeValue m_beginIOTime;
+	CTimeValue m_endIOTime;
 	uint32   m_nIOType;         //!< EDiskProfileOperationType flags.
 	threadID m_threadId;
 	size_t   m_size;            //!< Size of IO operation, in bytes.
@@ -75,7 +75,7 @@ public:
 			m_pStatistics = new SDiskProfileStatistics;
 			m_pStatistics->m_threadId = CryGetCurrentThreadId();
 			m_pStatistics->m_beginIOTime = gEnv->pTimer->GetAsyncCurTime();
-			m_pStatistics->m_endIOTime = -1.f;  //!< Uninitialized.
+			m_pStatistics->m_endIOTime.SetSeconds(-1);  //!< Uninitialized.
 			m_pStatistics->m_nIOType = nIOType;
 			m_pStatistics->m_size = nIOSize;
 			m_pStatistics->m_strFile = pFileName;

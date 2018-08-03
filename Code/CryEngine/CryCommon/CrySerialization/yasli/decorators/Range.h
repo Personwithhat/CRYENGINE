@@ -10,9 +10,9 @@ namespace yasli
 template<typename Type>
 struct DefaultSinglestep
 {
-	static double value()
+	static mpfloat value()
 	{
-		return std::is_integral<Type>::value ? 1.0 : 0.1;
+		return std::is_integral<Type>::value ? mpfloat(1) : mpfloat("0.1");
 	}
 };
 

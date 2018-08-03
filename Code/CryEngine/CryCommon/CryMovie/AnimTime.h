@@ -7,6 +7,12 @@
 #include <CrySerialization/IArchive.h>
 #include <CryMath/Cry_Math.h>
 
+/*
+PERSONAL NOTE:
+	SAnimTime conflicts with CTimeValue() in usage, and has questionable accuracy/precision.
+	Hence deprecated and some associated functionality moved to CTimeValue() 
+*/
+#ifdef USE_ANIM_TIME
 struct STimeCode
 {
 	int32 hours;
@@ -33,6 +39,8 @@ private:
 
 struct SAnimTime
 {
+	// NOTE: This number doesn't matter, might as well call it 'precision'.
+	// Only used to save/load from m_ticks value and to archive (save/load) as ticks.....
 	static const int32 numTicksPerSecond = 6000;
 
 	enum class EDisplayMode
@@ -72,7 +80,7 @@ struct SAnimTime
 		{}
 	};
 
-	inline static double do_lround(double v)
+	inline static mpfloat do_lround(mpfloat v)
 	{
 		if (-0.5 < v && v < 0.5)
 		{
@@ -80,20 +88,20 @@ struct SAnimTime
 		}
 		else if (v > 0)
 		{
-			double c = ceil(v);
+			mpfloat c = ceil(v);
 			return 0.5 < c - v ? c - 1 : c;
 		}
 		else
 		{
 			// see former branch
-			double f = ceil(v);
+			mpfloat f = ceil(v);
 			return 0.5 < v - f ? f + 1 : f;
 		}
 	}
 
 	SAnimTime() : m_ticks(0) {}
 	explicit SAnimTime(int32 ticks) : m_ticks(ticks) {}
-	SAnimTime(float time) { SetTime(time); }
+	explicit SAnimTime(mpfloat time) { SetSeconds(time); }
 
 	static uint GetFrameRateValue(EFrameRate frameRate)
 	{
@@ -131,8 +139,8 @@ struct SAnimTime
 		return frameRateNames[frameRate];
 	}
 
-	operator float() const { return static_cast<float>(m_ticks) / numTicksPerSecond; }
-	float ToFloat() const { return static_cast<float>(m_ticks) / numTicksPerSecond; }
+	operator mpfloat()   const { return GetSeconds(); }
+	mpfloat GetSeconds() const { return mpfloat(m_ticks) / numTicksPerSecond; }
 
 	bool  Serialize(Serialization::IArchive& ar, const char* szName, const char* szLabel);
 
@@ -147,7 +155,7 @@ struct SAnimTime
 				// Backwards compatibility
 				float time = 0.0f;
 				keyNode->getAttr(pLegacyName, time);
-				*this = SAnimTime(time);
+				*this = SAnimTime(BADMP(time));
 			}
 			else
 			{
@@ -163,7 +171,7 @@ struct SAnimTime
 	int32            GetTicks() const              { return m_ticks; }
 	void             SetTicks(int32 ticks)         { m_ticks = ticks; }
 
-	void             SetTime(float time)           { m_ticks = static_cast<int32>(do_lround(static_cast<double>(time) * numTicksPerSecond)); }
+	void             SetSeconds(mpfloat time)      { m_ticks = static_cast<int32>(do_lround(time * numTicksPerSecond)); }
 
 	static SAnimTime Min()                         { SAnimTime minTime; minTime.m_ticks = std::numeric_limits<int32>::lowest(); return minTime; }
 	static SAnimTime Max()                         { SAnimTime maxTime; maxTime.m_ticks = (std::numeric_limits<int32>::max)(); return maxTime; }
@@ -172,24 +180,50 @@ struct SAnimTime
 	SAnimTime        operator-(SAnimTime r) const  { SAnimTime temp = *this; temp.m_ticks -= r.m_ticks; return temp; }
 	SAnimTime        operator+(SAnimTime r) const  { SAnimTime temp = *this; temp.m_ticks += r.m_ticks; return temp; }
 	SAnimTime        operator*(SAnimTime r) const  { SAnimTime temp = *this; temp.m_ticks *= r.m_ticks; return temp; }
-	SAnimTime        operator/(SAnimTime r) const  { SAnimTime temp; temp.m_ticks = static_cast<int32>((static_cast<int64>(m_ticks) * numTicksPerSecond) / r.m_ticks); return temp; }
+	SAnimTime        operator/(SAnimTime r) const  { SAnimTime temp; temp.m_ticks = static_cast<int32>(m_ticks * mpfloat(numTicksPerSecond) / r.m_ticks); return temp; }
 	SAnimTime        operator%(SAnimTime r) const  { SAnimTime temp = *this; temp.m_ticks %= r.m_ticks; return temp; }
-	SAnimTime        operator*(float r) const      { SAnimTime temp; temp.m_ticks = static_cast<int32>(do_lround(static_cast<double>(m_ticks) * r)); return temp; }
-	SAnimTime        operator/(float r) const      { SAnimTime temp; temp.m_ticks = static_cast<int32>(do_lround(static_cast<double>(m_ticks) / r)); return temp; }
+	SAnimTime        operator*(mpfloat r) const    { SAnimTime temp; temp.m_ticks = static_cast<int32>(do_lround(m_ticks * r)); return temp; }
+	SAnimTime        operator/(mpfloat r) const    { SAnimTime temp; temp.m_ticks = static_cast<int32>(do_lround(m_ticks / r)); return temp; }
+	SAnimTime        operator*(int r)	  const	  { SAnimTime temp; temp.m_ticks = static_cast<int32>(do_lround(mpfloat(m_ticks) * r)); return temp; }
+	SAnimTime        operator/(int r)	  const	  { SAnimTime temp; temp.m_ticks = static_cast<int32>(do_lround(mpfloat(m_ticks) / r)); return temp; }
 	SAnimTime&       operator+=(SAnimTime r)       { *this = *this + r; return *this; }
 	SAnimTime&       operator-=(SAnimTime r)       { *this = *this - r; return *this; }
 	SAnimTime&       operator*=(SAnimTime r)       { *this = *this * r; return *this; }
 	SAnimTime&       operator/=(SAnimTime r)       { *this = *this / r; return *this; }
 	SAnimTime&       operator%=(SAnimTime r)       { *this = *this % r; return *this; }
-	SAnimTime&       operator*=(float r)           { *this = *this * r; return *this; }
-	SAnimTime&       operator/=(float r)           { *this = *this / r; return *this; }
+	SAnimTime&       operator*=(mpfloat r)         { *this = *this * r; return *this; }
+	SAnimTime&       operator/=(mpfloat r)         { *this = *this / r; return *this; }
+	SAnimTime&       operator*=(int r)				  { *this = *this * r; return *this; }
+	SAnimTime&       operator/=(int r)				  { *this = *this / r; return *this; }
 
-	bool             operator<(SAnimTime r) const  { return m_ticks < r.m_ticks; }
+	bool             operator<(SAnimTime r) const  { return m_ticks < r.m_ticks;  }
+	bool             operator>(SAnimTime r) const  { return m_ticks > r.m_ticks;  }
 	bool             operator<=(SAnimTime r) const { return m_ticks <= r.m_ticks; }
-	bool             operator>(SAnimTime r) const  { return m_ticks > r.m_ticks; }
 	bool             operator>=(SAnimTime r) const { return m_ticks >= r.m_ticks; }
 	bool             operator==(SAnimTime r) const { return m_ticks == r.m_ticks; }
 	bool             operator!=(SAnimTime r) const { return m_ticks != r.m_ticks; }
+
+	//! Assignment operator.
+	ILINE SAnimTime& operator=(const CTimeValue& inRhs)
+	{
+		SetSeconds(inRhs.GetSeconds());
+		return *this;
+	};
+
+	//! Copy constructor
+	ILINE SAnimTime(const CTimeValue& inRhs)
+	{
+		SetSeconds(inRhs.GetSeconds());
+	};
+
+	//! Prevent impercise value multiplication/division, e.g. float's, double's, and so on.
+	//! Use mpfloat() or integers instead.
+	template<typename T> SAnimTime& operator/=(const T& inRhs) { static_assert(false, "SAnimTime /= impercise value"); }
+	template<typename T> SAnimTime& operator*=(const T& inRhs) { static_assert(false, "SAnimTime *= impercise value"); }
+	template<typename T> SAnimTime& operator/(const T& inRhs)  const { static_assert(false, "SAnimTime / impercise value"); }
+	template<typename T> SAnimTime& operator*(const T& inRhs)  const { static_assert(false, "SAnimTime * impercise value"); }
+	template<typename T> friend SAnimTime operator/(const T& inLhs, const SAnimTime& inRhs) { static_assert(false, "SAnimTime / impercise value"); }
+	template<typename T> friend SAnimTime operator*(const T& inLhs, const SAnimTime& inRhs) { static_assert(false, "SAnimTime * impercise value"); }
 
 	/**
 	 * Return time snapped to nearest multiple of given frame rate
@@ -252,11 +286,15 @@ private:
 
 	friend bool         Serialize(Serialization::IArchive& ar, SAnimTime& animTime, const char* name, const char* label);
 
-	static inline int64 round(const double v)
-	{
-		return v < 0.0 ? static_cast<int64>(ceil(v - 0.5)) : static_cast<int64>(floor(v + 0.5));
-	}
+	//static inline int64 round(const double v)
+	//{
+	//	return v < 0.0 ? static_cast<int64>(ceil(v - 0.5)) : static_cast<int64>(floor(v + 0.5));
+	//}
 };
+
+// Copy/Assignment operators SAnimTime <=> CTimeValue
+ILINE CTimeValue& CTimeValue::operator=(const SAnimTime& inRhs) {  SetSeconds(inRhs.GetSeconds()); return *this; };
+ILINE CTimeValue::CTimeValue(const SAnimTime& inValue) { SetSeconds(inValue.GetSeconds()); }
 
 inline void STimeCode::FromTicks(int32 ticks)
 {
@@ -319,9 +357,9 @@ inline bool SAnimTime::Serialize(Serialization::IArchive& ar, const char* szName
 				break;
 			case EDisplayMode::Time:
 				{
-					float seconds = .0f;
+					mpfloat seconds = 0;
 					ar(seconds, "sec", szLabel);
-					SetTime(seconds);
+					SetSeconds(seconds);
 				}
 				break;
 			case EDisplayMode::Frames:
@@ -354,7 +392,7 @@ inline bool SAnimTime::Serialize(Serialization::IArchive& ar, const char* szName
 				break;
 			case EDisplayMode::Time:
 				{
-					float seconds = ToFloat();
+					mpfloat seconds = GetSeconds();
 					ar(seconds, "sec", szLabel);
 				}
 				break;
@@ -381,5 +419,8 @@ inline SAnimTime abs(SAnimTime time)
 {
 	return (time >= SAnimTime(0)) ? time : -time;
 }
+
+
+#endif
 
 #endif

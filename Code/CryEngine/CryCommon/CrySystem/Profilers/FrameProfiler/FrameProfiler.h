@@ -19,8 +19,11 @@ struct IFrameProfilePeakCallback
 {
 	virtual ~IFrameProfilePeakCallback(){}
 	//! Called when peak is detected for this profiler.
-	//! @param fPeakTime peak time in milliseconds.
-	virtual void OnFrameProfilerPeak(CFrameProfiler* pProfiler, float fPeakTime) = 0;
+	//! @param fPeakValue
+	virtual void OnFrameProfilerPeak(CFrameProfiler* pProfiler, float fPeakValue) = 0;
+
+	// PERSONAL NOTE: "Time in ms" comment was nonsense.
+	// It can be "time in ms", memory,etc. It's a peak displayed-value....
 };
 
 struct SPeakRecord
@@ -31,7 +34,7 @@ struct SPeakRecord
 	float           variance;
 	int             pageFaults; //!< Number of page faults at this frame.
 	int             count;      //!< Number of times called for peak.
-	float           when;       //!< When it added.
+	CTimeValue      when;       //!< When it added.
 	BYTE            waiting;    //!< If it needs to go in separate waiting peak list
 };
 
@@ -92,7 +95,7 @@ struct IFrameProfileSystem
 	virtual CFrameProfilerSection const* GetCurrentProfilerSection() = 0;
 
 	//! get internal time lost to profiling.
-	virtual float GetLostFrameTimeMS() const = 0;
+	virtual CTimeValue GetLostFrameTime() const = 0;
 
 	virtual void  Enable(bool bCollect, bool bDisplay) = 0;
 	virtual void  SetSubsystemFilter(bool bFilterSubsystem, EProfiledSubsystem subsystem) = 0;
@@ -273,8 +276,8 @@ public:
 class CFrameProfilerOfflineHistory
 {
 public:
-	//! Self time in microseconds.
-	std::vector<uint32> m_selfTime;
+	//! Self time
+	std::vector<CTimeValue> m_selfTime;
 	//! Number of calls.
 	std::vector<uint16> m_count;
 };
@@ -307,7 +310,7 @@ public:
 	//! How variant this value.
 	float m_variance;
 
-	//! peak from this frame (useful if count is >1).
+	//! peak from this frame (useful if count is >1). In ticks.
 	int64 m_peak;
 
 	//! Current parent profiler in last frame.
@@ -653,7 +656,7 @@ struct CLoadingTimeProfiler
 	}
 
 	struct SLoadingTimeContainer* m_pTimeContainer;
-	double                        m_fConstructorTime;
+	CTimeValue                    m_fConstructorTime;
 	double                        m_fConstructorMemUsage;
 
 	DiskOperationInfo             m_constructorInfo;
