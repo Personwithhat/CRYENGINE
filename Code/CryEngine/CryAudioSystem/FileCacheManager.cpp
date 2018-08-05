@@ -326,7 +326,7 @@ void CFileCacheManager::DrawDebugInfo(IRenderAuxGeom& auxGeom, float const posX,
 		CTimeValue const frameTime = gEnv->pTimer->GetAsyncTime();
 
 		CryFixedStringT<MaxMiscStringLength> tempString;
-		float time = 0.0f;
+		CTimeValue time;
 		float ratio = 0.0f;
 		float originalAlpha = 0.7f;
 		float* pColor = nullptr;
@@ -413,8 +413,8 @@ void CFileCacheManager::DrawDebugInfo(IRenderAuxGeom& auxGeom, float const posX,
 									pColor = redish;
 								}
 
-								time = (frameTime - pAudioFileEntry->m_timeCached).GetSeconds();
-								ratio = time / 5.0f;
+								time = frameTime - pAudioFileEntry->m_timeCached;
+								ratio = time.BADGetSeconds() / 5;
 								originalAlpha = pColor[3];
 								pColor[3] *= clamp_tpl(ratio, 0.2f, 1.0f);
 
@@ -604,7 +604,7 @@ void CFileCacheManager::UncacheFile(CATLAudioFileEntry* const pAudioFileEntry)
 	pAudioFileEntry->m_useCount = 0;
 
 #if defined(INCLUDE_AUDIO_PRODUCTION_CODE)
-	pAudioFileEntry->m_timeCached.SetValue(0);
+	pAudioFileEntry->m_timeCached.SetSeconds(0);
 #endif // INCLUDE_AUDIO_PRODUCTION_CODE
 }
 
@@ -666,8 +666,8 @@ bool CFileCacheManager::TryCacheFileCacheEntryInternal(
 			streamReadParams.nOffset = 0;
 			streamReadParams.nFlags = IStreamEngine::FLAGS_NO_SYNC_CALLBACK;
 			streamReadParams.dwUserData = static_cast<DWORD_PTR>(audioFileEntryId);
-			streamReadParams.nLoadTime = 0;
-			streamReadParams.nMaxLoadTime = 0;
+			streamReadParams.nLoadTime.SetSeconds(0);
+			streamReadParams.nMaxLoadTime.SetSeconds(0);
 			streamReadParams.ePriority = estpUrgent;
 			streamReadParams.pBuffer = pAudioFileEntry->m_pMemoryBlock->GetData();
 			streamReadParams.nSize = static_cast<int unsigned>(pAudioFileEntry->m_size);

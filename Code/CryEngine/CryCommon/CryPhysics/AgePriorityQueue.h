@@ -7,7 +7,17 @@
 
 #include <CryCore/AlignmentTools.h>
 
-template<typename ValueType, typename AgeType = float, typename PriorityType = float>
+class CTimeValue;
+namespace boost{ namespace multiprecision{
+	class mpfloat;
+} }
+using boost::multiprecision::mpfloat;
+
+// POINT OF INTEREST : This + Deferred Action Queue
+
+
+// PERSONAL VERIFY: This + DeferredActionQueue() need double-checks to see if this works properly.
+template<typename ValueType, typename AgeType = CTimeValue, typename PriorityType = mpfloat>
 struct AgePriorityQueue
 {
 	typedef uint32                                             id_type;

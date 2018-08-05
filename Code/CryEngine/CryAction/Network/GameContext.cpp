@@ -391,10 +391,10 @@ public:
 		EW_WAIT_UNTIL_CONNECTED
 	};
 
-#define DEFAULT_WAIT_LENGTH    (10.f)
-#define NEW_CLIENT_WAIT_LENGTH (5.f)
+#define DEFAULT_WAIT_LENGTH    (CTimeValue(10))
+#define NEW_CLIENT_WAIT_LENGTH (CTimeValue(5))
 
-	CCET_WaitForPendingConnections(CActionGame* cag, CCryAction* cca) : m_state(EW_INITIAL_TICK), m_cag(cag), m_cca(cca), m_start(0.f), m_prevNumConnections(0), m_waitLen(DEFAULT_WAIT_LENGTH) {}
+	CCET_WaitForPendingConnections(CActionGame* cag, CCryAction* cca) : m_state(EW_INITIAL_TICK), m_cag(cag), m_cca(cca), m_start(0), m_prevNumConnections(0), m_waitLen(DEFAULT_WAIT_LENGTH) {}
 
 	EContextEstablishTaskResult OnStep(SContextEstablishState& state)
 	{
@@ -408,7 +408,7 @@ public:
 				m_state = EW_WAIT_FOR_PENDING;
 			}
 
-			float diff = (gEnv->pTimer->GetAsyncTime() - m_start).GetSeconds();
+			CTimeValue diff = gEnv->pTimer->GetAsyncTime() - m_start;
 
 			switch (m_state)
 			{
@@ -455,7 +455,7 @@ public:
 			if (diff < m_waitLen)
 				return eCETR_Wait;
 			else
-				CryLog("CEst -- Waited more than %f seconds, continuing...", m_waitLen);
+				CryLog("CEst -- Waited more than %f seconds, continuing...", (float)m_waitLen.GetSeconds());
 		}
 
 		CryLog("CEst -- No pending connections, we have a go!");
@@ -468,7 +468,7 @@ private:
 	CCryAction*  m_cca;
 	CTimeValue   m_start;
 	int          m_prevNumConnections;
-	float        m_waitLen;
+	CTimeValue   m_waitLen;
 };
 
 void AddWaitForPendingConnections(IContextEstablisher* pEst, EContextViewState state, CActionGame* cag, CCryAction* cca)
@@ -602,7 +602,7 @@ bool CGameContext::InitChannelEstablishmentTasks(IContextEstablisher* pEst, INet
 	if (isServer)
 	{
 		if (gEnv->IsEditor())
-			AddWaitValue(pEst, eCVS_PostSpawnEntities, &m_bAllowSendClientConnect, true, "WaitForAllowSendClientConnect", 20.0f);
+			AddWaitValue(pEst, eCVS_PostSpawnEntities, &m_bAllowSendClientConnect, true, "WaitForAllowSendClientConnect", 20);
 		AddOnClientConnect(pEst, eCVS_PostSpawnEntities, isReset);
 		AddOnClientEnteredGame(pEst, eCVS_InGame, isReset);
 		if (pServerChannel->IsOnHold())
@@ -1664,9 +1664,8 @@ void CGameContext::AllowCallOnClientConnect()
 
 CTimeValue CGameContext::GetPhysicsTime()
 {
-	int tick = gEnv->pPhysicalWorld->GetiPhysicsTime();
-	CTimeValue tm = tick * double(gEnv->pPhysicalWorld->GetPhysVars()->timeGranularity);
-	return tm;
+	// Earlier version used to return CTimeValue = iTime * granularity;
+	return gEnv->pPhysicalWorld->GetPhysicsTime();
 }
 
 void CGameContext::BeginUpdateObjects(CTimeValue physTime, INetChannel* pChannel)

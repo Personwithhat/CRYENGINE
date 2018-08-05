@@ -1,0 +1,49 @@
+{
+    "info": {
+        "id": "engine-5.5-personal",
+        "name": "CRYENGINE 5.5-personal",
+        "version": "5.5.0"
+    },
+    "dependencies": {
+        "Visual Studio Compiler":
+        {
+            "min_version": "2015",
+            "max_version": "2017",
+            "url": "https://www.cryengine.com",
+            "localdir": "C:/Program Files (x86)/Microsoft Visual Studio"
+        },
+        "Visual C++ 2015 redistributable":
+        {
+            "min_version": "2015",
+            "max_version": "2015",
+            "url": "http://microsoft.com"
+        },
+        "Visual C++ 2013 redistributable":
+        {
+            "min_version": "2013",
+            "max_version": "2013",
+            "url": "http://microsoft.com"
+        },
+        "Windows SDK":
+        {
+            "min_version": "10.0.15063.0",
+            "max_version": "10.0.16299.0",
+            "url": "http://microsoft.com",
+            "localdir": "C:/Program Files (x86)/Windows Kits/10/Include"
+        },
+        "PhysX SDK":
+        {
+            "min_version": "3.4",
+            "max_version": "3.4",
+            "url": "https://developer.nvidia.com",
+            "optional": true
+        },
+        "CryEngine.Debugger.Mono":
+        {
+            "min_version": "1.0",
+            "max_version": "1.0",
+            "url": "Tools/VisualStudioExtensions/CryEngine.Debugger.Mono.vsix",
+            "optional": true
+        }
+    }
+}

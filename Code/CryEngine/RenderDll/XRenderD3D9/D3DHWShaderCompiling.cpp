@@ -3033,7 +3033,7 @@ Start:
 		{
 			if (SShaderAsyncInfo::s_nPendingAsyncShaders <= 0)
 				break;
-			int n = (int)iTimer->GetAsyncCurTime();
+			int n = (int)iTimer->GetAsyncCurTime().GetSeconds();
 			if (!(n % 2))
 				iLog->Update();
 			if (!(n % 8))

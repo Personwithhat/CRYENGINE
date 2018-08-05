@@ -38,9 +38,9 @@ struct NetMessage
 	string m_description;
 	string m_additionalText;
 	float  m_sizeInBytes;
-	float  m_queuingLatency;
+	CTimeValue m_queuingLatency;
 
-	ILINE NetMessage(const char* description, float sizeInBytes, float queuingLatency, const char* additionalText) :
+	ILINE NetMessage(const char* description, float sizeInBytes, const CTimeValue& queuingLatency, const char* additionalText) :
 		m_description(description), m_sizeInBytes(sizeInBytes), m_queuingLatency(queuingLatency)
 	{
 		if (additionalText != NULL)
@@ -58,13 +58,14 @@ struct NetMessage
 struct FrequentNetMessage
 {
 	NetMessage m_message;
-	float      m_iMinSize, m_iMaxSize, m_iMessageCount;
+	float      m_iMinSize, m_iMaxSize;
+	int        m_iMessageCount;
 	CTimeValue m_lastTime;
 	float      m_averageSize;
 	float      m_lastMsgSize;
-	float      m_totalQueuingLatency;
-	float      m_averageQueuingLatency;
-	float      m_maxQueuingLatency, m_minQueuingLatency;
+	CTimeValue m_totalQueuingLatency;
+	CTimeValue m_averageQueuingLatency;
+	CTimeValue m_maxQueuingLatency, m_minQueuingLatency;
 
 	FrequentNetMessage(NetMessage& msg) : m_message(msg)
 	{
@@ -160,7 +161,7 @@ class CNetworkInspector
 
 public:
 	//adds a message to the queue - if the message should contain special data, define a unique description, set sizeInBytes to 0 (!) and put the data in additionalText
-	void AddMessage(const char* description, float sizeInBytes = 0, float queuingLatency = -1, const char* additionalText = NULL);
+	void AddMessage(const char* description, float sizeInBytes = 0, const CTimeValue& queuingLatency = -1, const char* additionalText = NULL);
 
 	//updates and renders the inspector
 	void Update();

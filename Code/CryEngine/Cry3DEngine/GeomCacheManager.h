@@ -112,8 +112,9 @@ struct SGeomCacheStreamInfo
 
 	uint                         m_numFrames;
 
-	volatile float               m_displayedFrameTime;
-	volatile float               m_wantedPlaybackTime;
+	// PERSONAL VERIFY: Setting up Volatile CTimeValue() => no def's for mpfloat volatile = and == , so this fails.
+	volatile float					  m_displayedFrameTime;
+	volatile float					  m_wantedPlaybackTime;
 	volatile uint                m_wantedFloorFrame;
 	volatile uint                m_wantedCeilFrame;
 	volatile int                 m_sameFrameFillCount;
@@ -179,7 +180,7 @@ public:
 	void        RegisterForStreaming(CGeomCacheRenderNode* pRenderNode);
 	void        UnRegisterForStreaming(CGeomCacheRenderNode* pRenderNode, bool bWaitForJobs);
 
-	float       GetPrecachedTime(const IGeomCacheRenderNode* pRenderNode);
+	CTimeValue  GetPrecachedTime(const IGeomCacheRenderNode* pRenderNode);
 
 	#ifndef _RELEASE
 	void DrawDebugInfo();

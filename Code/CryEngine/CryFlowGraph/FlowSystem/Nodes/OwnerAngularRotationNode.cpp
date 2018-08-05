@@ -12,7 +12,7 @@ class CRotateEntity : public CFlowBaseNode<eNCT_Instanced>
 	bool       m_bActive;
 
 public:
-	CRotateEntity(SActivationInfo* pActInfo) : m_lastTime(0.0f), m_bActive(false)
+	CRotateEntity(SActivationInfo* pActInfo) : m_lastTime(0), m_bActive(false)
 	{
 		m_worldRot.SetIdentity();
 		m_localRot.SetIdentity();
@@ -87,13 +87,13 @@ public:
 				if (m_bActive && pActInfo->pEntity)
 				{
 					CTimeValue time = gEnv->pTimer->GetFrameStartTime();
-					float timeDifference = (time - m_lastTime).GetSeconds();
+					CTimeValue timeDifference = (time - m_lastTime);
 					m_lastTime = time;
 
 					IEntity* pEntity = pActInfo->pEntity;
 					const bool bUseWorld = GetPortInt(pActInfo, 2) == 0 ? true : false;
 					Vec3 speed = GetPortVec3(pActInfo, 0);
-					speed *= timeDifference;
+					speed *= timeDifference.BADGetSeconds();
 					Quat deltaRot(Ang3(DEG2RAD(speed)));
 					Quat finalRot;
 					if (bUseWorld == false)
@@ -112,10 +112,10 @@ public:
 					IPhysicalEntity* piPhysEnt = pEntity->GetPhysics();
 					if (piPhysEnt && piPhysEnt->GetType() != PE_STATIC)
 					{
-						if (timeDifference > 0.0001f)
+						if (timeDifference > "0.0001")
 						{
 							pe_action_set_velocity asv;
-							asv.w = Quat::log(deltaRot) * (2.f / timeDifference);
+							asv.w = Quat::log(deltaRot) * (2.f / timeDifference.BADGetSeconds());
 							asv.bRotationAroundPivot = 1;
 							pEntity->GetPhysics()->Action(&asv);
 						}

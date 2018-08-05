@@ -971,7 +971,7 @@ struct DebugHelper
 			for (; it != end; ++it)
 			{
 				const Collection::VariableChangeEvent& changeEvent = *it;
-				float alpha = 1.0f - (now - changeEvent.when).GetSeconds() / 10.0f;
+				float alpha = 1.0f - (now - changeEvent.when).BADGetSeconds() / 10.0f;
 				if (alpha > 0.01f)
 				{
 					alpha = clamp_tpl(alpha, 0.33f, 1.0f);

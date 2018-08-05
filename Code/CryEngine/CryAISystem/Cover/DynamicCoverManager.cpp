@@ -156,7 +156,7 @@ void DynamicCoverManager::ClearValidationSegments()
 	m_validationQueue.clear();
 }
 
-void DynamicCoverManager::Update(float updateTime)
+void DynamicCoverManager::Update(const CTimeValue& updateTime)
 {
 	PREFAST_SUPPRESS_WARNING(6239);
 	if (!DynamicCoverDeferred && !m_validationQueue.empty())
@@ -173,7 +173,7 @@ void DynamicCoverManager::Update(float updateTime)
 
 		if (state.state == EntityCoverState::Moving)
 		{
-			if ((now - state.lastMovement).GetMilliSecondsAsInt64() >= 150)
+			if (now - state.lastMovement >=" 0.15")
 			{
 				state.state = EntityCoverState::Sampling;
 

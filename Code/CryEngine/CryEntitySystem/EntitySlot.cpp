@@ -493,6 +493,8 @@ void CEntitySlot::GetCameraSpacePos(Vec3& cameraSpacePos)
       Offset = QuatTS(m_pXForm->localTM);
      else
      {
+		// PERSONAL VERIFY: Interesting 'CRY_FIXME'. Was disabled to 'keep compile format more readable' (in GameSDK.....)
+		// Probably need something similar to this instead of PERSONAL T O D O everywhere .-.
       //CRY_FIXME(03,12,2009,"Animation & Rendering of entities needs to be re-written to avoid derivation of local offset due to float inaccuracy - Richard Semmens");
 
       if(!Matrix34::IsEquivalent(PhysLocation,m_worldTM))

@@ -79,12 +79,12 @@ struct Timestamp
 
 	bool IsValid() const
 	{
-		return time.GetMilliSecondsAsInt64() >= 0;
+		return time >= 0;
 	}
 
 	void Invalidate()
 	{
-		time = CTimeValue(-1.0f);
+		time = CTimeValue(-1);
 	}
 
 #if defined (USING_BEHAVIOR_TREE_SERIALIZATION)
@@ -172,7 +172,7 @@ public:
 		}
 
 		valid = false;
-		elapsedTime = CTimeValue(0.0f);
+		elapsedTime = CTimeValue(0);
 	}
 
 	void HandleEvent(uint32 eventNameCRC32)

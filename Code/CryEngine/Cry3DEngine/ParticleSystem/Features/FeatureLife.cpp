@@ -108,7 +108,7 @@ public:
 
 	virtual void UpdateGPUParams(CParticleComponentRuntime& runtime, gpu_pfx2::SUpdateParams& params) override
 	{
-		params.lifeTime = m_lifeTime.GetValueRange(runtime)(0.5f);
+		params.lifeTime = m_lifeTime.GetValueRange(runtime)("0.5");
 	}
 
 protected:

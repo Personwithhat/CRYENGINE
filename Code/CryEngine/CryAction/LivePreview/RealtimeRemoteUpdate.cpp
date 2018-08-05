@@ -439,7 +439,7 @@ bool CRealtimeRemoteUpdateListener::IsSyncingWithEditor()
 	CTimeValue oTimeValue(gEnv->pTimer->GetAsyncTime());
 	oTimeValue -= m_lastKeepAliveMessageTime;
 
-	return (fabs((oTimeValue).GetSeconds()) <= 30.0f);
+	return (abs((oTimeValue).GetSeconds()) <= 30);
 }
 //////////////////////////////////////////////////////////////////////////
 void CRealtimeRemoteUpdateListener::Update()

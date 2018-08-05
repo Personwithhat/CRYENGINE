@@ -210,11 +210,11 @@ struct SMMPlayerLeftEvent : public SMatchMakingEvent
 
 struct SMMPlayerPingEvent : public SMatchMakingEvent
 {
-	SMMPlayerPingEvent( CryUserID& uid, SCryMatchMakingConnectionUID& conUID, CryPing& ping );
+	SMMPlayerPingEvent( CryUserID& uid, SCryMatchMakingConnectionUID& conUID, CTimeValue& ping );
 
 	char													m_guid[CRYLOBBY_USER_GUID_STRING_LENGTH];
 	SCryMatchMakingConnectionUID	m_conUID;
-	CryPing												m_ping;
+	CTimeValue											m_ping;
 };
 
 struct SMMPlayerReportLagEvent : public SMatchMakingEvent

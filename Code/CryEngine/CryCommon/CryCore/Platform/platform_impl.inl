@@ -236,40 +236,80 @@ void CrySleep(unsigned int dwMilliseconds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CryLowLatencySleep(unsigned int dwMilliseconds)
+// PERSONAL TODO:
+	// Verify that varTicks are correct, and that this sleeps properly.
+	// Also Optimize timer-resolution, and if many Sleep(1)'s is better compared to one Sleep(X - varTicks). Excess sleeps?
+void CryLowLatencySleep(const CTimeValue& sleepTime)
 {
+	assert(sleepTime > 0);
+
+	// PERSONAL TODO: Sleeps, high resolution timers/etc. have only been reworked for Windows. 
+	// Linux/etc. should be done later.......
 	#if CRY_PLATFORM_DURANGO
-	if (dwMilliseconds > 32) // just do an OS sleep for long periods, because we just assume that if we sleep for this long, we don't need a accurate latency (max diff is likly 15ms)
-		CrySleep(dwMilliseconds);
-	else // do a more accurate "sleep" by yielding this CPU to other threads
-	{
-		LARGE_INTEGER frequency;
-		LARGE_INTEGER currentTime;
-		LARGE_INTEGER endTime;
-
-		QueryPerformanceCounter(&endTime);
-
-		// Ticks in microseconds (1/1000 ms)
-		QueryPerformanceFrequency(&frequency);
-		endTime.QuadPart += (dwMilliseconds * frequency.QuadPart) / (1000ULL);
-
-		do
+		if (dwMilliseconds > 32) // just do an OS sleep for long periods, because we just assume that if we sleep for this long, we don't need a accurate latency (max diff is likly 15ms)
+			CrySleep(dwMilliseconds);
+		else // do a more accurate "sleep" by yielding this CPU to other threads
 		{
-			SwitchToThread();
-			SwitchToThread();
-			SwitchToThread();
-			SwitchToThread();
-			SwitchToThread();
-			SwitchToThread();
-			SwitchToThread();
-			SwitchToThread();
+			LARGE_INTEGER frequency;
+			LARGE_INTEGER currentTime;
+			LARGE_INTEGER endTime;
 
-			QueryPerformanceCounter(&currentTime);
+			QueryPerformanceCounter(&endTime);
+
+			// Ticks in microseconds (1/1000 ms)
+			QueryPerformanceFrequency(&frequency);
+			endTime.QuadPart += (dwMilliseconds * frequency.QuadPart) / (1000ULL);
+
+			do
+			{
+				SwitchToThread();
+				SwitchToThread();
+				SwitchToThread();
+				SwitchToThread();
+				SwitchToThread();
+				SwitchToThread();
+				SwitchToThread();
+				SwitchToThread();
+
+				QueryPerformanceCounter(&currentTime);
+			}
+			while (currentTime.QuadPart < endTime.QuadPart);
 		}
-		while (currentTime.QuadPart < endTime.QuadPart);
-	}
 	#else
-	CrySleep(dwMilliseconds);
+		if (sleepTime.GetMilliSeconds() > 60) // PERSONAL TODO: > what? NavigationSystemBackgroundUpdate::Thread::ThreadEntry() sleeps for 50 or 33 lol.....
+			// Just do an OS sleep for long periods, because we just assume that if we sleep for this long, we don't need a accurate latency
+			Sleep((int)sleepTime.GetMilliSeconds());
+		else // Do a more accurate "sleep"
+		{
+			// Get ticks per second
+			LARGE_INTEGER TTicksPerSec;
+			QueryPerformanceFrequency(&TTicksPerSec);
+			const int64 lTicksPerSec = TTicksPerSec.QuadPart;
+
+			/*	
+				Sleep(1) sleeps ~1ms with an error of up to TimePrecision.
+					TimePrecision(1) = > Sleep(1) sleeps up to 1.99ms 
+			*/
+			// Approximate Sleep(1) value, (1ms + time resolution variance) converted into ticks.
+			const mpfloat sleepOne = (mpfloat("0.001") + (mpfloat)gEnv->pSystem->GetTimeResolution() / 10'000'000) * lTicksPerSec;
+
+			// Approximate minimum end time, in ticks.
+			LARGE_INTEGER t;
+			QueryPerformanceCounter(&t);
+			const mpfloat minTicks = (sleepTime.GetSeconds() * lTicksPerSec) + t.QuadPart;
+
+			for (;;)
+			{
+				QueryPerformanceCounter(&t);
+
+				if (t.QuadPart >= minTicks)
+					break;
+				if (minTicks - t.QuadPart > sleepOne) // Use Sleep(1) if it doesn't overshoot.
+					Sleep(1);
+				else
+					Sleep(0);  // Causes thread to give up its timeslice. Large 'Idle' CPU load.
+			}
+		}
 	#endif
 }
 

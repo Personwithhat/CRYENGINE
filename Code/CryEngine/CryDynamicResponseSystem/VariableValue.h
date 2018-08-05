@@ -23,6 +23,9 @@ enum EDynamicResponseVariableType
 	eDRVT_String      = 3,
 	eDRVT_Boolean     = 4,
 
+	eDRVT_MPFloat		= 5,
+	eDRVT_Time			= 6,
+
 	eDRVT_PosInfinite = 16,
 	eDRVT_NegInfinite = 17,
 
@@ -33,8 +36,8 @@ enum EDynamicResponseVariableType
 	#define ENABLE_VARIABLE_VALUE_TYPE_CHECKINGS
 #endif
 
-//the actual stored data.
-typedef int VariableValueData;
+// The actual stored data.
+typedef mpfloat VariableValueData;
 
 class CVariableValue
 {
@@ -52,10 +55,14 @@ public:
 	#define WarnIfTypeDiffers(other)
 #endif
 
+	// PERSONAL VERIFY: In order to store mpfloat/CTimeValue, changed to mpfloat base storage. Can probably be improved.....
 	CVariableValue() : m_value(DEFAULT_VALUE) { SetTypeInfoOfValue(eDRVT_Undefined); }
 	CVariableValue(int value) { m_value = value; SetTypeInfoOfValue(eDRVT_Int); }
 	CVariableValue(bool value) { m_value = (value) ? 1 : 0; SetTypeInfoOfValue(eDRVT_Boolean); }
-	CVariableValue(float value) { m_value = (int)(value * 100.0f); SetTypeInfoOfValue(eDRVT_Float); }   //do we want/need to roundf this value?
+	CVariableValue(float value) { m_value.lossy(value); SetTypeInfoOfValue(eDRVT_Float); }
+	MPOnly CVariableValue(const T& value) { m_value = value.conv<mpfloat>(); SetTypeInfoOfValue(eDRVT_MPFloat); }
+	TVOnly CVariableValue(const T& value) { m_value = value.GetSeconds(); SetTypeInfoOfValue(eDRVT_Time); }
+
 	CVariableValue(const CVariableValue& value);
 	CVariableValue(const CHashedString& value);
 
@@ -71,7 +78,7 @@ public:
 	CVariableValue  operator-() const;
 
 	EDynamicResponseVariableType GetType() const;
-	bool                         DoTypesMatch(const CVariableValue& other) const;
+	bool                     DoTypesMatch(const CVariableValue& other) const;
 	const char*              GetTypeAsString() const;
 	void                     Reset()                           { m_value = DEFAULT_VALUE; SetTypeInfoOfValue(eDRVT_Undefined) }
 
@@ -80,6 +87,8 @@ public:
 	CHashedString            GetValueAsHashedString() const;
 	int                      GetValueAsInt() const;
 	float                    GetValueAsFloat() const;
+	mpfloat                  GetValueAsMP() const;
+	CTimeValue               GetValueAsTime() const;
 	bool                     GetValueAsBool() const;
 	string                   GetValueAsString() const;                    //should be used for debug output only
 

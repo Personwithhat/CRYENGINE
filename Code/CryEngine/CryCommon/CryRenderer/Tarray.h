@@ -13,7 +13,8 @@
 #endif
 
 #ifndef SATURATE
-	#define SATURATE(X) clamp_tpl(X, 0.f, 1.f)
+	//#define SATURATE(X) CLAMP(X, 0.f, 1.f)
+	#define SATURATE(X) CLAMP(X, 0, 1)
 #endif
 
 #ifndef SATURATEB

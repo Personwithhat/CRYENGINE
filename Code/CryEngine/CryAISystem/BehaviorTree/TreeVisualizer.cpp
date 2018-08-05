@@ -379,7 +379,7 @@ void DebugTreeSerializer::CollectTimeStamps(const BehaviorTreeInstance& instance
 		TimeStamp timeStamp;
 		timeStamp.name = it->id.timestampName;
 		timeStamp.bIsValid = it->IsValid();
-		timeStamp.value = it->IsValid() ? (timeNow - it->time).GetSeconds() : 0.0f;
+		timeStamp.value = it->IsValid() ? timeNow - it->time : 0;
 
 		m_data.timeStamps.push_back(timeStamp);
 	}

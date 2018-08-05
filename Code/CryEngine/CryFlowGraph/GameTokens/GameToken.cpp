@@ -21,7 +21,7 @@ CGameTokenSystem* CGameToken::g_pGameTokenSystem = 0;
 
 //////////////////////////////////////////////////////////////////////////
 CGameToken::CGameToken()
-	: m_changed(0.0f)
+	: m_changed(0)
 {
 	m_nFlags = 0;
 }

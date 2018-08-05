@@ -31,7 +31,7 @@ namespace Cry
 				return true;
 			}
 
-			void CPlugin::MainUpdate(float frameTime)
+			void CPlugin::MainUpdate(const CTimeValue& frameTime)
 			{
 				ProcessRequests();
 				EUpdateResult result;
@@ -40,7 +40,7 @@ namespace Cry
 				do
 				{
 					result = ProcessRequests();
-				} while (result == EUpdateResult::ProcessingRequests && curl_multi_timeout(m_pMultiHandle, &maximumWaitInMs) == CURLM_OK && maximumWaitInMs < gEnv->pTimer->GetFrameTime() * 1000.f);
+				} while (result == EUpdateResult::ProcessingRequests && curl_multi_timeout(m_pMultiHandle, &maximumWaitInMs) == CURLM_OK && maximumWaitInMs < gEnv->pTimer->GetFrameTime().GetMilliSeconds());
 			}
 
 			bool CPlugin::Send(ERequestType requestType, const char* szURL, const char* szBody, TResponseCallback resultCallback, const THeaders& headers)

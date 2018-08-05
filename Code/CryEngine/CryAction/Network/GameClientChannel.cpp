@@ -112,9 +112,9 @@ bool CClientClock::OnSyncTimeMessage(const SSyncTimeClient& messageParams)
 	return true;
 }
 
-void CClientClock::SendSyncPing(const int id, const CTimeValue currentTime, const CTimeValue serverTime /*= CTimeValue()*/)
+void CClientClock::SendSyncPing(const int id, const CTimeValue& currentTime, const CTimeValue& serverTime /*= CTimeValue()*/)
 {
-	INetSendablePtr msg = new CSimpleNetMessage<SSyncTimeServer>(SSyncTimeServer(id, currentTime.GetValue(), serverTime.GetValue()), CGameServerChannel::SyncTimeServer);
+	INetSendablePtr msg = new CSimpleNetMessage<SSyncTimeServer>(SSyncTimeServer(id, currentTime, serverTime), CGameServerChannel::SyncTimeServer);
 	m_clientChannel.GetNetChannel()->AddSendable(msg, 0, NULL, NULL);
 }
 

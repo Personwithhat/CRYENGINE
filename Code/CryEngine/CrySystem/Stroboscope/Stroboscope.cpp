@@ -62,7 +62,7 @@ void CStroboscope::RegisterCommands()
 }
 
 ////////////////////////////////////////////////////////////////////////////
-void CStroboscope::StartProfiling(float deltaStart /* = 0*/, float duration /* = -1*/, int throttle /* = 100*/, const SThreadInfo::TThreadIds threadIds /* = SThreadInfo::TThreadIds()*/)
+void CStroboscope::StartProfiling(const CTimeValue& deltaStart /* = 0*/, const CTimeValue& duration /* = -1*/, int throttle /* = 100*/, const SThreadInfo::TThreadIds threadIds /* = SThreadInfo::TThreadIds()*/)
 {
 	if (CryInterlockedCompareExchange(&m_started, 1, 0) == 0)
 	{
@@ -207,9 +207,9 @@ void CStroboscope::UpdateResult()
 		m_result.Date = asctime(localtime(&rawtime));
 		m_result.Date = m_result.Date.replace("\n", "");
 		m_result.Date = m_result.Date.replace("\r", "");
-		m_result.FrameTime = m_sampling.FrameTime;
+		m_result.FrameTime  = m_sampling.FrameTime;
 		m_result.StartFrame = m_sampling.StartFrame;
-		m_result.EndFrame = m_sampling.EndFrame;
+		m_result.EndFrame   = m_sampling.EndFrame;
 
 		int numsymbols = 0;
 		for (SStrobosopeSamplingData::TThreadResult::const_iterator thrd = m_sampling.Threads.begin(); thrd != m_sampling.Threads.end(); ++thrd)
@@ -378,19 +378,19 @@ void CStroboscope::DumpOutputResult()
 void CStroboscope::StartProfilerCmd(IConsoleCmdArgs* pArgs)
 {
 	CStroboscope* pInst = GetInst();
-	float duration = -1;
-	float startDelay = 0;
+	CTimeValue duration = -1;
+	CTimeValue startDelay = 0;
 	int throttle = 100;
 	SThreadInfo::TThreadIds threadIds;
 	if (pArgs->GetArgCount() > 1)
 	{
 		const char* arg = pArgs->GetArg(1);
-		duration = (float)atof(arg);
+		duration.SetSeconds(arg);
 	}
 	if (pArgs->GetArgCount() > 2)
 	{
 		const char* arg = pArgs->GetArg(2);
-		startDelay = (float)atof(arg);
+		startDelay.SetSeconds(arg);
 	}
 
 	if (pArgs->GetArgCount() > 3)

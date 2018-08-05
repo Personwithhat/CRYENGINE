@@ -112,10 +112,17 @@ void SetInvalid(T& val)
 	ValidNumber::Type<T>::type::SetInvalid(val);
 }
 
-template<typename T>
-bool IsValid(const T& val)
+// Similar setup to CryMath/Random.h
+template <class T, typename boost::disable_if_c<isMP>::type* = 0>
+inline bool IsValid(const T& val)
 {
 	return ValidNumber::Type<T>::type::IsValid(val);
+}
+
+MPOnly
+inline bool IsValid(const T& val)
+{
+	return true; // PERSONAL VERIFY: Perhaps add better IsValid's for mpfloat/CTimeValue
 }
 
 // Alias
@@ -124,11 +131,33 @@ template<typename T> bool NumberValid(const T& val)
 	return IsValid(val); 
 }
 
-template<typename T, typename U, typename E> bool IsEquivalent(const T& a, const U& b, E e)
+template<typename T, typename U, typename E, typename boost::disable_if_c<isMP>::type* = 0> 
+bool IsEquivalent(const T& a, const U& b, E e)
 {
 	return ValidNumber::Type<T>::type::IsEquivalent(a, b, e);
 }
-template<typename T, typename U> bool IsEquivalent(const T& a, const U& b)
+template<typename T, typename U, typename boost::disable_if_c<isMP>::type* = 0> 
+bool IsEquivalent(const T& a, const U& b)
 {
 	return ValidNumber::Type<T>::type::IsEquivalent(a, b);
+}
+
+// Similar setup to CryMath/Random.h, a tad messier....this is done for unit tests though so it doesn't matter all that much(?)
+template<typename T, typename U, typename E, typename boost::enable_if_c<isMP>::type* = 0>
+bool IsEquivalent(const T& a, const U& b, E e)
+{
+	mpfloat b2 = mpfloat(b);
+	mpfloat e2 = sqr(mpfloat(e));
+	if (e < 0) // Negative epislon denotes a relative comparison
+		e2 *= max(sqr(a), sqr(b2));
+	return sqr(a - b2) <= e2;
+}
+template<typename T, typename U, typename boost::enable_if_c<isMP>::type* = 0>
+bool IsEquivalent(const T& a, const U& b)
+{
+	mpfloat b2 = mpfloat(b);
+	mpfloat e2 = sqr(mpfloat().lossy(std::numeric_limits<float>::epsilon()));
+	if (e < 0) // Negative epislon denotes a relative comparison
+		e2 *= max(sqr(a), sqr(b2));
+	return sqr(a - b2) <= e2;
 }

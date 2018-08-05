@@ -55,8 +55,10 @@ void CallbackTimer::Update()
 				else
 				{
 					CTimeValue nextTimeout = timeout.timeout + timer.interval;
-					if (nextTimeout.GetValue() <= now.GetValue())
-						nextTimeout.SetValue(now.GetValue() + 1);
+					if (nextTimeout <= now)
+						// WARNING: Float inaccuracy on conversion from GetValue. Precision ~10 microseconds.....
+						// Might not matter here since this is just incrementing a bit into the future.
+						nextTimeout.SetMicroSeconds(now.GetMicroSeconds() + 10);
 
 					timeout.timeout = nextTimeout;
 					m_timeouts.push_back(timeout);
@@ -67,7 +69,7 @@ void CallbackTimer::Update()
 	}
 }
 
-CallbackTimer::TimerID CallbackTimer::AddTimer(CTimeValue interval, bool repeating, const Callback& callback, void* userdata)
+CallbackTimer::TimerID CallbackTimer::AddTimer(const CTimeValue& interval, bool repeating, const Callback& callback, void* userdata)
 {
 	EnsureMainThread();
 

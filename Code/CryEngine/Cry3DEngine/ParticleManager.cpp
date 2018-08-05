@@ -668,7 +668,7 @@ void CParticleManager::Update()
 
 			e.SetUpdateParticlesJobState(NULL);
 
-			bool bRenderedLastFrame = e.TimeNotRendered() == 0.f && e.GetAge() > 0.f;
+			bool bRenderedLastFrame = e.TimeNotRendered() == 0 && e.GetAge() > 0;
 
 			e.Update();
 

@@ -30,7 +30,7 @@ public:
 
 	// Most spline functions use source spline (base class).
 	// Interpolate() updates and uses final spline, for fidelity.
-	virtual void Interpolate(float time, ValueType& value)
+	virtual void Interpolate(const mpfloat& time, ValueType& value)
 	{
 		assert(m_pFinal);
 		if (!this->is_updated())
@@ -314,7 +314,10 @@ protected:
 		}
 	};
 
-	typedef UnitFloat8                        TStore;
+	// PERSONAL VERIFY: TStore should function as a compressed mpfloat value. 
+	// How to set this up depends on other compression setups....etc.....
+	//typedef UnitFloat8                        TStore;
+	typedef mpfloat	                        TStore;
 	typedef array<UnitFloat8>                 VStore;
 	typedef array<TFixed<int8, 2, 127, true>> SStore;
 
@@ -322,10 +325,10 @@ protected:
 
 	struct Point
 	{
-		TStore st;          //!< Time of this point.
-		VStore sv;          //!< Value at this point.
+		TStore st;	//!< Time of this point.
+		VStore sv;  //!< Value at this point.
 
-		void   set_key(float t, value_type v)
+		void   set_key(const TStore& t, value_type v)
 		{
 			st = t;
 			sv = v;
@@ -347,8 +350,14 @@ protected:
 			sd = dv - s1;
 		}
 
-		ILINE void eval(value_type& val, float t) const
+		/* PERSONAL NOTE: 
+			Up until the final interpolation/eval calculation 'time' accuracy is preserved.
+			Splines also store 'time' into VStore, e.g. ParticleLifetime...atm in floats, but the core system can be improved to allow spline's of CTimeValue's.
+		*/
+		ILINE void eval(value_type& val, const mpfloat& relT) const
 		{
+			float t = BADF relT;
+
 			float u = 1.f - t,
 			      tu = t * u;
 
@@ -445,9 +454,9 @@ protected:
 			return key;
 		}
 
-		void interpolate(float t, value_type& val) const
+		void interpolate(const mpfloat& t, value_type& val) const
 		{
-			float prev_t = aElems[0].st;
+			TStore prev_t = aElems[0].st;
 			if (t <= prev_t)
 				val = aElems[0].sv;
 			else
@@ -457,7 +466,7 @@ protected:
 				const Elem* pElem = aElems;
 				for (; pElem < pEnd; ++pElem)
 				{
-					float cur_t = pElem[1].st;
+					TStore cur_t = pElem[1].st;
 					if (t <= cur_t)
 					{
 						// Eval
@@ -585,12 +594,12 @@ public:
 		return m_pSpline->key(n);
 	}
 
-	ILINE void interpolate(float t, value_type& val) const
+	ILINE void interpolate(const mpfloat& t, value_type& val) const
 	{
 		if (!empty())
 			m_pSpline->interpolate(t, val);
 		else
-			val = value_type(1.f);
+			val = value_type(1);
 	}
 
 	void GetMemoryUsage(ICrySizer* pSizer) const
@@ -606,14 +615,14 @@ public:
 		if (!empty())
 			m_pSpline->min_value(val);
 		else
-			val = value_type(1.f);
+			val = value_type(1);
 	}
 	void max_value(value_type& val) const
 	{
 		if (!empty())
 			m_pSpline->max_value(val);
 		else
-			val = value_type(1.f);
+			val = value_type(1);
 	}
 
 	void from_source(source_spline& source)

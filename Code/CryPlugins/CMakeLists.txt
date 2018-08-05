@@ -1,7 +1,8 @@
 # Mandatory plugin, contains entities required by the engine
 if (OPTION_ENGINE)
-	add_subdirectory (CryDefaultEntities/Module)
+	add_subdirectory(CryDefaultEntities/Module)
 	add_subdirectory(CrySensorSystem/Module)
+	add_subdirectory(CryPerceptionSystem/Module)  ## PERSONAL EDITS: Added to build cryperception system, due to CVAR registration changes. Plus not that hard to build.
 endif()
 
 # Example plugin

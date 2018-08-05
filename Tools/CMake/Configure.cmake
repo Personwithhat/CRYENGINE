@@ -212,6 +212,17 @@ if (OPTION_RELEASE_PROFILING)
 	list(APPEND global_defines  "$<$<CONFIG:Release>:PERFORMANCE_BUILD>")
 endif()
 
+## PERSONAL EDITS : To add GMP
+	## Additional Include Directories
+	list(APPEND global_includes "${SDK_DIR}/GMP/include" )
+			
+	## Additional Library Directories
+	list(APPEND global_links "${SDK_DIR}/GMP/lib" )
+
+	## Additional Dependencies NOTE: msys64 (mingw64) libgcc copied to GMP/lib for convenience.
+	set(COMMON_LIBS ${COMMON_LIBS} libgcc legacy_stdio_definitions libgmpxx libgmp)
+## ~PERSONAL EDITS
+
 if ((WIN32 OR WIN64) AND OPTION_ENABLE_BROFILER AND OPTION_ENGINE)
 	list(APPEND global_defines USE_BROFILER)
 	list(APPEND global_includes "${SDK_DIR}/Brofiler" )

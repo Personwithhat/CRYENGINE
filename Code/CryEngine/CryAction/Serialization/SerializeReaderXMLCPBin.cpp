@@ -230,10 +230,10 @@ bool CSerializeReaderXMLCPBin::Value(const char* name, CTimeValue& value)
 	bool isZero = pVal ? 0 == strcmp("zero", pVal) : false;
 
 	if (isZero)
-		value = CTimeValue(0.0f);
+		value = CTimeValue(0);
 	else
 	{
-		float delta;
+		CTimeValue delta;
 		if (!GetAttr(nodeRef, name, delta))
 		{
 			value = gEnv->pTimer->GetFrameStartTime(); // in case we don't find the node, it was assumed to be the default value (0.0)
@@ -242,7 +242,7 @@ bool CSerializeReaderXMLCPBin::Value(const char* name, CTimeValue& value)
 		}
 		else
 		{
-			value = CTimeValue(gEnv->pTimer->GetFrameStartTime() + delta);
+			value = gEnv->pTimer->GetFrameStartTime() + delta;
 		}
 	}
 	return true;

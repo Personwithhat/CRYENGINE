@@ -157,7 +157,7 @@ void CHud3D::Reset(bool bOnSpecChange)
 	m_pChromaShift->ResetParam(0.0f);
 	m_pDofMultiplier->ResetParam(1.0f);
 	m_maxParallax = 0.0f;
-	m_interferenceRandTimer = 0.0f;
+	m_interferenceRandTimer.SetSeconds(0);
 	m_pOverideCacheDelay->ResetParam(0);
 
 	m_pInterference->ResetParam(0.0f);

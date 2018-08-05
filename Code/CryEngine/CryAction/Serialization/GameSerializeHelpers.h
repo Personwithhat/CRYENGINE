@@ -35,7 +35,7 @@ struct Checkpoint
 	{
 		CTimeValue elapsed = End();
 		if (m_bOutput && msg && CCryActionCVars::Get().g_saveLoadExtendedLog != 0)
-			CryLog("Checkpoint %12s : %.4f ms", msg, elapsed.GetMilliSeconds());
+			CryLog("Checkpoint %12s : %.4f ms", msg, (float)elapsed.GetMilliSeconds());
 		Start();
 		return elapsed;
 	}

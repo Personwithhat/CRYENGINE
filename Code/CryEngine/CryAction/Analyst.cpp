@@ -47,7 +47,7 @@ void CGameplayAnalyst::ProcessPlayerEvent(EntityId id, const GameplayEvent& even
 
 			CTimeValue now = gEnv->pTimer->GetFrameStartTime();
 
-			if (player.deathStart.GetMilliSeconds() == 0)
+			if (player.deathStart == 0)
 				player.deathStart = now;
 
 			if (player.alive)
@@ -63,7 +63,7 @@ void CGameplayAnalyst::ProcessPlayerEvent(EntityId id, const GameplayEvent& even
 			PlayerAnalysis& player = GetPlayer(id);
 			CTimeValue now = gEnv->pTimer->GetFrameStartTime();
 
-			if (player.deathStart.GetMilliSeconds() == 0)
+			if (player.deathStart == 0)
 				player.deathStart = now;
 
 			if (!player.alive)
@@ -115,7 +115,7 @@ void CGameplayAnalyst::ProcessPlayerEvent(EntityId id, const GameplayEvent& even
 
 			CTimeValue now = gEnv->pTimer->GetFrameStartTime();
 
-			if (suit.usageStart.GetMilliSeconds() == 0)
+			if (suit.usageStart == 0)
 				suit.usageStart = player.timeStart;
 
 			suit.timeUsed[suit.mode] += now - suit.usageStart;
@@ -132,7 +132,7 @@ void CGameplayAnalyst::ProcessPlayerEvent(EntityId id, const GameplayEvent& even
 
 			CTimeValue now = gEnv->pTimer->GetFrameStartTime();
 
-			if (player.rankStart.GetMilliSeconds() == 0)
+			if (player.rankStart == 0)
 				player.rankStart = player.timeStart;
 
 			if (player.maxRank < event.value)
@@ -380,7 +380,7 @@ void CGameplayAnalyst::DumpRank(string& lines)
 
 		CTimeValue now = gEnv->pTimer->GetFrameStartTime();
 
-		if (player.rankStart.GetMilliSeconds() == 0)
+		if (player.rankStart == 0)
 			player.rankStart = now;
 
 		player.rankTime[player.rank] += now - player.rankStart;
@@ -410,7 +410,7 @@ void CGameplayAnalyst::DumpSuit(string& lines)
 
 		CTimeValue now = gEnv->pTimer->GetFrameStartTime();
 
-		if (suit.usageStart.GetMilliSeconds() == 0)
+		if (suit.usageStart == 0)
 			suit.usageStart = now;
 
 		suit.timeUsed[suit.mode] += now - suit.usageStart;

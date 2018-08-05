@@ -98,7 +98,7 @@ CRemoteCommandServer::Endpoint::~Endpoint()
 		}
 
 		// close the connection (but try to send messages out)
-		m_pConnection->FlushAndClose(IServiceNetworkConnection::kDefaultFlushTime);
+		m_pConnection->FlushAndClose();
 		m_pConnection->Release();
 		m_pConnection = NULL;
 	}

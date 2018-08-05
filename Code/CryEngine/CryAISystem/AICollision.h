@@ -69,8 +69,8 @@ struct AccurateStopTimer
 
 	ILINE void Reset()
 	{
-		total_.SetValue(0);
-		start_.SetValue(0);
+		total_.SetSeconds(0);
+		start_.SetSeconds(0);
 	}
 
 	ILINE void Start()

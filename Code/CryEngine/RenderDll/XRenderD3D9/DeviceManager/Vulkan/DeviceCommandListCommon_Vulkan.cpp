@@ -100,7 +100,7 @@ bool CDeviceTimestampGroup::ResolveTimestamps()
 	return true;
 }
 
-float CDeviceTimestampGroup::GetTimeMS(uint32 timestamp0, uint32 timestamp1)
+CTimeValue CDeviceTimestampGroup::GetTime(uint32 timestamp0, uint32 timestamp1)
 {
 	const float ticksToNanoseconds = GetDevice()->GetPhysicalDeviceInfo()->deviceProperties.limits.timestampPeriod;
 

@@ -261,7 +261,8 @@ CSystem::CSystem(const SSystemInitParams& startupParams)
 #endif
 	//////////////////////////////////////////////////////////////////////////
 
-	m_randomGenerator.SetState(m_Time.GetAsyncTime().GetMicroSecondsAsInt64());
+	// Float inaccuracy is fine, generating random seed.
+	m_randomGenerator.SetState((uint64)m_Time.GetAsyncTime().GetMicroSeconds());
 
 	m_pStreamEngine = nullptr;
 	m_PhysThread = nullptr;
@@ -839,16 +840,14 @@ void CSystem::ShutDown()
 	CryGetIMemReplay()->Stop();
 #endif
 
-	// Fix to improve wait() time within third party APIs using sleep()
+// Revert timer resolution PERSONAL TODO: Make sure dis works
 #if CRY_PLATFORM_WINDOWS
-	TIMECAPS tc;
-	UINT wTimerRes;
-	if (timeGetDevCaps(&tc, sizeof(TIMECAPS)) != TIMERR_NOERROR)
-	{
-		CryFatalError("Error while changing the system timer resolution!");
-	}
-	wTimerRes = std::min(std::max(tc.wPeriodMin, 1u), tc.wPeriodMax);
-	timeEndPeriod(wTimerRes);
+	HMODULE hModNtDll = GetModuleHandleA("ntdll");
+
+	typedef LONG(WINAPI * FP_NtSetTimerResolution)(ULONG, BOOLEAN, PULONG);
+	FP_NtSetTimerResolution pNtSetTimerResolution = (FP_NtSetTimerResolution)GetProcAddress(hModNtDll, "NtSetTimerResolution");
+
+	assert(pNtSetTimerResolution(curTimerRes, FALSE, &curTimerRes) && "Failed to unset timer resolution");
 #endif // CRY_PLATFORM_WINDOWS
 }
 
@@ -1001,7 +1000,7 @@ public:
 	{
 		m_bStopRequested = 0;
 		m_bIsActive = 0;
-		m_stepRequested = 0;
+		m_stepRequested.SetSeconds(0);
 		m_bProcessing = 0;
 		m_doZeroStep = 0;
 		m_lastStepTimeTaken = 0U;
@@ -1021,7 +1020,8 @@ public:
 		m_bStopRequested = 0;
 		m_bIsActive = 1;
 
-		float step, timeTaken, kSlowdown = 1.0f;
+		CTimeValue step, timeTaken = 1;
+		mpfloat kSlowdown = 1;
 		int nSlowFrames = 0;
 		int64 timeStart;
 #ifdef ENABLE_LW_PROFILERS
@@ -1057,32 +1057,33 @@ public:
 				while ((step = m_stepRequested) > 0 || m_doZeroStep)
 				{
 					stepped = true;
-					m_stepRequested = 0;
+					m_stepRequested.SetSeconds(0);
 					m_bProcessing = 1;
 					m_doZeroStep = 0;
 
 					PhysicsVars* pVars = gEnv->pPhysicalWorld->GetPhysVars();
 					pVars->bMultithreaded = 1;
 					gEnv->pPhysicalWorld->TracePendingRays();
-					if (kSlowdown != 1.0f)
+					if (kSlowdown != 1)
 					{
-						step = max(1, FtoI(step * kSlowdown * 50 - 0.5f)) * 0.02f;
-						pVars->timeScalePlayers = 1.0f / max(kSlowdown, 0.2f);
+						//step = max(1, FtoI(step * kSlowdown * 50 - " 0.5")) * 0.02f; PERSONAL TODO: This is just for approximation?
+						step = step * kSlowdown;
+						pVars->timeScalePlayers = 1 / max(kSlowdown, mpfloat("0.2"));
 					}
 					else
-						pVars->timeScalePlayers = 1.0f;
+						pVars->timeScalePlayers = 1;
 					step = min(step, pVars->maxWorldStep);
 					timeStart = CryGetTicks();
 					pIGameFramework->PrePhysicsTimeStep(step);
 					gEnv->pPhysicalWorld->TimeStep(step);
-					timeTaken = gEnv->pTimer->TicksToSeconds(CryGetTicks() - timeStart);
-					if (timeTaken > step * 0.9f)
+					timeTaken = gEnv->pTimer->TicksToTime(CryGetTicks() - timeStart);
+					if (timeTaken > step * "0.9")
 					{
 						if (++nSlowFrames > 5)
-							kSlowdown = step * 0.9f / timeTaken;
+							kSlowdown = (step * "0.9" / timeTaken).conv<mpfloat>();
 					}
 					else
-						kSlowdown = 1.0f, nSlowFrames = 0;
+						kSlowdown = 1, nSlowFrames = 0;
 					gEnv->pPhysicalWorld->TracePendingRays(2);
 					m_bProcessing = 0;
 					//int timeSleep = (int)((m_timeTarget-gEnv->pTimer->GetAsyncTime()).GetMilliSeconds()*0.9f);
@@ -1112,13 +1113,13 @@ public:
 		if (m_bIsActive)
 		{
 			PhysicsVars* vars = gEnv->pPhysicalWorld->GetPhysVars();
-			vars->lastTimeStep = 0;
+			vars->lastTimeStep.SetSeconds(0);
 			m_bIsActive = 0;
-			m_stepRequested = min((float)m_stepRequested, 2.f * vars->maxWorldStep);
+			m_stepRequested = min(m_stepRequested, 2 * vars->maxWorldStep);
 			while (m_bProcessing);
 			return 1;
 		}
-		gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep = 0;
+		gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep.SetSeconds(0);
 		return 0;
 	}
 	int Resume()
@@ -1131,20 +1132,20 @@ public:
 		return 0;
 	}
 	int IsActive() { return m_bIsActive; }
-	int RequestStep(float dt)
+	int RequestStep(const CTimeValue& dt)
 	{
-		if (m_bIsActive && dt > FLT_EPSILON)
+		if (m_bIsActive && dt > TV_EPSILON)
 		{
 			m_stepRequested += dt;
-			m_stepRequested = min((float)m_stepRequested, 10.f * gEnv->pPhysicalWorld->GetPhysVars()->maxWorldStep);
-			if (dt <= 0.0f)
+			m_stepRequested = min(m_stepRequested, 10 * gEnv->pPhysicalWorld->GetPhysVars()->maxWorldStep);
+			if (dt <= 0)
 				m_doZeroStep = 1;
 			m_FrameEvent.Set();
 		}
 
 		return m_bProcessing;
 	}
-	float  GetRequestedStep() { return m_stepRequested; }
+	const CTimeValue& GetRequestedStep() { return m_stepRequested; }
 
 	uint64 LastStepTaken() const
 	{
@@ -1163,7 +1164,7 @@ public:
 
 		if (m_bIsActive)
 		{
-			while (m_stepRequested > 0.0f || m_bProcessing)
+			while (m_stepRequested > 0 || m_bProcessing)
 			{
 				m_FrameDone.Wait();
 			}
@@ -1174,7 +1175,8 @@ protected:
 
 	volatile int    m_bStopRequested;
 	volatile int    m_bIsActive;
-	volatile float  m_stepRequested;
+	//volatile CTimeValue m_stepRequested; PERSONAL VERIFY: This should be volatile! And 'volatile float' too messy to implement here.
+	CTimeValue m_stepRequested;
 	volatile int    m_bProcessing;
 	volatile int    m_doZeroStep;
 	volatile uint64 m_lastStepTimeTaken;
@@ -1328,29 +1330,25 @@ void CSystem::SleepIfNeeded()
 		}
 	}
 
+	// PERSONAL TODO: Should FPS enforcement happen during CTimer::UpdateOnFrameStart(), or here at the end of DoFrame()??
+		// Fixed-time-step = Minimum FPS that Server/Host can handle on average. e.g. FPS should never be lower than this timestep + higher = gives warnings!
+			// Debug only...need to figure out how to sync server/host etc.
+		// Vsync/maxRate = Maximum FPS on Host/Server
+
 	if (maxFPS > 0)
 	{
-		const int64 safeMarginMS = 5; // microseconds
-		const int64 thresholdMs = (1000 * 1000) / (maxFPS);
+		static CTimeValue sTimeLast = gEnv->pTimer->GetAsyncTime();
+		CTimeValue currentTime = gEnv->pTimer->GetAsyncTime();
 
-		ITimer* pTimer = gEnv->pTimer;
-		static int64 sTimeLast = pTimer->GetAsyncTime().GetMicroSecondsAsInt64();
-		int64 currentTime = pTimer->GetAsyncTime().GetMicroSecondsAsInt64();
-		for (;; )
-		{
-			const int64 frameTime = currentTime - sTimeLast;
-			if (frameTime >= thresholdMs)
-				break;
-			if (thresholdMs - frameTime > 10 * 1000)
-				CrySleep(1);
-			else
-				CrySleep(0);
+		// Target time-step based on max FPS
+		CTimeValue tStep = CTimeValue(1 / mpfloat(maxFPS));
+		CTimeValue tLeft = tStep - (currentTime - sTimeLast);
 
-			currentTime = pTimer->GetAsyncTime().GetMicroSecondsAsInt64();
+		if(tLeft > 0){
+			CryLowLatencySleep(tLeft);
 		}
 
-		m_lastTickTime = pTimer->GetAsyncTime();
-		sTimeLast = m_lastTickTime.GetMicroSecondsAsInt64() + safeMarginMS;
+		sTimeLast = gEnv->pTimer->GetAsyncTime();
 	}
 }
 
@@ -2048,7 +2046,7 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 
 		static int g_iPausedPhys = 0;
 		PhysicsVars* pVars = m_env.pPhysicalWorld->GetPhysVars();
-		pVars->threadLag = 0;
+		pVars->threadLag.SetSeconds(0);
 
 		CPhysicsThreadTask* pPhysicsThreadTask = ((CPhysicsThreadTask*)m_PhysThread);
 		if (!pPhysicsThreadTask)
@@ -2065,32 +2063,32 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 
 			// intermingle physics/AI updates so that if we get a big timestep (frame rate glitch etc) the
 			// AI gets to steer entities before they travel over cliffs etc.
-			float maxTimeStep = 0.0f;
+			CTimeValue maxTimeStep;
 			if (m_env.pAISystem)
 				maxTimeStep = m_env.pAISystem->GetUpdateInterval();
 			else
-				maxTimeStep = 0.25f;
+				maxTimeStep.SetSeconds("0.25");
 			int maxSteps = 1;
-			float fCurTime = m_Time.GetCurrTime();
-			float fPrevTime = m_env.pPhysicalWorld->GetPhysicsTime();
-			float timeToDo = m_Time.GetFrameTime();//fCurTime - fPrevTime;
+			CTimeValue fCurTime = m_Time.GetFrameStartTime();
+			CTimeValue fPrevTime = m_env.pPhysicalWorld->GetPhysicsTime();
+			CTimeValue timeToDo = m_Time.GetFrameTime();//fCurTime - fPrevTime;
 			if (m_env.bMultiplayer)
 				timeToDo = m_Time.GetRealFrameTime();
 			m_env.pPhysicalWorld->TracePendingRays();
 
-			while (timeToDo > 0.0001f && maxSteps-- > 0)
+			while (timeToDo > "0.0001" && maxSteps-- > 0)
 			{
-				float thisStep = min(maxTimeStep, timeToDo);
+				CTimeValue thisStep = min(maxTimeStep, timeToDo);
 				timeToDo -= thisStep;
 
 				if ((nPauseMode != 1) && !(updateFlags & ESYSUPDATE_IGNORE_PHYSICS) && g_cvars.sys_physics && !bNoUpdate)
 				{
 					CRY_PROFILE_REGION(PROFILE_SYSTEM, "SysUpdate:Physics");
 
-					int iPrevTime = m_env.pPhysicalWorld->GetiPhysicsTime();
+					CTimeValue iPrevTime = m_env.pPhysicalWorld->GetPhysicsTime();
 					//float fPrevTime=m_env.pPhysicalWorld->GetPhysicsTime();
 					pVars->bMultithreaded = 0;
-					pVars->timeScalePlayers = 1.0f;
+					pVars->timeScalePlayers = 1;
 					if (!(updateFlags & ESYSUPDATE_MULTIPLAYER))
 						m_env.pPhysicalWorld->TimeStep(thisStep);
 					else
@@ -2149,7 +2147,7 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 			// Make sure we don't lag too far behind
 			if ((nPauseMode != 1) && !(updateFlags & ESYSUPDATE_IGNORE_PHYSICS))
 			{
-				if (fabsf(m_env.pPhysicalWorld->GetPhysicsTime() - fCurTime) > 0.01f)
+				if (abs(m_env.pPhysicalWorld->GetPhysicsTime() - fCurTime) > "0.01")
 				{
 					//GetILog()->LogToConsole("Adjusting physical world clock by %.5f", fCurTime-m_env.pPhysicalWorld->GetPhysicsTime());
 					m_env.pPhysicalWorld->SetPhysicsTime(fCurTime);
@@ -2175,7 +2173,7 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 			if ((nPauseMode != 1) && !(updateFlags & ESYSUPDATE_IGNORE_PHYSICS))
 			{
 				pPhysicsThreadTask->Resume();
-				float lag = pPhysicsThreadTask->GetRequestedStep();
+				CTimeValue lag = pPhysicsThreadTask->GetRequestedStep();
 
 				if (pPhysicsThreadTask->RequestStep(m_Time.GetFrameTime()))
 				{
@@ -2205,8 +2203,8 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 		m_env.pPhysicalWorld->SetWaterManagerParams(&pwm);
 	}
 
-	// Use UI timer for CryMovie, because it should not be affected by pausing game time
-	const float fMovieFrameTime = m_Time.GetFrameTime(ITimer::ETIMER_UI);
+	// CryMovie shouldn't be affected by pausing game-time.
+	const CTimeValue fMovieFrameTime = m_Time.GetFrameTime(true);
 
 	// Run movie system pre-update
 	if (!bNoUpdate)
@@ -2358,15 +2356,15 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 	CTimeValue cur_time = gEnv->pTimer->GetAsyncTime();
 
 	CTimeValue a_second(g_cvars.sys_update_profile_time);
-	std::vector<std::pair<CTimeValue, float>>::iterator it = m_updateTimes.begin();
-	for (std::vector<std::pair<CTimeValue, float>>::iterator eit = m_updateTimes.end(); it != eit; ++it)
+	std::vector<std::pair<CTimeValue, CTimeValue>>::iterator it = m_updateTimes.begin();
+	for (std::vector<std::pair<CTimeValue, CTimeValue>>::iterator eit = m_updateTimes.end(); it != eit; ++it)
 		if ((cur_time - it->first) < a_second)
 			break;
 
 	if (it != m_updateTimes.begin())
 		m_updateTimes.erase(m_updateTimes.begin(), it);
 
-	float updateTime = (cur_time - updateStart).GetMilliSeconds();
+	CTimeValue updateTime = cur_time - updateStart;
 	m_updateTimes.push_back(std::make_pair(cur_time, updateTime));
 
 	UpdateUpdateTimes();
@@ -2436,12 +2434,12 @@ void CSystem::GetUpdateStats(SSystemUpdateStats& stats)
 	}
 	else
 	{
-		stats.avgUpdateTime = 0;
-		stats.maxUpdateTime = -FLT_MAX;
-		stats.minUpdateTime = +FLT_MAX;
-		for (std::vector<std::pair<CTimeValue, float>>::const_iterator it = m_updateTimes.begin(), eit = m_updateTimes.end(); it != eit; ++it)
+		stats.avgUpdateTime.SetSeconds(0);
+		stats.maxUpdateTime = -CTimeValue::Max();
+		stats.minUpdateTime = CTimeValue::Max();
+		for (std::vector<std::pair<CTimeValue, CTimeValue>>::const_iterator it = m_updateTimes.begin(), eit = m_updateTimes.end(); it != eit; ++it)
 		{
-			const float t = it->second;
+			const CTimeValue t = it->second;
 			stats.avgUpdateTime += t;
 			stats.maxUpdateTime = max(stats.maxUpdateTime, t);
 			stats.minUpdateTime = min(stats.minUpdateTime, t);
@@ -2451,14 +2449,11 @@ void CSystem::GetUpdateStats(SSystemUpdateStats& stats)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::UpdateMovieSystem(const int updateFlags, const float fFrameTime, const bool bPreUpdate)
+void CSystem::UpdateMovieSystem(const int updateFlags, const CTimeValue& fFrameTime, const bool bPreUpdate)
 {
 	if (m_env.pMovieSystem && !(updateFlags & ESYSUPDATE_EDITOR) && g_cvars.sys_trackview)
 	{
-		float fMovieFrameTime = fFrameTime;
-
-		if (fMovieFrameTime > g_cvars.sys_maxTimeStepForMovieSystem)
-			fMovieFrameTime = g_cvars.sys_maxTimeStepForMovieSystem;
+		CTimeValue fMovieFrameTime = min(fFrameTime, g_cvars.sys_maxTimeStepForMovieSystem);
 
 		if (bPreUpdate)
 		{
@@ -3334,7 +3329,8 @@ void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
 		if (gEnv && gEnv->pTimer)
 		{
 			const CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
-			const float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
+			// Float inaccuracy is fine, debug/profiling
+			const float numSeconds = (float)(endTime - s_startTime).GetSeconds();
 			CryLog("SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
 			       m_systemGlobalState, systemGlobalState,
 			       CSystem::GetSystemGlobalStateName(m_systemGlobalState), CSystem::GetSystemGlobalStateName(systemGlobalState),

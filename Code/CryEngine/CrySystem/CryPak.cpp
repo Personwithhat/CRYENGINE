@@ -338,7 +338,7 @@ struct SAutoCollectFileAcessTime
 	}
 private:
 	CCryPak* m_pPak;
-	float    m_fTime;
+	CTimeValue m_fTime;
 };
 
 static void fileAccessMessage(int threadIndex, const char* inName)
@@ -386,7 +386,7 @@ CCryPak::CCryPak(IMiniLog* pLog, PakVars* pPakVars, const bool bLvlRes) :
 	m_pLog(pLog),
 	m_eRecordFileOpenList(RFOM_Disabled),
 	m_pPakVars(pPakVars ? pPakVars : &g_cvars.pakVars),
-	m_fFileAcessTime(0.f),
+	m_fFileAcessTime(0),
 	m_bLvlRes(bLvlRes),
 	m_renderThreadId(0),
 	m_pWidget(NULL)
@@ -487,20 +487,20 @@ bool CCryPak::CheckFileAccessDisabled(const char* name, const char* mode)
 				{
 					char acTmp[2048];
 					cry_sprintf(acTmp, "Invalid File Access: %s '%s'", nameShort, mode);
-					gEnv->pSystem->DisplayErrorMessage(acTmp, 5.0f);
+					gEnv->pSystem->DisplayErrorMessage(acTmp, 5);
 
 					static bool bPrintOnce = true;
 
 					if (bPrintOnce)
 					{
-						gEnv->pSystem->DisplayErrorMessage("FILE ACCESS FROM MAIN OR RENDER THREAD DETECTED", 60.0f, 0, false);
-						gEnv->pSystem->DisplayErrorMessage("THIS IMPACTS PERFORMANCE AND NEEDS TO BE REVISED", 60.0f, 0, false);
-						gEnv->pSystem->DisplayErrorMessage("To disable this message set sys_PakLogInvalidFileAccess = 0 (not recommended)", 60.0f, 0, false);
+						gEnv->pSystem->DisplayErrorMessage("FILE ACCESS FROM MAIN OR RENDER THREAD DETECTED", 60, 0, false);
+						gEnv->pSystem->DisplayErrorMessage("THIS IMPACTS PERFORMANCE AND NEEDS TO BE REVISED", 60, 0, false);
+						gEnv->pSystem->DisplayErrorMessage("To disable this message set sys_PakLogInvalidFileAccess = 0 (not recommended)", 60, 0, false);
 						bPrintOnce = false;
 					}
 				}
 
-				CryPerfHUDWarning(5.f, "File Access: %s '%s'", nameShort, mode);
+				CryPerfHUDWarning(5, "File Access: %s '%s'", nameShort, mode);
 			}
 	#if ENABLE_STATOSCOPE
 			if (gEnv->pStatoscope && name)
@@ -4411,13 +4411,13 @@ void CCryPak::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam
 	switch (event)
 	{
 	case ESYSTEM_EVENT_LEVEL_LOAD_START:
-		m_fFileAcessTime = 0;
+		m_fFileAcessTime.SetSeconds(0);
 		break;
 	case ESYSTEM_EVENT_LEVEL_LOAD_END:
 		{
 			// Log used time.
 			CryLog("File access time during level loading: %.2f seconds", m_fFileAcessTime);
-			m_fFileAcessTime = 0;
+			m_fFileAcessTime.SetSeconds(0);
 		}
 		break;
 

@@ -49,11 +49,11 @@ int CTexture::s_nBytesRequiredNotSubmitted = 0;
 
 #if !defined (_RELEASE) || defined(ENABLE_STATOSCOPE_RELEASE)
 int CTexture::s_TextureUpdates = 0;
-float CTexture::s_TextureUpdatesTime = 0.0f;
+CTimeValue CTexture::s_TextureUpdatesTime = 0;
 int CTexture::s_TexturesUpdatedRendered = 0;
-float CTexture::s_TextureUpdatedRenderedTime = 0.0f;
+CTimeValue CTexture::s_TextureUpdatedRenderedTime = 0;
 int CTexture::s_StreamingRequestsCount = 0;
-float CTexture::s_StreamingRequestsTime = 0.0f;
+CTimeValue CTexture::s_StreamingRequestsTime = 0;
 #endif
 
 #ifdef ENABLE_TEXTURE_STREAM_LISTENER
@@ -350,8 +350,8 @@ void STexStreamInState::StreamAsyncOnComplete(IReadStream* pStream, unsigned nEr
 		if (pStream->GetParams().nSize > 1024)
 			CTexture::s_nStreamingThroughput += pStream->GetParams().nSize;
 		const CTimeValue currentTime = iTimer->GetAsyncTime();
-		if (currentTime - m_fStartTime > .01f)  // avoid measurement errors for small textures
-			CTexture::s_nStreamingTotalTime += currentTime.GetSeconds() - m_fStartTime;
+		if (currentTime - m_fStartTime > "0.01")  // avoid measurement errors for small textures
+			CTexture::s_nStreamingTotalTime += currentTime - m_fStartTime;
 #endif
 
 		m_bAllStreamsComplete = true;
@@ -1324,7 +1324,7 @@ bool CTexture::StartStreaming(CTexture* pTex, STexPoolItem* pNewPoolItem, const 
 
 			pStreamState->m_pNewPoolItem = pNewPoolItem;
 #ifndef _RELEASE
-			pStreamState->m_fStartTime = iTimer->GetAsyncTime().GetSeconds();
+			pStreamState->m_fStartTime = iTimer->GetAsyncTime();
 #endif
 			pStreamState->m_nAsyncRefCount = 0;
 			pStreamState->m_nHigherUploadedMip = nStartMip;
@@ -1357,8 +1357,8 @@ bool CTexture::StartStreaming(CTexture* pTex, STexPoolItem* pNewPoolItem, const 
 				StreamReadParams baseParams;
 				baseParams.nFlags |= IStreamEngine::FLAGS_NO_SYNC_CALLBACK;
 				baseParams.dwUserData = nMipIdx;
-				baseParams.nLoadTime = 1;
-				baseParams.nMaxLoadTime = 4;
+				baseParams.nLoadTime.SetMilliSeconds(1);
+				baseParams.nMaxLoadTime.SetMilliSeconds(4);
 				baseParams.ePriority = estp;
 				baseParams.nOffset = chunk.nOffsetInFile;
 				baseParams.nSize = chunk.nSizeInFile;
@@ -1480,7 +1480,7 @@ void CTexture::InitStreaming()
 
 	// reset all statistics
 	s_nStreamingThroughput = 0;
-	s_nStreamingTotalTime = 0;
+	s_nStreamingTotalTime.SetSeconds(0);
 
 	InitStreamingDev();
 

@@ -25,10 +25,10 @@ class CGameQueryListener : public IGameQueryListener
 		string     m_target;
 		string     m_description;
 		string     m_data;
-		uint32     m_ping;
+		CTimeValue m_ping;
 		CTimeValue m_lastTime;
 
-		SGameServer(const char* target, const char* description, const char* data, const uint32 ping) :
+		SGameServer(const char* target, const char* description, const char* data, const CTimeValue& ping) :
 			m_target(target), m_description(description), m_data(data), m_ping(ping)
 		{
 			m_lastTime = gEnv->pTimer->GetFrameStartTime();
@@ -61,9 +61,9 @@ class CGameQueryListener : public IGameQueryListener
 			m_lastTime = gEnv->pTimer->GetFrameStartTime();
 		}
 
-		void IncPing(const uint32 ping)
+		void IncPing(const CTimeValue& ping)
 		{
-			if (m_ping)
+			if (m_ping != 0)
 				m_ping = (3 * m_ping + ping) / int(4);
 			else
 				m_ping = ping;
@@ -88,13 +88,16 @@ public:
 	CGameQueryListener();
 	~CGameQueryListener();
 
+	// PERSONAL VERIFY: Each of this 'pings' were in uint32, of some unknown time format.
+	// Need to be sure that it does not auto-convert to CTimeValue etc. 
+
 	// IGameQueryListener
-	virtual void        AddServer(const char* description, const char* target, const char* additionalText, uint32 ping);
+	virtual void        AddServer(const char* description, const char* target, const char* additionalText, const CTimeValue& ping);
 	virtual void        RemoveServer(string address);
-	virtual void        AddPong(string address, uint32 ping);
+	virtual void        AddPong(string address, const CTimeValue& ping);
 	virtual void        GetCurrentServers(char*** pastrServers, int& o_amount);
-	virtual void        GetServer(int number, char** server, char** data, int& ping);
-	virtual const char* GetServerData(const char* server, int& o_ping);
+	virtual void        GetServer(int number, char** server, char** data, CTimeValue& ping);
+	virtual const char* GetServerData(const char* server, CTimeValue& o_ping);
 	virtual void        Update();
 	virtual void        OnReceiveGameState(const char* fromAddress, XmlNodeRef xmlData);
 	virtual void        Release();

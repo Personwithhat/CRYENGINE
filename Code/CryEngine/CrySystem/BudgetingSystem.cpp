@@ -440,7 +440,8 @@ CBudgetingSystem::GetColor(float scale, float* pColor)
 	}
 	else
 	{
-		float time(m_pTimer->GetAsyncCurTime());
+		// Float inaccuracy is fine, coloring etc.
+		float time(m_pTimer->GetAsyncCurTime().GetSeconds());
 		float blink(sinf(time * 6.28f) * 0.5f + 0.5f);
 		pColor[0] = 1;
 		pColor[1] = blink;
@@ -518,9 +519,9 @@ CBudgetingSystem::MonitorFrameTime(float& x, float& y)
 	if (!m_pTimer)
 		return;
 
-	static float s_fps(100.0f);
-	static float s_startTime(m_pTimer->GetAsyncCurTime());
-	static float s_fpsAccu(0.0f);
+	static rTime s_fps(100);
+	static CTimeValue s_startTime = m_pTimer->GetAsyncCurTime();
+	static rTime s_fpsAccu(0);
 	static int s_numFramesMeasured(0);
 
 	// accumulate all fps over a period of one second
@@ -529,18 +530,18 @@ CBudgetingSystem::MonitorFrameTime(float& x, float& y)
 
 	// check if accumulation period ellapsed,
 	// if so calc new average fps and reset accumulators
-	float curTime(m_pTimer->GetAsyncCurTime());
-	if (curTime - s_startTime >= 1.0f)
+	CTimeValue curTime = m_pTimer->GetAsyncCurTime();
+	if (curTime - s_startTime >= 1)
 	{
 		s_fps = s_fpsAccu / s_numFramesMeasured;
 
 		s_startTime = curTime;
-		s_fpsAccu = 0.0f;
+		s_fpsAccu = 0;
 		s_numFramesMeasured = 0;
 	}
 
 	// calc scale and update budget info
-	float curFrameTimeInMS(1000.0f / s_fps);
+	float curFrameTimeInMS(1000 / s_fps);
 	float scale(curFrameTimeInMS / m_frameTimeLimitInMS);
 
 	float color[4];

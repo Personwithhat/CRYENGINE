@@ -108,13 +108,18 @@ bool DecodeString(const char* buf, uint64& value)
 }
 	#endif
 
-bool DecodeString(const char* buf, CTimeValue& value)
+MPOnly bool DecodeString(const char* buf, T& value)
 {
-	value = 0.0f;
-	float temp;
-	bool ok = sscanf(buf, "%f", &temp) != 0;
+	value = 0;
+	return 1 == (value = buf);
+}
+TVOnly bool DecodeString(const char* buf, T& value)
+{
+	value.SetSeconds(0);
+	mpfloat temp;
+	bool ok = DecodeString(buf, temp);
 	if (ok)
-		value = temp;
+		value.SetSeconds(temp);
 	return ok;
 }
 
@@ -281,7 +286,7 @@ CDemoPlaybackListener::CDemoPlaybackListener(CNetContext* pContext, const char* 
 
 	m_pState = &m_defaultHandlers;
 	m_buffer.key[0] = 0;
-	m_startTime = -1.0f;
+	m_startTime.SetSeconds(-1);
 
 	m_currentlyBinding = 0;
 	m_currentlyBindingStatic = false;
@@ -500,19 +505,19 @@ CDemoPlaybackListener::EInputResult CDemoPlaybackListener::BeginFrame()
 	if (!m_bInGame)
 		return eIR_TryLater;
 
-	if (m_startTime < 0.0f)
+	if (m_startTime < 0)
 	{
 		if (!DecodeString(m_buffer.value, m_startTime))
 			return eIR_AbortRead;
 	}
 
 	ITimer* pTimer = gEnv->pTimer;
-	float time = (pTimer->GetFrameStartTime() - m_initTime).GetSeconds();
+	CTimeValue time = pTimer->GetFrameStartTime() - m_initTime;
 
 	if (time < m_startTime)
 		return eIR_TryLater;
 
-	m_startTime = -1.0f;
+	m_startTime.SetSeconds(-1);
 	return eIR_Ok;
 }
 

@@ -297,7 +297,7 @@ public:
 		bool                     arrivedAtPathEndEventSent;
 
 		RuntimeData()
-			: lastUpdateTime(0.0f)
+			: lastUpdateTime(0)
 			, isValidPath(false)
 			, arrivedCloseToPathEndEventSent(false)
 			, arrivedAtPathEndEventSent(false)
@@ -363,7 +363,7 @@ public:
 			runtimeData.pathFollower.SetFinalPathLocation(targetPosition);
 		}
 
-		runtimeData.pathFollower.Update(pathEntityIn, 1.0f);
+		runtimeData.pathFollower.Update(pathEntityIn, 1);
 	}
 
 	virtual Status Update(const UpdateContext& context) override
@@ -395,7 +395,7 @@ public:
 			}
 		}
 
-		const float elapsedSeconds = timeDelta.GetSeconds();
+		const CTimeValue elapsedSeconds = timeDelta;
 		FlyHelpers::PathEntityOut pathEntityOut = runtimeData.pathFollower.Update(pathEntityIn, elapsedSeconds);
 
 		pPipeUser->m_State.predictedCharacterStates.nStates = 0;

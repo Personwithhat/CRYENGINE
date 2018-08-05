@@ -1137,7 +1137,7 @@ void CD3D9Renderer::DrawAllDynTextures(const char* szFilter, const bool bLogName
 #endif
 }
 
-void CFlashTextureSourceBase::Advance(const float delta, bool isPaused)
+void CFlashTextureSourceBase::Advance(const CTimeValue& delta, bool isPaused)
 {
 	if (!m_pFlashPlayer)
 		return;

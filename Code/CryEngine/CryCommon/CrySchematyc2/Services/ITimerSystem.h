@@ -26,29 +26,43 @@ namespace Schematyc2
 
 	struct STimerDuration
 	{
+		// PERSONAL VERIFY: These 2 should probably be improved/cleaned up, default const/etc. is implicitly deleted after CTimeValue edits....
+		~STimerDuration(){};
+		STimerDuration& operator=(const STimerDuration& rhs)
+		{
+			units = rhs.units;
+			frames = rhs.frames;
+			range.min = rhs.range.min;
+			range.max = rhs.range.max;
+			return *this;
+		}
+
+		// PERSONAL NOTE: For same reason as in StreamEngine.cpp, mpfloat/CTimeValue can't be memset.
 		inline STimerDuration()
 			: units(ETimerUnits::Invalid)
 		{
-			memset(this, 0, sizeof(STimerDuration));
 		}
 
-		explicit inline STimerDuration(uint32 _frames)
+		// PERSONAL VERIFY: Changed Frame setup to specific function call, conflicts with CTimeValue if in construction.
+		// Does this conflict with how schematyc handles/uses/sets up STimerDuration?
+		inline STimerDuration& Frames(uint32 _frames)
 		{
-			memset(this, 0, sizeof(STimerDuration));
-			units  = ETimerUnits::Frames;
+			*this = STimerDuration();
+			units = ETimerUnits::Frames;
 			frames = _frames;
+			return *this;
 		}
 
-		explicit inline STimerDuration(float _seconds)
+		inline STimerDuration(const CTimeValue& _seconds)
 		{
-			memset(this, 0, sizeof(STimerDuration));
+			*this = STimerDuration();
 			units   = ETimerUnits::Seconds;
 			seconds = _seconds;
 		}
 
-		explicit inline STimerDuration(float _min, float _max)
+		explicit inline STimerDuration(const CTimeValue& _min, const CTimeValue& _max)
 		{
-			memset(this, 0, sizeof(STimerDuration));
+			*this = STimerDuration();
 			units     = ETimerUnits::Random;
 			range.min = _min;
 			range.max = _max;
@@ -63,11 +77,11 @@ namespace Schematyc2
 		union
 		{
 			uint32 frames;
-			float  seconds;
+			CTimeValue seconds;
 			struct
 			{
-				float min;
-				float max;
+				CTimeValue min;
+				CTimeValue max;
 			} range;
 		};
 	};
@@ -121,7 +135,7 @@ namespace Schematyc2
 			}
 		case ETimerUnits::Seconds:
 			{
-				return StringUtils::FloatToString(duration.seconds, output) && StringUtils::Append("(s)", output);
+				return StringUtils::TimeToString(duration.seconds, output) && StringUtils::Append("(s)", output);
 			}
 		}
 		return false;

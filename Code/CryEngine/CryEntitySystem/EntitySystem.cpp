@@ -168,7 +168,7 @@ CEntitySystem::CEntitySystem(ISystem* pSystem)
 	CVar::Init();
 
 	m_bTimersPause = false;
-	m_nStartPause.SetSeconds(-1.0f);
+	m_nStartPause.SetSeconds(-1);
 
 	m_pAreaManager = new CAreaManager();
 	m_pBreakableManager = new CBreakableManager();
@@ -936,7 +936,7 @@ void CEntitySystem::PrePhysicsUpdate()
 	CRYPROFILE_SCOPE_PROFILE_MARKER("EntitySystem::PrePhysicsUpdate");
 
 	SEntityEvent event(ENTITY_EVENT_PREPHYSICSUPDATE);
-	event.fParam[0] = gEnv->pTimer->GetFrameTime();
+	event.tVal = gEnv->pTimer->GetFrameTime();
 
 	m_prePhysicsUpdatedEntityComponents.ForEach([&](const SMinimalEntityComponentRecord& rec) -> EComponentIterationResult
 	{
@@ -953,8 +953,8 @@ void CEntitySystem::Update()
 	CRY_PROFILE_REGION(PROFILE_ENTITY, "EntitySystem::Update");
 	CRYPROFILE_SCOPE_PROFILE_MARKER("EntitySystem::Update");
 
-	const float fFrameTime = gEnv->pTimer->GetFrameTime();
-	if (fFrameTime > FLT_EPSILON)
+	const CTimeValue fFrameTime = gEnv->pTimer->GetFrameTime();
+	if (fFrameTime > TV_EPSILON)
 	{
 		UpdateTimers();
 
@@ -1039,8 +1039,8 @@ void CEntitySystem::Update()
 //////////////////////////////////////////////////////////////////////////
 void CEntitySystem::DebugDrawEntityUsage()
 {
-	static float fLastUpdate = 0.0f;
-	float fCurrTime = gEnv->pTimer->GetFrameStartTime().GetSeconds();
+	static CTimeValue fLastUpdate = 0;
+	CTimeValue fCurrTime = gEnv->pTimer->GetFrameStartTime();
 
 	struct SEntityClassDebugInfo
 	{
@@ -1071,7 +1071,7 @@ void CEntitySystem::DebugDrawEntityUsage()
 
 	ICrySizer* pSizer = gEnv->pSystem->CreateSizer();
 
-	if (fCurrTime - fLastUpdate >= 0.001f * max(CVar::es_DebugEntityUsage, 1000))
+	if (fCurrTime - fLastUpdate >= max(CVar::es_DebugEntityUsage, CTimeValue(1)))
 	{
 		fLastUpdate = fCurrTime;
 
@@ -1225,9 +1225,9 @@ void CEntitySystem::DebugDrawLayerInfo()
 
 	if (bShowLayerActivation) // Show which layer was switched on or off
 	{
-		const float fShowTime = 10.0f; // 10 seconds
-		float fCurTime = gEnv->pTimer->GetCurrTime();
-		float fPrevTime = 0;
+		const CTimeValue fShowTime = 10; // 10 seconds
+		CTimeValue fCurTime = gEnv->pTimer->GetFrameStartTime();
+		CTimeValue fPrevTime = 0;
 		std::vector<SLayerProfile>::iterator ppClearProfile = m_layerProfiles.end();
 		for (std::vector<SLayerProfile>::iterator ppProfiles = m_layerProfiles.begin(); ppProfiles != m_layerProfiles.end(); ++ppProfiles)
 		{
@@ -1235,9 +1235,9 @@ void CEntitySystem::DebugDrawLayerInfo()
 			CEntityLayer* pLayer = profile.pLayer;
 
 			ColorF clTextProfiledTime(0, 1, 1, 1);
-			if (profile.fTimeMS > 50)  // Red color for more then 50 ms
+			if (profile.fTime.GetMilliSeconds() > 50)  // Red color for more then 50 ms
 				clTextProfiledTime = ColorF(1, 0.3f, 0.3f, 1);
-			else if (profile.fTimeMS > 10)    // Yellow color for more then 10 ms
+			else if (profile.fTime.GetMilliSeconds() > 10)    // Yellow color for more then 10 ms
 				clTextProfiledTime = ColorF(1, 1, 0.3f, 1);
 
 			if (!profile.isEnable)
@@ -1257,7 +1257,7 @@ void CEntitySystem::DebugDrawLayerInfo()
 				fPrevTime = profile.fTimeOn;
 			}
 
-			DrawText(tx + xstep, ty += ystep, clTextProfiledTime, "%.1f ms: %s (%s)", profile.fTimeMS, pLayer->GetName(), profile.isEnable ? "On" : "Off");
+			DrawText(tx + xstep, ty += ystep, clTextProfiledTime, "%.1f ms: %s (%s)", (float)profile.fTime.GetMilliSeconds(), pLayer->GetName(), profile.isEnable ? "On" : "Off");
 			if (ppClearProfile == m_layerProfiles.end() && fCurTime - profile.fTimeOn > fShowTime)
 				ppClearProfile = ppProfiles;
 		}
@@ -1433,17 +1433,17 @@ void CEntitySystem::DebugDrawLayerInfo()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntitySystem::UpdateEntityComponents(float fFrameTime)
+void CEntitySystem::UpdateEntityComponents(const CTimeValue& fFrameTime)
 {
 	CRY_PROFILE_REGION(PROFILE_ENTITY, "EntitySystem::UpdateEntityComponents");
 	CRYPROFILE_SCOPE_PROFILE_MARKER("EntitySystem::UpdateEntityComponents");
 
-	SEntityUpdateContext ctx = { fFrameTime, gEnv->pTimer->GetCurrTime(), gEnv->nMainFrameID };
+	SEntityUpdateContext ctx = { fFrameTime, gEnv->pTimer->GetFrameStartTime(), gEnv->nMainFrameID };
 
 	SEntityEvent event;
 	event.event = ENTITY_EVENT_UPDATE;
 	event.nParam[0] = (INT_PTR)&ctx;
-	event.fParam[0] = ctx.fFrameTime;
+	event.tVal = ctx.fFrameTime; // PERSONAL NOTE: Perhaps this entity event should stick with ctx.frameTime instead of .tVal or fParam[0] etc.
 
 #ifdef INCLUDE_ENTITYSYSTEM_PRODUCTION_CODE
 	if (CVar::pUpdateEntities->GetIVal() == 0)
@@ -1533,8 +1533,8 @@ case(int)EComponentProfilingType::Simple:
 	pRenderAuxGeom->Draw2dLabel(positionX, positionY, fontSize, textColor, false, "Number of Updated Entity Components: %" PRISIZE_T, m_updatedEntityComponents.Size());
 	positionY += yOffset * 2;
 
-	float componentUpdateTime = (timeAfterComponentUpdate - timeBeforeComponentUpdate).GetMilliSeconds();
-	pRenderAuxGeom->Draw2dLabel(positionX, positionY, fontSize, textColor, false, "Entity Components: %f ms", componentUpdateTime);
+	CTimeValue componentUpdateTime = timeAfterComponentUpdate - timeBeforeComponentUpdate;
+	pRenderAuxGeom->Draw2dLabel(positionX, positionY, fontSize, textColor, false, "Entity Components: %f ms", (float)componentUpdateTime.GetMilliSeconds());
 }
 break;
 case(int)EComponentProfilingType::TypeCostBreakdown:
@@ -1542,7 +1542,7 @@ case(int)EComponentProfilingType::TypeCostBreakdown:
 	struct SComponentTypeInfo
 	{
 		const char* szName;
-		float       totalCostMs;
+		CTimeValue  totalCost;
 	};
 
 	std::unordered_map<CryGUID, SComponentTypeInfo> componentTypeCostMap;
@@ -1581,11 +1581,11 @@ case(int)EComponentProfilingType::TypeCostBreakdown:
 
 		if (it == componentTypeCostMap.end())
 		{
-			componentTypeCostMap.emplace(typeGUID, SComponentTypeInfo { szName, (timeAfterComponentUpdate - timeBeforeComponentUpdate).GetMilliSeconds() });
+			componentTypeCostMap.emplace(typeGUID, SComponentTypeInfo { szName, (timeAfterComponentUpdate - timeBeforeComponentUpdate) });
 		}
 		else
 		{
-			it->second.totalCostMs += (timeAfterComponentUpdate - timeBeforeComponentUpdate).GetMilliSeconds();
+			it->second.totalCost += (timeAfterComponentUpdate - timeBeforeComponentUpdate);
 		}
 
 		return EComponentIterationResult::Continue;
@@ -1600,8 +1600,8 @@ case(int)EComponentProfilingType::TypeCostBreakdown:
 	pRenderAuxGeom->Draw2dLabel(positionX, positionY, fontSize, textColor, false, "Number of Updated Entity Components: %" PRISIZE_T, m_updatedEntityComponents.Size());
 	positionY += yOffset * 2;
 
-	float componentUpdateTime = (timeAfterComponentsUpdate - timeBeforeComponentsUpdate).GetMilliSeconds();
-	pRenderAuxGeom->Draw2dLabel(positionX, positionY, fontSize, textColor, false, "Entity Components: %f ms", componentUpdateTime);
+	CTimeValue componentUpdateTime = timeAfterComponentsUpdate - timeBeforeComponentsUpdate;
+	pRenderAuxGeom->Draw2dLabel(positionX, positionY, fontSize, textColor, false, "Entity Components: %f ms", (float)componentUpdateTime.GetMilliSeconds());
 	positionY += yOffset;
 	pRenderAuxGeom->Draw2dLabel(positionX, positionY, fontSize, textColor, false, "------------------------");
 	positionY += yOffset;
@@ -1610,7 +1610,7 @@ case(int)EComponentProfilingType::TypeCostBreakdown:
 
 	for (const std::pair<CryGUID, SComponentTypeInfo>& componentTypeCostPair : componentTypeCostMap)
 	{
-		pRenderAuxGeom->Draw2dLabel(positionX, positionY, fontSize, textColor, false, "%s: %f ms", componentTypeCostPair.second.szName, componentTypeCostPair.second.totalCostMs);
+		pRenderAuxGeom->Draw2dLabel(positionX, positionY, fontSize, textColor, false, "%s: %f ms", componentTypeCostPair.second.szName, (float)componentTypeCostPair.second.totalCost.GetMilliSeconds());
 		positionY += yOffset;
 	}
 }
@@ -1789,16 +1789,14 @@ void CEntitySystem::GetMemoryStatistics(ICrySizer* pSizer) const
 //////////////////////////////////////////////////////////////////////////
 void CEntitySystem::AddTimerEvent(SEntityTimerEvent& event, CTimeValue startTime)
 {
-	CTimeValue millis;
-	millis.SetMilliSeconds(event.nMilliSeconds);
-	CTimeValue nTriggerTime = startTime + millis;
+	CTimeValue nTriggerTime = startTime + event.nTime;
 	m_timersMap.insert(EntityTimersMap::value_type(nTriggerTime, event));
 
 	if (CVar::es_DebugTimers)
 	{
 		CEntity* pEntity = GetEntityFromID(event.entityId);
 		if (pEntity)
-			CryLogAlways("SetTimer (timerID=%d,time=%dms) for Entity %s", event.nTimerId, event.nMilliSeconds, pEntity->GetEntityTextDescription().c_str());
+			CryLogAlways("SetTimer (timerID=%d,time=%dms) for Entity %s", event.nTimerId, (float)event.nTime.GetMilliSeconds(), pEntity->GetEntityTextDescription().c_str());
 	}
 }
 
@@ -1853,7 +1851,7 @@ void CEntitySystem::PauseTimers(bool bPause, bool bResume)
 	m_bTimersPause = bPause;
 	if (bResume)
 	{
-		m_nStartPause.SetSeconds(-1.0f);
+		m_nStartPause.SetSeconds(-1);
 		return; // just allow timers to be updated next time
 	}
 
@@ -1862,12 +1860,12 @@ void CEntitySystem::PauseTimers(bool bPause, bool bResume)
 		// record when timers pause was called
 		m_nStartPause = gEnv->pTimer->GetFrameStartTime();
 	}
-	else if (m_nStartPause > CTimeValue(0.0f))
+	else if (m_nStartPause > 0)
 	{
 		// increase the timers by adding the delay time passed since when
 		// it was paused
-		CTimeValue nCurrTimeMillis = gEnv->pTimer->GetFrameStartTime();
-		CTimeValue nAdditionalTriggerTime = nCurrTimeMillis - m_nStartPause;
+		CTimeValue nCurrTime = gEnv->pTimer->GetFrameStartTime();
+		CTimeValue nAdditionalTriggerTime = nCurrTime - m_nStartPause;
 
 		EntityTimersMap::iterator it;
 		EntityTimersMap lstTemp;
@@ -1885,7 +1883,7 @@ void CEntitySystem::PauseTimers(bool bPause, bool bResume)
 			m_timersMap.insert(EntityTimersMap::value_type(nUpdatedTimer, it->second));
 		} //it
 
-		m_nStartPause.SetSeconds(-1.0f);
+		m_nStartPause.SetSeconds(-1);
 	}
 }
 
@@ -1897,11 +1895,11 @@ void CEntitySystem::UpdateTimers()
 
 	CRY_PROFILE_FUNCTION(PROFILE_ENTITY);
 
-	CTimeValue nCurrTimeMillis = gEnv->pTimer->GetFrameStartTime();
+	CTimeValue nCurrTime = gEnv->pTimer->GetFrameStartTime();
 
 	// Iterate thru all matching timers.
 	EntityTimersMap::iterator first = m_timersMap.begin();
-	EntityTimersMap::iterator last = m_timersMap.upper_bound(nCurrTimeMillis);
+	EntityTimersMap::iterator last = m_timersMap.upper_bound(nCurrTime);
 	if (last != first)
 	{
 		// Make a separate list, because OnTrigger call can modify original timers map.
@@ -1930,14 +1928,14 @@ void CEntitySystem::UpdateTimers()
 			{
 				// Send Timer event to the entity.
 				entityEvent.nParam[0] = event.nTimerId;
-				entityEvent.nParam[1] = event.nMilliSeconds;
-				entityEvent.nParam[2] = event.entityId;
+				entityEvent.nParam[1] = event.entityId;
+				entityEvent.tVal      = event.nTime;
 				pEntity->SendEvent(entityEvent);
 
 				if (CVar::es_DebugTimers)
 				{
 					if (pEntity)
-						CryLogAlways("OnTimer Event (timerID=%d,time=%dms) for Entity %s (which is %s)", event.nTimerId, event.nMilliSeconds, pEntity->GetEntityTextDescription().c_str(), pEntity->IsActivatedForUpdates() ? "active" : "inactive");
+						CryLogAlways("OnTimer Event (timerID=%d,time=%dms) for Entity %s (which is %s)", event.nTimerId, (float)event.nTime.GetMilliSeconds(), pEntity->GetEntityTextDescription().c_str(), pEntity->IsActivatedForUpdates() ? "active" : "inactive");
 				}
 			}
 		}
@@ -2075,7 +2073,7 @@ void CEntitySystem::DebugDraw(const CEntity* const pEntity, float timeMs)
 			char szProfInfo[256];
 
 			if (const CEntityRender* pProxy = pEntity->GetEntityRender())
-				cry_sprintf(szProfInfo, "%.3f ms : %s (%0.2f ago)", timeMs, pEntity->GetEntityTextDescription().c_str(), gEnv->pTimer->GetCurrTime() - pProxy->GetLastSeenTime());
+				cry_sprintf(szProfInfo, "%.3f ms : %s (%0.2f ago)", timeMs, pEntity->GetEntityTextDescription().c_str(), gEnv->pTimer->GetFrameStartTime() - pProxy->GetLastSeenTime());
 			else
 				cry_sprintf(szProfInfo, "%.3f ms : %s", timeMs, pEntity->GetEntityTextDescription().c_str());
 
@@ -2336,7 +2334,7 @@ void CEntitySystem::Serialize(TSerialize ser)
 
 				ser.BeginGroup("Timer");
 				ser.Value("entityID", tempEvent.entityId);
-				ser.Value("eventTime", tempEvent.nMilliSeconds);
+				ser.Value("eventTime", tempEvent.nTime);
 				ser.Value("timerID", tempEvent.nTimerId);
 				CTimeValue start = it->first;
 				ser.Value("startTime", start);
@@ -2352,11 +2350,11 @@ void CEntitySystem::Serialize(TSerialize ser)
 			{
 				ser.BeginGroup("Timer");
 				ser.Value("entityID", tempEvent.entityId);
-				ser.Value("eventTime", tempEvent.nMilliSeconds);
+				ser.Value("eventTime", tempEvent.nTime);
 				ser.Value("timerID", tempEvent.nTimerId);
 				ser.Value("startTime", start);
 				ser.EndGroup();
-				start.SetMilliSeconds((int64)(start.GetMilliSeconds() - tempEvent.nMilliSeconds));
+				start = start - tempEvent.nTime;
 				AddTimerEvent(tempEvent, start);
 
 				//assert(GetEntity(tempEvent.entityId));

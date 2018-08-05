@@ -12,9 +12,9 @@ void CPredictiveFloatTracker::Sequence::Use()
 	m_lastUseTime = gEnv->pTimer->GetAsyncTime();
 }
 
-float CPredictiveFloatTracker::Sequence::GetSecondsFromLastUse() const
+CTimeValue CPredictiveFloatTracker::Sequence::GetTimeFromLastUse() const
 {
-	return gEnv->pTimer->GetAsyncTime().GetDifferenceInSeconds(m_lastUseTime);
+	return (gEnv->pTimer->GetAsyncTime() - m_lastUseTime);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////

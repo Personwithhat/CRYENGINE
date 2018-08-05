@@ -435,9 +435,9 @@ struct CHUNK_GAHCAF_INFO
 	f32    m_RHeelStart, m_RHeelEnd;
 	f32    m_RToe0Start, m_RToe0End;
 
-	f32    m_fStartSec;         //!< Asset-feature: Start time in seconds.
-	f32    m_fEndSec;           //!< Asset-feature: End time in seconds.
-	f32    m_fTotalDuration;    //!< Asset-feature: asset-feature: total duration in seconds.
+	CTimeValue    m_fStartSec;         //!< Asset-feature: Start time in seconds.
+	CTimeValue    m_fEndSec;           //!< Asset-feature: End time in seconds.
+	CTimeValue    m_fTotalDuration;    //!< Asset-feature: asset-feature: total duration in seconds.
 	uint32 m_nControllers;
 
 	QuatT  m_StartLocation;     //!< Locator information.
@@ -474,9 +474,9 @@ struct CHUNK_GAHAIM_INFO
 	char           m_FilePath[FILEPATH_SIZE];
 	uint32         m_FilePathCRC32;
 
-	f32            m_fStartSec;      //!< Asset-feature: Start time in seconds.
-	f32            m_fEndSec;        //!< Asset-feature: End time in seconds.
-	f32            m_fTotalDuration; //!< Asset-feature: total duration in seconds.
+	CTimeValue     m_fStartSec;      //!< Asset-feature: Start time in seconds.
+	CTimeValue     m_fEndSec;        //!< Asset-feature: End time in seconds.
+	CTimeValue     m_fTotalDuration; //!< Asset-feature: total duration in seconds.
 
 	uint32         m_AnimTokenCRC32;
 

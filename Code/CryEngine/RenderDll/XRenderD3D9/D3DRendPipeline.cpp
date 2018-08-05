@@ -95,7 +95,7 @@ void CD3D9Renderer::EF_Init()
 	m_waterUpdateInfo.m_LastWaterViewdirUpdate = Vec3(0, 0, 0);
 	m_waterUpdateInfo.m_LastWaterUpdirUpdate   = Vec3(0, 0, 0);
 	m_waterUpdateInfo.m_LastWaterPosUpdate     = Vec3(0, 0, 0);
-	m_waterUpdateInfo.m_fLastWaterUpdate       = 0;
+	m_waterUpdateInfo.m_fLastWaterUpdate.SetSeconds(0);
 	m_waterUpdateInfo.m_nLastWaterFrameID      = 0;
 
 	m_nMaterialAnisoHighSampler   = CDeviceObjectFactory::GetOrCreateSamplerStateHandle(SSamplerState(FILTER_ANISO16X, false));
@@ -410,7 +410,7 @@ int CD3D9Renderer::EF_Preprocess(SRendItem* ri, uint32 nums, uint32 nume, const 
 	if (m_LogFile)
 		gRenDev->Logv("*** End preprocess frame ***\n");
 
-	m_frameRenderStats[m_nFillThreadID].m_fPreprocessTime += iTimer->GetAsyncTime().GetDifferenceInSeconds(time0);
+	m_frameRenderStats[m_nFillThreadID].m_fPreprocessTime += iTimer->GetAsyncTime() - time0;
 
 	return nReturn;
 }
@@ -899,7 +899,7 @@ void CD3D9Renderer::RenderFrame(int nSceneRenderingFlags, const SRenderingPassIn
 
 		SubmitRenderViewForRendering(nSceneRenderingFlags, passInfo);
 
-		SRenderStatistics::Write().m_fSceneTimeMT += gEnv->pTimer->GetAsyncTime().GetDifferenceInSeconds(time0);
+		SRenderStatistics::Write().m_fSceneTimeMT += gEnv->pTimer->GetAsyncTime() - time0;
 	}
 }
 

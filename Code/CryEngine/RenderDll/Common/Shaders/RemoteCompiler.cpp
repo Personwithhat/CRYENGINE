@@ -157,7 +157,7 @@ bool CShaderSrv::RequestLine(const SCacheCombination& cmb, const string& rLine) 
 bool CShaderSrv::CommitPLCombinations(std::vector<SCacheCombination>& rVec)
 {
 	const uint32 STEPSIZE = 32;
-	float T0 = iTimer->GetAsyncCurTime();
+	CTimeValue T0 = iTimer->GetAsyncCurTime();
 	for (uint32 i = 0; i < rVec.size(); i += STEPSIZE)
 	{
 		string Line;
@@ -176,8 +176,8 @@ bool CShaderSrv::CommitPLCombinations(std::vector<SCacheCombination>& rVec)
 		if (!RequestLine(rVec[i], Line))
 			return false;
 	}
-	float T1 = iTimer->GetAsyncCurTime();
-	iLog->Log("%3.3f to commit %" PRISIZE_T " Combinations\n", T1 - T0, rVec.size());
+	CTimeValue T1 = iTimer->GetAsyncCurTime();
+	iLog->Log("%3.3f to commit %" PRISIZE_T " Combinations\n", (float)(T1 - T0).GetSeconds(), rVec.size());
 
 	return true;
 }

@@ -186,8 +186,8 @@ struct CLevelStatObjLoader : public IStreamCallback, public Cry3DEngineBase
 		params.dwUserData = 0;
 		params.nSize = 0;
 		params.pBuffer = NULL;
-		params.nLoadTime = 0;
-		params.nMaxLoadTime = 0;
+		params.nLoadTime.SetSeconds(0);
+		params.nMaxLoadTime.SetSeconds(0);
 		params.ePriority = estpUrgent;
 		GetSystem()->GetStreamEngine()->StartRead(eStreamTaskTypeGeometry, pFileName, this, &params);
 	}
@@ -221,7 +221,7 @@ void CObjManager::PreloadLevelObjects()
 	PrintMessage("Starting loading level CGF's ...");
 	INDENT_LOG_DURING_SCOPE();
 
-	float fStartTime = GetCurAsyncTimeSec();
+	CTimeValue fStartTime = gEnv->pTimer->GetAsyncTime();
 
 	bool bCgfCacheExist = false;
 	if (GetCVars()->e_StreamCgf != 0)
@@ -340,8 +340,8 @@ void CObjManager::PreloadLevelObjects()
 		//GetISystem()->GetIResourceManager()->UnloadLevelCachePak( CGF_LEVEL_CACHE_PAK );
 	}
 
-	float dt = GetCurAsyncTimeSec() - fStartTime;
-	PrintMessage("Finished loading level CGF's: %d objects loaded (%d from LevelCache) in %.1f sec", nCgfCounter, nInLevelCacheCount, dt);
+	CTimeValue dt = gEnv->pTimer->GetAsyncTime() - fStartTime;
+	PrintMessage("Finished loading level CGF's: %d objects loaded (%d from LevelCache) in %.1f sec", nCgfCounter, nInLevelCacheCount, (float)dt.GetSeconds());
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -594,7 +594,7 @@ CObjManager::CObjManager() :
 
 	m_pObjManager = this;
 
-	m_fCurrTime = 0.0f;
+	m_CurrTime.SetSeconds(0);
 
 	m_vSkyColor.Set(0, 0, 0);
 	m_fSunSkyRel = 0;
@@ -723,8 +723,8 @@ int CObjManager::ComputeDissolve(const CLodValue &lodValueIn, SRenderNodeTempDat
 	int nLodMin = std::max(nLodMain - 1, 0);
 	int nLodMax = std::min(nLodMain + 1, MAX_STATOBJ_LODS_NUM - 1);
 
-	float prevLodLastTimeUsed = 0;
-	float* arrLodLastTimeUsed = pTempData->userData.arrLodLastTimeUsed;
+	CTimeValue prevLodLastTimeUsed;
+	CTimeValue* arrLodLastTimeUsed = pTempData->userData.arrLodLastTimeUsed;
 
 	// Find when previous lod was used as primary lod last time and update last time used for current primary lod
 	arrLodLastTimeUsed[nLodMain] = GetCurTimeSec();
@@ -841,12 +841,12 @@ void CObjManager::GetMemoryUsage(class ICrySizer* pSizer) const
 }
 
 // retrieves the bandwidth calculations for the audio streaming
-void CObjManager::GetBandwidthStats(float* fBandwidthRequested)
+void CObjManager::GetBandwidthStats(rTime* fBandwidthRequested)
 {
 #if !defined (_RELEASE) || defined(ENABLE_STATOSCOPE_RELEASE)
-	if (fBandwidthRequested && CStatObj::s_fStreamingTime != 0.0f)
+	if (fBandwidthRequested && CStatObj::s_fStreamingTime != 0)
 	{
-		*fBandwidthRequested = (CStatObj::s_nBandwidth / CStatObj::s_fStreamingTime) / 1024.0f;
+		*fBandwidthRequested = (CStatObj::s_nBandwidth / CStatObj::s_fStreamingTime) / 1024;
 	}
 #endif
 }

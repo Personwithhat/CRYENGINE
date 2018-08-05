@@ -29,9 +29,10 @@ ILINE CTimeProfiler::~CTimeProfiler()
 {
 #if !defined(_RELEASE)
 	const int64 endTicks = CryGetTicks();
-	const uint time = uint(gEnv->pTimer->TicksToSeconds(endTicks - m_startTicks) * 1000000.0f);
-	m_profiler.AddEntry(m_runtime, m_stat, time);
-	m_profiler.AddEntry(m_runtime, EPS_TotalTiming, time);
+	// Float inaccuracy is fine, debug/profiling:   Although this can perhaps be improved.
+	const uint time = uint(gEnv->pTimer->TicksToTime(endTicks - m_startTicks).GetSeconds() * 1000000);
+	m_profiler.AddEntry(m_pRuntime, m_stat, time);
+	m_profiler.AddEntry(m_pRuntime, EPS_TotalTiming, time);
 #endif
 }
 }

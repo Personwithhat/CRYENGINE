@@ -13,7 +13,7 @@ CMNMUpdatesManager::CMNMUpdatesManager(NavigationSystem* pNavSystem)
 	, m_bWasRegenerationRequestedThisUpdateCycle(false)
 	, m_bPostponeUpdatesForStabilization(false)
 	, m_bExplicitRegenerationToggle(false)
-	, m_lastUpdateTime(0.0f)
+	, m_lastUpdateTime(0)
 {
 }
 
@@ -45,7 +45,7 @@ void CMNMUpdatesManager::UpdatePostponedChanges()
 {
 	if (m_bPostponeUpdatesForStabilization)
 	{
-		if (gEnv->pTimer->GetFrameStartTime().GetDifferenceInSeconds(m_lastUpdateTime) < gAIEnv.CVars.NavmeshStabilizationTimeToUpdate)
+		if (gEnv->pTimer->GetFrameStartTime() - m_lastUpdateTime < gAIEnv.CVars.NavmeshStabilizationTimeToUpdate)
 		{
 			return;
 		}

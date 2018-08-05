@@ -65,14 +65,14 @@ struct SVClothParams
 {
 	// Animation Control
 	bool  forceSkinning;                   //!< If enabled, simulation is skipped and skinning is enforced.
-	float forceSkinningFpsThreshold;       //!< If the framerate drops under the provided FPS, simulation is skipped and skinning is enforced.
+	rTime forceSkinningFpsThreshold;       //!< If the framerate drops under the provided FPS, simulation is skipped and skinning is enforced.
 	float forceSkinningTranslateThreshold; //!< If the translation is larger than this value, simulation is skipped and skinning is enforced.
 	bool  checkAnimationRewind;            //!< Check for Rewind in animation, if enabled, the cloth is re-initialized to collision-proxies in that case
 	float disableSimulationAtDistance;     //! Disable simulation / enable skinning in dependance of camera distance.
-	float disableSimulationTimeRange;      //!< Within this time range, the fading process (skinning vs. simulation) is done.
+	CTimeValue disableSimulationTimeRange; //!< Within this time range, the fading process (skinning vs. simulation) is done.
 
 	// Simulation and Collision
-	float timeStep;                     //!< The (pseudo)fixed time step for the simulator.
+	CTimeValue timeStep;                //!< The (pseudo)fixed time step for the simulator.
 	int   timeStepsMax;                 //!< Number of maximum iterations for the time discretization in a single step
 	int   numIterations;                //!< Number of iterations for the positional stiffness & collision solver (contacts & edges).
 	int   collideEveryNthStep;          //!< for stiffness & collision solver: collide only every Nth step
@@ -134,14 +134,14 @@ public:
 		// Animation Control
 		hide(false)
 		, forceSkinning(false)
-		, forceSkinningFpsThreshold(25.0f)
+		, forceSkinningFpsThreshold(25)
 		, forceSkinningTranslateThreshold(1.0f)
 		, checkAnimationRewind(true)
 		, disableSimulationAtDistance(10.0)
-		, disableSimulationTimeRange(0.5f)
+		, disableSimulationTimeRange("0.5")
 
 		// Simulation and Collision
-		, timeStep(0.007f)
+		, timeStep("0.007")
 		, timeStepsMax(50)
 		, numIterations(5)
 		, collideEveryNthStep(2)

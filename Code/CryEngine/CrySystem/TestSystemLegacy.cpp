@@ -42,12 +42,12 @@ CTestSystemLegacy::CTestSystemLegacy(ISystem* pSystem)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CTestSystemLegacy::QuitInNSeconds(const float fInNSeconds)
+void CTestSystemLegacy::QuitIn(const CTimeValue& quitIn)
 {
-	if (fInNSeconds > 0)
-		m_log.Log("QuitInNSeconds() requests quit in %f sec", fInNSeconds);
+	if (quitIn > 0)
+		m_log.Log("QuitInNSeconds() requests quit in %f sec", (float)quitIn.GetSeconds());
 
-	m_fQuitInNSeconds = fInNSeconds;
+	m_fQuitIn = quitIn;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -169,20 +169,19 @@ void CTestSystemLegacy::LogLevelStats()
 
 void CTestSystemLegacy::Update()
 {
-	if (m_fQuitInNSeconds > 0.0f)
+	if (m_fQuitIn > 0)
 	{
-		int iSec = (int)m_fQuitInNSeconds;
+		int iSec = (int)m_fQuitIn.GetSeconds();
+		m_fQuitIn -= gEnv->pTimer->GetFrameTime();
 
-		m_fQuitInNSeconds -= gEnv->pTimer->GetFrameTime();
-
-		if (m_fQuitInNSeconds <= 0.0f)
+		if (m_fQuitIn<= 0)
 		{
 			gEnv->pConsole->ExecuteString("ExitOnQuit 1");
 			gEnv->pSystem->Quit();
 		}
 		else
 		{
-			if (iSec != (int)m_fQuitInNSeconds)
+			if (iSec != (int)m_fQuitIn.GetSeconds())
 				gEnv->pLog->Log("quit in %d seconds ...", iSec);
 		}
 	}
