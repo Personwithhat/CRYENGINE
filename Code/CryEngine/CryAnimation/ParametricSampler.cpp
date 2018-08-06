@@ -74,8 +74,8 @@ nTime SParametricSamplerInternal::Parameterizer(const CAnimationSet* pAnimationS
 
 #if !defined(_RELEASE)
 	{
-		const float weightSum = std::accumulate(m_fBlendWeight, m_fBlendWeight + m_numExamples, 0.0f);
-		if (std::abs(weightSum - 1.0f) > 0.005f)
+		const mpfloat weightSum = std::accumulate(m_fBlendWeight, m_fBlendWeight + m_numExamples, mpfloat(0));
+		if (abs(weightSum - 1) > "0.005")
 		{
 			CryWarning(VALIDATOR_MODULE_ANIMATION, VALIDATOR_ERROR, "Parametric sampler encountered an error while processing '%s': Blend weights do not sum up to 1.0f.", rLMG.GetFilePath());
 		}

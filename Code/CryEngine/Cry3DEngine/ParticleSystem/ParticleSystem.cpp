@@ -260,7 +260,7 @@ float CParticleSystem::DisplayDebugStats(Vec2 displayLocation, float lineHeight)
 	static TElementCounts<float> statsSyncAvg;
 	TElementCounts<float> statsSyncCur;
 	statsSyncCur.Set(GetSumData().statsSync);
-	statsSyncAvg = Lerp(statsSyncAvg, statsSyncCur, blendCur);
+	statsSyncAvg = Lerp(statsSyncAvg, statsSyncCur, BADF blendCur);
 	DisplayElementStats(displayLocation, lineHeight, "Comp Sync", statsSyncAvg);
 
 	if (!statsGPUAvg.components.IsZero())

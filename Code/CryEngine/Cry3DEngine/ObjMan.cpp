@@ -727,15 +727,15 @@ int CObjManager::ComputeDissolve(const CLodValue &lodValueIn, SRenderNodeTempDat
 	CTimeValue* arrLodLastTimeUsed = pTempData->userData.arrLodLastTimeUsed;
 
 	// Find when previous lod was used as primary lod last time and update last time used for current primary lod
-	arrLodLastTimeUsed[nLodMain] = GetCurTimeSec();
+	arrLodLastTimeUsed[nLodMain] = gEnv->pTimer->GetFrameTime();
 	for (int nLO = nLodMin; nLO <= nLodMax; nLO++)
 	{
 		if (nLO != nLodMain)
 			prevLodLastTimeUsed = std::max(prevLodLastTimeUsed, arrLodLastTimeUsed[nLO]);
 	}
 
-	float fDissolveRef = 1.f - SATURATE((GetCurTimeSec() - prevLodLastTimeUsed) / GetCVars()->e_LodTransitionTime);
-	prevLodLastTimeUsed = std::max(prevLodLastTimeUsed, GetCurTimeSec() - GetCVars()->e_LodTransitionTime);
+	nTime fDissolveRef = 1 - SATURATE((gEnv->pTimer->GetFrameTime() - prevLodLastTimeUsed) / GetCVars()->e_LodTransitionTime);
+	prevLodLastTimeUsed = std::max(prevLodLastTimeUsed, gEnv->pTimer->GetFrameTime() - GetCVars()->e_LodTransitionTime);
 
 	// Compute also max view distance fading
 	const float fDistFadeInterval = 2.f;
@@ -753,13 +753,13 @@ int CObjManager::ComputeDissolve(const CLodValue &lodValueIn, SRenderNodeTempDat
 		if (nLodMain == nLO)
 		{
 			// Incoming LOD
-			float fDissolveMaxDistRef = std::max(fDissolveRef, fDistFadeRef);
+			float fDissolveMaxDistRef = std::max(BADF fDissolveRef, fDistFadeRef);
 			lodSubValue = CLodValue(nLO, int(fDissolveMaxDistRef * 255.f), -1);
 		}
 		else
 		{
 			// Outgoing LOD
-			float fDissolveMaxDistRef = std::min(fDissolveRef, 1.f - fDistFadeRef);
+			float fDissolveMaxDistRef = std::min(BADF fDissolveRef, 1.f - fDistFadeRef);
 			lodSubValue = CLodValue(-1, int(fDissolveMaxDistRef * 255.f), nLO);
 		}
 

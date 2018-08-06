@@ -1092,10 +1092,10 @@ void CD3D9Renderer::RT_BeginFrame(const SDisplayContextKey& displayContextKey)
 	m_nStencilMaskRef = STENCIL_VALUE_OUTDOORS + 1;
 
 	{
-		static float fWaitForGPU;
-		float fSmooth = 5.0f;
-		fWaitForGPU = (m_fTimeWaitForGPU[gRenDev->GetMainThreadID()] + fWaitForGPU * fSmooth) / (fSmooth + 1.0f);
-		if (fWaitForGPU >= 0.004f)
+		static CTimeValue fWaitForGPU;
+		mpfloat fSmooth = 5;
+		fWaitForGPU = (m_fTimeWaitForGPU[gRenDev->GetMainThreadID()] + fWaitForGPU * fSmooth) / (fSmooth + 1);
+		if (fWaitForGPU >= "0.004")
 		{
 			if (m_nGPULimited < 1000)
 				m_nGPULimited++;
@@ -3448,7 +3448,7 @@ void CD3D9Renderer::RT_EndFrame()
 		m_nFrameSwapID++;
 	}
 
-	m_fTimeWaitForGPU[gRenDev->GetRenderThreadID()] += iTimer->GetAsyncTime().GetDifferenceInSeconds(timePresentBegin);
+	m_fTimeWaitForGPU[gRenDev->GetRenderThreadID()] += (iTimer->GetAsyncTime() - timePresentBegin);
 
 #ifdef ENABLE_BENCHMARK_SENSOR
 	m_benchmarkRendererSensor->afterSwapBuffers(GetDevice(), GetDeviceContext());
@@ -3512,7 +3512,7 @@ void CD3D9Renderer::RT_EndFrame()
 	m_fTimeProcessedGPU[gRenDev->GetRenderThreadID()] = m_fTimeProcessedRT[gRenDev->GetRenderThreadID()];
 	#else
 	RPProfilerStats profileStats = m_pPipelineProfiler->GetBasicStats(eRPPSTATS_OverallFrame, gRenDev->GetRenderThreadID());
-	m_fTimeProcessedGPU[gRenDev->GetRenderThreadID()] = profileStats.gpuTime / 1000.0f; // Store in "seconds"
+	m_fTimeProcessedGPU[gRenDev->GetRenderThreadID()] = profileStats.gpuTime; // Store in "seconds"
 #endif
 #endif
 
@@ -3665,7 +3665,7 @@ bool CD3D9Renderer::RT_ScreenShot(const char* filename, CRenderDisplayContext* p
 #if defined(ENABLE_PROFILING_CODE)
 	iLog->LogWithType(ILog::eInputResponse, " ");
 	iLog->LogWithType(ILog::eInputResponse, "$5Drawcalls: %d", SRenderStatistics::Write().GetNumberOfDrawCalls());
-	iLog->LogWithType(ILog::eInputResponse, "$5FPS: %.1f (%.1f ms)", gEnv->pTimer->GetFrameRate(), gEnv->pTimer->GetFrameTime() * 1000.0f);
+	iLog->LogWithType(ILog::eInputResponse, "$5FPS: %.1f (%.1f ms)", gEnv->pTimer->GetFrameRate(), (float)gEnv->pTimer->GetFrameTime().GetMilliSeconds());
 #endif
 
 	int nPolygons, nShadowVolPolys;

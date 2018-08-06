@@ -38,8 +38,8 @@ GlobalAnimationHeaderCAF::GlobalAnimationHeaderCAF()
 
 	m_nStartKey = -1;
 	m_nEndKey   = -1;
-	m_fStartSec = -1; // Start time in seconds.
-	m_fEndSec   = -1; // End time in seconds.
+	m_fStartSec.SetSeconds(-1); // Start time in seconds.
+	m_fEndSec.SetSeconds(-1);   // End time in seconds.
 	m_nCompressedControllerCount = 0;
 
 	m_fDistance		= -1.0f;
@@ -788,13 +788,13 @@ bool GlobalAnimationHeaderCAF::ReadMotionParameters(const IChunkFile::ChunkDesc 
 		m_nEndKey	= nEndKey;
 
 		const int32 fTicksPerFrame = TICKS_PER_FRAME;
-		const f32 fSecsPerTick = SECONDS_PER_TICK;
-		const f32 fSecsPerFrame = fSecsPerTick * fTicksPerFrame;
+		const CTimeValue fSecsPerTick = SECONDS_PER_TICK;
+		const CTimeValue fSecsPerFrame = fSecsPerTick * fTicksPerFrame;
 		m_fStartSec = nStartKey * fSecsPerFrame;
 		m_fEndSec = nEndKey * fSecsPerFrame;
 		if (m_fEndSec<=m_fStartSec)
 		{
-			m_fEndSec  = m_fStartSec+(1.0f/30.0f);
+			m_fEndSec  = m_fStartSec+(mpfloat(1)/30);
 		}
 
 		m_fSpeed = motionParams->m_fMoveSpeed;
@@ -855,7 +855,7 @@ bool GlobalAnimationHeaderCAF::ReadGlobalAnimationHeader(const IChunkFile::Chunk
 		m_StartLocation2 = gah->m_StartLocation;
 		m_LastLocatorKey2 = gah->m_LastLocatorKey;
 
-		m_fStartSec = 0;
+		m_fStartSec.SetSeconds(0);
 		m_fEndSec = gah->m_fEndSec - gah->m_fStartSec;
 
 		m_FootPlantVectors.m_LHeelStart = gah->m_LHeelStart;
@@ -897,7 +897,7 @@ bool GlobalAnimationHeaderCAF::ReadTiming(const IChunkFile::ChunkDesc* pChunkDes
 				return false;
 			}
 
-			const f32 fSecsPerFrame = SECONDS_PER_TICK * TICKS_PER_FRAME;
+			const CTimeValue fSecsPerFrame = SECONDS_PER_TICK * TICKS_PER_FRAME;
 
 			m_nStartKey = 0;
 			m_nEndKey = pChunk->global_range.end - pChunk->global_range.start;
@@ -927,8 +927,8 @@ bool GlobalAnimationHeaderCAF::ReadTiming(const IChunkFile::ChunkDesc* pChunkDes
 			m_nStartKey = 0;
 			m_nEndKey = pChunk->numberOfSamples - 1;
 
-			m_fStartSec = 0.0f;
-			m_fEndSec = (std::max)(pChunk->numberOfSamples - 1, 1) / hardcodedSamplingRate;
+			m_fStartSec.SetSeconds(0);
+			m_fEndSec = BADTIME((std::max)(pChunk->numberOfSamples - 1, 1) / hardcodedSamplingRate);
 		}
 		return true;
 
@@ -1128,7 +1128,7 @@ void GlobalAnimationHeaderCAF::ExtractMotionParameters(MotionParams905* mp, bool
 	swap(mp->m_nCompression = m_nCompression);
 
 	swap(mp->m_nTicksPerFrame = TICKS_PER_FRAME);
-	swap(mp->m_fSecsPerTick = SECONDS_PER_TICK);
+	swap(mp->m_fSecsPerTick = SECONDS_PER_TICK.BADGetSeconds()); // It's not used anyways.
 	swap(mp->m_nStart = m_nStartKey);
 	swap(mp->m_nEnd = m_nEndKey);
 

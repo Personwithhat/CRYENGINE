@@ -57,12 +57,12 @@ protected:
 		CDeviceTimestampGroup   m_timestampGroup;
 		bool                    m_updated;
 
-		float fTimeRealFrameTime;
-		float fTimeWaitForMain;
-		float fTimeWaitForRender;
-		float fTimeProcessedRT;
-		float fTimeProcessedGPU;
-		float fTimeWaitForGPU;
+		CTimeValue fTimeRealFrameTime;
+		CTimeValue fTimeWaitForMain;
+		CTimeValue fTimeWaitForRender;
+		CTimeValue fTimeProcessedRT;
+		CTimeValue fTimeProcessedGPU;
+		CTimeValue fTimeWaitForGPU;
 		float fTimeGPUIdlePercent;
 
 		// cppcheck-suppress uninitMemberVar

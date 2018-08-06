@@ -31,8 +31,8 @@ ILINE CTimeProfiler::~CTimeProfiler()
 	const int64 endTicks = CryGetTicks();
 	// Float inaccuracy is fine, debug/profiling:   Although this can perhaps be improved.
 	const uint time = uint(gEnv->pTimer->TicksToTime(endTicks - m_startTicks).GetSeconds() * 1000000);
-	m_profiler.AddEntry(m_pRuntime, m_stat, time);
-	m_profiler.AddEntry(m_pRuntime, EPS_TotalTiming, time);
+	m_profiler.AddEntry(m_runtime, m_stat, time);
+	m_profiler.AddEntry(m_runtime, EPS_TotalTiming, time);
 #endif
 }
 }

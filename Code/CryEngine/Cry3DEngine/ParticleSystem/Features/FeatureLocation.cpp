@@ -737,7 +737,7 @@ public:
 		const float maxSize = (float)(1 << 12);
 		const float minSize = rcp_fast(maxSize); // small enough and prevents SIMD exceptions
 		const float invSize = rcp_fast(max(minSize, +m_size));
-		const float time = mod(runtime.GetEmitter()->GetTime() * m_rate * minSize, 1.0f) * maxSize;
+		const float time = mod(runtime.GetEmitter()->GetTime().BADGetSeconds() * m_rate * minSize, 1.0f) * maxSize;
 		const float delta = m_rate * runtime.DeltaTime();
 		CParticleContainer& container = runtime.GetContainer();
 		const IFStream ages = container.GetIFStream(EPDT_NormalAge);

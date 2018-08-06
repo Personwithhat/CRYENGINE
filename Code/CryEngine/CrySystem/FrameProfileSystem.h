@@ -406,7 +406,7 @@ public:
 	//! Get number of registered frame profilers.
 	int          GetProfilerCount() const { return (int)m_profilers.size(); };
 	//! Return the fraction used to blend current with average values.
-	float        GetSmoothFactor() const;
+	mpfloat      GetSmoothFactor() const;
 
 	virtual int  GetPeaksCount() const
 	{

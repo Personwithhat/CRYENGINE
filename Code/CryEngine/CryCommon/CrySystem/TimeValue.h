@@ -78,6 +78,12 @@ public:
 	CTimeValue& SetMilliSeconds(const mpfloat& indwMilliSec) { m_lValue = indwMilliSec * mpfloat("0.001");    return *this; }
 	CTimeValue& SetMicroSeconds(const mpfloat& indwMicroSec) { m_lValue = indwMicroSec * mpfloat("0.000001"); return *this; }
 
+	// PERSONAL VERIFY: Unsure how to implement multi-threaded timevalues....
+	ILINE void AddValueThreadSafe(const CTimeValue& val)
+	{
+		//CryInterlockedAdd(&m_value, val);
+	}
+
 //**
 //** Getters
 //** 

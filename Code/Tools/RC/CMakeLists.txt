@@ -97,6 +97,18 @@ set(COMMON_LIBS Ntdll User32 Advapi32 Ntdll Ws2_32)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+## PERSONAL EDITS : To add GMP
+	## Additional Include Directories
+	include_directories("${SDK_DIR}/boost")
+	include_directories("${SDK_DIR}/GMP/include")
+	
+	## Additional Library Directories
+	link_directories("${SDK_DIR}/GMP/lib")
+	
+	## Additional GMP Dependencies NOTE: msys64 (mingw64) libgcc copied to GMP/lib for convenience.
+	set(COMMON_LIBS ${COMMON_LIBS} libgcc legacy_stdio_definitions libgmpxx libgmp)
+## ~PERSONAL EDITS
+
 #Libs
 add_subdirectory("${CRY_LIBS_DIR}/expat" "${CMAKE_CURRENT_BINARY_DIR}/expat")
 add_subdirectory("${CRY_LIBS_DIR}/lua" "${CMAKE_CURRENT_BINARY_DIR}/lua")

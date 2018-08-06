@@ -276,8 +276,8 @@ struct STickTraits
 	typedef int64 TValue;
 	typedef float TDisplay;
 
-	static TDisplay ToDisplay(TValue val) { return gEnv->pTimer->TicksToSeconds(val) * 1000.0f; }
-	static TDisplay ToDisplay(float val)  { return val / (float)gEnv->pTimer->GetTicksPerSecond() * 1000.0f; }
+	static TDisplay ToDisplay(TValue val) { return BADF gEnv->pTimer->TicksToTime(val).GetMilliSeconds(); }
+	static TDisplay ToDisplay(float val)  { return val / BADF gEnv->pTimer->GetTicksPerSecond() * 1000.0f; }
 };
 
 template<class Traits>

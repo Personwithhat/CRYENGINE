@@ -925,9 +925,9 @@ bool CWaterStage::PrepareDefaultPerInstanceResources()
 		if (!pRenderer->m_bPauseTimer)
 		{
 			// flip rain ripple texture
-			const float elapsedTime = GetGraphicsPipeline().GetAnimationTime().GetSeconds();
-			CRY_ASSERT(elapsedTime >= 0.0f);
-			const float AnimTexFlipTime = 0.05f;
+			const CTimeValue elapsedTime = GetGraphicsPipeline().GetAnimationTime();
+			CRY_ASSERT(elapsedTime >= 0);
+			const CTimeValue AnimTexFlipTime = "0.05";
 			m_rainRippleTexIndex = (uint32)(elapsedTime / AnimTexFlipTime) % m_pRainRippleTex.size();
 		}
 

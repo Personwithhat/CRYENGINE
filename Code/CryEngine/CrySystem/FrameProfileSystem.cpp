@@ -1011,7 +1011,7 @@ void CFrameProfileSystem::EndFrame()
 		// Feel free to add that if it proves necessary.
 		if (pDisplayInfo != nullptr && pDisplayInfo->GetIVal() > 1)
 		{
-			const float smoothFactor = GetSmoothFactor();
+			const mpfloat smoothFactor = GetSmoothFactor();
 
 			// Update profilers that are Regions only (without waiting time).
 			auto Iter = m_pProfilers->cbegin();
@@ -1021,7 +1021,7 @@ void CFrameProfileSystem::EndFrame()
 			{
 				if (pFrameProfiler != nullptr && (pFrameProfiler->m_description & PROFILE_TYPE_CHECK_MASK) == EProfileDescription::REGION)
 				{
-					pFrameProfiler->m_selfTime.Update(smoothFactor);
+					pFrameProfiler->m_selfTime.Update(BADF smoothFactor);
 
 					// Reset profiler.
 					pFrameProfiler->m_totalTime = 0;
@@ -1071,7 +1071,7 @@ void CFrameProfileSystem::EndFrame()
 
 	CRY_PROFILE_FUNCTION(PROFILE_SYSTEM);
 
-	const float smoothFactor = GetSmoothFactor();
+	const mpfloat smoothFactor = GetSmoothFactor();
 
 	int64 endTime = CryGetTicks();
 	m_frameTime = endTime - m_frameStartTime;
@@ -1194,9 +1194,9 @@ void CFrameProfileSystem::EndFrame()
 			}
 
 			//////////////////////////////////////////////////////////////////////////
-			pFrameProfiler->m_totalTime.Update(smoothFactor);
-			pFrameProfiler->m_selfTime.Update(smoothFactor);
-			pFrameProfiler->m_count.Update(smoothFactor);
+			pFrameProfiler->m_totalTime.Update(BADF smoothFactor);
+			pFrameProfiler->m_selfTime.Update(BADF smoothFactor);
+			pFrameProfiler->m_count.Update(BADF smoothFactor);
 
 			switch ((int)m_displayQuantity)
 			{
@@ -1341,13 +1341,13 @@ void CFrameProfileSystem::EndFrame()
 		m_subsystems[i].maxTime = (float)__fsel(m_subsystems[i].maxTime - m_subsystems[i].selfTime, m_subsystems[i].maxTime, m_subsystems[i].selfTime);
 	}
 
-	float frameSec = gEnv->pTimer->TicksToSeconds(m_frameTime);
+	CTimeValue frameSec = gEnv->pTimer->TicksToTime(m_frameTime);
 	m_frameSecAvg = Lerp(m_frameSecAvg, frameSec, smoothFactor);
 
-	float frameLostSec = gEnv->pTimer->TicksToSeconds(m_frameTime - selfAccountedTime);
+	CTimeValue frameLostSec = gEnv->pTimer->TicksToTime(m_frameTime - selfAccountedTime);
 	m_frameLostSecAvg = Lerp(m_frameLostSecAvg, frameLostSec, smoothFactor);
 
-	float overheadtime = gEnv->pTimer->TicksToSeconds(numProfileCalls * m_nCallOverheadTotal / m_nCallOverheadCalls);
+	CTimeValue overheadtime = gEnv->pTimer->TicksToTime(numProfileCalls * m_nCallOverheadTotal / m_nCallOverheadCalls);
 	m_frameOverheadSecAvg = Lerp(m_frameOverheadSecAvg, overheadtime, smoothFactor);
 
 	if (m_nCurSample >= 0)
@@ -1369,9 +1369,9 @@ void CFrameProfileSystem::OnSliceAndSleep()
 	m_ProfilerThreads.OnLeaveSliceAndSleep(GetCurrentThreadId());
 }
 
-float CFrameProfileSystem::GetSmoothFactor() const
+mpfloat CFrameProfileSystem::GetSmoothFactor() const
 {
-	float smoothTime = gEnv->pTimer->TicksToSeconds(m_totalProfileTime);
+	CTimeValue smoothTime = gEnv->pTimer->TicksToTime(m_totalProfileTime);
 	return gEnv->pTimer->GetProfileFrameBlending(&smoothTime);
 }
 

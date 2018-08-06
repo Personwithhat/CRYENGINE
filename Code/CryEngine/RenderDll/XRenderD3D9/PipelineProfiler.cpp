@@ -270,7 +270,7 @@ void CRenderPipelineProfiler::UpdateMultithreadedSection(uint32 index, bool bSec
 		CryInterlockedAdd(&section.numPolys, numPolys);
 #endif
 
-		section.endTimeCPU.AddValueThreadSafe(deltaTimestamp.GetValue());
+		section.endTimeCPU.AddValueThreadSafe(deltaTimestamp);
 
 		if (bIssueTimestamp)
 		{
@@ -301,9 +301,9 @@ void CRenderPipelineProfiler::UpdateSectionTimesAndStats(uint32 frameDataIndex)
 		if (section.startTimestamp != ~0u && section.endTimestamp != ~0u)
 			section.gpuTime = frameData.m_timestampGroup.GetTime(section.startTimestamp, section.endTimestamp);
 		else
-			section.gpuTime = 0.0f;
+			section.gpuTime.SetSeconds(0);
 
-		section.cpuTime = section.endTimeCPU.GetDifferenceInSeconds(section.startTimeCPU) * 1000.0f;
+		section.cpuTime = section.endTimeCPU - section.startTimeCPU;
 	}
 
 	// Propagate values in multi-threaded sections up the hierarchy
@@ -355,8 +355,8 @@ void CRenderPipelineProfiler::UpdateThreadTimings(uint32 frameDataIndex)
 	// Simple Exponential Smoothing Weight
 	// (1-a) * oldVal  + a * newVal
 	// Range of "a": [0.0,1.0]
-	const float smoothWeightDataOld = 1.f - CRenderer::CV_r_profilerSmoothingWeight;
-	const float smoothWeightDataNew = CRenderer::CV_r_profilerSmoothingWeight;
+	const mpfloat smoothWeightDataOld = 1 - CRenderer::CV_r_profilerSmoothingWeight;
+	const mpfloat smoothWeightDataNew = CRenderer::CV_r_profilerSmoothingWeight;
 
 	SThreadTimings& currThreadTimings = m_frameTimings[gRenDev->GetRenderThreadID()];
 	SThreadTimings& prevThreadTimings = m_frameTimings[gRenDev->GetMainThreadID()];
@@ -364,7 +364,7 @@ void CRenderPipelineProfiler::UpdateThreadTimings(uint32 frameDataIndex)
 	currThreadTimings.waitForMain    = (frameData.fTimeWaitForMain    * smoothWeightDataOld + prevThreadTimings.waitForMain   * smoothWeightDataNew);
 	currThreadTimings.waitForRender  = (frameData.fTimeWaitForRender  * smoothWeightDataOld + prevThreadTimings.waitForRender * smoothWeightDataNew);
 	currThreadTimings.waitForGPU     = (frameData.fTimeWaitForGPU     * smoothWeightDataOld + prevThreadTimings.waitForGPU    * smoothWeightDataNew);
-	currThreadTimings.gpuIdlePerc    = (frameData.fTimeGPUIdlePercent * smoothWeightDataOld + prevThreadTimings.gpuIdlePerc   * smoothWeightDataNew);
+	currThreadTimings.gpuIdlePerc    = (frameData.fTimeGPUIdlePercent * BADF smoothWeightDataOld + prevThreadTimings.gpuIdlePerc   * BADF smoothWeightDataNew);
 	currThreadTimings.gpuFrameTime   = (frameData.fTimeProcessedGPU   * smoothWeightDataOld + prevThreadTimings.gpuFrameTime  * smoothWeightDataNew);
 	currThreadTimings.frameTime      = (frameData.fTimeRealFrameTime  * smoothWeightDataOld + prevThreadTimings.frameTime     * smoothWeightDataNew);
 	currThreadTimings.renderTime = min((frameData.fTimeProcessedRT    * smoothWeightDataOld + prevThreadTimings.renderTime    * smoothWeightDataNew), prevThreadTimings.frameTime);
@@ -397,10 +397,10 @@ void CRenderPipelineProfiler::ResetDetailedStats(DynArray<RPProfilerDetailedStat
 {
 	for (RPProfilerDetailedStats& stat : detailedStats)
 	{
-		stat.cpuTime = 0.0f;
-		stat.gpuTime = 0.0f;
-		stat.startTimeCPU = 0.0f;
-		stat.endTimeCPU = 0.0f;
+		stat.cpuTime.SetSeconds(0);
+		stat.gpuTime.SetSeconds(0);
+		stat.startTimeCPU.SetSeconds(0);
+		stat.endTimeCPU.SetSeconds(0);
 		stat.startTimeGPU = 0;
 		stat.endTimeGPU = 0;
 		stat.flags = 0;
@@ -411,8 +411,8 @@ void CRenderPipelineProfiler::ResetDetailedStats(DynArray<RPProfilerDetailedStat
 
 		if (bResetAveragedStats)
 		{
-			stat.gpuTimeSmoothed = 0.0f;
-			stat.cpuTimeSmoothed = 0.0f;
+			stat.gpuTimeSmoothed.SetSeconds(0);
+			stat.cpuTimeSmoothed.SetSeconds(0);
 		}
 	}
 }
@@ -451,22 +451,22 @@ void CRenderPipelineProfiler::ComputeAverageStats(SFrameData& currData, SFrameDa
 		RPProfilerStats& prviousStat = m_basicStats[fillThreadID][i];
 
 		// If no temporal history is found, set current data as history
-		if (!prviousStat.gpuTimeSmoothed)
+		if (prviousStat.gpuTimeSmoothed == 0)
 			prviousStat.gpuTimeSmoothed = prviousStat.gpuTime;
-		if (!prviousStat._gpuTimeMaxNew )
+		if (prviousStat._gpuTimeMaxNew == 0)
 			prviousStat._gpuTimeMaxNew  = prviousStat.gpuTime;
 
 		currentStat.gpuTimeSmoothed =
 			smoothWeightDataOld * prviousStat.gpuTimeSmoothed +
 			smoothWeightDataNew * currentStat.gpuTime;
 
-		float gpuTimeMax = std::max(currentStat._gpuTimeMaxNew, prviousStat._gpuTimeMaxNew);
+		CTimeValue gpuTimeMax = std::max(currentStat._gpuTimeMaxNew, prviousStat._gpuTimeMaxNew);
 		currentStat._gpuTimeMaxNew = std::max(gpuTimeMax, currentStat.gpuTime);
 
 		if (s_frameCounter % kUpdateFrequency == 0)
 		{
 			currentStat.gpuTimeMax = currentStat._gpuTimeMaxNew;
-			currentStat._gpuTimeMaxNew = 0;
+			currentStat._gpuTimeMaxNew.SetSeconds(0);
 		}
 	}
 
@@ -477,9 +477,9 @@ void CRenderPipelineProfiler::ComputeAverageStats(SFrameData& currData, SFrameDa
 		SProfilerSection& prviousSection = FindSection(prevData, currentSection);
 
 		// If no temporal history is found, set current data as history
-		if (!prviousSection.gpuTimeSmoothed)
+		if (prviousSection.gpuTimeSmoothed == 0)
 			prviousSection.gpuTimeSmoothed = prviousSection.gpuTime;
-		if (!prviousSection.cpuTimeSmoothed)
+		if (prviousSection.cpuTimeSmoothed == 0)
 			prviousSection.cpuTimeSmoothed = prviousSection.cpuTime;
 
 		currentSection.gpuTimeSmoothed =
@@ -747,7 +747,7 @@ void CRenderPipelineProfiler::DisplayDetailedPassStats(uint32 frameDataIndex)
 	IRenderAuxImage::Draw2dImage(0, 0, sx, sy, CRendererResources::s_ptexWhite->GetID(), 0, 0, 1, 1, 0, ColorF(0.05f, 0.05f, 0.05f, 0.5f));
 
 	ColorF color = frameData.m_numSections >= SFrameData::kMaxNumSections ? Col_Red : ColorF(1.0f, 1.0f, 0.2f, 1);
-	m_avgFrameTime = 0.8f * frameData.fTimeRealFrameTime + 0.2f * m_avgFrameTime; // exponential moving average for frame time
+	m_avgFrameTime = "0.8" * frameData.fTimeRealFrameTime + "0.2" * m_avgFrameTime; // exponential moving average for frame time
 
 	int frameDist = m_frameDataIndex - frameDataIndex;
 	frameDist += frameDist < 0 ? kNumPendingFrames : 0;
@@ -797,7 +797,7 @@ void CRenderPipelineProfiler::DisplayDetailedPassStats(uint32 frameDataIndex)
 	}
 
 	SThreadTimings& currThreadTimings = m_frameTimings[gRenDev->GetRenderThreadID()];
-	float frameTimeGPU = max(currThreadTimings.gpuFrameTime * 1000.0f, 0.0f);
+	CTimeValue frameTimeGPU = max(currThreadTimings.gpuFrameTime, CTimeValue(0));
 
 	for (uint32 i = 0, n = frameData.m_numSections; i < n; ++i)
 	{
@@ -941,15 +941,15 @@ void CRenderPipelineProfiler::DisplayOverviewStats(uint32 frameDataIndex)
 
 		DebugUI::DrawTable(0.05f, 0.1f, 0.45f, 4, "Overview");
 
-		float frameTime = currThreadTimings.frameTime;
-		float mainThreadTime = max(currThreadTimings.frameTime - currThreadTimings.waitForRender, 0.0f);
-		float renderThreadTime = max(currThreadTimings.renderTime - currThreadTimings.waitForGPU, 0.0f);
+		CTimeValue frameTime = currThreadTimings.frameTime;
+		CTimeValue mainThreadTime = max(currThreadTimings.frameTime - currThreadTimings.waitForRender, CTimeValue(0));
+		CTimeValue renderThreadTime = max(currThreadTimings.renderTime - currThreadTimings.waitForGPU, CTimeValue(0));
 	#ifdef CRY_PLATFORM_ORBIS
 		float gpuTime = max((100.0f - currThreadTimings.gpuIdlePerc) * frameTime * 0.01f, 0.0f);
 	#else
-		float gpuTime = max(currThreadTimings.gpuFrameTime, 0.0f);
+		CTimeValue gpuTime = max(currThreadTimings.gpuFrameTime, CTimeValue(0));
 	#endif
-		float waitForGPU = max(currThreadTimings.waitForGPU, 0.0f);
+		CTimeValue waitForGPU = max(currThreadTimings.waitForGPU, CTimeValue(0));
 
 		DebugUI::DrawTableBar(0.335f, 0.1f, 0, BADF(mainThreadTime / frameTime), Col_Yellow);
 		DebugUI::DrawTableBar(0.335f, 0.1f, 1, BADF(renderThreadTime / frameTime), Col_Green);

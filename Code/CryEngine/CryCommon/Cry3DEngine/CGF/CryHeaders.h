@@ -11,6 +11,7 @@
 #define MAX_SUB_MATERIALS    128
 
 #include <CryCore/CryEndian.h>
+#include <CrySystem\TimeValue.h>
 
 //! Chunk type must fit into uint16.
 enum ChunkTypes

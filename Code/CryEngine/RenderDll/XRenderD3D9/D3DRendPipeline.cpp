@@ -724,7 +724,7 @@ void CD3D9Renderer::RT_RenderScene(CRenderView* pRenderView)
 		pRenderView->SwitchUsageMode(CRenderView::eUsageModeReadingDone);
 	}
 
-	SRenderStatistics::Write().m_fRenderTime += iTimer->GetAsyncTime().GetDifferenceInSeconds(Time);
+	SRenderStatistics::Write().m_fRenderTime += (iTimer->GetAsyncTime() - Time);
 
 	if (CRendererCVars::CV_r_FlushToGPU >= 1)
 		GetDeviceObjectFactory().FlushToGPU();
@@ -796,7 +796,7 @@ void CD3D9Renderer::SubmitRenderViewForRendering(int nFlags, const SRenderingPas
 			}
 		}
 
-		m_fRTTimeSceneRender += iTimer->GetAsyncTime().GetDifferenceInSeconds(timeRenderSceneBegin);
+		m_fRTTimeSceneRender += (iTimer->GetAsyncTime() - timeRenderSceneBegin);
 	}, ERenderCommandFlags::None);
 }
 

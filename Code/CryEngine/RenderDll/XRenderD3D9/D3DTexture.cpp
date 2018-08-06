@@ -785,7 +785,7 @@ DynArray<std::uint16_t> CTexture::RenderEnvironmentCMHDR(std::size_t size, const
 
 #if CRY_PLATFORM_DESKTOP
 
-	float timeStart = gEnv->pTimer->GetAsyncTime().GetSeconds();
+	CTimeValue timeStart = gEnv->pTimer->GetAsyncTime();
 
 	iLog->Log("Start generating a cubemap (%d x %d) at position (%.1f, %.1f, %.1f)", size, size, Pos.x, Pos.y, Pos.z);
 
@@ -906,8 +906,8 @@ DynArray<std::uint16_t> CTexture::RenderEnvironmentCMHDR(std::size_t size, const
 	if (CRenderer::CV_r_HideSunInCubemaps)
 		gEnv->p3DEngine->SetSkyLightParameters(oldSunDir, oldSunStr, oldSkyKm, oldSkyKr, oldSkyG, oldSunRGB, true);
 
-	float timeUsed = gEnv->pTimer->GetAsyncTime().GetSeconds() - timeStart;
-	iLog->Log("Successfully finished generating a cubemap in %.1f sec", timeUsed);
+	CTimeValue timeUsed = gEnv->pTimer->GetAsyncTime() - timeStart;
+	iLog->Log("Successfully finished generating a cubemap in %.1f sec", (float)timeUsed.GetSeconds());
 #endif
 
 	return vecData;

@@ -845,10 +845,10 @@ struct RPProfilerStats
 struct RPProfilerDetailedStats
 {
 	char            name[31];
-	float           gpuTime;
-	float           gpuTimeSmoothed;
-	float           cpuTime;
-	float           cpuTimeSmoothed;
+	CTimeValue      gpuTime;
+	CTimeValue      gpuTimeSmoothed;
+	CTimeValue      cpuTime;
+	CTimeValue      cpuTimeSmoothed;
 	CTimeValue      startTimeCPU, endTimeCPU;
 	uint64          startTimeGPU, endTimeGPU;
 	int             numDIPs, numPolys;
