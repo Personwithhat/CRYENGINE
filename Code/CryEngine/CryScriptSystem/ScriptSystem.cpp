@@ -1469,6 +1469,12 @@ void CScriptSystem::PushAny(const ScriptAnyValue& var)
 	case EScriptAnyType::Number:
 		lua_pushnumber(L, var.GetNumber());
 		break;
+	case EScriptAnyType::MPFloat:
+		lua_pushnumber(L, BADF var.GetMP());
+		break;
+	case EScriptAnyType::Time:
+		lua_pushnumber(L, var.GetTime().BADGetSeconds());
+		break;
 	case EScriptAnyType::String:
 		lua_pushstring(L, var.GetString());
 		break;
@@ -1489,8 +1495,7 @@ void CScriptSystem::PushAny(const ScriptAnyValue& var)
 		PushVec3(var.GetVector());
 		break;
 	default:
-		// Must handle everything.
-		assert(0);
+		assert(0 && "ScriptAnyValue failed to handle push.");
 	}
 }
 

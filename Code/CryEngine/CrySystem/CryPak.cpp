@@ -4416,7 +4416,7 @@ void CCryPak::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam
 	case ESYSTEM_EVENT_LEVEL_LOAD_END:
 		{
 			// Log used time.
-			CryLog("File access time during level loading: %.2f seconds", m_fFileAcessTime);
+			CryLog("File access time during level loading: %.2f seconds", (float)m_fFileAcessTime.GetSeconds());
 			m_fFileAcessTime.SetSeconds(0);
 		}
 		break;
