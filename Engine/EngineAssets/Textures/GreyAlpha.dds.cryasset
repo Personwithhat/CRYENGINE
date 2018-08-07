@@ -1,6 +1,6 @@
-<AssetMetadata version="0" type="Texture" guid="741f7e26-6f26-e1c8-3503-ddf94e9d8b93" source="GreyAlpha.tif">
+<AssetMetadata version="0" type="Texture" guid="741f7e26-6f26-e1c8-3503-ddf94e9d8b93" source="greyalpha.tif">
  <Files>
-  <File path="GreyAlpha.dds"/>
+  <File path="greyalpha.dds"/>
  </Files>
  <Details>
   <Detail name="width">4</Detail>

@@ -1,9 +1,6 @@
-<AssetMetadata version="0" type="Texture" guid="3cc47c54-8287-6023-ad31-4ac589f32bd2" source="ShaderError.tif">
+<AssetMetadata version="0" type="Texture" guid="3cc47c54-8287-6023-ad31-4ac589f32bd2" source="shadererror.tif">
  <Files>
-  <File path="ShaderError.dds"/>
-  <File path="ShaderError.dds.1"/>
-  <File path="ShaderError.dds.2"/>
-  <File path="ShaderError.dds.3"/>
+  <File path="shadererror.dds"/>
  </Files>
  <Details>
   <Detail name="width">128</Detail>

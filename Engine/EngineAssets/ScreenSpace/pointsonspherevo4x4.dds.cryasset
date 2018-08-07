@@ -1,10 +1,10 @@
-<AssetMetadata version="0" type="Texture" guid="51a92acd-f72a-97d6-faef-45eeca5d676b" source="PointsOnSphereVO4x4.tif">
+<AssetMetadata version="0" type="Texture" guid="51a92acd-f72a-97d6-faef-45eeca5d676b" source="pointsonspherevo4x4.tif">
  <Files>
-  <File path="PointsOnSphereVO4x4.dds"/>
+  <File path="pointsonspherevo4x4.dds"/>
  </Files>
  <Details>
   <Detail name="width">4</Detail>
   <Detail name="height">4</Detail>
-  <Detail name="mipCount">1</Detail>
+  <Detail name="mipCount">3</Detail>
  </Details>
 </AssetMetadata>

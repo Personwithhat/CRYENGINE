@@ -1,10 +1,10 @@
-<AssetMetadata version="0" type="Texture" guid="30b1fc04-3465-1325-e23e-b7cc3dac94bb" source="ShaderCompiling.tif">
+<AssetMetadata version="0" type="Texture" guid="30b1fc04-3465-1325-e23e-b7cc3dac94bb" source="shadercompiling.tif">
  <Files>
-  <File path="ShaderCompiling.dds"/>
+  <File path="shadercompiling.dds"/>
  </Files>
  <Details>
   <Detail name="width">32</Detail>
   <Detail name="height">32</Detail>
-  <Detail name="mipCount">4</Detail>
+  <Detail name="mipCount">6</Detail>
  </Details>
 </AssetMetadata>

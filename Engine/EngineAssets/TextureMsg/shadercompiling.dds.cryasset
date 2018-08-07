@@ -1,9 +1,6 @@
-<AssetMetadata version="0" type="Texture" guid="1f01975e-8a95-c390-f989-fafa1f107b75" source="ShaderCompiling.tif">
+<AssetMetadata version="0" type="Texture" guid="1f01975e-8a95-c390-f989-fafa1f107b75" source="shadercompiling.tif">
  <Files>
-  <File path="ShaderCompiling.dds"/>
-  <File path="ShaderCompiling.dds.1"/>
-  <File path="ShaderCompiling.dds.2"/>
-  <File path="ShaderCompiling.dds.3"/>
+  <File path="shadercompiling.dds"/>
  </Files>
  <Details>
   <Detail name="width">128</Detail>
