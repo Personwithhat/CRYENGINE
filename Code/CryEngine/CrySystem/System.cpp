@@ -840,14 +840,14 @@ void CSystem::ShutDown()
 	CryGetIMemReplay()->Stop();
 #endif
 
-// Revert timer resolution PERSONAL TODO: Make sure dis works
+// Revert timer resolution PERSONAL TODO: Make sure this works
 #if CRY_PLATFORM_WINDOWS
 	HMODULE hModNtDll = GetModuleHandleA("ntdll");
 
 	typedef LONG(WINAPI * FP_NtSetTimerResolution)(ULONG, BOOLEAN, PULONG);
 	FP_NtSetTimerResolution pNtSetTimerResolution = (FP_NtSetTimerResolution)GetProcAddress(hModNtDll, "NtSetTimerResolution");
 
-	assert(pNtSetTimerResolution(curTimerRes, FALSE, &curTimerRes) && "Failed to unset timer resolution");
+	assert(!pNtSetTimerResolution(curTimerRes, FALSE, &curTimerRes) && "Failed to unset timer resolution");
 #endif // CRY_PLATFORM_WINDOWS
 }
 

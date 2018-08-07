@@ -145,11 +145,11 @@ void CActionGame::RegisterCVars()
 class CAdjustLocalConnectionPacketRate
 {
 public:
-	CAdjustLocalConnectionPacketRate(float rate, float inactivityTimeout)
+	CAdjustLocalConnectionPacketRate(float rate, const CTimeValue& inactivityTimeout)
 	{
 		m_old = -1.f;
-		m_oldInactivityTimeout = -1.f;
-		m_oldInactivityTimeoutDev = -1.f;
+		m_oldInactivityTimeout.SetSeconds(-1);
+		m_oldInactivityTimeoutDev.SetSeconds(-1);
 
 		if (ICVar* pVar = gEnv->pConsole->GetCVar("g_localPacketRate"))
 		{
@@ -159,13 +159,13 @@ public:
 
 		if (ICVar* pVar = gEnv->pConsole->GetCVar("net_inactivitytimeout"))
 		{
-			m_oldInactivityTimeout = pVar->GetFVal();
+			m_oldInactivityTimeout = pVar->GetTime();
 			pVar->Set(inactivityTimeout);
 		}
 
 		if (ICVar* pVar = gEnv->pConsole->GetCVar("net_inactivitytimeoutDevmode"))
 		{
-			m_oldInactivityTimeoutDev = pVar->GetFVal();
+			m_oldInactivityTimeoutDev = pVar->GetTime();
 			pVar->Set(inactivityTimeout);
 		}
 	}
@@ -199,8 +199,8 @@ public:
 
 private:
 	float m_old;
-	float m_oldInactivityTimeout;
-	float m_oldInactivityTimeoutDev;
+	CTimeValue m_oldInactivityTimeout;
+	CTimeValue m_oldInactivityTimeoutDev;
 };
 
 CActionGame::CActionGame(CScriptRMI* pScriptRMI)
@@ -438,7 +438,7 @@ bool CActionGame::Init(const SGameStartParams* pGameStartParams)
 
 	// initialize client server infrastructure
 
-	CAdjustLocalConnectionPacketRate adjustLocalPacketRate(50.0f, 30.0f);
+	CAdjustLocalConnectionPacketRate adjustLocalPacketRate(50.0f, 30);
 
 	uint32 ctxFlags = 0;
 	if ((pGameStartParams->flags & eGSF_Server) == 0 || (pGameStartParams->flags & eGSF_LocalOnly) == 0)
@@ -919,7 +919,7 @@ void CActionGame::InitImmersiveness()
 
 bool CActionGame::BlockingSpawnPlayer()
 {
-	CAdjustLocalConnectionPacketRate adjuster(50.0f, 30.0f);
+	CAdjustLocalConnectionPacketRate adjuster(50.0f, 30);
 
 	assert(gEnv->IsEditor());
 

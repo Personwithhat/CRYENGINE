@@ -3109,7 +3109,9 @@ CCVarUpdateRecorder::SUpdateRecord::SUpdateRecord(ICVar* pCVar)
 	{
 		case CVAR_INT:    intValue = pCVar->GetIVal();                 break;
 		case CVAR_FLOAT:  floatValue = pCVar->GetFVal();               break;
-		case CVAR_STRING: cry_strcpy(stringValue, pCVar->GetString()); break;
+		case CVAR_STRING:
+		case CVAR_MPFLOAT:
+		case CVAR_TIMEVAL: cry_strcpy(stringValue, pCVar->GetString()); break;
 		default: assert(false);
 	};
 }

@@ -330,6 +330,15 @@ protected:
 
 		void   set_key(const TStore& t, value_type v)
 		{
+			/*
+				PERSONAL NOTE: HACK!!!
+				They go about creating a value here in a weird way. e.g. accessing a non-existant index in aElem (has 1 value, but they access [1])
+									m_pSpline->aElems[i].set_key(source.time(i), source.value(i));
+				This creates mpfloat but its contents are bogus. Have to be 'initialized'. Setting _mp_d to 0 forces it.
+				And then the following assignment works just fine. >.>
+			*/
+			st.backend().data()[0]._mp_d = 0;
+
 			st = t;
 			sv = v;
 		}

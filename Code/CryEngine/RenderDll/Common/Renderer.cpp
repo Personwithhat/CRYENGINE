@@ -3152,8 +3152,8 @@ void CRenderer::PostLevelLoading()
 		m_bStartLevelLoading = false;
 		if (m_pRT->IsMultithreaded())
 		{
-			iLog->Log("-- Render thread was idle during level loading: %.3f secs", gRenDev->m_pRT->m_fTimeIdleDuringLoading);
-			iLog->Log("-- Render thread was busy during level loading: %.3f secs", gRenDev->m_pRT->m_fTimeBusyDuringLoading);
+			iLog->Log("-- Render thread was idle during level loading: %.3f secs", (float)gRenDev->m_pRT->m_fTimeIdleDuringLoading.GetSeconds());
+			iLog->Log("-- Render thread was busy during level loading: %.3f secs", (float)gRenDev->m_pRT->m_fTimeBusyDuringLoading.GetSeconds());
 		}
 
 		m_cEF.mfSortResources();

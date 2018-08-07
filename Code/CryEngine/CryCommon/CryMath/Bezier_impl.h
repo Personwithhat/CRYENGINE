@@ -53,7 +53,7 @@ bool Serialize(Serialization::IArchive& ar, std::vector<SBezierKey>& value, cons
 			key = str.Tokenize(",", curPos);
 			while (!key.empty())
 			{
-				string keyTime;
+				char keyTime[256];
 				float keyValue;
 				Vec2 keyInTan;
 				Vec2 keyOutTan;
@@ -61,7 +61,8 @@ bool Serialize(Serialization::IArchive& ar, std::vector<SBezierKey>& value, cons
 
 				// PERSONAL VERIFY: Hard to debug/test/catch these types of edits.
 				// Probably best to grep sscanf. Not TOO many files.
-				int res = sscanf(key, "%s:%g:%g:%g:%g:%g:%d:%d:%d",
+				// Also would need to clarify on buffer sizing, 256? Lower, higher? Convert to CVAR as before.
+				int res = sscanf(key, "%[^:]:%g:%g:%g:%g:%g:%d:%d:%d",
 				                 &keyTime, &keyValue,
 				                 &keyInTan.x, &keyInTan.y,
 				                 &keyOutTan.x, &keyOutTan.y,
@@ -72,7 +73,7 @@ bool Serialize(Serialization::IArchive& ar, std::vector<SBezierKey>& value, cons
 				}
 
 				SBezierKey& bezierKey = value[nKeys];
-				bezierKey.m_time = CTimeValue(keyTime.c_str());
+				bezierKey.m_time = CTimeValue(keyTime);
 
 				SBezierControlPoint& cp = bezierKey.m_controlPoint;
 				cp.m_value = keyValue;

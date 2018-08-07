@@ -3889,23 +3889,23 @@ bool CSystem::Initialize(SSystemInitParams& startupParams)
 	*/
 	// Get the highest/lowest/current precisions.
 	ULONG minRes = -1, maxRes = -1, curRes = -1;
-	assert(pNtQueryTimerResolution(&minRes, &maxRes, &curRes) && "Failed to query time resolution");
+	assert(!pNtQueryTimerResolution(&minRes, &maxRes, &curRes) && "Failed to query time resolution");
 	
-	// Get the target system resolution
-	// Clamp to this range: Most precise < Target Precision < Least precise
-	ULONG targetRes = CLAMP(g_cvars.sys_timeres, minRes, maxRes);
+	// Get the target system resolution, clamp between available resolutions.
+	ULONG targetRes = CLAMP(g_cvars.sys_timeres, maxRes, minRes);
 
 	// Don't bother updating if system timer is already configured to run in higher precision.
 	ULONG original = curRes;
 	if (targetRes < curRes)
 	{
-		assert(pNtSetTimerResolution(targetRes, TRUE, &curRes) && "Failed to adjust timer resolution");
+		assert(!pNtSetTimerResolution(targetRes, TRUE, &curRes) && "Failed to adjust timer resolution");
 		gEnv->pLog->LogAlways("System timer resolution configured to %.2f ms (was %.2f ms before)", curRes * 1e-4, original * 1e-4);
 
 		// Store current time resolution.
 		curTimerRes = curRes;
 
-		if(g_cvars.sys_timeres != curTimerRes){
+		// Query can give e.g. 4959 even though the lowest should be 5000. So some leeway for error.
+		if(abs(g_cvars.sys_timeres - (long)curTimerRes ) >= 50){
 			CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Timer resolution %.2f ms not supported on this OS!", g_cvars.sys_timeres * 1e-4);
 		}
 	}

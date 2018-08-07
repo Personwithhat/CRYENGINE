@@ -1272,11 +1272,11 @@ ILevelInfo* CLevelSystem::LoadLevel(const char* _levelName)
 		m_pSystem->SetThreadState(ESubsys_Physics, false);
 
 		ICVar* pSpamDelay = gEnv->pConsole->GetCVar("log_SpamDelay");
-		float spamDelay = 0.0f;
+		CTimeValue spamDelay = 0;
 		if (pSpamDelay)
 		{
-			spamDelay = pSpamDelay->GetFVal();
-			pSpamDelay->Set(0.0f);
+			spamDelay = pSpamDelay->GetTime();
+			pSpamDelay->Set(CTimeValue(0));
 		}
 
 		// load all GameToken libraries this level uses incl. LevelLocal

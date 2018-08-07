@@ -3161,7 +3161,7 @@ void C3DEngine::DisplayInfo(float& fTextPosX, float& fTextPosY, float& fTextStep
 		}
 		DrawTextRightAligned(fTextPosX, fTextPosY += fTextStepY, 1.5f, ColorF(1.0f, 1.0f, 0.5f, 1.0f),
 		                     "FPS %.1f [%.0f..%.0f], %s over %.1f s",
-		                     m_fAverageFPS, m_fMinFPS, m_fMaxFPS, sMode, fBlendTime);
+		                     m_fAverageFPS, m_fMinFPS, m_fMaxFPS, sMode, (float)fBlendTime.GetSeconds());
 	}
 	else
 	{

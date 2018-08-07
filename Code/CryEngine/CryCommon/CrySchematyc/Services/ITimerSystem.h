@@ -28,18 +28,6 @@ enum class ETimerUnits
 
 struct STimerDuration
 {
-	// PERSONAL VERIFY: These 2 should probably be improved/cleaned up, default const/etc. is implicitly deleted after CTimeValue edits....
-	~STimerDuration(){};
-	STimerDuration& operator=(const STimerDuration& rhs)
-	{
-		units = rhs.units;
-		frames = rhs.frames;
-		range.min = rhs.range.min;
-		range.max = rhs.range.max;
-		return *this;
-	}
-
-	// PERSONAL NOTE: For same reason as in StreamEngine.cpp, mpfloat/CTimeValue can't be memset.
 	inline STimerDuration()
 		: units(ETimerUnits::Empty)
 	{
@@ -70,9 +58,14 @@ struct STimerDuration
 		range.max = _max;
 	}
 
+	// PERSONAL NOTE: For same reason as in StreamEngine.cpp, mpfloat/CTimeValue can't be memset. It also can't be memcopied.
 	inline STimerDuration(const STimerDuration& rhs)
 	{
-		memcpy(this, &rhs, sizeof(STimerDuration));
+		units = rhs.units;
+		frames = rhs.frames;
+		seconds = rhs.seconds;
+		range.min = rhs.range.min;
+		range.max = rhs.range.max;
 	}
 
 	inline void ToString(IString& output) const
@@ -104,17 +97,14 @@ struct STimerDuration
 
 	ETimerUnits units;
 
-	union
+	// PERSONAL NOTE: No union. Cuz time-value memcpy, union management, etc. issues. Perhaps solved later.
+	uint32 frames;
+	CTimeValue seconds;
+	struct
 	{
-		uint32 frames;
-		CTimeValue seconds;
-
-		struct
-		{
-			CTimeValue min;
-			CTimeValue max;
-		} range;
-	};
+		CTimeValue min;
+		CTimeValue max;
+	} range;
 };
 
 enum class ETimerFlags

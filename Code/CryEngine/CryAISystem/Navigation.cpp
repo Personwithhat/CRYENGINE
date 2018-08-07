@@ -59,7 +59,7 @@ void CNavigation::LoadNavigationData(const char* szLevel, const char* szMission)
 	GetAISystem()->ReadAreasFromFile(fileNameAreas);
 
 	CTimeValue endTime = gEnv->pTimer->GetAsyncCurTime();
-	AILogLoading("Navigation Data Loaded in %5.2f sec", (endTime - startTime).GetSeconds());
+	AILogLoading("Navigation Data Loaded in %5.2f sec", (float)(endTime - startTime).GetSeconds());
 }
 
 void CNavigation::Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime)

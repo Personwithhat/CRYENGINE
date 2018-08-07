@@ -3455,9 +3455,9 @@ bool CharacterManager::LoadAnimationImageFileCAF(const char* filenameCAF)
 		rCAF.SetFlags(pChunk->m_Flags & nValidFlags);
 		rCAF.m_FilePathDBACRC32 = pChunk->m_FilePathDBACRC32;                        // TODO: investigate this
 		rCAF.SetFilePath(pChunk->m_FilePath);
-		rCAF.m_fStartSec = pChunk->m_fStartSec;
-		rCAF.m_fEndSec = pChunk->m_fEndSec;
-		rCAF.m_fTotalDuration = pChunk->m_fTotalDuration;
+		rCAF.m_fStartSec = BADTIME(pChunk->m_fStartSec);
+		rCAF.m_fEndSec = BADTIME(pChunk->m_fEndSec);
+		rCAF.m_fTotalDuration = BADTIME(pChunk->m_fTotalDuration);
 		rCAF.m_StartLocation = pChunk->m_StartLocation;                            // asset-feature: the original location of the animation in world-space
 		rCAF.m_nControllers = 0;
 		rCAF.m_nControllers2 = pChunk->m_nControllers;
@@ -3536,9 +3536,9 @@ bool CharacterManager::LoadAnimationImageFileAIM(const char* filenameAIM)
 		GlobalAnimationHeaderAIM& rAIM = g_AnimationManager.m_arrGlobalAIM[i];
 		rAIM.SetFlags(pChunk->m_Flags & nValidFlags);
 		rAIM.SetFilePath(pChunk->m_FilePath);
-		rAIM.m_fStartSec = pChunk->m_fStartSec;
-		rAIM.m_fEndSec = pChunk->m_fEndSec;
-		rAIM.m_fTotalDuration = pChunk->m_fTotalDuration;
+		rAIM.m_fStartSec = BADTIME(pChunk->m_fStartSec);
+		rAIM.m_fEndSec = BADTIME(pChunk->m_fEndSec);
+		rAIM.m_fTotalDuration = BADTIME(pChunk->m_fTotalDuration);
 		rAIM.m_AnimTokenCRC32 = pChunk->m_AnimTokenCRC32;
 		rAIM.m_nExist = pChunk->m_nExist;
 		rAIM.m_MiddleAimPoseRot = pChunk->m_MiddleAimPoseRot;
