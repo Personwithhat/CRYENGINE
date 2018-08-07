@@ -2,6 +2,9 @@
 *.pak
 *.caf
 
+# Ain't that many files to ignore, easier to handle through github for now.
+!GameSampleFPS/**
+
 # Config files
 /user.cfg
 /system.cfg
@@ -31,6 +34,7 @@ _WAF_/user_settings.options
 /[Ll]og[Bb]ackups
 /[Uu]ser*/
 __pycache__/*
+/Editor/ResourceCache/*
 
 # Might contain a license key, so don't add it to a repo.
 /Code/Tools/waf-1.7.13/recode.lic
