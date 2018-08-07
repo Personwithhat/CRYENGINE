@@ -1,10 +1,10 @@
-<AssetMetadata version="0" type="Texture" guid="6756ef09-7f45-ef6d-79d6-f4c9502448ab" source="LivePreview.TIF">
+<AssetMetadata version="0" type="Texture" guid="6756ef09-7f45-ef6d-79d6-f4c9502448ab" source="livepreview.tif">
  <Files>
-  <File path="LivePreview.dds"/>
+  <File path="livepreview.dds"/>
  </Files>
  <Details>
   <Detail name="width">16</Detail>
   <Detail name="height">16</Detail>
-  <Detail name="mipCount">3</Detail>
+  <Detail name="mipCount">5</Detail>
  </Details>
 </AssetMetadata>

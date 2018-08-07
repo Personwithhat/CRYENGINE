@@ -1,10 +1,10 @@
-<AssetMetadata version="0" type="Texture" guid="86584fe9-450d-4676-026f-8995de5c9924" source="LowMemoryUsage.TIF">
+<AssetMetadata version="0" type="Texture" guid="86584fe9-450d-4676-026f-8995de5c9924" source="lowmemoryusage.tif">
  <Files>
-  <File path="LowMemoryUsage.dds"/>
+  <File path="lowmemoryusage.dds"/>
  </Files>
  <Details>
   <Detail name="width">16</Detail>
   <Detail name="height">16</Detail>
-  <Detail name="mipCount">3</Detail>
+  <Detail name="mipCount">5</Detail>
  </Details>
 </AssetMetadata>
