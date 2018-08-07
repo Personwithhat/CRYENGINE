@@ -290,7 +290,8 @@ void CRenderer::InitRenderer()
 	ZeroArray(m_streamZonesRoundId);
 
 	SRenderStatistics::s_pCurrentOutput = &m_frameRenderStats[0];
-	memset(SRenderStatistics::s_pCurrentOutput, 0, sizeof(m_frameRenderStats));
+	//memset(SRenderStatistics::s_pCurrentOutput, 0, sizeof(m_frameRenderStats)); PERSONAL VERIFY: Time memset issues.
+	for(int i = 0; i< RT_COMMAND_BUF_COUNT; i++){ m_frameRenderStats[i] = SRenderStatistics{}; }
 }
 
 CRenderer::~CRenderer()
