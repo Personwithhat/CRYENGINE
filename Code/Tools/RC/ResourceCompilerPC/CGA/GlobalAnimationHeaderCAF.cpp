@@ -856,7 +856,7 @@ bool GlobalAnimationHeaderCAF::ReadGlobalAnimationHeader(const IChunkFile::Chunk
 		m_LastLocatorKey2 = gah->m_LastLocatorKey;
 
 		m_fStartSec.SetSeconds(0);
-		m_fEndSec = gah->m_fEndSec - gah->m_fStartSec;
+		m_fEndSec = BADTIME(gah->m_fEndSec - gah->m_fStartSec);
 
 		m_FootPlantVectors.m_LHeelStart = gah->m_LHeelStart;
 		m_FootPlantVectors.m_LHeelEnd   = gah->m_LHeelEnd;
@@ -1095,9 +1095,9 @@ bool GlobalAnimationHeaderCAF::SaveToChunkFile(IChunkFile* chunkFile, bool bigEn
 	swap(GAH_Info.m_LastLocatorKey.t.y);
 	swap(GAH_Info.m_LastLocatorKey.t.z);
 
-	swap(GAH_Info.m_fStartSec = m_fStartSec); //asset-feature: Start time in seconds.
-	swap(GAH_Info.m_fEndSec = m_fEndSec); //asset-feature: End time in seconds.
-	swap(GAH_Info.m_fTotalDuration = m_fEndSec - m_fStartSec); //asset-feature: asset-feature: total duration in seconds.
+	swap(GAH_Info.m_fStartSec = m_fStartSec.BADGetSeconds());							//asset-feature: Start time in seconds.
+	swap(GAH_Info.m_fEndSec = m_fEndSec.BADGetSeconds());									//asset-feature: End time in seconds.
+	swap(GAH_Info.m_fTotalDuration = (m_fEndSec - m_fStartSec).BADGetSeconds());  //asset-feature: asset-feature: total duration in seconds.
 
 	swap(GAH_Info.m_LHeelStart = m_FootPlantVectors.m_LHeelStart);
 	swap(GAH_Info.m_LHeelEnd   = m_FootPlantVectors.m_LHeelEnd);

@@ -175,8 +175,8 @@ bool GlobalAnimationHeaderAIM::ReadGAH(const IChunkFile::ChunkDesc *chunk)
 	}
 
 	m_fStartSec.SetSeconds(0);
-	m_fEndSec				= pChunk->m_fEndSec - pChunk->m_fStartSec;
-	m_fTotalDuration		= pChunk->m_fTotalDuration;
+	m_fEndSec				= BADTIME(pChunk->m_fEndSec - pChunk->m_fStartSec);
+	m_fTotalDuration		= BADTIME(pChunk->m_fTotalDuration);
 
 	m_AnimTokenCRC32		= pChunk->m_AnimTokenCRC32;
 	m_nExist					= pChunk->m_nExist;
@@ -338,11 +338,11 @@ bool GlobalAnimationHeaderAIM::SaveToChunkFile(IChunkFile* chunkFile, bool bigEn
 	pGAH_Info->m_FilePathCRC32		= m_FilePathCRC32;
 	swap(pGAH_Info->m_FilePathCRC32);
 
-	pGAH_Info->m_fStartSec				=	m_fStartSec;									//asset-feature: Start time in seconds.
+	pGAH_Info->m_fStartSec				=	m_fStartSec.BADGetSeconds();					//asset-feature: Start time in seconds.
 	swap(pGAH_Info->m_fStartSec);
-	pGAH_Info->m_fEndSec					=	m_fEndSec;										//asset-feature: End time in seconds.
+	pGAH_Info->m_fEndSec					=	m_fEndSec.BADGetSeconds();						//asset-feature: End time in seconds.
 	swap(pGAH_Info->m_fEndSec);
-	pGAH_Info->m_fTotalDuration		=	m_fEndSec-m_fStartSec;	//asset-feature: asset-feature: total duration in seconds.
+	pGAH_Info->m_fTotalDuration		=	(m_fEndSec-m_fStartSec).BADGetSeconds();	//asset-feature: asset-feature: total duration in seconds.
 	swap(pGAH_Info->m_fTotalDuration);
 
 	pGAH_Info->m_AnimTokenCRC32		=	m_AnimTokenCRC32;

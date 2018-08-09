@@ -719,7 +719,7 @@ NET_IMPLEMENT_IMMEDIATE_MESSAGE(CNetChannel, Pong, eNRT_UnreliableUnordered, 0)
 	while (!found && !m_pings.empty())
 	{
 		mpfloat millis = (m_pings.top() - when).GetMilliSeconds();
-		if (millis > 1)
+		if (millis > 2) // PERSONAL NOTE: 1 < millis < 2 generally. Is it that much slower or is it more accurate? Or inaccurate! ?? Default time setup has the value going ~0.2->1......
 			break;
 		else if (millis > -1)
 		{

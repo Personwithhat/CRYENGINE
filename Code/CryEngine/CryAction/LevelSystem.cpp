@@ -1666,7 +1666,7 @@ void CLevelSystem::OnLoadingComplete(ILevelInfo* pLevelInfo)
 	if (!gEnv->IsEditor())
 	{
 		CryLog("-----------------------------------------------------");
-		CryLog("*LOADING: Level %s loading time: %.2f seconds", m_lastLevelName.c_str(), m_fLastLevelLoadTime);
+		CryLog("*LOADING: Level %s loading time: %.2f seconds", m_lastLevelName.c_str(), (float)m_fLastLevelLoadTime.GetSeconds());
 		CryLog("-----------------------------------------------------");
 	}
 
