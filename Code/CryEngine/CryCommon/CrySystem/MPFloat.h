@@ -239,7 +239,7 @@ public: // Other re-implimented number<> functions
 	// Misc. funcs
 	inline bool is_zero() const { using default_ops::eval_is_zero; return eval_is_zero(m_backend); }
 	inline int sign()	    const { using default_ops::eval_get_sign; return eval_get_sign(m_backend); }
-	const char* str(std::streamsize digits = 0, std::ios_base::fmtflags f = std::ios_base::fmtflags(0)) const { return m_backend.str(digits, f).c_str(); }
+	string str(std::streamsize digits = 0, std::ios_base::fmtflags f = std::ios_base::fmtflags(0)) const { return string(m_backend.str(digits, f).c_str()); }
 
 	// Backend()
 	ILINE Backend& backend() noexcept							  { return m_backend; }
