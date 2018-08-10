@@ -16,8 +16,8 @@ public:
 	void              Init(float fDefaultValue);
 	float             Evaluate(const CTimeValue& t) const;
 
-	void              SetKeys(const SBezierKey* keysArray, unsigned int keysArraySize) { m_keys.resize(keysArraySize); memcpy(&m_keys[0], keysArray, keysArraySize * sizeof(SBezierKey)); }
-	void              GetKeys(SBezierKey* keys) const                                  { memcpy(keys, &m_keys[0], m_keys.size() * sizeof(SBezierKey)); }
+	void              SetKeys(const SBezierKey* keysArray, unsigned int keysArraySize) { m_keys.resize(keysArraySize); std::copy(keysArray, keysArray + keysArraySize, &m_keys[0]); }
+	void              GetKeys(SBezierKey* keys) const                                  { std::copy(&m_keys[0], &m_keys[0] + m_keys.size(), keys); }
 
 	void              InsertKey(const CTimeValue& time, float value);
 	void              UpdateKeyForTime(const CTimeValue& fTime, float value);

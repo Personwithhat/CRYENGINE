@@ -533,11 +533,11 @@ void CObjManager::ProcessObjectsStreaming(const SRenderingPassInfo& passInfo)
 	size_t ppWriteIdx = 0;
 	for (size_t ppIdx = 0, ppCount = m_vStreamPreCachePointDefs.size(); ppIdx != ppCount; ++ppIdx)
 	{
-		SObjManPrecachePoint& pp = m_vStreamPreCachePointDefs[ppIdx];
+		SObjManPrecachePoint& pp = *m_vStreamPreCachePointDefs[ppIdx];
 
 		if (ppIdx == 0 || currentTime < pp.expireTime)
 		{
-			m_vStreamPreCachePointDefs[ppWriteIdx] = pp;
+			m_vStreamPreCachePointDefs[ppWriteIdx] = &pp;
 			m_vStreamPreCacheCameras[ppWriteIdx] = m_vStreamPreCacheCameras[ppIdx];
 			++ppWriteIdx;
 		}

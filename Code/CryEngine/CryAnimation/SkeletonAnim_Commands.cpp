@@ -284,7 +284,7 @@ CSkeletonAnim::EFillCommandBufferResult CSkeletonAnim::FillCommandBuffer(const Q
 	bool useFeetLocking = false;
 	if (numActiveAnims)
 	{
-		mpfloat pfUserData[NUM_ANIMATION_USER_DATA_SLOTS] = { 0 };
+		f32 pfUserData[NUM_ANIMATION_USER_DATA_SLOTS] = { 0 };
 		for (uint32 a = 0; a < numActiveAnims; a++)
 		{
 			const CAnimation& rCurAnimation = rCurLayer[a];
@@ -298,7 +298,7 @@ CSkeletonAnim::EFillCommandBufferResult CSkeletonAnim::FillCommandBuffer(const Q
 			const mpfloat* __restrict pSrc = &rCurAnimation.m_fUserData[0];
 
 			for (int i = 0; i < NUM_ANIMATION_USER_DATA_SLOTS; i++)
-				pfUserData[i] += pSrc[i] * fTransitionWeight;
+				pfUserData[i] += BADF(pSrc[i] * fTransitionWeight);
 		}
 
 		memcpy(&m_fUserData[0], pfUserData, NUM_ANIMATION_USER_DATA_SLOTS * sizeof(f32));
@@ -418,7 +418,7 @@ void CSkeletonAnim::Commands_BasePlayback(const CAnimation& rAnim, Command::CBuf
 		ac->m_nEAnimID = nAnimID;
 		ac->m_flags = 0;
 		ac->m_flags |= m_AnimationDrivenMotion ? Command::SampleAddAnimFull::Flag_ADMotion : 0;
-		ac->m_fWeight = rAnim.GetTransitionWeight();
+		ac->m_fWeight = BADF rAnim.GetTransitionWeight();
 
 		nTime time_new0 = rAnim.GetCurrentSegmentNormalizedTime();
 		int32 segtotal = rCAF.m_Segments - 1;
@@ -428,12 +428,12 @@ void CSkeletonAnim::Commands_BasePlayback(const CAnimation& rAnim, Command::CBuf
 		nTime segbase = rCAF.m_SegmentsTime[segcount];
 		nTime percent = segdur / totdur;
 		nTime time_new = time_new0 * percent + segbase;
-		ac->m_fETimeNew = time_new; // this is a percentage value between 0-1
+		ac->m_fETimeNew = BADF time_new; // this is a percentage value between 0-1
 		if (nSampleRateHZ30)
 		{
 			mpfloat fKeys = totdur.GetSeconds() * ANIMATION_30Hz;
 			mpfloat fKeyTime = time_new.conv<mpfloat>() * fKeys;
-			ac->m_fETimeNew = (uint32(fKeyTime + "0.45") / fKeys).conv<nTime>();
+			ac->m_fETimeNew = BADF (uint32(fKeyTime + "0.45") / fKeys).conv<nTime>();
 		}
 
 #ifdef BLENDSPACE_VISUALIZATION
@@ -454,12 +454,12 @@ void CSkeletonAnim::Commands_BasePlayback(const CAnimation& rAnim, Command::CBuf
 		Command::SampleAddPoseFull* ac = buffer.CreateCommand<Command::SampleAddPoseFull>();
 		ac->m_nEAnimID = nAnimID;
 		ac->m_flags = 0;
-		ac->m_fWeight = rAnim.GetTransitionWeight();
-		ac->m_fETimeNew = rAnim.GetCurrentSegmentNormalizedTime(); //this is a percentage value between 0-1
+		ac->m_fWeight = BADF rAnim.GetTransitionWeight();
+		ac->m_fETimeNew = BADF rAnim.GetCurrentSegmentNormalizedTime(); //this is a percentage value between 0-1
 		CTimeValue fDuration = max(ANIMATION_FSTEP, rAIM.m_fTotalDuration);
 		mpfloat fKeys = fDuration.GetSeconds() * ANIMATION_30Hz;
-		mpfloat fKeyTime = ac->m_fETimeNew.conv<mpfloat>() * fKeys;
-		ac->m_fETimeNew = (uint32(fKeyTime + "0.45") / fKeys).conv<nTime>();
+		mpfloat fKeyTime = BADMP(ac->m_fETimeNew) * fKeys;
+		ac->m_fETimeNew = BADF (uint32(fKeyTime + "0.45") / fKeys).conv<nTime>();
 		assert(ac->m_fETimeNew >= 0 && ac->m_fETimeNew <= 1);
 	}
 }
@@ -529,16 +529,16 @@ void CreateCommandsForLmgAnimation(const bool animationDrivenMotion, const CAnim
 			{
 				Command::SampleAddAnimFull* fetch = buffer.CreateCommand<Command::SampleAddAnimFull>();
 				fetch->m_nEAnimID = exampleLocalAnimationId;
-				fetch->m_fWeight = finalExampleWeight;
+				fetch->m_fWeight = BADF finalExampleWeight;
 				fetch->m_flags = animationDrivenMotion ? Command::SampleAddAnimFull::Flag_ADMotion : 0;
-				fetch->m_fETimeNew = exampleGlobalAnimationHeaderCAF.GetNTimeforEntireClip(exampleAnimationCurrentSegmentIndex, animationNormalizedTime);
+				fetch->m_fETimeNew = BADF exampleGlobalAnimationHeaderCAF.GetNTimeforEntireClip(exampleAnimationCurrentSegmentIndex, animationNormalizedTime);
 			}
 			else
 			{
 				Command::SampleAddAnimPart* fetch = buffer.CreateCommand<Command::SampleAddAnimPart>();
 				fetch->m_nEAnimID = exampleLocalAnimationId;
-				fetch->m_fWeight = finalExampleWeight;
-				fetch->m_fAnimTime = exampleGlobalAnimationHeaderCAF.GetNTimeforEntireClip(exampleAnimationCurrentSegmentIndex, animationNormalizedTime);
+				fetch->m_fWeight = BADF finalExampleWeight;
+				fetch->m_fAnimTime = BADF exampleGlobalAnimationHeaderCAF.GetNTimeforEntireClip(exampleAnimationCurrentSegmentIndex, animationNormalizedTime);
 				fetch->m_TargetBuffer = nTargetBuffer;
 			}
 		}
@@ -672,8 +672,8 @@ void CSkeletonAnim::Commands_LPlayback(const CAnimation& rAnim, uint32 nTargetBu
 	ac->m_TargetBuffer = nTargetBuffer;
 	ac->m_SourceBuffer = nSourceBuffer;
 	ac->m_nEAnimID = rAnim.GetAnimationId();
-	ac->m_fAnimTime = rAnim.GetCurrentSegmentNormalizedTime();
-	ac->m_fWeight = combinedWeight;
+	ac->m_fAnimTime = BADF rAnim.GetCurrentSegmentNormalizedTime();
+	ac->m_fWeight = BADF combinedWeight;
 
 #if defined(USE_PROTOTYPE_ABS_BLENDING)
 	if (rAnim.m_pJointMask && (rAnim.m_pJointMask->weightList.size() > 0))
@@ -694,8 +694,8 @@ void CSkeletonAnim::Commands_LPlayback(const CAnimation& rAnim, uint32 nTargetBu
 		const GlobalAnimationHeaderCAF& rCAF = g_AnimationManager.m_arrGlobalCAF[pAnim->m_nGlobalAnimId];
 		CTimeValue fDuration = max(rCAF.GetTotalDuration(), ANIMATION_FSTEP);
 		mpfloat fKeys = fDuration.GetSeconds() * ANIMATION_30Hz;
-		mpfloat fKeyTime = ac->m_fAnimTime.conv<mpfloat>() * fKeys;
-		ac->m_fAnimTime = (uint32(fKeyTime + "0.45") / fKeys).conv<nTime>();
+		mpfloat fKeyTime = BADMP(ac->m_fAnimTime) * fKeys;
+		ac->m_fAnimTime = BADF (uint32(fKeyTime + "0.45") / fKeys).conv<nTime>();
 		//	float fColor2[4] = {1,0,0,1};
 		//	g_pAuxGeom->Draw2dLabel( 1,g_YLine, 2.3f, fColor2, false,"fKeys: %f  fKeyTime: %f   m_fETimeNew: %f",fKeys,fKeyTime,ac->m_fAnimTime);
 		//	g_YLine+=23;

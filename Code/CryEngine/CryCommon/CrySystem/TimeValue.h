@@ -216,6 +216,15 @@ public:
 	bool operator==(const volatile CTimeValue& inRhs) const volatile { return m_lValue == inRhs.m_lValue; };
 */
 
+	/*
+		PERSONAL NOTE: HACK!!!
+		This 'fix' for un-initialized mpfloat heap only works when ran before the data is accessed/compared.
+		Might memory leak? etc. Trace this down and remove :<
+	*/
+	void memHACK(){
+		m_lValue.backend().data()[0]._mp_d = 0;
+	}
+
 private:
 	mpfloat m_lValue;     //!< Time in Seconds. Storage limited to 'least-accurate number', in this case 'Seconds'.
 };

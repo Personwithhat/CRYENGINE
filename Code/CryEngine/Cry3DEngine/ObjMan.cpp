@@ -587,7 +587,7 @@ CObjManager::CObjManager() :
 	m_statObjPool = new stl::PoolAllocator<sizeof(CStatObj), stl::PSyncMultiThread, alignof(CStatObj)>(stl::FHeap().PageSize(64)); // 20Kb per page
 #endif
 
-	m_vStreamPreCachePointDefs.Add(SObjManPrecachePoint());
+	m_vStreamPreCachePointDefs.push_back(new SObjManPrecachePoint());
 	m_vStreamPreCacheCameras.Add(SObjManPrecacheCamera());
 	m_nNextPrecachePointId = 0;
 	m_bCameraPrecacheOverridden = false;

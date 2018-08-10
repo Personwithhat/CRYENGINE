@@ -78,8 +78,8 @@ struct SampleAddAnimFull
 	uint8 m_nCommand;
 	uint8 m_flags;
 	int16 m_nEAnimID;
-	nTime     m_fETimeNew; //this is a percentage value between 0-1
-	mpfloat   m_fWeight;
+	f32   m_fETimeNew; //this is a percentage value between 0-1
+	f32   m_fWeight;
 
 	void  Execute(const CState& state, CEvaluationContext& context) const;
 };
@@ -120,8 +120,8 @@ struct SampleAddAnimPart
 
 	int32 m_nEAnimID;
 
-	nTime     m_fAnimTime; //this is a percentage value between 0-1
-	mpfloat   m_fWeight;
+	f32   m_fAnimTime; //this is a percentage value between 0-1
+	f32   m_fWeight;
 
 #if defined(USE_PROTOTYPE_ABS_BLENDING)
 	strided_pointer<const int>   m_maskJointIDs;
@@ -151,8 +151,8 @@ struct SampleAddPoseFull
 	uint8 m_nCommand;
 	uint8 m_flags;
 	int16 m_nEAnimID;
-	nTime     m_fETimeNew; //this is a percentage value between 0-1
-	mpfloat   m_fWeight;
+	f32   m_fETimeNew; //this is a percentage value between 0-1					PERSONAL NOTE: This and the other 2 time/weight setups here can't be nTime etc. due ot how commands allocate memory. mpfloat not POD -> bugs.
+	f32   m_fWeight;
 	void  Execute(const CState& state, CEvaluationContext& context) const;
 };
 

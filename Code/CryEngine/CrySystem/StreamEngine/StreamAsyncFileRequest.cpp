@@ -530,6 +530,9 @@ void CAsyncIOFileRequest::Reset()
 
 	// Reset POD members of the structure
 	memset(&m_nSortKey, 0, ((char*)(this + 1) - (char*)&m_nSortKey));
+
+	// These are non-POD, assign them after reset .-.
+	m_readTime = m_unzipTime = m_verifyTime = m_decryptTime = m_startTime = m_completionTime = CTimeValue(0);
 }
 
 void CAsyncIOFileRequest::Init(EStreamTaskType eType)

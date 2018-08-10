@@ -1082,7 +1082,8 @@ struct SShaderPass
 	}
 
 private:
-	SShaderPass& operator=(const SShaderPass& sl);
+	// Allowed access for TArray, used there during std::copy
+	//SShaderPass& operator=(const SShaderPass& sl);
 };
 
 //===================================================================================

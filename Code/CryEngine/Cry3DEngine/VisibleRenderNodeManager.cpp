@@ -115,6 +115,9 @@ SRenderNodeTempData* CVisibleRenderNodesManager::AllocateTempData(int lastSeenFr
 
 	pData->userData.objMat.SetIdentity();
 
+	// Since time's initialized to 0.....then used in ComputeDissolve() before even set!
+	for (auto &v : pData->userData.arrLodLastTimeUsed) { v = CTimeValue(0); }
+
 	{
 		CryAutoCriticalSectionNoRecursive lock(m_accessLock);
 		if (m_firstAddedNode < 0)

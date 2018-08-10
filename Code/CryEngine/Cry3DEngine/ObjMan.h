@@ -480,7 +480,7 @@ public:
 	_smart_ptr<CStatObj>            m_pDefaultCGF;
 	PodArray<SStreamAbleObject>     m_arrStreamableObjects;
 	PodArray<COctreeNode*>          m_arrStreamingNodeStack;
-	PodArray<SObjManPrecachePoint>  m_vStreamPreCachePointDefs;
+	std::vector<SObjManPrecachePoint*> m_vStreamPreCachePointDefs;
 	PodArray<SObjManPrecacheCamera> m_vStreamPreCacheCameras;
 	int                             m_nNextPrecachePointId;
 	bool                            m_bCameraPrecacheOverridden;

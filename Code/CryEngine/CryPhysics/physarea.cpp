@@ -803,7 +803,7 @@ int CPhysArea::SetParams(pe_params *_params, int bThreadSafe)
 			((float*)&m_waveSim)[i]=((float*)&params->waveSim)[i]; bSetWaterman=true; 
 		}
 		if (m_pWaterMan && bSetWaterman) {
-			memcpy(&(params_wavesim&)pwm, &params->waveSim, sizeof(params_wavesim));
+			(params_wavesim&)pwm = params->waveSim;
 			m_pWaterMan->SetParams(&pwm);
 		}
 		m_pWorld->m_numNonWaterAreas += IsAreaNonWater(this);
@@ -879,9 +879,9 @@ int CPhysArea::GetParams(pe_params *_params) const
 		params->volumeAccuracy = m_accuracyV;
 		if (m_pWaterMan) {
 			pe_params_waterman pwm; m_pWaterMan->GetParams(&pwm);
-			memcpy(&params->waveSim, &(params_wavesim&)pwm, sizeof(params->waveSim));
+			params->waveSim = (params_wavesim&)pwm;
 		} else
-			memcpy(&params->waveSim, &m_waveSim, sizeof(m_waveSim));
+			params->waveSim = m_waveSim;
 		params->bConvexBorder = m_bConvexBorder;
 		return 1;
 	}
@@ -1351,7 +1351,7 @@ void CPhysArea::Update(const CTimeValue& dt)
 		Vec3 org = m_R*Vec3(BBox[0]+BBox[1]-Vec2(pwm.tileSize,pwm.tileSize))*0.5f*m_scale+m_offset;
 		m_pb.waterPlane.origin = org+m_pb.waterPlane.n*(m_pb.waterPlane.n*(m_pb.waterPlane.origin-org));
 		pwm.posViewer = m_R*Vec3(BBox[0]+BBox[1])*0.5f*m_scale+m_offset;
-		memcpy(&(params_wavesim&)pwm, &m_waveSim, sizeof(m_waveSim));
+		(params_wavesim&)pwm = m_waveSim;
 		m_pWaterMan->SetParams(&pwm);
 	}
 

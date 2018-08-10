@@ -2000,7 +2000,7 @@ void CNetwork::GetBandwidthStatistics(SBandwidthStats* const pStats)
 	CRY_ASSERT(pStats);
 
 #if NET_MINI_PROFILE || NET_PROFILE_ENABLE
-	memcpy(pStats, &g_socketBandwidth.bandwidthStats, sizeof(SBandwidthStats));
+	*pStats = g_socketBandwidth.bandwidthStats;
 
 	uint32 channelIndex = 0;
 	while (channelIndex < STATS_MAX_NUMBER_OF_CHANNELS)

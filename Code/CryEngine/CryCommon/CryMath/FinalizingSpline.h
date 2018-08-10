@@ -558,7 +558,7 @@ public:
 		if (!in.empty() && in.num_keys() != 0)
 		{
 			alloc(in.num_keys());
-			memcpy(m_pSpline, in.m_pSpline, in.m_pSpline->alloc_size());
+			memcpy(m_pSpline, in.m_pSpline, in.m_pSpline->alloc_size()); // WARNING: memcpy issues with CTimeValue?
 			m_pSpline->validate();
 		}
 		else

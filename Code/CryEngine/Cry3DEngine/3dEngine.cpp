@@ -5346,10 +5346,10 @@ int C3DEngine::AddPrecachePoint(const Vec3& vPos, const Vec3& vDir, const CTimeV
 			int nOldestId = INT_MAX;
 			for (size_t i = 1, c = m_pObjManager->m_vStreamPreCachePointDefs.size(); i < c; ++i)
 			{
-				if (m_pObjManager->m_vStreamPreCachePointDefs[i].nId < nOldestId)
+				if (m_pObjManager->m_vStreamPreCachePointDefs[i]->nId < nOldestId)
 				{
 					nOldestIdx = i;
-					nOldestId = m_pObjManager->m_vStreamPreCachePointDefs[i].nId;
+					nOldestId = m_pObjManager->m_vStreamPreCachePointDefs[i]->nId;
 				}
 			}
 
@@ -5360,7 +5360,7 @@ int C3DEngine::AddPrecachePoint(const Vec3& vPos, const Vec3& vDir, const CTimeV
 			           m_pObjManager->m_vStreamPreCacheCameras[nOldestIdx].vPosition.y,
 			           m_pObjManager->m_vStreamPreCacheCameras[nOldestIdx].vPosition.z);
 
-			m_pObjManager->m_vStreamPreCachePointDefs.DeleteFastUnsorted((int)nOldestIdx);
+			delete m_pObjManager->m_vStreamPreCachePointDefs[(int)nOldestIdx];
 			m_pObjManager->m_vStreamPreCacheCameras.DeleteFastUnsorted((int)nOldestIdx);
 		}
 
@@ -5372,7 +5372,7 @@ int C3DEngine::AddPrecachePoint(const Vec3& vPos, const Vec3& vDir, const CTimeV
 		pc.bbox = AABB(vPos, GetCVars()->e_StreamPredictionBoxRadius);
 		pc.vDirection = vDir;
 		pc.fImportanceFactor = fImportanceFactor;
-		m_pObjManager->m_vStreamPreCachePointDefs.Add(pp);
+		m_pObjManager->m_vStreamPreCachePointDefs.push_back(new SObjManPrecachePoint(pp));
 		m_pObjManager->m_vStreamPreCacheCameras.Add(pc);
 		//m_pObjManager->m_bCameraPrecacheOverridden = true;
 
@@ -5388,9 +5388,9 @@ void C3DEngine::ClearPrecachePoint(int id)
 	{
 		for (size_t i = 1, c = m_pObjManager->m_vStreamPreCachePointDefs.size(); i < c; ++i)
 		{
-			if (m_pObjManager->m_vStreamPreCachePointDefs[i].nId == id)
+			if (m_pObjManager->m_vStreamPreCachePointDefs[i]->nId == id)
 			{
-				m_pObjManager->m_vStreamPreCachePointDefs.DeleteFastUnsorted((int)i);
+				delete m_pObjManager->m_vStreamPreCachePointDefs[(int)i];
 				m_pObjManager->m_vStreamPreCacheCameras.DeleteFastUnsorted((int)i);
 				break;
 			}

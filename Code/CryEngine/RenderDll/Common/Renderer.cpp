@@ -3268,7 +3268,7 @@ bool CRenderer::IsDebugRenderNode(IRenderNode* pRenderNode) const
 void SRenderStatistics::Begin(const SRenderStatistics* prevData)
 {
 #if defined(_DEBUG)
-	memcpy(this, prevData, sizeof(SRenderStatistics));
+	*this = *prevData;
 #else
 	memset(this, 0, sizeof(SRenderStatistics));
 #endif

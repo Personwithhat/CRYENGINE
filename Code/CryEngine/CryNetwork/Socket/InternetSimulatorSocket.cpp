@@ -265,7 +265,7 @@ void CInternetSimulatorSocket::LoadXMLProfiles(const char* pFileName)
 					XmlNodeRef profileNode = rootNode->getChild(i);
 					if (profileNode->isTag("Profile"))
 					{
-						memcpy(pProfile, &sm_DefaultProfiles[DEFAULT_PROFILE_TYPICAL], sizeof(SProfileEntry));
+						pProfile = &sm_DefaultProfiles[DEFAULT_PROFILE_TYPICAL];
 
 						profileNode->getAttr("minPacketLoss", pProfile->fLossMin);
 						profileNode->getAttr("maxPacketLoss", pProfile->fLossMax);

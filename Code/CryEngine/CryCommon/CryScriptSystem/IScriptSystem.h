@@ -1252,6 +1252,7 @@ inline ScriptAnyValue::ScriptAnyValue(const ScriptAnyValue& rhs)
 inline void ScriptAnyValue::Swap(ScriptAnyValue& value)
 {
 	char temp[sizeof(ScriptAnyValue)];
+	// WARNING: memcpy issues?
 	memcpy(temp, this, sizeof(ScriptAnyValue));
 	memcpy(this, &value, sizeof(ScriptAnyValue));
 	memcpy(&value, temp, sizeof(ScriptAnyValue));

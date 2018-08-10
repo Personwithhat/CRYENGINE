@@ -139,12 +139,13 @@ void CPhysRenderer::DrawGeometry(IGeometry* pGeom, geom_world_data* pgwd, int id
 				int i;
 				SRayRec* prevbuf = m_rayBuf;
 				m_rayBuf = new SRayRec[m_szRayBuf += 64];
-				memcpy(m_rayBuf + m_iFirstRay, prevbuf + m_iFirstRay, (m_nRays - m_iFirstRay) * sizeof(SRayRec));
+				std::copy(prevbuf + m_iFirstRay, prevbuf + m_iFirstRay + (m_nRays - m_iFirstRay), m_rayBuf + m_iFirstRay);
 				if (m_iFirstRay > m_iLastRay)
 				{
-					memcpy(m_rayBuf + m_nRays, prevbuf, (i = min(m_szRayBuf - m_nRays, m_iLastRay + 1)) * sizeof(SRayRec));
+					i = min(m_szRayBuf - m_nRays, m_iLastRay + 1);
+					std::copy(prevbuf, prevbuf + i, m_rayBuf + m_nRays);
 					PREFAST_SUPPRESS_WARNING(6386)
-					memcpy(m_rayBuf, prevbuf + i, (m_iLastRay + 1 - i) * sizeof(SRayRec));
+					std::copy(prevbuf + i, prevbuf + i + (m_iLastRay + 1 - i), m_rayBuf);
 					m_iLastRay -= i - (m_nRays + i & (m_iLastRay - i) >> 31);
 				}
 			}
@@ -171,12 +172,13 @@ void CPhysRenderer::DrawGeometry(IGeometry* pGeom, geom_world_data* pgwd, int id
 				int i;
 				SGeomRec* prevbuf = m_geomBuf;
 				m_geomBuf = new SGeomRec[m_szGeomBuf += 64];
-				memcpy(m_geomBuf + m_iFirstGeom, prevbuf + m_iFirstGeom, (m_nGeoms - m_iFirstGeom) * sizeof(SGeomRec));
+				std::copy(prevbuf + m_iFirstGeom, prevbuf + m_iFirstGeom + (m_nGeoms - m_iFirstGeom), m_geomBuf);
 				if (m_iFirstGeom > m_iLastGeom)
 				{
-					memcpy(m_geomBuf + m_nGeoms, prevbuf, (i = min(m_szGeomBuf - m_nGeoms, m_iLastGeom + 1)) * sizeof(SGeomRec));
+					i = min(m_szGeomBuf - m_nGeoms, m_iLastGeom + 1);
+					std::copy(prevbuf, prevbuf + i, m_geomBuf + m_nGeoms);
 					PREFAST_SUPPRESS_WARNING(6386)
-					memcpy(m_geomBuf, prevbuf + i, (m_iLastGeom + 1 - i) * sizeof(SGeomRec));
+					std::copy(prevbuf + i, prevbuf + i + (m_iLastGeom + 1 - i), m_geomBuf);
 					m_iLastGeom -= i - (m_nGeoms + i & (m_iLastGeom - i) >> 31);
 				}
 			}

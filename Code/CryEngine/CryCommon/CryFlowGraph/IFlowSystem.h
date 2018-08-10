@@ -1282,6 +1282,7 @@ struct SFlowNodeConfig
 	}
 	void AddInputPort(int slot, const SInputPortConfig& cfg)
 	{
+		// WARNING: memcpy issues?
 		memcpy((void*)(&pInputPorts[slot]), (void*)&cfg, sizeof(SInputPortConfig));
 	}
 	void AddStringInputPort(int slot, const char* name, const char* description)
@@ -1309,6 +1310,7 @@ struct SFlowNodeConfig
 	}
 	void AddOutputPort(int slot, const SOutputPortConfig& cfg)
 	{
+		// WARNING: memcpy issues?
 		memcpy((void*)(&pOutputPorts[slot]), (void*)&cfg, sizeof(SOutputPortConfig));
 	}
 	void AddStringOutputPort(int slot, const char* name, const char* description)

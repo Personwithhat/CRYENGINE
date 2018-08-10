@@ -216,7 +216,7 @@ void SampleAddAnimFull::Execute(const CState& state, CEvaluationContext& context
 	const auto outputRelScale = static_cast<float*>(context.m_buffers[bufferIndex + 3]);
 	const auto outputPoseState = static_cast<JointState*>(context.m_buffers[bufferIndex + 1]);
 
-	const kTime keyTimeNew = rCAF.NTime2KTime(m_fETimeNew);
+	const kTime keyTimeNew = rCAF.NTime2KTime(BADnT(m_fETimeNew));
 	const uint32 startingJointIndex = (m_flags & Flag_ADMotion) ? (1) : (0);
 
 	if (startingJointIndex == 1)
@@ -346,7 +346,7 @@ void SampleAddPoseFull::Execute(const CState& state, CEvaluationContext& context
 	const auto parrStatusDst = static_cast<JointState*>(context.m_buffers[nBufferID + 1]);
 	const QuatT* parrHemispherePose = Console::GetInst().ca_SampleQuatHemisphereFromCurrentPose ? parrRelJointsDst : pDefaultPose; // joints to compare with in quaternion dot product
 
-	const kTime fKeyTimeNew = rGlobalAnimHeaderAIM.NTime2KTime(m_fETimeNew);
+	const kTime fKeyTimeNew = rGlobalAnimHeaderAIM.NTime2KTime(BADnT(m_fETimeNew));
 	for (uint32 j = 0; j < state.m_jointCount; ++j)
 	{
 		Quat rot;
@@ -521,7 +521,7 @@ void SampleAddAnimPart::Execute(const CState& state, CEvaluationContext& context
 	GatherControllers(rCAF, state, parrController);
 
 	assert(m_fAnimTime >= 0 && m_fAnimTime <= 1);
-	const kTime fKeyTimeNew = rCAF.NTime2KTime(m_fAnimTime);
+	const kTime fKeyTimeNew = rCAF.NTime2KTime(BADnT(m_fAnimTime));
 
 	if (rCAF.IsAssetAdditive())
 	{

@@ -828,7 +828,7 @@ void CParticle::UpdateAllocations(int nPrevHistorySteps)
 		if ((m_aPosHistory = (SParticleHistory*) ParticleObjectAllocator().Allocate(sizeof(SParticleHistory) * nNewSteps)))
 		{
 			if (aPrevHist)
-				memcpy(m_aPosHistory, aPrevHist, min(nPrevHistorySteps, nNewSteps) * sizeof(*aPrevHist));
+				std::copy(aPrevHist, aPrevHist + min(nPrevHistorySteps, nNewSteps), m_aPosHistory);
 			for (int n = nPrevHistorySteps; n < nNewSteps; n++)
 				m_aPosHistory[n].SetUnused();
 		}

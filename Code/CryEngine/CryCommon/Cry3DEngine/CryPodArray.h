@@ -116,7 +116,7 @@ public:
 		if (m_nCount + lstAnother.Count() > m_nAllocatedCount)
 			PreAllocate((m_nCount + lstAnother.Count()) * 3 / 2 + 8);
 
-		memcpy(&m_pElements[m_nCount], &lstAnother.m_pElements[0], sizeof(m_pElements[0]) * lstAnother.Count());
+		std::copy(&lstAnother.m_pElements[0], &lstAnother.m_pElements[0] + lstAnother.Count(), &m_pElements[m_nCount]);
 
 		m_nCount += lstAnother.Count();
 		MEMSTAT_USAGE(begin(), (sizeof(T) * size()) + overAllocBytes);
@@ -127,7 +127,7 @@ public:
 		if (m_nCount + nAnotherCount > m_nAllocatedCount)
 			PreAllocate((m_nCount + nAnotherCount) * 3 / 2 + 8);
 
-		memcpy(&m_pElements[m_nCount], pAnotherArray, sizeof(m_pElements[0]) * nAnotherCount);
+		std::copy(pAnotherArray, pAnotherArray + nAnotherCount , &m_pElements[m_nCount]);
 
 		m_nCount += nAnotherCount;
 		MEMSTAT_USAGE(begin(), (sizeof(T) * size()) + overAllocBytes);
@@ -148,7 +148,9 @@ public:
 			MEMSTAT_BIND_TO_CONTAINER(this, m_pElements);
 		}
 
-		memcpy(&m_pElements[m_nCount], &p, sizeof(m_pElements[m_nCount]));
+		// I suppose this can be un-done later.....maybe. Once I catch all the CTimeValue's that keep being stored in POD<> array.
+		// Allocated memory -> Bogus BS -> Obviously mpfloat needs to be 'initialized' first. So it becomes invalid!
+		m_pElements[m_nCount] = p;
 		m_nCount++;
 		MEMSTAT_USAGE(begin(), (sizeof(T) * size()) + overAllocBytes);
 	}
