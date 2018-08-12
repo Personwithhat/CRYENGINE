@@ -2121,7 +2121,7 @@ int CArticulatedEntity::StepJoint(int idx, const CTimeValue& time_interval,int &
 		// check for new contacts; unproject if necessary; register new contacts
 		Vec3 sweep(0);
 		if (/*m_iSimTypeCur==0 &&*/ bFlying) {
-			ip.iUnprojectionMode = 0; ip.time_interval = time_interval.BADGetSeconds()*1.6f;
+			ip.iUnprojectionMode = 0; ip.time_interval = tSeconds*1.6f;
 			gwd.v = m_body.v; gwd.w.zero();	sweep = m_body.v*tSeconds;
 			n = m_BBox[1]-m_BBox[0];
 			ip.maxUnproj = max(max(n.x,n.y),n.z);
@@ -3087,7 +3087,7 @@ int CArticulatedEntity::Update(const CTimeValue& time_interval, float damping)
 	int iCaller = get_iCaller();
 	entity_contact *pContact;
 	float e,minEnergy = m_nBodyContacts>=m_nCollLyingMode ? m_EminLyingMode : m_Emin;
-	CTimeValue dt = BADTIME(e);
+	CTimeValue dt;
 	m_bAwake = (iszero(m_nBodyContacts) & (bFloating^1)) | isneg(m_simTimeAux-"0.5") | isneg(-m_minAwakeTime);
 	m_bUsingUnproj = 0;
 	m_nStepBackCount = (m_nStepBackCount&-(int)m_bSteppedBack)+m_bSteppedBack;

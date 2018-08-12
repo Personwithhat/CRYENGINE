@@ -3579,7 +3579,7 @@ void SRigidEntityNetStateHistory::UpdateSequenceDeltaAverage(uint8 delta, int sa
 		else if (difference < -MAX_SEQUENCE_NUMBER / mpfloat(2)) {
 			difference += MAX_SEQUENCE_NUMBER;
 		}
-		const mpfloat weight = 1 / sampleCount;
+		const mpfloat weight = mpfloat(1) / sampleCount;
 		sequenceDeltaAverage += difference * weight;
 	}
 	else {

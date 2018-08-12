@@ -1483,7 +1483,7 @@ int CLivingEntity::Step(const CTimeValue& time_intervalIN)
 			gwd[0].centerOfMass = gwd[0].offset = pos + gwd[0].R*m_parts[0].pos; 
 			gwd[0].v.zero(); gwd[0].w.zero(); // since we check a static character against potentially moving environment here
 			ip.vrel_min = fSizeX;
-			ip.time_interval = time_interval.BADGetSeconds()*2;
+			ip.time_interval = tSeconds*2;
 			ip.maxUnproj = fSizeX*2.5f;
 			ip.ptOutsidePivot[0] = gwd[0].offset;
 			pCyl[0] = m_pCylinderGeom;
