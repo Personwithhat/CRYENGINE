@@ -561,6 +561,7 @@
 
 	<!-- Multiprecision float types -->
 	<Type Name="boost::multiprecision::mpfloat">
+		<DisplayString Condition="m_backend.m_data[0]._mp_d == 0">Invalid data, zeroed out.</DisplayString>
 		<DisplayString>{str(0,0)}</DisplayString>
 		<Expand>
 			<Item Name="_mp_prec">m_backend.m_data[0]._mp_prec</Item>

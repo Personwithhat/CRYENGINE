@@ -222,10 +222,10 @@ public:
 		Might memory leak? etc. Trace this down and remove :<
 	*/
 	void memHACK(){
-		m_lValue.backend().data()[0]._mp_d = 0;
+		m_lValue.backend().unsafe()[0]._mp_d = 0;
 	}
 
-private:
+public:
 	mpfloat m_lValue;     //!< Time in Seconds. Storage limited to 'least-accurate number', in this case 'Seconds'.
 };
 

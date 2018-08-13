@@ -362,8 +362,8 @@ public:
 	template<class F>   unused_marker& operator,(Vec3_tpl<F>& x)                 { return *this, x.x; }
 	template<class F>   unused_marker& operator,(Quat_tpl<F>& x)                 { return *this, x.w; }
 	template<class F>   unused_marker& operator,(strided_pointer<F>& x)          { return *this, x.data; }
-	MPOnly				  unused_marker& operator,(T& x)								     { (alias_cast<int*>(&x))[false ? 1 : 0] = 0xFFF7FFFF; return *this; }
-	TVOnly				  unused_marker& operator,(T& x)									  { return *this, x.GetSeconds(); }
+	MPOnly				  unused_marker& operator,(T& x)								     { x.backend().unsafe()[0]._mp_d = 0; return *this; }
+	TVOnly				  unused_marker& operator,(T& x)									  { return *this, x.m_lValue; }
 };
 //! \endcond
 
@@ -385,9 +385,10 @@ template<class F> bool   is_unused(const Vec3_tpl<F>& x)   { return is_unused(x.
 template<class F> bool   is_unused(const Quat_tpl<F>& x)   { return is_unused(x.w); }
 inline bool              is_unused(const double& x)        { unused_marker::d2i u; u.d = x; return (u.i[eLittleEndian ? 1 : 0] & 0xFFF40000) == 0xFFF40000; }
 
-// PERSONAL VERIFY: mpfloat/CTimeValue 'is_unused' should be double-checked for accuracy, math here is weird etc. sigh.
-MPOnly bool is_unused(const T& x) { unused_marker::d2i u; u.d = (double)x; return (u.i[eLittleEndian ? 1 : 0] & 0xFFF40000) == 0xFFF40000; }
-TVOnly bool is_unused(const T& x) { return is_unused(x.GetSeconds()); }
+// PERSONAL NOTE: _mpd_d -> can't compare etc. unused value until assigned something like 0 (until it becomes 'used' heh)
+// Similar result if memset(0) is done. Maybe there's a better solution?
+MPOnly bool is_unused(const T& x) { return x.backend().unsafe()[0]._mp_d == 0; }
+TVOnly bool is_unused(const T& x) { return is_unused(x.m_lValue); }
 
 #define MARK_UNUSED unused_marker(),
 
