@@ -558,5 +558,16 @@
   <Type Name="CryGUID">
     <DisplayString>{*(GUID*)this}</DisplayString>
   </Type>
-  
+
+	<!-- Multiprecision float types -->
+	<Type Name="boost::multiprecision::mpfloat">
+		<DisplayString>{str(0,0)}</DisplayString>
+		<Expand>
+			<Item Name="_mp_prec">m_backend.m_data[0]._mp_prec</Item>
+			<Item Name="_mp_size">m_backend.m_data[0]._mp_size</Item>
+			<Item Name="_mp_exp">m_backend.m_data[0]._mp_exp</Item>
+			<Item Name="_mp_d">m_backend.m_data[0]._mp_d</Item>
+		</Expand>
+	</Type>
+
 </AutoVisualizer>

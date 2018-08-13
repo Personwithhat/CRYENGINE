@@ -264,7 +264,7 @@ private:
 		using default_ops::eval_convert_to;
 		eval_convert_to(result, m_backend);
 	}
-	void convert_to_imp(std::string* result)const
+	void convert_to_imp(std::string* result)const	// PERSONAL TODO: String stuff is wrong now!
 	{
 		*result = this->str();
 	}

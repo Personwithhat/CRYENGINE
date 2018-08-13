@@ -94,7 +94,7 @@ public:
 	mpfloat GetMilliSeconds() const { return m_lValue * 1'000; }
 	mpfloat GetMicroSeconds() const { return m_lValue * 1'000'000; }
 
-	const char* str()	const { return m_lValue.str(); }
+	string str()				  const { return m_lValue.str(); }
 
 	// PERSONAL VERIFY: That this is correct!
 	//! Useful for periodic events (e.g. water wave, blinking).
