@@ -172,8 +172,8 @@ protected:
 
 	IFacialAnimChannel* GetChannelFromSpline(ISplineInterpolator* pSpline);
 	void                DisplayPlaybackSpeedInToolbar();
-	float               ReadPlaybackSpeedFromToolbar();
-	float               ReadFrameFromToolbar();
+	mpfloat             ReadPlaybackSpeedFromToolbar();
+	mpfloat             ReadFrameFromToolbar();
 	float               ReadSmoothSigmaFromToolbar();
 	float               ReadKeyCleanupErrorMaxFromToolbar();
 	float               ReadRemoveNoiseSigmaFromToolbar();

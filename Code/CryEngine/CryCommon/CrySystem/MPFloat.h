@@ -2,11 +2,6 @@
 
 #pragma once
 
-// PERSONAL TODO: Unreadable without this + maybe some other edits/options....syntaxing is off
-#ifndef ILINE
-//	#define ILINE inline
-#endif
-
 // PERSONAL VERIFY: Include guards still needed, even with pragma?
 #ifndef MPFLOAT
 	#define MPFLOAT
@@ -193,6 +188,12 @@ public: // Math operations
 		#undef Operation
 		#undef this
 
+		// Increment/Deincrement
+		ILINE rType& operator++()   { using default_ops::eval_increment; eval_increment(m_backend); return *this; }
+		ILINE rType& operator--()   { using default_ops::eval_decrement; eval_decrement(m_backend); return *this; }
+		ILINE rType operator++(int) { using default_ops::eval_increment; rType temp(*this); eval_increment(m_backend); return BOOST_MP_MOVE(temp); }
+		ILINE rType operator--(int) { using default_ops::eval_decrement; rType temp(*this); eval_decrement(m_backend); return BOOST_MP_MOVE(temp);}
+
 public: // Comparisons
 
 		/*rType ?? rType*/
@@ -299,13 +300,15 @@ private:
 			using default_ops::BOOST_JOIN(eval_,func);\
 			BOOST_JOIN(eval_,func)(result.backend(), arg.backend());\
 			return BOOST_MP_MOVE(result);\
-		}
+		};
 
-		UNARY_OP_FUNCTOR(abs);
-		UNARY_OP_FUNCTOR(trunc);
-		UNARY_OP_FUNCTOR(sqrt);
-		UNARY_OP_FUNCTOR(floor);
+		UNARY_OP_FUNCTOR(abs)
+		UNARY_OP_FUNCTOR(trunc)
+		UNARY_OP_FUNCTOR(sqrt)
+		UNARY_OP_FUNCTOR(floor)
+		UNARY_OP_FUNCTOR(ceil)
 		UNARY_OP_FUNCTOR(sin)
+		UNARY_OP_FUNCTOR(log10)
 	#undef UNARY_OP_FUNCTOR
 
 	#define BINARY_OP_FUNCTOR(func)\
@@ -316,7 +319,7 @@ private:
 			using default_ops::BOOST_JOIN(eval_,func);\
 			BOOST_JOIN(eval_,func)(result.backend(), a.backend(), b.backend());\
 			return BOOST_MP_MOVE(result);\
-		}
+		};
 		BINARY_OP_FUNCTOR(pow)
 	#undef BINARY_OP_FUNCTOR
 }} // END boost::multiprecision namespaces
@@ -354,6 +357,7 @@ private:
 	//! PERSONAL TODO: 
 	// Due to 'clamp_tpl not defined' etc. issues when including CryCustomTypes....
    // Have to define a duplicate TypeInfo class that functions just like TTypeInfo....fix?
+	// Now that inclusion of CryCommon works properly this shouldn't be necessary anymore! :\ 
 	#include "../CryCore/CryTypeInfo.h"
 
 	//! String helper function.

@@ -115,7 +115,7 @@ public:
 		hardLimit_.min = limit_min((Type)0);
 		hardLimit_.max = limit_max((Type)0);
 		softLimit_ = hardLimit_;
-		singleStep_ = yasli::DefaultSinglestep<Type>::value();
+		singleStep_ = (double)yasli::DefaultSinglestep<Type>::value();
 	}
 
 	void setValue(Type value, const void* handle, const yasli::TypeID& type) {

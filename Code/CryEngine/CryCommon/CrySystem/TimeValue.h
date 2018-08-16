@@ -46,6 +46,94 @@ class CTimeValue;
 #define limit2(x, y) template <class T, class T2, typename boost::enable_if_c<boost::is_same<T, x>::value && boost::is_same<T2, y>::value>::type* = 0>
 
 /*
+	Animation time data for frames and what not.
+*/
+struct SAnimData {
+public:
+	SAnimData() { assert(false && "This is a static data/helper struct, do not build!"); }
+
+	// ?????????
+	enum class EDisplayMode
+	{
+		Ticks = 0,
+		Time,
+		Timecode,
+		Frames
+	};
+
+	//! List of possible frame rates (dividers of 6000). Most commonly used ones first.
+	enum EFrameRate
+	{
+		// Common
+		eFrameRate_30fps, eFrameRate_60fps, eFrameRate_120fps,
+
+		// Possible
+		eFrameRate_10fps, eFrameRate_12fps, eFrameRate_15fps, eFrameRate_24fps,
+		eFrameRate_25fps, eFrameRate_40fps, eFrameRate_48fps, eFrameRate_50fps,
+		eFrameRate_75fps, eFrameRate_80fps, eFrameRate_100fps, eFrameRate_125fps,
+		eFrameRate_150fps, eFrameRate_200fps, eFrameRate_240fps, eFrameRate_250fps,
+		eFrameRate_300fps, eFrameRate_375fps, eFrameRate_400fps, eFrameRate_500fps,
+		eFrameRate_600fps, eFrameRate_750fps, eFrameRate_1000fps, eFrameRate_1200fps,
+		eFrameRate_1500fps, eFrameRate_2000fps, eFrameRate_3000fps, eFrameRate_6000fps,
+
+		eFrameRate_Num
+	};
+	
+	// ?????????
+	struct Settings
+	{
+		EDisplayMode displayMode;
+		EFrameRate   fps;
+
+		Settings()
+			: displayMode(EDisplayMode::Ticks)
+			, fps(EFrameRate::eFrameRate_30fps)
+		{}
+	};
+
+public:
+	// Harcoded animation update-value. PERSONAL VERIFY: Does this HAVE to be 6000??
+	// Why not use CPU ticks per second here from CTimer???
+	static const int32 numTicksPerSecond = 6000;
+
+	// Enum to int or string value
+	static uint GetFrameRateValue(EFrameRate frameRate)
+	{
+		const uint frameRateValues[eFrameRate_Num] =
+		{
+			// Common
+			30,   60,   120,
+
+			// Possible
+			10,   12,   15,  24,    25,   40,  48,  50,  75,  80,  100, 125,
+			150,  200,  240, 250,   300,  375, 400, 500, 600, 750,
+			1000, 1200, 1500,2000,  3000, 6000
+		};
+
+		return frameRateValues[frameRate];
+	}
+	static const char* GetFrameRateName(EFrameRate frameRate)
+	{
+		const char* frameRateNames[eFrameRate_Num] =
+		{
+			// Common
+			"30 fps",   "60 fps",   "120 fps",
+
+			// Possible
+			"10 fps",   "12 fps",   "15 fps",  "24 fps",
+			"25 fps",   "40 fps",   "48 fps",  "50 fps",
+			"75 fps",   "80 fps",   "100 fps", "125 fps",
+			"150 fps",  "200 fps",  "240 fps", "250 fps",
+			"300 fps",  "375 fps",  "400 fps", "500 fps",
+			"600 fps",  "750 fps",  "1000 fps","1200 fps",
+			"1500 fps", "2000 fps", "3000 fps","6000 fps"
+		};
+
+		return frameRateNames[frameRate];
+	}
+};
+
+/*
 	Main time-value class. Default storage is in 'Seconds', the least accurate get/set.
 	Uses GMP's mpfloat for storage, preserves up to 50 digit precision accuracy.
 */
@@ -63,10 +151,7 @@ public:
 	template <class T, typename boost::enable_if_c<
 		boost::is_convertible<T, mpfloat>::value
 	>::type* = 0>
-	ILINE CTimeValue(const T& seconds)
-	{
-		m_lValue = seconds;
-	}
+	ILINE CTimeValue(const T& seconds) { m_lValue = seconds; }
 
 //**
 //** Setters
@@ -79,15 +164,12 @@ public:
 	CTimeValue& SetMicroSeconds(const mpfloat& indwMicroSec) { m_lValue = indwMicroSec * mpfloat("0.000001"); return *this; }
 
 	// PERSONAL VERIFY: Unsure how to implement multi-threaded timevalues....
-	ILINE void AddValueThreadSafe(const CTimeValue& val)
-	{
-		//CryInterlockedAdd(&m_value, val);
-	}
+	ILINE void AddValueThreadSafe(const CTimeValue& val) { /*CryInterlockedAdd(&m_value, val);*/ }
 
 //**
 //** Getters
 //** 
-	// Preferably anything using 'BAD' should be altered to avoid this, precision loss.
+	// Ideally, anything with precision loss uses this to fetch seconds. (Or other 'BAD' nomenclature)
 	float BADGetSeconds() const { return (float)m_lValue; }
 
 	mpfloat GetSeconds()		  const { return m_lValue; }
@@ -95,12 +177,6 @@ public:
 	mpfloat GetMicroSeconds() const { return m_lValue * 1'000'000; }
 
 	string str()				  const { return m_lValue.str(); }
-
-	// PERSONAL VERIFY: That this is correct!
-	//! Useful for periodic events (e.g. water wave, blinking).
-	//! Changing TimePeriod can results in heavy changes in the returned value.
-	//! \return [0..1]
-	mpfloat GetPeriodicFraction(const CTimeValue& TimePeriod) const { return (*this % TimePeriod).GetSeconds(); }
 
 	/* PERSONAL VERIFY: 
 			1) Need to review Max()/Min() setups, might have misplaced them!
@@ -159,15 +235,53 @@ public:
 	AcceptOnly(nTime) CTimeValue  operator*(const T& inRhs)  const { CTimeValue ret; ret.m_lValue = m_lValue * inRhs.conv<mpfloat>(); return ret; }
 	limit2(nTime, CTimeValue) friend CTimeValue operator*(const T& inLhs, const T2& inRhs) { CTimeValue ret; ret.m_lValue = inLhs.conv<mpfloat>() * inRhs.m_lValue; return ret; }
 
-	AUTO_STRUCT_INFO;
+//**
+//** Snapping time to frame multiple	PERSONAL TODO: Messy location, find a way to make this all look neater.
+//** 
+	// Return time snapped to nearest multiple of given frame rate
+	CTimeValue SnapToNearest(const SAnimData::EFrameRate frameRate) const { return SnapToNearest(SAnimData::GetFrameRateValue(frameRate)); }
+	CTimeValue SnapToNearest(const uint frameRate)						 const;
 
+	// Return time snapped to next multiple of given frame rate		 
+	// (Will NOT change when already at a multiple)
+	CTimeValue SnapToNext(const SAnimData::EFrameRate frameRate)	 const { return SnapToNext(SAnimData::GetFrameRateValue(frameRate)); }
+	CTimeValue SnapToNext(const uint frameRate)							 const;
+
+	// Return time snapped to previous multiple of given frame rate 
+	// (Will NOT change when already at a multiple) 
+	CTimeValue SnapToPrev(const SAnimData::EFrameRate frameRate)	 const { return SnapToPrev(SAnimData::GetFrameRateValue(frameRate)); }
+	CTimeValue SnapToPrev(const uint frameRate)							 const;
+
+	// Return time after stepping to next multiple of given frame rate 
+	// (Will change to next multiple when already at a multiple)
+	CTimeValue StepToNext(const SAnimData::EFrameRate frameRate)	 const { return StepToNext(SAnimData::GetFrameRateValue(frameRate)); }
+	CTimeValue StepToNext(const uint frameRate)							 const { return (*this + "0.0001").SnapToNext(frameRate); }
+
+	// Return time after stepping to previous multiple of given frame rate 
+	// (Will change to previous multiple when already at a multiple)
+	CTimeValue StepToPrev(const SAnimData::EFrameRate frameRate)	 const { return StepToPrev(SAnimData::GetFrameRateValue(frameRate));  }
+	CTimeValue StepToPrev(const uint frameRate)							 const { return (*this - "0.0001").SnapToPrev(frameRate); }
+
+//**
+//** Miscellaneous other functions. (Perhaps move to getters/setters? Xd)
+//**
 	// PERSONAL VERIFY: Memory usage should probably be tracked for optimizing mpfloat size/etc.
 	void GetMemoryUsage(class ICrySizer* pSizer)		  const { /*Nothing*/ }
 	void GetMemoryStatistics(class ICrySizer* pSizer) const { /*Nothing*/ }
 
-//**
-//** Serialization
-//**
+	/*
+		PERSONAL NOTE: HACK!!!
+		This 'fix' for un-initialized mpfloat heap only works when ran before the data is accessed/compared.
+		Might memory leak? etc. Trace this down and remove :<
+	*/
+	void memHACK(){ m_lValue.backend().unsafe()[0]._mp_d = 0; }
+
+	// PERSONAL VERIFY: That this is correct!
+	//! Useful for periodic events (e.g. water wave, blinking).
+	//! Changing TimePeriod can results in heavy changes in the returned value.
+	//! \return [0..1]
+	mpfloat GetPeriodicFraction(const CTimeValue& TimePeriod) const { return (*this % TimePeriod).GetSeconds(); }
+
 	// SAnimTime-style serialization, for XMLNodeRef's.
 	void Serialize(XmlNodeRef keyNode, bool bLoading, const char* pName, const char* pLegacyName = "")
 	{
@@ -183,10 +297,14 @@ public:
 				*/
 				assert(false && "Should not be using legacy names anymore!");
 			}
-		} else {
+		}
+		else {
 			keyNode->setAttr(pName, m_lValue);
 		}
 	}
+
+	// PERSONAL VERIFY: Where should this go again? >.>
+	AUTO_STRUCT_INFO;
 
 // PERSONAL VERIFY: Setting up Volatile CTimeValue() => no def's for mpfloat volatile = and == , so this fails.
 // Tricky to implement....postponed for now but threading won't work properly otherwise!
@@ -216,15 +334,6 @@ public:
 	bool operator==(const volatile CTimeValue& inRhs) const volatile { return m_lValue == inRhs.m_lValue; };
 */
 
-	/*
-		PERSONAL NOTE: HACK!!!
-		This 'fix' for un-initialized mpfloat heap only works when ran before the data is accessed/compared.
-		Might memory leak? etc. Trace this down and remove :<
-	*/
-	void memHACK(){
-		m_lValue.backend().unsafe()[0]._mp_d = 0;
-	}
-
 public:
 	mpfloat m_lValue;     //!< Time in Seconds. Storage limited to 'least-accurate number', in this case 'Seconds'.
 };
@@ -239,25 +348,53 @@ public:
 	// PERSONAL TODO: mpfloat * rT should = rT
 	// Actually, mpfloat * any other strong-type should have the other strong-type convert to mpfloat (to avoid weird operators e.g. rTime*rTime), 
 	// do the operation, then convert back. e.g. Mpfloat is a mere ratio/etc. on other values.......
-	//limit2(nTime, CTimeValue) friend CTimeValue operator*(const T& inLhs, const T2& inRhs) { CTimeValue ret; ret.m_lValue = inLhs.conv<mpfloat>() * inRhs.m_lValue; return ret; }
+	// limit2(nTime, CTimeValue) friend CTimeValue operator*(const T& inLhs, const T2& inRhs) { CTimeValue ret; ret.m_lValue = inLhs.conv<mpfloat>() * inRhs.m_lValue; return ret; }
 
 //**
 //**	Various math functions
 //**
-ILINE CTimeValue ceil(const CTimeValue& time) { return CTimeValue(int_ceil(time.GetSeconds())); }
+	ILINE CTimeValue ceil(const CTimeValue& time) { return CTimeValue(int_ceil(time.GetSeconds())); }
 
-ILINE CTimeValue abs(const CTimeValue& time) { return (time >= CTimeValue(0)) ? time : -time; }
+	ILINE CTimeValue abs(const CTimeValue& time) { return (time >= CTimeValue(0)) ? time : -time; }
 
-// PERSONAL VERIFY: This is ofc not optimized....used during inrange() Fix this etc.
-ILINE int32 isneg(const CTimeValue& time) { return (time < 0) ? 1 : 0; }
-ILINE int32 sgn(const CTimeValue& time)   { return time.GetSeconds().sign(); } // sign returns -1 if negative, 0 if zero, 1 if positive
+	// PERSONAL VERIFY: This is ofc not optimized....used during inrange() Fix this etc.
+	ILINE int32 isneg(const CTimeValue& time) { return (time < 0) ? 1 : 0; }
+	ILINE int32 sgn(const CTimeValue& time)   { return time.GetSeconds().sign(); } // sign returns -1 if negative, 0 if zero, 1 if positive
 
-// ILINE float div_min(float n, float d, float m) { return n * d < m * d * d ? n / d : m; }
-ILINE CTimeValue div_min(const CTimeValue& n, const CTimeValue& d, const CTimeValue& m) { 
-		return div_min(n.GetSeconds(), d.GetSeconds(), m.GetSeconds());
-}
+	// ILINE float div_min(float n, float d, float m) { return n * d < m * d * d ? n / d : m; }
+	ILINE CTimeValue div_min(const CTimeValue& n, const CTimeValue& d, const CTimeValue& m) { 
+			return div_min(n.GetSeconds(), d.GetSeconds(), m.GetSeconds());
+	}
 
-// Check if CTimeValue is in a valid range etc.
-template<> inline bool IsValid(const CTimeValue& val) { return true; }
+	// Check if CTimeValue is in a valid range etc.
+	template<> inline bool IsValid(const CTimeValue& val) { return true; }
+
+//**
+//**	Snapping, defined after abs etc. functions .-.
+//**
+	ILINE CTimeValue CTimeValue::SnapToNearest(const uint frameRate) const
+	{
+		const int sign = sgn(*this);
+		const CTimeValue absT = abs(*this);
+
+		const CTimeValue framesMod = CTimeValue(1) / frameRate;
+		const CTimeValue remainder = absT % framesMod;
+		const bool bNextMultiple = remainder >= (framesMod / 2);
+		return sign * ((absT - remainder) + (bNextMultiple ? framesMod : 0));
+	}
+	ILINE CTimeValue CTimeValue::SnapToNext(const uint frameRate) const
+	{
+		const CTimeValue framesMod = CTimeValue(1) / frameRate;
+		const CTimeValue remainder = *this % framesMod;
+		const bool bNextMultiple = (*this >= 0 && remainder != 0);
+		return (*this - remainder) + (bNextMultiple ? framesMod : 0);
+	}
+	ILINE CTimeValue CTimeValue::SnapToPrev(const uint frameRate) const
+	{
+		const CTimeValue framesMod = CTimeValue(1) / frameRate;
+		const CTimeValue remainder = *this % framesMod;
+		const bool bPrevMultiple = (*this < 0 && remainder != 0);
+		return (*this - remainder) - (bPrevMultiple ? framesMod : 0);
+	}
 
 #undef limit2

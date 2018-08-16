@@ -2173,7 +2173,7 @@ void CPropertyItem::DrawValue(CDC* dc, CRect rect)
 		{
 			float time = float(x) / (width - 1);
 			ISplineInterpolator::ValueType val;
-			pSpline->Interpolate(time, val);
+			pSpline->Interpolate(BADMP(time), val);
 
 			if (m_type == ePropertyColorCurve)
 			{

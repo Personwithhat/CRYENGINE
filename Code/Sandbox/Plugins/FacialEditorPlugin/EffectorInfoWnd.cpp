@@ -685,7 +685,7 @@ void CEffectorInfoWnd::SetWeight(float fWeight, float fBalance)
 	}
 
 	if (m_pContext)
-		m_pContext->SetPreviewWeight(fWeight);
+		m_pContext->SetPreviewWeight(BADMP(fWeight));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -798,8 +798,8 @@ void CEffectorInfoWnd::OnEditorNotifyEvent(EEditorNotifyEvent event)
 	{
 		if (event == eNotify_OnIdleUpdate)
 		{
-			float dt = gEnv->pTimer->GetFrameTime();
-			float fWeight = m_fCurrWeight + dt;
+			CTimeValue dt = gEnv->pTimer->GetFrameTime();
+			float fWeight = m_fCurrWeight + dt.BADGetSeconds();
 			if (fWeight > 1)
 				fWeight = -1;
 			if (fWeight < -1)

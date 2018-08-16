@@ -598,9 +598,11 @@ struct IFacialAnimSequence
 	// </interfuscator:shuffle>
 };
 
-static const int FACIAL_EDITOR_FPS = 30;
+static const uint FACIAL_EDITOR_FPS = 30;
+// Returns time snapped to nearest frame unit. e.g. if fps = 60 then nearest unit of 1/60'th of a second.
+// mpfloat for convenience (used mostly in splines etc.)
 inline mpfloat FacialEditorSnapTimeToFrame(const CTimeValue& time) { 
-	return int(time.GetSeconds() * FACIAL_EDITOR_FPS + "0.5") * (mpfloat(1) / FACIAL_EDITOR_FPS); 
+	return time.SnapToNearest(FACIAL_EDITOR_FPS).GetSeconds();
 }
 
 //! \endcond
