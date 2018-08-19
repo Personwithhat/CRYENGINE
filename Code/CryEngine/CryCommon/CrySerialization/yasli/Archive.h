@@ -132,8 +132,11 @@ public:
 	virtual bool operator()(u64& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
 	virtual bool operator()(float& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
 	virtual bool operator()(double& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
-	virtual bool operator()(mpfloat& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
+
 	virtual bool operator()(CTimeValue& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
+	#define MP_FUNCTION(T) 	virtual bool operator()(T& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
+	#include <CrySystem\mpfloat.types>
+	#undef MP_FUNCTION
 
 	virtual bool operator()(StringInterface& value, const char* name = "", const char* label = 0)    { notImplemented(); return false; }
 	virtual bool operator()(WStringInterface& value, const char* name = "", const char* label = 0)    { notImplemented(); return false; }
@@ -443,8 +446,12 @@ YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(i64)
 YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(u64)
 YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(float)
 YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(double)
-YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(mpfloat)	// PERSONAL VERIFY: Need to add serialization for these 2 types -> If I can find what to add....
+
+// PERSONAL VERIFY: Need to add serialization for these types -> If I can find what to add....
 YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(CTimeValue)
+#define MP_FUNCTION(T) YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(T)
+#include <CrySystem\mpfloat.types>
+#undef MP_FUNCTION
 }
 
 

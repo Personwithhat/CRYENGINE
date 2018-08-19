@@ -960,20 +960,20 @@ void CCurveEditor::SetValueRange(const float min, const float max, ELimit limit)
 	}
 }
 
-void CCurveEditor::ZoomToTimeRange(const float start, const float end)
+void CCurveEditor::ZoomToTimeRange(const CTimeValue& start, const CTimeValue& end)
 {
-	const float delta = (end - start);
+	const CTimeValue delta = (end - start);
 
-	if (delta > 1e-10f)
+	if (delta > "0.0000000001")
 	{
-		m_zoom.x = 1.0f / (end - start);
-		m_translation.x = start / (start - end);
+		m_zoom.x = BADF(1 / (end - start));
+		m_translation.x = BADF(start / (start - end));
 	}
 	else
 	{
 		// Just center around value with zoom = 1.0f
 		m_zoom.x = 1.0f;
-		m_translation.x = 0.5f - start;
+		m_translation.x = 0.5f - start.BADGetSeconds();
 	}
 
 	if (int width = GetCurveArea().width())
@@ -1886,7 +1886,7 @@ void CCurveEditor::OnFitCurvesHorizontally()
 		if (range.IsEmpty())
 			range = m_timeRange;
 
-		ZoomToTimeRange(range.start.BADGetSeconds(), range.end.BADGetSeconds());
+		ZoomToTimeRange(range.start, range.end);
 	}
 
 	update();

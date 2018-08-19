@@ -41,7 +41,7 @@ public:
 	void  SetTimeRange(const CTimeValue& start, const CTimeValue& end, ELimit limit = ELimit::None);
 	void  SetValueRange(const float min, const float max, ELimit limit = ELimit::None);
 
-	void  ZoomToTimeRange(const float start, const float end);
+	void  ZoomToTimeRange(const CTimeValue& start, const CTimeValue& end);
 	void  ZoomToValueRange(const float min, const float max);
 	void  SetFitMargin(float margin);
 

@@ -224,7 +224,7 @@ struct SSequenceKey : public STrackKey
 {
 	SSequenceKey()
 		: m_sequenceGUID(CryGUID::Null())
-		, m_speed(1.0f)
+		, m_speed(1)
 		, m_boverrideTimes(false)
 		, m_bDoNotStop(false) {}
 
@@ -244,7 +244,7 @@ struct SSequenceKey : public STrackKey
 	CryGUID   m_sequenceGUID;
 	CTimeValue m_startTime;
 	CTimeValue m_endTime;
-	float     m_speed;
+	mpfloat   m_speed;
 	bool      m_boverrideTimes;
 	bool      m_bDoNotStop;
 };
@@ -776,7 +776,7 @@ struct SCaptureKey : public STrackDurationKey
 
 		if (m_frameRate > 0)
 		{
-			m_timeStep.SetSeconds(mpfloat(1) / m_frameRate);
+			m_timeStep = mpfloat(1) / m_frameRate;
 		}
 
 		ICVar* pCaptureFolderCVar = gEnv->pConsole->GetCVar("capture_folder");
@@ -810,9 +810,9 @@ struct SCaptureKey : public STrackDurationKey
 		cry_strcpy(m_prefix, other.m_prefix);
 	}
 
-	int                GetDurationInFrames()  const { return (int)(m_duration.GetSeconds() * (m_frameRate > 0 ? m_frameRate : 1)); }
-	int                GetStartTimeInFrames() const { return (int)(m_time.GetSeconds() * (m_frameRate > 0 ? m_frameRate : 1)); }
-	int                GetEndTimeInFrames()   const { return (int)((m_time + m_duration).GetSeconds() * (m_frameRate > 0 ? m_frameRate : 1)); }
+	int                GetDurationInFrames()  const { return (int)(m_duration * (m_frameRate > 0 ? m_frameRate : 1)); }
+	int                GetStartTimeInFrames() const { return (int)(m_time * (m_frameRate > 0 ? m_frameRate : 1)); }
+	int                GetEndTimeInFrames()   const { return (int)((m_time + m_duration) * (m_frameRate > 0 ? m_frameRate : 1)); }
 
 	static const char* GetType()                    { return "Capture"; }
 
@@ -822,7 +822,7 @@ struct SCaptureKey : public STrackDurationKey
 		ar(m_frameRate, "frameRate", "Frame Rate");
 		if (m_frameRate > 0)
 		{
-			m_timeStep.SetSeconds(mpfloat(1) / m_frameRate);
+			m_timeStep = mpfloat(1) / m_frameRate;
 		}
 
 		string tempFolder = m_folder;
@@ -844,7 +844,7 @@ struct SCaptureKey : public STrackDurationKey
 
 	bool                                   m_bOnce;
 	CTimeValue                             m_timeStep;
-	uint                                   m_frameRate;
+	rTime                                  m_frameRate;
 	char                                   m_folder[ICryPak::g_nMaxPath];
 	char                                   m_prefix[ICryPak::g_nMaxPath / 4];
 	SCaptureFormatInfo::ECaptureBuffer     m_bufferToCapture;
