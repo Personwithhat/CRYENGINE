@@ -38,6 +38,18 @@ public:
 		m_ok = true;
 	}
 
+	void Visit(CTimeValue& i)
+	{
+		i.SetSeconds(m_data);
+		m_ok = true;
+	}
+
+	void Visit(mpfloat& i)
+	{
+		i = m_data;
+		m_ok = true;
+	}
+
 	void Visit(bool& b)
 	{
 		int i;
@@ -131,6 +143,16 @@ public:
 	void Visit(const string& i)
 	{
 		m_out = i;
+	}
+
+	void Visit(const CTimeValue& i)
+	{
+		m_out = i.str();
+	}
+
+	void Visit(const mpfloat& i)
+	{
+		m_out = i.str();
 	}
 
 	void Visit(bool b)

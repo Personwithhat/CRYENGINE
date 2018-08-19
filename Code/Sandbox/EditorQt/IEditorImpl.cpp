@@ -1606,17 +1606,17 @@ void CEditorImpl::RegisterObjectContextMenuExtension(TContextMenuExtensionFunc f
 	m_objectContextMenuExtensions.push_back(func);
 }
 
-void CEditorImpl::SetCurrentMissionTime(float time)
+void CEditorImpl::SetCurrentMissionTime(const CTimeValue& time)
 {
 	if (CMission* pMission = GetIEditorImpl()->GetDocument()->GetCurrentMission())
 		pMission->SetTime(time);
 }
 
-float CEditorImpl::GetCurrentMissionTime()
+CTimeValue CEditorImpl::GetCurrentMissionTime()
 {
 	if (CMission* pMission = GetIEditorImpl()->GetDocument()->GetCurrentMission())
 		return pMission->GetTime();
-	return 12.0f; // return default value noon as 12 hours
+	return 12; // return default value noon as 12 hours
 }
 
 void CEditorImpl::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam)

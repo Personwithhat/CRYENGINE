@@ -1428,7 +1428,7 @@ void CCryEditDoc::InitEmptyLevel(int resolution, float unitSize, bool bUseTerrai
 		{
 			ITimeOfDay* pTimeOfDay = gEnv->p3DEngine->GetTimeOfDay();
 			pTimeOfDay->Serialize(root, true);
-			pTimeOfDay->SetTime(12.0f, true);  // Set to 12:00.
+			pTimeOfDay->SetTime(12, true);  // Set to 12:00.
 		}
 	}
 

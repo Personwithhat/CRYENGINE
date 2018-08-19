@@ -1948,7 +1948,7 @@ int CFacialSequenceDialog::GetSplineCount() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CFacialSequenceDialog::GetKeyCountAtTime(float time, float threshold) const
+int CFacialSequenceDialog::GetKeyCountAtTime(const CTimeValue& time, float threshold) const
 {
 	//IFacialAnimSequence* pSequence = (m_pContext ? m_pContext->GetSequence() : 0);
 

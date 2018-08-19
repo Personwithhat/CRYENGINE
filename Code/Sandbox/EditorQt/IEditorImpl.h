@@ -386,8 +386,8 @@ public:
 
 	virtual void                     RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func);
 
-	virtual void                     SetCurrentMissionTime(float time);
-	virtual float                    GetCurrentMissionTime();
+	virtual void                     SetCurrentMissionTime(const CTimeValue& time);
+	virtual CTimeValue               GetCurrentMissionTime();
 
 	//ISystemEventListener interface
 	virtual void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam);

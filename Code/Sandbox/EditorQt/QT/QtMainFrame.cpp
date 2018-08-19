@@ -2482,9 +2482,9 @@ void CEditorMainFrame::OnIdleCallback()
 	static float movingAverage = 0.0;
 	static const float decayRate = 1.0f / 30.0f; // 30 frames
 
-	float currFrameTime = m_lastFrameDuration.GetMilliSeconds();
+	mpfloat currFrameTime = m_lastFrameDuration.GetMilliSeconds();
 	// Exponential moving avg: newAverage = decayRate * currVal + (1 - decayRate) * prevMovingAverage
-	movingAverage = decayRate * currFrameTime + (1 - decayRate) * movingAverage;
+	movingAverage = decayRate * BADF currFrameTime + (1 - decayRate) * movingAverage;
 
 	// if idle frame processing took more than timeout value ms, activate emergency mode where we basically disregard all updates during user interaction
 	m_bUserEventPriorityMode = (movingAverage > gPerformancePreferences.userInputPriorityTime);

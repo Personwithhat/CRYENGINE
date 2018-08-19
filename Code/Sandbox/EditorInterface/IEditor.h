@@ -467,8 +467,8 @@ struct IEditor
 	virtual FileSystem::CEnumerator* GetFileSystemEnumerator() = 0;
 	virtual IFileChangeMonitor*      GetFileMonitor() = 0;
 
-	virtual void                     SetCurrentMissionTime(float time) = 0;
-	virtual float                    GetCurrentMissionTime() = 0;
+	virtual void                     SetCurrentMissionTime(const CTimeValue& time) = 0;
+	virtual CTimeValue               GetCurrentMissionTime() = 0;
 
 	//todo : remove functor
 	typedef Functor2<CPopupMenuItem*, const CBaseObject*> TContextMenuExtensionFunc;

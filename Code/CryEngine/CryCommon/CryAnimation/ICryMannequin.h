@@ -149,9 +149,9 @@ struct IProceduralParamsEditor
 	}
 
 	// GetEditorDefaultBlendDuration is called by the editor to know what value to use as the blend duration when creating a procedural clip.
-	virtual float GetEditorDefaultBlendDuration() const
+	virtual CTimeValue GetEditorDefaultBlendDuration() const
 	{
-		return 0.3f;
+		return "0.3";
 	}
 };
 

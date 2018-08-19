@@ -5972,7 +5972,7 @@ string CEntityObject::GetMouseOverStatisticsText() const
 					IGeomCache::SStatistics stats = pGeomCache->GetStatistics();
 
 					string averageDataRate;
-					FormatFloatForUI(averageDataRate, 2, stats.m_averageAnimationDataRate);
+					FormatFloatForUI(averageDataRate, 2, (double)stats.m_averageAnimationDataRate);
 
 					statsText += "\n  " + (stats.m_bPlaybackFromMemory ? string("Playback from Memory") : string("Playback from Disk"));
 					statsText += "\n  " + averageDataRate + " MiB/s Average Animation Data Rate";

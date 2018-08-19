@@ -29,6 +29,7 @@ void CryFatalError(const char*, ...);
 // To prevent ambiguous operators due to int => (CTimevalue or mpfloat) implicit conversions.....
 // This should also be applied to anywhere where there's MPOnly => Use Limit(Ctimevalue) in case time-value starts implicitly accepting....
 #define AcceptOnly(x) template <class T, typename boost::enable_if_c<boost::is_same<T, x>::value>::type* = 0>
+#define isTV	boost::is_same<T, CTimeValue>::value
 #define TVOnly AcceptOnly(CTimeValue)
 
 // Declare a strong-typed multiprecision value.
@@ -186,7 +187,6 @@ public: // Math operations
 		Operation(/, divide);
 		Operation(*, multiply);
 		#undef Operation
-		#undef this
 
 		// Increment/Deincrement
 		ILINE rType& operator++()   { using default_ops::eval_increment; eval_increment(m_backend); return *this; }
@@ -194,6 +194,7 @@ public: // Math operations
 		ILINE rType operator++(int) { using default_ops::eval_increment; rType temp(*this); eval_increment(m_backend); return BOOST_MP_MOVE(temp); }
 		ILINE rType operator--(int) { using default_ops::eval_decrement; rType temp(*this); eval_decrement(m_backend); return BOOST_MP_MOVE(temp);}
 
+		#undef this
 public: // Comparisons
 
 		/*rType ?? rType*/

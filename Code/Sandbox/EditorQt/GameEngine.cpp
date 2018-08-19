@@ -758,14 +758,14 @@ bool CGameEngine::LoadAI(const string& levelName, const string& missionName)
 	if (!IsLevelLoaded())
 		return false;
 
-	float fStartTime = m_pISystem->GetITimer()->GetAsyncCurTime();
+	CTimeValue fStartTime = m_pISystem->GetITimer()->GetAsyncCurTime();
 	CryLog("Loading AI data %s, %s", (const char*)levelName, (const char*)missionName);
 	gEnv->pAISystem->FlushSystemNavigation();
 
 	// Load only navmesh data, all other working systems are currently restored when editor objects are loaded
 	gEnv->pAISystem->LoadLevelData(levelName, missionName, eAILoadDataFlag_MNM);
 
-	CryLog("Finished Loading AI data in %6.3f secs", m_pISystem->GetITimer()->GetAsyncCurTime() - fStartTime);
+	CryLog("Finished Loading AI data in %6.3f secs", (float)(m_pISystem->GetITimer()->GetAsyncCurTime() - fStartTime).GetSeconds());
 
 	return true;
 }
