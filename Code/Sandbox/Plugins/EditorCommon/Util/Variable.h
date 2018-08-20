@@ -279,11 +279,10 @@ struct EDITOR_COMMON_API IVariable : public IVariableContainer
 	// Value Limits.
 	//////////////////////////////////////////////////////////////////////////
 	//! Set value limits.
-	#define SL(X)	virtual void SetLimits(const X& fMin, const X& fMax, const X& fStep = 0, bool bHardMin = true, bool bHardMax = true) { assert(false && "Invalid set-limits");}
-		SL(float)
-		SL(CTimeValue)
-		SL(mpfloat)
-	#undef SL
+	virtual void SetLimits(float fMin, float fMax, float fStep = 0.f, bool bHardMin = true, bool bHardMax = true)														{ assert(false && "Invalid set-limits"); }
+	virtual void SetLimitsMP(const mpfloat& fMin, const mpfloat& fMax, const mpfloat& fStep = 0, bool bHardMin = true, bool bHardMax = true)					{ assert(false && "Invalid set-limits"); }
+	virtual void SetLimitsTime(const CTimeValue& fMin, const CTimeValue& fMax, const CTimeValue& fStep = 0, bool bHardMin = true, bool bHardMax = true)	{ assert(false && "Invalid set-limits"); }
+
 	//! Get value limits.
 		// POINT OF INTEREST: OOh, nice .-.
 		template<typename T> class ByRef {
@@ -294,9 +293,9 @@ struct EDITOR_COMMON_API IVariable : public IVariableContainer
 			private:
 				T mValue;
 		};
-	virtual void GetLimits(float& fMin, float& fMax, float& fStep = ByRef<float>(), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>())						{ assert(false && "Invalid get-limits"); }
-	virtual void GetLimits(CTimeValue& fMin, CTimeValue& fMax, CTimeValue& fStep = CTimeValue(0), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>())  { assert(false && "Invalid get-limits"); }
-	virtual void GetLimits(mpfloat& fMin, mpfloat& fMax, mpfloat& fStep = mpfloat(0), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>())					{ assert(false && "Invalid get-limits"); }
+	virtual void GetLimits(float& fMin, float& fMax, float& fStep = ByRef<float>(), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>())							{ assert(false && "Invalid get-limits"); }
+	virtual void GetLimitsTime(CTimeValue& fMin, CTimeValue& fMax, CTimeValue& fStep = CTimeValue(0), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>()) { assert(false && "Invalid get-limits"); }
+	virtual void GetLimitsMP(mpfloat& fMin, mpfloat& fMax, mpfloat& fStep = mpfloat(0), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>())					{ assert(false && "Invalid get-limits"); }
 
 	virtual void EnableNotifyWithoutValueChange(bool bFlag) {}
 
@@ -1009,6 +1008,8 @@ public:
 		PERSONAL TODO: I regret all the edits in this file X_X
 		There's Gotta'be a better way :\
 	*/
+
+	// Supported types that can deal with 'limits' PERSONAL TODO: Vectors and what not!!!
 	template <class U>
 	struct hasLimits
 		: public boost::mpl::bool_<
@@ -1099,8 +1100,16 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// Limits.
 	//////////////////////////////////////////////////////////////////////////
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value && (isMP || isTV)>::type* = 0>
-	void SetLimits(const B& fMin, const B& fMax, const B& fStep = 0, bool bHardMin = true, bool bHardMax = true)
+
+	void SetLimits(float fMin, float fMax, float fStep = 0.f, bool bHardMin = true, bool bHardMax = true) override {
+		SetLimitsIMP(fMin, fMax, fStep, bHardMin, bHardMax);
+	}
+
+	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
+	void SetLimitsIMP(float fMin, float fMax, float fStep, bool bHardMin, bool bHardMax) { assert(false && "Invalid get-limits"); }
+
+	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value && !(isTV || isMP)>::type* = 0>
+	void SetLimitsIMP(float fMin, float fMax, float fStep, bool bHardMin, bool bHardMax)
 	{
 		CRY_ASSERT_MESSAGE(fMin <= fMax, "maximum value has to be bigger than minimum value!");
 		m_valueMin = fMin;
@@ -1109,8 +1118,39 @@ public:
 		m_bHardMin = bHardMin;
 		m_bHardMax = bHardMax;
 	}
-	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value && (isMP || isTV)>::type* = 0>
-	void SetLimits(const float& fMin, const float& fMax, const float& fStep = 0, bool bHardMin = true, bool bHardMax = true)
+	/* mpfloat/CTimeValue 'bad' limit sets due to how UI limits are set. ATM they deal only in floats. PERSONAL TODO: Isolate and improve the allowed unit/value accuracy.*/
+	template <class T = B, typename boost::enable_if_c<isTV>::type* = 0>
+	void SetLimitsIMP(float fMin, float fMax, float fStep, bool bHardMin, bool bHardMax)
+	{
+		CRY_ASSERT_MESSAGE(fMin <= fMax, "maximum value has to be bigger than minimum value!");
+		m_valueMin  = BADTIME(fMin);
+		m_valueMax  = BADTIME(fMax);
+		m_valueStep = BADTIME(fStep);
+		m_bHardMin  = bHardMin;
+		m_bHardMax  = bHardMax;
+	}
+	template <class T = B, typename boost::enable_if_c<isMP>::type* = 0>
+	void SetLimitsIMP(float fMin, float fMax, float fStep, bool bHardMin, bool bHardMax)
+	{
+		CRY_ASSERT_MESSAGE(fMin <= fMax, "maximum value has to be bigger than minimum value!");
+		m_valueMin  = BADMP(fMin);
+		m_valueMax  = BADMP(fMax);
+		m_valueStep = BADMP(fStep);
+		m_bHardMin  = bHardMin;
+		m_bHardMax  = bHardMax;
+	}
+	template <class T = B, typename boost::enable_if_c< isMP || boost::is_convertible<T, mpfloat>::value >::type* = 0>
+	void SetLimitsMP(const T& fMin, const T& fMax, const T& fStep = 0, bool bHardMin = true, bool bHardMax = true)
+	{
+		CRY_ASSERT_MESSAGE(fMin <= fMax, "maximum value has to be bigger than minimum value!");
+		m_valueMin = fMin;
+		m_valueMax = fMax;
+		m_valueStep = fStep;
+		m_bHardMin = bHardMin;
+		m_bHardMax = bHardMax;
+	}
+	template <class T = B, typename boost::enable_if_c< isTV >::type* = 0>
+	void SetLimitsTime(const CTimeValue& fMin, const CTimeValue& fMax, const CTimeValue& fStep = 0, bool bHardMin = true, bool bHardMax = true)
 	{
 		CRY_ASSERT_MESSAGE(fMin <= fMax, "maximum value has to be bigger than minimum value!");
 		m_valueMin = fMin;
@@ -1120,8 +1160,17 @@ public:
 		m_bHardMax = bHardMax;
 	}
 
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value && (isMP || isTV)>::type* = 0>
-	void GetLimits(B& fMin, B& fMax, B& fStep = ByRef<float>(), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>())
+
+
+	void GetLimits(float& fMin, float& fMax, float& fStep = ByRef<float>(), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>()) override {
+		GetLimitsIMP(fMin, fMax, fStep, bHardMin, bHardMax);
+	}
+
+	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
+	void GetLimitsIMP(float& fMin, float& fMax, float& fStep, bool& bHardMin, bool& bHardMax) { assert(false && "Invalid get-limits"); }
+
+	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value && !(isTV || isMP)>::type* = 0>
+	void GetLimitsIMP(float& fMin, float& fMax, float& fStep, bool& bHardMin, bool& bHardMax)
 	{
 		fMin = m_valueMin;
 		fMax = m_valueMax;
@@ -1129,8 +1178,36 @@ public:
 		bHardMin = m_bHardMin;
 		bHardMax = m_bHardMax;
 	}
-	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value && (isMP || isTV)>::type* = 0>
-	void GetLimits(float& fMin, float& fMax, float& fStep = ByRef<float>(), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>())
+	/* mpfloat/CTimeValue 'bad' limit sets due to how UI limits are set. ATM they deal only in floats. PERSONAL TODO: Isolate and improve the allowed unit/value accuracy.*/
+	template <class T = B, typename boost::enable_if_c< isMP >::type* = 0>
+	void GetLimitsIMP(float& fMin, float& fMax, float& fStep, bool& bHardMin, bool& bHardMax )
+	{
+		fMin = BADF m_valueMin;
+		fMax = BADF m_valueMax;
+		fStep = BADF m_valueStep;
+		bHardMin = m_bHardMin;
+		bHardMax = m_bHardMax;
+	}
+	template <class T = B, typename boost::enable_if_c< isTV >::type* = 0>
+	void GetLimitsIMP(float& fMin, float& fMax, float& fStep, bool& bHardMin, bool& bHardMax)
+	{
+		fMin = m_valueMin.BADGetSeconds();
+		fMax = m_valueMax.BADGetSeconds();
+		fStep = m_valueStep.BADGetSeconds();
+		bHardMin = m_bHardMin;
+		bHardMax = m_bHardMax;
+	}
+	template <class T = B, typename boost::enable_if_c<isTV>::type* = 0>
+	void GetLimitsTime(CTimeValue& fMin, CTimeValue& fMax, CTimeValue& fStep = 0, bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>())
+	{
+		fMin = m_valueMin;
+		fMax = m_valueMax;
+		fStep = m_valueStep;
+		bHardMin = m_bHardMin;
+		bHardMax = m_bHardMax;
+	}
+	template <class T = B, typename boost::enable_if_c<isMP>::type* = 0>
+	void GetLimitsMP(T& fMin, T& fMax, T& fStep = T(0), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>())
 	{
 		fMin = m_valueMin;
 		fMax = m_valueMax;
@@ -1139,7 +1216,7 @@ public:
 		bHardMax = m_bHardMax;
 	}
 
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value>::type* = 0>
+	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value >::type* = 0>
 	void ClearLimits()
 	{
 		SetLimits(std::numeric_limits<B>::min(), std::numeric_limits<B>::max(), 0, false, false);

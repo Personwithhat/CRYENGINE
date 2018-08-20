@@ -712,6 +712,12 @@ void CFlowGraphManager::GetNodeConfig(IFlowNodeData* pSrcNode, CFlowNode* pFlowN
 				case eFDT_String:
 					port.pVar->Set((pPortConfig->defaultData.GetPtr<string>())->c_str());
 					break;
+				case eFDT_Time:
+					port.pVar->Set(*pPortConfig->defaultData.GetPtr<CTimeValue>());
+					break;
+				case eFDT_MP:
+					port.pVar->Set(*pPortConfig->defaultData.GetPtr<mpfloat>());
+					break;
 				}
 
 				pFlowNode->AddPort(port);
@@ -768,6 +774,12 @@ IVariable* CFlowGraphManager::MakeSimpleVarFromFlowType(int type)
 		break;
 	case eFDT_String:
 		return new CVariableFlowNode<string>;
+		break;
+	case eFDT_Time:
+		return new CVariableFlowNode<CTimeValue>;
+		break;
+	case eFDT_MP:
+		return new CVariableFlowNode<mpfloat>;
 		break;
 	default:
 		// Any type.

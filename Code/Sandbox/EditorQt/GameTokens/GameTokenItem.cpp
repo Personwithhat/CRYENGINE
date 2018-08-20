@@ -371,6 +371,12 @@ bool CGameTokenItem::SetTypeName(const char* typeName)
 	case eFDT_Bool:
 		m_value = TFlowInputData((bool)false, true);
 		break;
+	case eFDT_Time:
+		m_value = TFlowInputData(CTimeValue(0), true);
+		break;
+	case eFDT_MP:
+		m_value = TFlowInputData(mpfloat(0), true);
+		break;
 	default:
 		// Unknown type.
 		return false;
