@@ -677,7 +677,7 @@ struct SLookAtKey : public STrackDurationKey
 
 	char  m_selection[128]; // Node name.
 	char  m_lookPose[128];
-	CTimeValue m_smoothTime;
+	nTime m_smoothTime;
 };
 
 /* Discrete (non-interpolated) float key.

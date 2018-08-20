@@ -32,7 +32,7 @@ struct SAimIKParams : public IProceduralParams
 	}
 
 	SAnimRef animRef;
-	CTimeValue blendTime;
+	nTime    blendTime;
 	uint32   layer;
 };
 
@@ -57,7 +57,7 @@ public:
 			lookPos += m_entity->GetForwardDir() * 10.0f;
 		}
 
-		const CTimeValue smoothTime = params.blendTime;
+		const nTime smoothTime = params.blendTime;
 		m_IKLayer = (uint32)params.layer;
 		if (IAnimationPoseBlenderDir* poseBlenderAim = m_charInstance->GetISkeletonPose()->GetIPoseBlenderAim())
 		{

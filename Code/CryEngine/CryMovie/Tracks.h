@@ -321,9 +321,9 @@ public:
 			keyNode->getAttr("overridetimes", key.m_boverrideTimes);
 			keyNode->getAttr("speed", key.m_speed);
 
-			if (key.m_speed <= 0.0f)
+			if (key.m_speed <= 0)
 			{
-				key.m_speed = 1.0f;
+				key.m_speed = 1;
 			}
 		}
 		else

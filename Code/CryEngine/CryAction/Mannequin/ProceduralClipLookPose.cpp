@@ -30,7 +30,7 @@ struct SLookPoseParams : public IProceduralParams
 	}
 
 	SAnimRef animRef;
-	CTimeValue blendTime;
+	nTime    blendTime;
 	uint32   scopeLayer;
 };
 
@@ -59,7 +59,7 @@ public:
 			lookAtTarget += m_entity->GetForwardDir() * 10.0f;
 		}
 
-		const CTimeValue smoothTime = params.blendTime;
+		const nTime smoothTime = params.blendTime;
 		const uint32 ikLayer = m_scope->GetBaseLayer() + params.scopeLayer;
 		IAnimationPoseBlenderDir* poseBlenderLook = m_charInstance->GetISkeletonPose()->GetIPoseBlenderLook();
 		if (poseBlenderLook)

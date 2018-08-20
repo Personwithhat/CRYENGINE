@@ -1001,11 +1001,11 @@ void CTrackViewSequence::Serialize(Serialization::IArchive& ar)
 		const string name = GetName();
 		ar(name, "name", "Name");
 
-		const TRange<CTimeValue> timeRange = GetTimeRange();
+		TRange<CTimeValue> timeRange = GetTimeRange();
 		ar(timeRange.start, "start", "Start Time");
 		ar(timeRange.end, "end", "End Time");
 
-		const TRange<CTimeValue> playbackTimeRange = GetPlaybackRange();
+		TRange<CTimeValue> playbackTimeRange = GetPlaybackRange();
 		ar(playbackTimeRange.start, "playback_start", "Playback Start Time");
 		ar(playbackTimeRange.end, "playback_end", "Playback End Time");
 

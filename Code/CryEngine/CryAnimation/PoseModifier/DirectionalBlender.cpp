@@ -405,7 +405,7 @@ void SDirectionalBlender::AccumulateAimPoses(const SAnimationPoseModifierParams&
 		polarCoordinatesSmooth = polarCoordinates;
 		if (polarCoordinatesIndex < MAX_POLAR_COORDINATES_SMOOTH)
 		{
-			m_polarCoordinatesSmooth[polarCoordinatesIndex].Smooth(polarCoordinates, params.timeDelta.BADGetSeconds(), m_dataIn.fPolarCoordinatesSmoothTime.BADGetSeconds(), m_dataIn.vPolarCoordinatesMaxRadiansPerSecond);
+			m_polarCoordinatesSmooth[polarCoordinatesIndex].Smooth(polarCoordinates, params.timeDelta.BADGetSeconds(), BADF m_dataIn.fPolarCoordinatesSmoothTime, m_dataIn.vPolarCoordinatesMaxRadiansPerSecond);
 			polarCoordinatesSmooth = m_polarCoordinatesSmooth[polarCoordinatesIndex].value;
 		}
 

@@ -1344,6 +1344,20 @@ void CEditorImpl::SetConsoleVar(const char* var, float value)
 		ivar->Set(value);
 }
 
+void CEditorImpl::SetConsoleMP(const char* var, const mpfloat& value)
+{
+	ICVar* ivar = GetSystem()->GetIConsole()->GetCVar(var);
+	if (ivar)
+		ivar->Set(value);
+}
+
+void CEditorImpl::SetConsoleTime(const char* var, const CTimeValue& value)
+{
+	ICVar* ivar = GetSystem()->GetIConsole()->GetCVar(var);
+	if (ivar)
+		ivar->Set(value);
+}
+
 void CEditorImpl::SetConsoleStringVar(const char* var, const char* value)
 {
 	ICVar* ivar = GetSystem()->GetIConsole()->GetCVar(var);
@@ -1357,6 +1371,26 @@ float CEditorImpl::GetConsoleVar(const char* var)
 	if (ivar)
 	{
 		return ivar->GetFVal();
+	}
+	return 0;
+}
+
+CTimeValue CEditorImpl::GetConsoleTime(const char* var)
+{
+	ICVar* ivar = GetSystem()->GetIConsole()->GetCVar(var);
+	if (ivar)
+	{
+		return ivar->GetTime();
+	}
+	return 0;
+}
+
+mpfloat CEditorImpl::GetConsoleMP(const char* var)
+{
+	ICVar* ivar = GetSystem()->GetIConsole()->GetCVar(var);
+	if (ivar)
+	{
+		return ivar->GetMPVal();
 	}
 	return 0;
 }

@@ -44,7 +44,7 @@ struct SAimAroundParams : public IProceduralParams
 	}
 
 	SAnimRef animRef;
-	CTimeValue  smoothTime;
+	nTime       smoothTime;
 	uint32		scopeLayer;
 	float			yawMin;
 	float			yawMax;
@@ -65,7 +65,7 @@ public:
 		Vec3 lookPos = m_entity->GetWorldPos();
 		lookPos += m_entity->GetRotation() * (m_lookOffset * 10.0f);
 
-		const CTimeValue smoothTime = params.smoothTime;
+		const nTime smoothTime = params.smoothTime;
 		const uint32 ikLayer = m_scope->GetBaseLayer() + params.scopeLayer;
 		if (!params.animRef.IsEmpty())
 		{

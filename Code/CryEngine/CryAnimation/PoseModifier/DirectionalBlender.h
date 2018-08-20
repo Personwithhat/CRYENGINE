@@ -88,7 +88,7 @@ public:
 		rTime fDirIKFadeInTime;                  // 1.0f/TransitionTime
 		rTime fDirIKFadeOutTime;                 // 1.0f/TransitionTime
 		f32  fDirIKMinDistanceSquared;
-		CTimeValue  fPolarCoordinatesSmoothTime;
+		nTime  fPolarCoordinatesSmoothTime;
 		Vec2 vPolarCoordinatesOffset;
 		Vec2 vPolarCoordinatesMaxRadiansPerSecond;
 
@@ -100,7 +100,7 @@ public:
 			, fDirIKFadeInTime(1 / CTimeValue("0.6"))
 			, fDirIKFadeOutTime(1 / CTimeValue("0.3"))
 			, fDirIKMinDistanceSquared(0.f)
-			, fPolarCoordinatesSmoothTime(mpfloat("0.2"))
+			, fPolarCoordinatesSmoothTime("0.2")
 			, vPolarCoordinatesOffset(ZERO)
 			, vPolarCoordinatesMaxRadiansPerSecond(DEG2RAD(3600.f), DEG2RAD(3600.f))
 		{

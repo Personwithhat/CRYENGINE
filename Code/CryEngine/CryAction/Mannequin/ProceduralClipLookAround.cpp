@@ -42,7 +42,7 @@ struct SLookAroundParams : public IProceduralParams
 	}
 
 	SAnimRef animRef;
-	CTimeValue  smoothTime;
+	nTime       smoothTime;
 	uint32		scopeLayer;
 	float			yawMin;
 	float			yawMax;
@@ -63,7 +63,7 @@ public:
 
 	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SLookAroundParams& params)
 	{
-		const CTimeValue smoothTime = params.smoothTime;
+		const nTime smoothTime = params.smoothTime;
 		const uint32 ikLayer = m_scope->GetBaseLayer() + params.scopeLayer;
 
 		UpdateLookTarget();

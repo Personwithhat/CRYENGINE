@@ -254,7 +254,7 @@ struct IAnimationPoseBlenderDir :
 	virtual void SetFadeInSpeed(const CTimeValue& time) = 0;
 	virtual void SetFadeOutMinDistance(f32 minDistance) = 0;
 	virtual void SetPolarCoordinatesOffset(const Vec2& offset) = 0;
-	virtual void SetPolarCoordinatesSmoothTime(const CTimeValue& smoothTime) = 0;
+	virtual void SetPolarCoordinatesSmoothTime(const nTime& smoothTime) = 0;
 	virtual void SetPolarCoordinatesMaxRadiansPerSecond(const Vec2& maxRadiansPerSecond) = 0;
 	virtual f32  GetBlend() const = 0;
 	// </interfuscator:shuffle>
