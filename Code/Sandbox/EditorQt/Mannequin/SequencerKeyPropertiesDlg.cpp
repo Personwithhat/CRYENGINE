@@ -343,7 +343,7 @@ void CSequencerTrackPropsDlg::SetSequence(CSequencerSequence* pSequence)
 	if (pSequence)
 	{
 		TRange<CTimeValue> range = pSequence->GetTimeRange();
-		m_time.SetRange(range.start.BADGetSeconds(), range.end.BADGetSeconds());
+		m_time.SetRange(range.start.BADGetSeconds(), range.end.BADGetSeconds()); // PERSONAL TODO: Not sure about NumberCTRL setups..
 	}
 }
 
