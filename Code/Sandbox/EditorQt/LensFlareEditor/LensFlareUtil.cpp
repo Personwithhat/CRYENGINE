@@ -210,7 +210,7 @@ extern void SetVariablesTemplateFromOptics(IOpticsElementBasePtr pOptics, CVarBl
 			{
 				CSmartVariable<Vec2> vec2Var;
 				AddVariable(variableArray, vec2Var, pFuncVar->name.c_str(), pFuncVar->humanName.c_str(), pFuncVar->description.c_str());
-				// PERSONAL TODO: How do limits on vector vars even work? sigh....
+				// PERSONAL VERIFY: How do limits on vector vars even work? sigh....
 				//vec2Var->SetLimits(range.first, range.second, 0, bHardMinLimitation, false);
 				vec2Var->Set(pFuncVar->GetVec2());
 				vec2Var->SetUserData((void*)(intptr_t)MakeFuncKey(i, k));

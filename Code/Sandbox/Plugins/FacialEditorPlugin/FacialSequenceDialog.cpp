@@ -286,7 +286,7 @@ protected:
 		m_endTimeCtrl.SetRange(-(1e+10), (1e+10));
 		m_endTimeCtrl.SetInteger(true);
 
-		m_startTimeCtrl.SetValue(timeRange.start.BADGetSeconds() * FACIAL_EDITOR_FPS);	// PERSONAL TODO: Not sure about NumberCTRL setups..
+		m_startTimeCtrl.SetValue(timeRange.start.BADGetSeconds() * FACIAL_EDITOR_FPS);	// PERSONAL VERIFY: Not sure about NumberCTRL setups..
 		m_endTimeCtrl.SetValue(timeRange.end.BADGetSeconds() * FACIAL_EDITOR_FPS);
 
 		m_fromSoundBtn.SetCheck((bRangeFromSound) ? BST_CHECKED : BST_UNCHECKED);

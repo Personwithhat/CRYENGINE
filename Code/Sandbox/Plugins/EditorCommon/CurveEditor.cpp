@@ -1081,8 +1081,6 @@ void CCurveEditor::paintEvent(QPaintEvent* pEvent)
 
 	if (m_bRulerVisible)
 	{
-		// PERSONAL TODO: A bit confusing, is CurveEditor where the timeline actually gets drawn???
-		// Explains why vectors here are actually the time's.....
 		DrawingPrimitives::SRulerOptions rulerOptions;
 		rulerOptions.m_rect = QRect(0, -1, size().width(), m_rulerHeight + 2);
 		rulerOptions.m_visibleRange = TRange<CTimeValue>(BADTIME(-m_translation.x / m_zoom.x), BADTIME((1.0f - m_translation.x) / m_zoom.x));

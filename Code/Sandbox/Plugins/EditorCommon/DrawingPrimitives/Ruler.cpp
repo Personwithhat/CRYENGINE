@@ -209,8 +209,7 @@ void DrawRuler(QPainter& painter, const SRulerOptions& options, int* pRulerPreci
 	//painter.drawLine(QPoint(options.m_rect.right(), 0), QPoint(options.m_rect.right(), options.m_rect.top() + height));
 }
 
-// NOTE: Converted from 'ticks' to 'seconds' or 'frames'.......
-// PERSONAL TODO: Ticks in this case are 'animation ticks' per second, or 6000 hardcoded for some reason!??????
+// NOTE: Converted to seconds or frame units depending on display mode.
 mpfloat InUnits(const CTimeValue& animTime, const mpfloat& unit)
 {
 	return animTime.GetSeconds() / unit;
@@ -237,7 +236,7 @@ void CRuler::CalculateMarkers(TRange<int32>* pScreenRulerRange)
 
 	const mpfloat pixelsPerUnit = m_options.visibleRange.Length() > 0 ? m_options.rect.width() / InUnits(m_options.visibleRange.Length(), unit) : 1;
 
-	const mpfloat ticksMinPower = log10(mpfloat(7)); // PERSONAL TODO: Perhaps it should be 7px/tick instead of 3 up there?? :\ 
+	const mpfloat ticksMinPower = log10(mpfloat(7));
 	const mpfloat ticksPowerDelta = ticksMinPower - log10(pixelsPerUnit);
 
 	m_decimalDigits = max(-int32(ceil(ticksPowerDelta)) - 1, 0);
