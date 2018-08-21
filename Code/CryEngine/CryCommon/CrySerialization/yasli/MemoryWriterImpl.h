@@ -123,6 +123,19 @@ inline void cutTrailingZeros(const char* str)
 			return;
 }
 
+MemoryWriter& MemoryWriter::operator<<(const CTimeValue& value)
+{
+	return operator<<(value.GetSeconds());
+}
+
+#define MP_FUNCTION(T)\
+MemoryWriter& MemoryWriter::operator<<(const T& value)\
+{\
+	return operator<<((const char*)value.str());\
+}
+#include <CrySystem\mpfloat.types>
+#undef MP_FUNCTION
+
 MemoryWriter& MemoryWriter::operator<<(double value)
 {
 	appendAsString(value, false);

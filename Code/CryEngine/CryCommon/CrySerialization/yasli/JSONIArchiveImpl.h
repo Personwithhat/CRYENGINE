@@ -1408,5 +1408,24 @@ bool JSONIArchive::operator()(char& value, const char* name, const char* label)
     return false;
 }
 
+bool JSONIArchive::operator()(CTimeValue& value, const char* name, const char* label)
+{
+	return (*this)(value.m_lValue, name, label);
+}
+
+#define MP_FUNCTION(T)\
+bool JSONIArchive::operator()(T& value, const char* name, const char* label)\
+{\
+	if (findName(name)) {\
+		readToken();\
+		checkValueToken();\
+		value = T((char)strtol(token_.start, 0, 10));\
+		return true;\
+	}\
+	return false;\
+}
+#include <CrySystem\mpfloat.types>
+#undef MP_FUNCTION
+
 }
 // vim:ts=4 sw=4:
