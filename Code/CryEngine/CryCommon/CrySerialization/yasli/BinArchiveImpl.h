@@ -231,6 +231,26 @@ bool BinOArchive::operator()(u64& value, const char* name, const char* label)
 	return true;
 }
 
+bool BinOArchive::operator()(CTimeValue& value, const char* name, const char* label)
+{
+	//return (*this)(value.m_lValue);  PERSONAL VERIFY: For some reason this won't work with Bin archive. Says mpfloat& serializer doesn't exist??
+	openNode(name);
+	stream_.write(value.m_lValue);
+	closeNode(name);
+	return true;
+}
+
+#define MP_FUNCTION(T)\
+bool BinOArchive::operator()(T& value, const char* name, const char* label)\
+{\
+	openNode(name);\
+	stream_.write(value);\
+	closeNode(name);\
+	return true;\
+}
+#include <CrySystem\mpfloat.types>
+#undef MP_FUNCTION
+
 bool BinOArchive::operator()(const Serializer& ser, const char* name, const char* label)
 {
 	openNode(name, false);
@@ -600,6 +620,40 @@ bool BinIArchive::operator()(char& value, const char* name, const char* label)
 	closeNode(name);
 	return true;
 }
+
+bool BinIArchive::operator()(CTimeValue& value, const char* name, const char* label)
+{
+	//return (*this)(value.m_lValue); PERSONAL VERIFY: For some reason this won't work with Bin archive. Says mpfloat& serializer doesn't exist??
+	if(!*name){
+		read(value.m_lValue);
+		return true;
+	}
+
+	if(!openNode(name))
+		return false;
+
+	read(value.m_lValue);
+	closeNode(name);
+	return true;
+}
+
+#define MP_FUNCTION(T)\
+bool BinIArchive::operator()(T& value, const char* name, const char* label)\
+{\
+	if(!*name){\
+		read(value);\
+		return true;\
+	}\
+\
+	if(!openNode(name))\
+		return false;\
+\
+	read(value);\
+	closeNode(name);\
+	return true;\
+}
+#include <CrySystem\mpfloat.types>
+#undef MP_FUNCTION
 
 bool BinIArchive::operator()(const Serializer& ser, const char* name, const char* label)
 {

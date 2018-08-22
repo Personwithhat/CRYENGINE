@@ -304,10 +304,16 @@ void CSequencerDopeSheetBase::ComputeFrameSteps(const TRange<CTimeValue>& VisRan
 	}
 
 	int nBIntermediateTicks = 5;
-	m_fFrameLabelStep = fFact * afStepTable[i];
-	if (m_fFrameLabelStep <= 1)
-	{
+
+	// PERSONAL NOTE: In the case that fNbFrames == 0 then i == 4.....which is undefined. Would be negative, hence <=1....Why would CryTek do this workaround? >.>
+	if(fNbFrames == 0 && i == 4){
 		m_fFrameLabelStep.SetSeconds(1);
+	}else{
+		m_fFrameLabelStep = fFact * afStepTable[i];
+		if (m_fFrameLabelStep <= 1)
+		{
+			m_fFrameLabelStep.SetSeconds(1);
+		}
 	}
 
 	if (TimeToClient(m_fFrameLabelStep) - TimeToClient(0) > 1300)

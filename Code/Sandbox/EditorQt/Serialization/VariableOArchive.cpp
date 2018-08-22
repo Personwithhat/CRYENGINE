@@ -220,6 +220,17 @@ bool CVariableOArchive::operator()(char& value, const char* name, const char* la
 	return true;
 }
 
+bool CVariableOArchive::operator()(CTimeValue& value, const char* name, const char* label)
+{
+	return (*this)(value.m_lValue, name, label);
+}
+
+bool CVariableOArchive::operator()(mpfloat& value, const char* name, const char* label)
+{
+	VarUtil::AddChildVariable<mpfloat>(m_pVariable, value, name, label);
+	return true;
+}
+
 bool CVariableOArchive::operator()(const Serialization::SStruct& ser, const char* name, const char* label)
 {
 	const char* const typeName = ser.type().name();

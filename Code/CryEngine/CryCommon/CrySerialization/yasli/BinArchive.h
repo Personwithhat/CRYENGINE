@@ -59,6 +59,11 @@ public:
 	YASLI_INLINE bool operator()(ContainerInterface &ser, const char* name, const char* label) override;
 	YASLI_INLINE bool operator()(PointerInterface &ptr, const char* name, const char* label) override;
 
+	YASLI_INLINE bool operator()(CTimeValue& value, const char* name, const char* label) override;
+	#define MP_FUNCTION(T) YASLI_INLINE bool operator()(T& value, const char* name, const char* label) override;
+	#include <CrySystem\mpfloat.types>
+	#undef MP_FUNCTION
+
 	using Archive::operator();
 
 private:
@@ -101,12 +106,16 @@ public:
 	YASLI_INLINE bool operator()(i64& value, const char* name, const char* label) override;
 	YASLI_INLINE bool operator()(u64& value, const char* name, const char* label) override;
 
-
 	YASLI_INLINE bool operator()(StringInterface& value, const char* name, const char* label) override;
 	YASLI_INLINE bool operator()(WStringInterface& value, const char* name, const char* label) override;
 	YASLI_INLINE bool operator()(const Serializer& ser, const char* name, const char* label) override;
 	YASLI_INLINE bool operator()(ContainerInterface& ser, const char* name, const char* label) override;
 	YASLI_INLINE bool operator()(PointerInterface& ptr, const char* name, const char* label) override;
+
+	YASLI_INLINE bool operator()(CTimeValue& value, const char* name, const char* label) override;
+	#define MP_FUNCTION(T) YASLI_INLINE bool operator()(T& value, const char* name, const char* label) override;
+	#include <CrySystem\mpfloat.types>
+	#undef MP_FUNCTION
 
 	using Archive::operator();
 
@@ -122,7 +131,7 @@ private:
 		  void read(void *data, int size)
 		  {
 			  if(curr_ + size <= end_){
-					memcpy(data, curr_, size);
+					memcpy(data, curr_, size);		// PERSONAL VERIFY: Honestly MemoryWriter, binarchive, etc. memcpy.....how to work around dis?
 					curr_ += size;	
 			  }
 			  else

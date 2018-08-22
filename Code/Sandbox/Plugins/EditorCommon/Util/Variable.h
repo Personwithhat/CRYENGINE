@@ -1007,6 +1007,8 @@ public:
 	/*
 		PERSONAL TODO: I regret all the edits in this file X_X
 		There's Gotta'be a better way :\
+
+		Plus need to get this to allow rTime/nTime/etc.!! (Along with any other 'mpfloat only' systems -.-
 	*/
 
 	// Supported types that can deal with 'limits' PERSONAL TODO: Vectors and what not!!!

@@ -35,7 +35,8 @@ namespace Schematyc2
 		static const size_t s_vec2StringBufferSize   = 102;
 		static const size_t s_vec3StringBufferSize   = 154;
 		static const size_t s_ang3StringBufferSize   = 154;
-		static const size_t s_quatStringBufferSize	 = 208;
+		static const size_t s_quatStringBufferSize	= 208;
+		static const size_t s_MPStringBufferSize		= 154; // PERSONAL VERIFY: Proper Multi-precision size.....
 
 		// Convert hexadecimal character to unsigned char.
 		////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -667,23 +668,53 @@ namespace Schematyc2
 			return static_cast<size_t>(UInt64FromString(szInput, defaultOutput));
 		}
 
+
 		// PERSONAL VERIFY: Why the diff between CryStringUtils and Schematyc utils???
 		// Also, why tbe buffer limit?
+
+		// Write MPfloat to string.
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		#define MP_FUNCTION(T)\
+		inline const char* MPToString(const T& input, const CharArrayView& output)\
+		{\
+			const int32	outputSize = static_cast<int32>(output.size());\
+			CRY_ASSERT(outputSize >= s_MPStringBufferSize);\
+			if(outputSize >= s_MPStringBufferSize)\
+			{\
+				cry_sprintf(output.begin(), outputSize, "%s", input.str());\
+			}\
+			else if(outputSize > 0)\
+			{\
+				output[0] = '\0';\
+			}\
+			return output.begin();\
+		}
+		#include <CrySystem\mpfloat.types>
+		#undef MP_FUNCTION
+
+		// Read MPfloat from string.
+		////////////////////////////////////////////////////////////////////////////////////////////////////
+		#define MP_FUNCTION(T)\
+		inline T MPFromString(const char* szInput, const T& defaultOutput = 0)\
+		{\
+			T output = defaultOutput;\
+			CRY_ASSERT(szInput);\
+			if (szInput)\
+			{\
+				/*const int	itemCount = sscanf(szInput, MPFLOAT_FMT, &output);*/\
+				/*CRY_ASSERT(itemCount == 1);*/\
+				output = szInput;\
+			}\
+			return output;\
+		}
+		#include <CrySystem\mpfloat.types>
+		#undef MP_FUNCTION
+
 		// Write CTimeValue to string.
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		inline const char* TimeToString(const CTimeValue& input, const CharArrayView& output)
 		{
-			const int32	outputSize = static_cast<int32>(output.size());
-			CRY_ASSERT(outputSize >= s_floatStringBufferSize);
-			if(outputSize >= s_floatStringBufferSize)
-			{
-				cry_sprintf(output.begin(), outputSize, "%s", input.GetSeconds().str());
-			}
-			else if(outputSize > 0)
-			{
-				output[0] = '\0';
-			}
-			return output.begin();
+			return MPToString(input.m_lValue, output);
 		}
 
 		// Read CTimeValue from string.
