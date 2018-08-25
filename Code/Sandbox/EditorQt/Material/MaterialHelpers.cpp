@@ -50,11 +50,11 @@ static void ParsePublicParamsScript(const char* sUIScript, IVariable* pVar)
 		}
 		else if (stricmp(element[1], "UIMin") == 0)
 		{
-			pVar->SetLimits(atof(element[2]), maxLimit);
+			pVar->SetLimits<float>(atof(element[2]), maxLimit);
 		}
 		else if (stricmp(element[1], "UIMax") == 0)
 		{
-			pVar->SetLimits(minLimit, atof(element[2]));
+			pVar->SetLimits<float>(minLimit, atof(element[2]));
 		}
 		else if (stricmp(element[1], "UIStep") == 0)
 		{

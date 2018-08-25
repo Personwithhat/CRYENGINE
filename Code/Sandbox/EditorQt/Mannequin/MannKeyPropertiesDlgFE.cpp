@@ -64,8 +64,8 @@ protected:
 
 		mv_alignToPrevious->SetFlags(mv_alignToPrevious->GetFlags() | IVariable::UI_DISABLED);
 		mv_playbackWeight->SetLimits(0.0f, 20.0f);
-		mv_playbackSpeed->SetLimitsMP(0, 20);
-		mv_blendDuration->SetLimitsTime(0, 20);
+		mv_playbackSpeed->SetLimits(0, 20);
+		mv_blendDuration->SetLimits(0, 20);
 	}
 
 private:
@@ -138,7 +138,7 @@ bool CAnimClipUIControls::OnKeySelectionChange(SelectedKeys& selectedKeys)
 				mv_blendChannel[i] = key.blendChannels[i];
 			}
 
-			mv_startTime->SetLimitsTime(0, key.GetAssetDuration());
+			mv_startTime->SetLimits(0, key.GetAssetDuration());
 
 			bAssigned = true;
 		}

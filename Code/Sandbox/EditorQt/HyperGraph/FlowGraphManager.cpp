@@ -362,9 +362,9 @@ enum UIEnumType
 namespace
 {
 
-float GetValue(const CString& s, const char* token)
+mpfloat GetValue(const CString& s, const char* token)
 {
-	float fValue = 0.0f;
+	char str[256] = "0";
 	int pos = s.Find(token);
 	if (pos >= 0)
 	{
@@ -372,20 +372,23 @@ float GetValue(const CString& s, const char* token)
 		pos = s.Find('=', pos + 1);
 		if (pos >= 0)
 		{
-			sscanf(s.GetString() + pos + 1, "%f", &fValue);
+			sscanf(s.GetString() + pos + 1, "%[^,]", &str);
 		}
 	}
-	return fValue;
+
+	return mpfloat(str);
 }
 
-float GetValue(const char* s, const char* token)
+mpfloat GetValue(const char* s, const char* token)
 {
 	return GetValue(CString(s), token);
 }
 
 }
 
-UIEnumType ParseUIConfig(const char* sUIConfig, std::map<string, string>& outEnumPairs, Vec3& uiValueRanges)
+struct UIRange { mpfloat x; mpfloat y; };
+
+UIEnumType ParseUIConfig(const char* sUIConfig, std::map<string, string>& outEnumPairs, UIRange& uiValueRanges)
 {
 	UIEnumType enumType = eUI_None;
 	string uiConfig(sUIConfig);
@@ -499,7 +502,7 @@ IVariable* CFlowGraphManager::MakeInVar(const SInputPortConfig* pPortConfig, uin
 	const char* name = pPortConfig->name;
 	bool isEnumDataType = false;
 
-	Vec3 uiValueRanges(ZERO);
+	UIRange uiValueRanges;
 
 	// UI Parsing
 	if (pPortConfig->sUIConfig != 0)
@@ -580,9 +583,28 @@ IVariable* CFlowGraphManager::MakeInVar(const SInputPortConfig* pPortConfig, uin
 	}
 
 	// Set ranges if applicable
-	if (uiValueRanges.x != 0.0f || uiValueRanges.y != 0.0f)
-		pVar->SetLimits(uiValueRanges.x, uiValueRanges.y, true, true);
-
+	if (uiValueRanges.x != 0 || uiValueRanges.y != 0){	// PERSONAL VERIFY: Improve this somehow? At least readability....
+		switch (pVar->GetType())
+		{		
+			// Cast MPFloat value to related type. Perhaps apply type-converter to this as well?
+			#define TCheck(X) \
+				case IVariable::X:	\
+					pVar->SetLimits<var_type::BaseType<IVariable::X>::type>(\
+						(var_type::BaseType<IVariable::X>::type)uiValueRanges.x,\
+						(var_type::BaseType<IVariable::X>::type)uiValueRanges.y,\
+						true, true);\
+					break;
+				TCheck(INT)
+				TCheck(BOOL)
+				TCheck(FLOAT)
+				TCheck(TV)
+				TCheck(MP)
+			#undef TCheck
+			default:
+				assert(0 && "SetLimits on non-limit supported type.");
+				break;
+		}
+	}
 	// Take care of predefined datatypes
 	if (!isEnumDataType)
 	{

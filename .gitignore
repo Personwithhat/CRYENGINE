@@ -35,6 +35,7 @@ _WAF_/user_settings.options
 /[Uu]ser*/
 __pycache__/*
 /Editor/ResourceCache/*
+/Editor/Tmp/*
 
 # Might contain a license key, so don't add it to a repo.
 /Code/Tools/waf-1.7.13/recode.lic

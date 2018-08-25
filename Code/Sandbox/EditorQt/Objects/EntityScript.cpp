@@ -241,7 +241,7 @@ public:
 						float lmin = 0, lmax = 10000;
 						var->GetLimits(lmin, lmax);
 						// set min Limit to 0 hard, to make it positive only value.
-						var->SetLimits(0, lmax, true, false);
+						var->SetLimits<float>(0, lmax, true, false);
 					}
 					return var;
 				}

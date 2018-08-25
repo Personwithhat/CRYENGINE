@@ -1280,10 +1280,14 @@ struct SFlowNodeConfig
 		pInputPorts = new SInputPortConfig[size + 1];
 		memset((void*)pInputPorts, 0, sizeof(SInputPortConfig) * (size + 1));
 	}
-	void AddInputPort(int slot, const SInputPortConfig& cfg)
+	void AddInputPort(int slot, const SInputPortConfig& cfgIn)
 	{
-		// WARNING: memcpy issues?
-		memcpy((void*)(&pInputPorts[slot]), (void*)&cfg, sizeof(SInputPortConfig));
+		// PERSONAL VERIFY: Changed to "Copying a pointer to a new() value"
+		// Messier allocation/de-allocation BUT preserves const * + allows for non-POD type like CTimeValue/mpfloat etc.....
+		const SInputPortConfig* cfg = new SInputPortConfig(cfgIn);
+		const SInputPortConfig* spot = &pInputPorts[slot];
+		delete spot;
+		memcpy((void*)(&spot), (void*)&cfg, sizeof(SInputPortConfig*));
 	}
 	void AddStringInputPort(int slot, const char* name, const char* description)
 	{
@@ -1308,10 +1312,12 @@ struct SFlowNodeConfig
 		pOutputPorts = new SOutputPortConfig[size + 1];
 		memset((void*)pOutputPorts, 0, sizeof(SOutputPortConfig) * (size + 1));
 	}
-	void AddOutputPort(int slot, const SOutputPortConfig& cfg)
+	void AddOutputPort(int slot, const SOutputPortConfig& cfgIn)
 	{
-		// WARNING: memcpy issues?
-		memcpy((void*)(&pOutputPorts[slot]), (void*)&cfg, sizeof(SOutputPortConfig));
+		const SOutputPortConfig* cfg  = new SOutputPortConfig(cfgIn);
+		const SOutputPortConfig* spot = &pOutputPorts[slot];
+		delete spot;
+		memcpy((void*)(&spot), (void*)&cfg, sizeof(SOutputPortConfig*));
 	}
 	void AddStringOutputPort(int slot, const char* name, const char* description)
 	{

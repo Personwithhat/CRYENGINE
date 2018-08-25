@@ -102,7 +102,7 @@ public:
 	virtual EType GetType() const { return m_eType; }
 	virtual int   GetSize() const { return m_pTypeInfo->Size; }
 
-	virtual void  GetLimits(float& fMin, float& fMax, float& fStep = ByRef<float>(), bool& bHardMin = ByRef<bool>(), bool& bHardMax = ByRef<bool>())
+	/*virtual void  GetLimits(float& fMin, float& fMax, float& fStep, bool& bHardMin, bool& bHardMax)
 	{
 		// Get hard limits from variable type, or vector element type.
 		const CTypeInfo* pLimitType = m_pTypeInfo;
@@ -122,7 +122,7 @@ public:
 			bHardMax = false;
 		else if (m_pVarInfo->GetAttr("Max", fMax))
 			bHardMax = true;
-	}
+	}*/
 
 	//////////////////////////////////////////////////////////////////////////
 	// Access operators.

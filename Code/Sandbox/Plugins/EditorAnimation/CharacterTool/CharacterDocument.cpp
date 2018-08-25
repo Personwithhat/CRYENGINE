@@ -1680,7 +1680,7 @@ void CharacterDocument::PreRender(const SRenderContext& context)
 		// In case of scrubbing [paused animation]: set normalized time on all layers 
 		if (m_bPaused)
 		{
-			const CTimeValue fSmoothTime = m_playbackOptions.smoothTimelineSlider ? "0.2" : 0;
+			const CTimeValue fSmoothTime = m_playbackOptions.smoothTimelineSlider ? "0.2" : 0;	// PERSONAL TODO: Animation -> click pause -> editor dies here???
 			float tmpBase = BADF m_NormalizedTimeSmooth;
 			float tmpRate = BADF m_NormalizedTimeRate;
 			SmoothCD(tmpBase, tmpRate, FrameTime, BADF m_NormalizedTime, fSmoothTime);	// PERSONAL VERIFY: SmoothCD of 'accurate' values not supported yet xd
