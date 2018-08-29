@@ -20,7 +20,7 @@ namespace DrawingPrimitives
 {
 enum
 {
-	RULER_MIN_PIXELS_PER_SEC = 7,	// PERSONAL TODO: Convert to proper #Pixels per second instead of 'tick'
+	RULER_MIN_PIXELS_PER_SEC = 3,	// PERSONAL VERIFY: 3 fine or something else?
 };
 
 // pScreenRulerRange == Range in PIXELS

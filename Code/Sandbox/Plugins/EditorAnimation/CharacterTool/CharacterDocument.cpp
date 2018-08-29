@@ -1680,12 +1680,12 @@ void CharacterDocument::PreRender(const SRenderContext& context)
 		// In case of scrubbing [paused animation]: set normalized time on all layers 
 		if (m_bPaused)
 		{
-			const CTimeValue fSmoothTime = m_playbackOptions.smoothTimelineSlider ? "0.2" : 0;	// PERSONAL TODO: Animation -> click pause -> editor dies here???
+			const CTimeValue fSmoothTime = m_playbackOptions.smoothTimelineSlider ? "0.2" : "0";
 			float tmpBase = BADF m_NormalizedTimeSmooth;
 			float tmpRate = BADF m_NormalizedTimeRate;
 			SmoothCD(tmpBase, tmpRate, FrameTime, BADF m_NormalizedTime, fSmoothTime);	// PERSONAL VERIFY: SmoothCD of 'accurate' values not supported yet xd
-			m_NormalizedTimeSmooth = BADnT(tmpBase);
-			m_NormalizedTimeSmooth = BADnT(tmpRate);
+			m_NormalizedTimeSmooth = BADnT(tmpBase); // PERSONAL TODO: Lossy set of 'infinite' float/double (anywhere, not here etc.) -> Causes 'silent' crash!!! How to get this to be caught in debug?? (remove noexcepts??)
+			m_NormalizedTimeRate   = BADnT(tmpRate);
 			for (auto& it : m_system->scene->layers.layers)
 			{
 				const int& layerId = it.layerId;

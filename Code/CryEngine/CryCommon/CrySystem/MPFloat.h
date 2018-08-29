@@ -127,11 +127,23 @@ public: // Constructors and assignment operators
 		//	e.g. newNum(float), float won't implicitly convert to int and become a 'valid' constructor.
 		//	(Integer-type || a string e.g. char*) etc.
 		template <class V, typename enable_if_c<
-				(is_integral<V>::value || is_string<V>::value)
+				(is_integral<V>::value)
 				&& !is_convertible<typename detail::canonical<V, Backend>::type, Backend>::value
 		>::type* = 0>
 		ILINE newNum(const V& v)
 		{
+			backend() = canonical_value(v);
+		}
+		template <class V, typename enable_if_c<
+				(is_string<V>::value)
+				&& !is_convertible<typename detail::canonical<V, Backend>::type, Backend>::value
+		>::type* = 0>
+		ILINE newNum(const V& v)
+		{
+			// Assert here for debug help. PERSONAL TODO: Make it neater, or remove it entirely? :/ ....
+			// This would would make it count 0 as nullptr, have to do "0" instead.
+			//		const CTimeValue fSmoothTime = m_playbackOptions.smoothTimelineSlider ? "0.2" : 0;
+			assert(v != nullptr);
 			backend() = canonical_value(v);
 		}
 
@@ -148,10 +160,17 @@ public: // Constructors and assignment operators
 
 	// Assignment
 		template <class V>
-		ILINE typename enable_if<valid_check<V>, rType& >::type
+		ILINE typename enable_if_c<valid_check<V>::value && !is_string<V>::value, rType& >::type
 			operator=(const V& v)
-			//BOOST_MP_NOEXCEPT_IF(noexcept(std::declval<Backend&>() = std::declval<const typename detail::canonical<V, Backend>::type&>()))
 		{
+			backend() = canonical_value(v);
+			return *this;
+		}
+		template <class V>
+		ILINE typename enable_if_c<valid_check<V>::value && is_string<V>::value, rType& >::type
+			operator=(const V& v)
+		{
+			assert(v != nullptr);
 			backend() = canonical_value(v);
 			return *this;
 		}

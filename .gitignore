@@ -4,6 +4,7 @@
 
 # Ain't that many files to ignore, easier to handle through github for now.
 !GameSampleFPS/**
+GameSampleFPS/Animations/editor/*
 
 # Config files
 #/user.cfg
