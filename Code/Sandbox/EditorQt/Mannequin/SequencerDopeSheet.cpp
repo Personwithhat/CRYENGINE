@@ -450,7 +450,7 @@ void CSequencerDopeSheet::DrawKeys(CSequencerTrack* track, CDC* dc, CRect& rc, T
 						nextKeyTime.SetSeconds(rc.right);
 					}
 				}
-				x1 = TimeToClient(nextKeyTime) - 10;				// PERSONAL TODO: What units is time in???????
+				x1 = TimeToClient(nextKeyTime) - 10;
 			}
 
 			const int hasBlendTime = track->GetNumSecondarySelPts(i) > 0;

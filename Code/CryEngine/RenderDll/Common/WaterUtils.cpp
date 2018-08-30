@@ -41,7 +41,8 @@ struct SWaterUpdateThreadInfo
 	bool  bOnlyHeight;
 };
 
-void WaterAsyncUpdate(CWaterSim*, int, const CTimeValue&, bool, void*);
+// PERSONAL NOTE: Job creation depends on POD-type parameter's. Hence update cant handle CTimeValue and needs to have float passed in/out!!
+void WaterAsyncUpdate(CWaterSim*, int, float, bool, void*);
 DECLARE_JOB("WaterUpdate", TWaterUpdateJob, WaterAsyncUpdate);
 
 class CRY_ALIGN(128) CWaterSim
@@ -580,7 +581,7 @@ public:
 			return;
 
 		WaitForJob();
-		TWaterUpdateJob job(this, nFrameID, fTime, bOnlyHeight, pRawPtr);
+		TWaterUpdateJob job(this, nFrameID, fTime.BADGetSeconds(), bOnlyHeight, pRawPtr);
 		job.RegisterJobState(&m_JobState);
 		job.Run();
 	}
@@ -624,12 +625,12 @@ protected:
 	SWaterUpdateThreadInfo m_JobInfo[2];
 };
 
-void WaterAsyncUpdate(CWaterSim* pWaterSim, int nFrameID, const CTimeValue& fTime, bool bOnlyHeight, void* pRawPtr)
+void WaterAsyncUpdate(CWaterSim* pWaterSim, int nFrameID, float fTime, bool bOnlyHeight, void* pRawPtr)
 {
 	if (pWaterSim == NULL)
 		return;
 
-	pWaterSim->Update(nFrameID, fTime, bOnlyHeight);
+	pWaterSim->Update(nFrameID, BADTIME(fTime), bOnlyHeight);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////

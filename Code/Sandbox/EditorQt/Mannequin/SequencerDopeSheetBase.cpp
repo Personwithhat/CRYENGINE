@@ -135,7 +135,7 @@ CSequencerDopeSheetBase::CSequencerDopeSheetBase()
 	m_scrollOffset = CPoint(0, 0);
 	m_bAnySelected = 0;
 	m_mouseMode = MOUSE_MODE_NONE;
-	m_currentTime.SetSeconds(40);				// PERSONAL TODO: In seconds or ms?
+	m_currentTime.SetSeconds(40);
 	m_storedTime = m_currentTime;
 	m_rcSelect = CRect(0, 0, 0, 0);
 	m_keyTimeOffset.SetSeconds(0);

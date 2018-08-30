@@ -2122,11 +2122,15 @@ CTimeline::CTimeline(QWidget* parent)
 
 	m_highlightedTimer.setSingleShot(true);
 	m_highlightedConnection = QObject::connect(&m_highlightedTimer, &QTimer::timeout, [this]() { UpdateHightlightedInternal(); });
-	QObject::connect(this, &QObject::destroyed, [this]() { disconnect(m_highlightedConnection); });
+	//QObject::connect(this, &QObject::destroyed, [this]() { disconnect(m_highlightedConnection); });
 }
 
 CTimeline::~CTimeline()
 {
+	// PERSONAL VERIFY: Might fail only in debug mode according to QT "Possible RIP's in debug mode". CryTek bug, not me!
+	// Moved from destroyed() bind to CTimeLine ded bind.....
+	// Reproducing: Build in debug, click 'mannequin' layout -> from that layout go to 'default' layout -> Sandbox crashes.
+	disconnect(m_highlightedConnection);
 }
 
 void CTimeline::customEvent(QEvent* pEvent)
