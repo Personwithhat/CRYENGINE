@@ -343,7 +343,7 @@ void CSequencerTrackPropsDlg::SetSequence(CSequencerSequence* pSequence)
 	if (pSequence)
 	{
 		TRange<CTimeValue> range = pSequence->GetTimeRange();
-		m_time.SetRange(range.start.BADGetSeconds(), range.end.BADGetSeconds()); // PERSONAL VERIFY: Not sure about NumberCTRL setups..
+		m_time.SetRange(range.start.GetSeconds(), range.end.GetSeconds());
 	}
 }
 
@@ -364,7 +364,7 @@ bool CSequencerTrackPropsDlg::OnKeySelectionChange(CSequencerUtils::SelectedKeys
 
 	if (m_track != NULL)
 	{
-		m_time.SetValue(m_track->GetKeyTime(m_key).BADGetSeconds());
+		m_time.SetValue(m_track->GetKeyTime(m_key).GetSeconds());
 		m_keySpinBtn.SetRange(1, m_track->GetNumKeys());
 		m_keySpinBtn.SetPos(m_key + 1);
 

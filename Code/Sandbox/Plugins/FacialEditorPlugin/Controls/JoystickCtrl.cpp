@@ -1090,8 +1090,8 @@ void CJoystickCtrl::OnJoystickProperties(IJoystick* pJoystick)
 		IJoystickChannel* pChannel = (pJoystick ? pJoystick->GetChannel(axis) : 0);
 		dlg.SetChannelName(axis, (pChannel ? pChannel->GetName() : 0));
 		dlg.SetChannelFlipped(axis, (pChannel ? pChannel->GetFlipped() : false));
-		dlg.SetVideoScale(axis, (pChannel ? pChannel->GetVideoMarkerScale() : 1.0f));
-		dlg.SetVideoOffset(axis, (pChannel ? pChannel->GetVideoMarkerOffset() : 0.0f));
+		dlg.SetVideoScale(axis, BADMP(pChannel ? pChannel->GetVideoMarkerScale() : 1.0f));
+		dlg.SetVideoOffset(axis, BADMP(pChannel ? pChannel->GetVideoMarkerOffset() : 0.0f));
 		dlg.SetChannelEnabled(axis, pChannel != 0);
 	}
 
@@ -1106,8 +1106,8 @@ void CJoystickCtrl::OnJoystickProperties(IJoystick* pJoystick)
 			if (pChannel)
 			{
 				pChannel->SetFlipped(dlg.GetChannelFlipped(axis));
-				pChannel->SetVideoMarkerScale(dlg.GetVideoScale(axis));
-				pChannel->SetVideoMarkerOffset(dlg.GetVideoOffset(axis));
+				pChannel->SetVideoMarkerScale(BADF dlg.GetVideoScale(axis));
+				pChannel->SetVideoMarkerOffset(BADF dlg.GetVideoOffset(axis));
 			}
 		}
 

@@ -588,10 +588,12 @@ void CPropertyItem::SetVariable(IVariable* var)
 			m_pVariable->GetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			break;
 		case IVariable::MP:
-			m_type = ePropertyMP;	// PERSONAL TODO: Load limits here etc.!
+			m_type = ePropertyMP;
+			m_pVariable->GetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			break;
 		case IVariable::TV:
 			m_type = ePropertyTime;
+			m_pVariable->GetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			break;
 		case IVariable::VECTOR2:
 			m_type = ePropertyVector2;
@@ -631,7 +633,7 @@ void CPropertyItem::SetVariable(IVariable* var)
 	else if (dataType == IVariable::DT_ANGLE)
 	{
 		// Scale radians to degrees.
-		m_valueMultiplier = RAD2DEG(1);
+		m_valueMultiplier = BADMP(RAD2DEG(1));
 		m_rangeMin = -360;
 		m_rangeMax = 360;
 	}
@@ -998,6 +1000,8 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 	case ePropertyFloat:
 	case ePropertyInt:
 	case ePropertyAngle:
+	case ePropertyMP:
+	case ePropertyTime: 	// PERSONAL TODO: Get Time/MP working here as expected-ish!.....
 		{
 			if (m_pEnumDBItem)
 			{
@@ -1022,9 +1026,9 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 				//m_cNumber->SetEndUpdateCallback( functor(*this,OnNumberCtrlEndUpdate) );
 
 				// (digits behind the comma, only used for floats)
-				if (m_type == ePropertyFloat)
+				if (m_type == ePropertyFloat || m_type == ePropertyMP || m_type == ePropertyTime)
 				{
-					m_cNumber->SetStep(BADF m_step);
+					m_cNumber->SetStep(m_step);
 					m_cNumber->SetFloatFormatPrecision(FLOAT_NUM_DIGITS);
 				}
 				else if (m_type == ePropertyAngle)
@@ -1035,8 +1039,9 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 				// Only for integers.
 				if (m_type == ePropertyInt)
 					m_cNumber->SetInteger(true);
+
 				m_cNumber->SetMultiplier(m_valueMultiplier);
-				m_cNumber->SetRange(m_bHardMin ? BADF m_rangeMin : -FLT_MAX, m_bHardMax ? BADF m_rangeMax : FLT_MAX);
+				m_cNumber->SetRange(m_bHardMin ? m_rangeMin : mpfloat::Min(), m_bHardMax ? m_rangeMax : mpfloat::Max());
 
 				m_cNumber->Create(pWndParent, nullRc, 1, CNumberCtrl::NOBORDER | CNumberCtrl::LEFTALIGN);
 				m_cNumber->SetLeftAlign(true);
@@ -1047,7 +1052,7 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 					m_cFillSlider->EnableUndo(m_name + " Modified");
 					m_cFillSlider->Create(WS_VISIBLE | WS_CHILD, nullRc, pWndParent, 2);
 					m_cFillSlider->SetUpdateCallback(functor(*this, &CPropertyItem::OnFillSliderCtrlUpdate));
-					m_cFillSlider->SetRangeFloat(BADF m_rangeMin / m_valueMultiplier, BADF m_rangeMax / m_valueMultiplier, BADF m_step / m_valueMultiplier);
+					m_cFillSlider->SetRange(m_rangeMin / m_valueMultiplier, m_rangeMax / m_valueMultiplier, m_step / m_valueMultiplier);
 				}
 			}
 		}
@@ -1370,13 +1375,13 @@ void CPropertyItem::CreateControls(CWnd* pWndParent, CRect& textRect, CRect& ctr
 
 			// (digits behind the comma, only used for floats)
 			if (m_type == ePropertyFloat)
-				m_cNumber->SetStep(BADF m_step);
+				m_cNumber->SetStep(m_step);
 
 			// Only for integers.
 			if (m_type == ePropertyInt)
 				m_cNumber->SetInteger(true);
 			m_cNumber->SetMultiplier(m_valueMultiplier);
-			m_cNumber->SetRange(m_bHardMin ? BADF m_rangeMin : -FLT_MAX, m_bHardMax ? BADF m_rangeMax : FLT_MAX);
+			m_cNumber->SetRange(m_bHardMin ? m_rangeMin : mpfloat::Min(), m_bHardMax ? m_rangeMax : mpfloat::Max());
 
 			m_cNumber->Create(pWndParent, nullRc, 1);
 			m_cNumber->SetLeftAlign(true);
@@ -1396,7 +1401,7 @@ void CPropertyItem::CreateControls(CWnd* pWndParent, CRect& textRect, CRect& ctr
 				m_cFillSlider->EnableUndo(m_name + " Modified");
 				m_cFillSlider->Create(WS_VISIBLE | WS_CHILD, nullRc, pWndParent, 2);
 				m_cFillSlider->SetUpdateCallback(functor(*this, &CPropertyItem::OnFillSliderCtrlUpdate));
-				m_cFillSlider->SetRangeFloat(BADF m_rangeMin / m_valueMultiplier, BADF m_rangeMax / m_valueMultiplier, BADF m_step / m_valueMultiplier);
+				m_cFillSlider->SetRange(m_rangeMin / m_valueMultiplier, m_rangeMax / m_valueMultiplier, m_step / m_valueMultiplier);
 				RegisterCtrl(m_cFillSlider);
 			}
 		}
@@ -1422,7 +1427,7 @@ void CPropertyItem::CreateControls(CWnd* pWndParent, CRect& textRect, CRect& ctr
 				pNumber->SetUpdateCallback(functor(*this, &CPropertyItem::OnNumberCtrlUpdate));
 				pNumber->EnableUndo(m_name + " Modified");
 				pNumber->SetMultiplier(m_valueMultiplier);
-				pNumber->SetRange(m_bHardMin ? BADF m_rangeMin : -FLT_MAX, m_bHardMax ? BADF m_rangeMax : FLT_MAX);
+				pNumber->SetRange(m_bHardMin ? m_rangeMin : mpfloat::Max(), m_bHardMax ? m_rangeMax : mpfloat::Min());
 				RegisterCtrl(pNumber);
 			}
 		}
@@ -1903,19 +1908,19 @@ void CPropertyItem::ReceiveFromControl()
 		if (m_cNumber1 && m_cNumber2 && m_cNumber3)
 		{
 			CString val;
-			val.Format("%g,%g,%g,%g", m_cNumber->GetValue(), m_cNumber1->GetValue(), m_cNumber2->GetValue(), m_cNumber3->GetValue());
+			val.Format("%s,%s,%s,%s", m_cNumber->GetValue().str(), m_cNumber1->GetValue().str(), m_cNumber2->GetValue().str(), m_cNumber3->GetValue().str());
 			SetValue(val);
 		}
 		if (m_cNumber1 && m_cNumber2)
 		{
 			CString val;
-			val.Format("%g,%g,%g", m_cNumber->GetValue(), m_cNumber1->GetValue(), m_cNumber2->GetValue());
+			val.Format("%s,%s,%s", m_cNumber->GetValue().str(), m_cNumber1->GetValue().str(), m_cNumber2->GetValue().str());
 			SetValue(val);
 		}
 		else if (m_cNumber1)
 		{
 			CString val;
-			val.Format("%g,%g", m_cNumber->GetValue(), m_cNumber1->GetValue());
+			val.Format("%s,%s", m_cNumber->GetValue().str(), m_cNumber1->GetValue().str());
 			SetValue(val);
 		}
 		else
@@ -1984,8 +1989,8 @@ void CPropertyItem::SendToControl()
 	{
 		if (m_cNumber1 && m_cNumber2 && m_cNumber3)
 		{
-			float x, y, z, w;
-			sscanf(m_value, "%f,%f,%f,%f", &x, &y, &z, &w);
+			char x[256]; char y[256]; char z[256]; char w[256];		// PERSONAL VERIFY: More 'is 256 enough for mpfloat???' questions! At least make this abstract (macro/etc.) not hardcoded!
+			sscanf(m_value, "%[^,],%[^,],%[^,],%s", &x, &y, &z, &w);	// ALSO: Verify that these sscanf's work properly.
 			m_cNumber->SetValue(x);
 			m_cNumber1->SetValue(y);
 			m_cNumber2->SetValue(z);
@@ -1993,29 +1998,29 @@ void CPropertyItem::SendToControl()
 		}
 		else if (m_cNumber1 && m_cNumber2)
 		{
-			float x, y, z;
-			sscanf(m_value, "%f,%f,%f", &x, &y, &z);
+			char x[256]; char y[256]; char z[256];
+			sscanf(m_value, "%[^,],%[^,],%s", &x, &y, &z);
 			m_cNumber->SetValue(x);
 			m_cNumber1->SetValue(y);
 			m_cNumber2->SetValue(z);
 		}
 		else if (m_cNumber1)
 		{
-			float x, y;
-			sscanf(m_value, "%f,%f", &x, &y);
+			char x[256]; char y[256];
+			sscanf(m_value, "%[^,],%s", &x, &y);
 			m_cNumber->SetValue(x);
 			m_cNumber1->SetValue(y);
 		}
 		else
 		{
-			m_cNumber->SetValue(atof(m_value));
+			m_cNumber->SetValue(m_value.GetString());
 		}
 		bInPlaceCtrl = true;
 		m_cNumber->Invalidate();
 	}
 	if (m_cFillSlider)
 	{
-		m_cFillSlider->SetValue(atof(m_value));
+		m_cFillSlider->SetValue(m_value.GetString());
 		bInPlaceCtrl = true;
 		m_cFillSlider->Invalidate();
 	}
@@ -2479,13 +2484,13 @@ CString CPropertyItem::GetDrawValue()
 	if (m_pEnumDBItem)
 		value = m_pEnumDBItem->ValueToName(value);
 
-	if (m_valueMultiplier != 1.f)
+	if (m_valueMultiplier != 1)
 	{
-		float f = atof(m_value) * m_valueMultiplier;
+		mpfloat f = mpfloat(m_value.GetString()) * m_valueMultiplier;
 		if (m_type == ePropertyInt)
 			value.Format("%d", int_round(f));
 		else
-			value.Format("%g", f);
+			value.Format("%s", f.str());
 		if (m_valueMultiplier == 100)
 			value += "%";
 	}
@@ -2971,12 +2976,12 @@ void CPropertyItem::OnFillSliderCtrlUpdate(CSliderCtrlEx* ctrl)
 {
 	if (m_cFillSlider)
 	{
-		mpfloat fValue = BADMP(m_cFillSlider->GetValue());
+		mpfloat fValue = m_cFillSlider->GetValue();
 
 		if (m_step != 0)
 		{
 			// Round to next power of 10 below step.
-			mpfloat fRound = pow(mpfloat(10), floor(log(m_step) / log(mpfloat(10)))) / BADMP(m_valueMultiplier); // PERSONAL TODO!!!!! Fix all the !@#$ BADMP and what not here!
+			mpfloat fRound = pow(mpfloat(10), floor(log(m_step) / log(mpfloat(10)))) / m_valueMultiplier;
 			fValue = int_round(fValue / fRound) * fRound;
 		}
 		fValue = CLAMP(fValue, m_rangeMin, m_rangeMax);

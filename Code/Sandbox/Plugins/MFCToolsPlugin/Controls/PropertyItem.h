@@ -434,7 +434,7 @@ private:
 	CString                 m_tip;
 	int                     m_image;
 
-	float                   m_valueMultiplier;
+	mpfloat                 m_valueMultiplier;
 
 	// Childs.
 	typedef std::vector<_smart_ptr<CPropertyItem>> Childs;

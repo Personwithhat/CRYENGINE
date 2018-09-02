@@ -281,13 +281,13 @@ protected:
 		m_startTimeCtrl.Create(this, IDC_START_TIME);
 		m_endTimeCtrl.Create(this, IDC_END_TIME);
 
-		m_startTimeCtrl.SetRange(-(1e+10), (1e+10));
+		m_startTimeCtrl.SetRange(-BADMP(1e+10), BADMP(1e+10));
 		m_startTimeCtrl.SetInteger(true);
-		m_endTimeCtrl.SetRange(-(1e+10), (1e+10));
+		m_endTimeCtrl.SetRange(-BADMP(1e+10), BADMP(1e+10));
 		m_endTimeCtrl.SetInteger(true);
 
-		m_startTimeCtrl.SetValue(timeRange.start.BADGetSeconds() * FACIAL_EDITOR_FPS);	// PERSONAL VERIFY: Not sure about NumberCTRL setups..
-		m_endTimeCtrl.SetValue(timeRange.end.BADGetSeconds() * FACIAL_EDITOR_FPS);
+		m_startTimeCtrl.SetValue(timeRange.start.GetSeconds() * FACIAL_EDITOR_FPS);
+		m_endTimeCtrl.SetValue(timeRange.end.GetSeconds() * FACIAL_EDITOR_FPS);
 
 		m_fromSoundBtn.SetCheck((bRangeFromSound) ? BST_CHECKED : BST_UNCHECKED);
 		if (bRangeFromSound)
@@ -302,8 +302,8 @@ protected:
 	virtual void OnOK()
 	{
 		bRangeFromSound = m_fromSoundBtn.GetCheck() == BST_CHECKED;
-		timeRange.start = BADTIME(m_startTimeCtrl.GetValue() / FACIAL_EDITOR_FPS);
-		timeRange.end = BADTIME(m_endTimeCtrl.GetValue() / FACIAL_EDITOR_FPS);
+		timeRange.start = CTimeValue(m_startTimeCtrl.GetValue() / FACIAL_EDITOR_FPS);
+		timeRange.end   = CTimeValue(m_endTimeCtrl.GetValue() / FACIAL_EDITOR_FPS);
 		CDialog::OnOK();
 	}
 
