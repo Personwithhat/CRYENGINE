@@ -132,6 +132,8 @@ struct
 	{ IVariable::DT_SIMPLE,                        "Bool",                             ePropertyBool,                  2  },
 	{ IVariable::DT_SIMPLE,                        "Int",                              ePropertyInt,                   0  },
 	{ IVariable::DT_SIMPLE,                        "Float",                            ePropertyFloat,                 0  },
+	{ IVariable::DT_SIMPLE,                        "Time",                             ePropertyTime,                  4  },	// PERSONAL VERIFY: Need an icon for multi-precision types!
+	{ IVariable::DT_SIMPLE,                        "MPFloat",                          ePropertyMP,                    4  },
 	{ IVariable::DT_SIMPLE,                        "Vector",                           ePropertyVector2,               10 },
 	{ IVariable::DT_SIMPLE,                        "Vector",                           ePropertyVector,                10 },
 	{ IVariable::DT_SIMPLE,                        "Vector",                           ePropertyVector4,               10 },
@@ -372,7 +374,7 @@ void CPropertyItem::ParseXmlNode(bool bRecursive /* =true  */)
 
 	m_rangeMin = 0;
 	m_rangeMax = 100;
-	m_step = 0.1f;
+	m_step = "0.1";
 	m_bHardMin = m_bHardMax = false;
 	if (m_type == ePropertyFloat || m_type == ePropertyInt)
 	{
@@ -383,8 +385,8 @@ void CPropertyItem::ParseXmlNode(bool bRecursive /* =true  */)
 
 		int nPrecision;
 		if (!m_node->getAttr("Precision", nPrecision))
-			nPrecision = max(3 - int(log(m_rangeMax - m_rangeMin) / log(10.f)), 0);
-		m_step = powf(10.f, -nPrecision);
+			nPrecision = max(3 - int(log(m_rangeMax - m_rangeMin) / log(mpfloat(10))), 0);
+		m_step = pow(mpfloat(10), mpfloat(-nPrecision));
 	}
 
 	if (bHasValue)
@@ -563,18 +565,33 @@ void CPropertyItem::SetVariable(IVariable* var)
 		m_type = ePropertySelection;
 	}
 
+	m_valueMultiplier = 1;
+	m_rangeMin = 0;
+	m_rangeMax = 100;
+	m_step = 0;
+	m_bHardMin = m_bHardMax = false;
+
 	if (m_type == ePropertyInvalid)
 	{
-		switch (m_pVariable->GetType())
+		int zeType = m_pVariable->GetType();
+		switch (zeType)
 		{
 		case IVariable::INT:
 			m_type = ePropertyInt;
+			m_pVariable->GetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			break;
 		case IVariable::BOOL:
 			m_type = ePropertyBool;
 			break;
 		case IVariable::FLOAT:
 			m_type = ePropertyFloat;
+			m_pVariable->GetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
+			break;
+		case IVariable::MP:
+			m_type = ePropertyMP;	// PERSONAL TODO: Load limits here etc.!
+			break;
+		case IVariable::TV:
+			m_type = ePropertyTime;
 			break;
 		case IVariable::VECTOR2:
 			m_type = ePropertyVector2;
@@ -588,6 +605,12 @@ void CPropertyItem::SetVariable(IVariable* var)
 		case IVariable::STRING:
 			m_type = ePropertyString;
 			break;
+		case IVariable::QUAT:
+		case IVariable::ARRAY:
+			break;
+		default:
+			assert(0 && "Unsupported variable type!");
+			break;
 		}
 		for (i = 0; i < NumPropertyTypes; i++)
 		{
@@ -598,15 +621,6 @@ void CPropertyItem::SetVariable(IVariable* var)
 			}
 		}
 	}
-
-	m_valueMultiplier = 1;
-	m_rangeMin = 0;
-	m_rangeMax = 100;
-	m_step = 0.f;
-	m_bHardMin = m_bHardMax = false;
-
-	// Get variable limits.
-	m_pVariable->GetLimits(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 
 	// Check if value is percents.
 	if (dataType == IVariable::DT_PERCENT)
@@ -630,8 +644,8 @@ void CPropertyItem::SetVariable(IVariable* var)
 	if (!useExplicitStep)
 	{
 		// Limit step size to 1000.
-		int nPrec = max(3 - int(log(m_rangeMax - m_rangeMin) / log(10.f)), 0);
-		m_step = max(m_step, powf(10.f, -nPrec));
+		int nPrec = max(3 - int(log(m_rangeMax - m_rangeMin) / log(mpfloat(10))), 0);
+		m_step = max(m_step, pow(mpfloat(10), mpfloat(-nPrec)));
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -665,11 +679,11 @@ void CPropertyItem::SetVariable(IVariable* var)
 			m_pVariable->Get(vec);
 			IVariable* pVX = new CVariable<float>;
 			pVX->SetName("x");
-			pVX->SetLimits(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
+			pVX->SetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			pVX->Set(vec.x);
 			IVariable* pVY = new CVariable<float>;
 			pVY->SetName("y");
-			pVY->SetLimits(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
+			pVY->SetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			pVY->Set(vec.y);
 
 			// Start ignoring all updates coming from childs. (Initializing childs).
@@ -700,19 +714,19 @@ void CPropertyItem::SetVariable(IVariable* var)
 			m_pVariable->Get(vec);
 			IVariable* pVX = new CVariable<float>;
 			pVX->SetName("x");
-			pVX->SetLimits(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
+			pVX->SetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			pVX->Set(vec.x);
 			IVariable* pVY = new CVariable<float>;
 			pVY->SetName("y");
-			pVY->SetLimits(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
+			pVY->SetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			pVY->Set(vec.y);
 			IVariable* pVZ = new CVariable<float>;
 			pVZ->SetName("z");
-			pVZ->SetLimits(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
+			pVZ->SetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			pVZ->Set(vec.z);
 			IVariable* pVW = new CVariable<float>;
 			pVW->SetName("w");
-			pVW->SetLimits(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
+			pVW->SetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			pVW->Set(vec.w);
 
 			// Start ignoring all updates coming from childs. (Initializing childs).
@@ -750,15 +764,15 @@ void CPropertyItem::SetVariable(IVariable* var)
 			m_pVariable->Get(vec);
 			IVariable* pVX = new CVariable<float>;
 			pVX->SetName("x");
-			pVX->SetLimits(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
+			pVX->SetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			pVX->Set(vec.x);
 			IVariable* pVY = new CVariable<float>;
 			pVY->SetName("y");
-			pVY->SetLimits(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
+			pVY->SetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			pVY->Set(vec.y);
 			IVariable* pVZ = new CVariable<float>;
 			pVZ->SetName("z");
-			pVZ->SetLimits(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
+			pVZ->SetLimitsG(m_rangeMin, m_rangeMax, m_step, m_bHardMin, m_bHardMax);
 			pVZ->Set(vec.z);
 
 			// Start ignoring all updates coming from childs. (Initializing childs).
@@ -1010,7 +1024,7 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 				// (digits behind the comma, only used for floats)
 				if (m_type == ePropertyFloat)
 				{
-					m_cNumber->SetStep(m_step);
+					m_cNumber->SetStep(BADF m_step);
 					m_cNumber->SetFloatFormatPrecision(FLOAT_NUM_DIGITS);
 				}
 				else if (m_type == ePropertyAngle)
@@ -1022,7 +1036,7 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 				if (m_type == ePropertyInt)
 					m_cNumber->SetInteger(true);
 				m_cNumber->SetMultiplier(m_valueMultiplier);
-				m_cNumber->SetRange(m_bHardMin ? m_rangeMin : -FLT_MAX, m_bHardMax ? m_rangeMax : FLT_MAX);
+				m_cNumber->SetRange(m_bHardMin ? BADF m_rangeMin : -FLT_MAX, m_bHardMax ? BADF m_rangeMax : FLT_MAX);
 
 				m_cNumber->Create(pWndParent, nullRc, 1, CNumberCtrl::NOBORDER | CNumberCtrl::LEFTALIGN);
 				m_cNumber->SetLeftAlign(true);
@@ -1033,7 +1047,7 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 					m_cFillSlider->EnableUndo(m_name + " Modified");
 					m_cFillSlider->Create(WS_VISIBLE | WS_CHILD, nullRc, pWndParent, 2);
 					m_cFillSlider->SetUpdateCallback(functor(*this, &CPropertyItem::OnFillSliderCtrlUpdate));
-					m_cFillSlider->SetRangeFloat(m_rangeMin / m_valueMultiplier, m_rangeMax / m_valueMultiplier, m_step / m_valueMultiplier);
+					m_cFillSlider->SetRangeFloat(BADF m_rangeMin / m_valueMultiplier, BADF m_rangeMax / m_valueMultiplier, BADF m_step / m_valueMultiplier);
 				}
 			}
 		}
@@ -1264,18 +1278,20 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 		}
 		break;
 	case ePropertyFile:
-		m_cEdit = new CInPlaceEdit(m_value, functor(*this, &CPropertyItem::OnEditChanged));
-		m_cEdit->Create(WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_LEFT, nullRc, pWndParent, 2);
-		m_cEdit->EnableUpdateOnKillFocus(!m_bForceModified);
+		{
+			m_cEdit = new CInPlaceEdit(m_value, functor(*this, &CPropertyItem::OnEditChanged));
+			m_cEdit->Create(WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | ES_LEFT, nullRc, pWndParent, 2);
+			m_cEdit->EnableUpdateOnKillFocus(!m_bForceModified);
 
-		m_cButton = new CInPlaceButton(functor(*this, &CPropertyItem::OnFileBrowseButton));
-		m_cButton->Create("...", WS_CHILD | WS_VISIBLE, nullRc, pWndParent, 4);
+			m_cButton = new CInPlaceButton(functor(*this, &CPropertyItem::OnFileBrowseButton));
+			m_cButton->Create("...", WS_CHILD | WS_VISIBLE, nullRc, pWndParent, 4);
 
-		// Use file browse icon.
-		HICON hOpenIcon = (HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_FILE_BROWSE), IMAGE_ICON, 16, 15, LR_DEFAULTCOLOR | LR_SHARED);
-		//m_cButton->SetIcon( CSize(16,15),IDI_FILE_BROWSE );
-		m_cButton->SetIcon(CSize(16, 15), hOpenIcon);
-		m_cButton->SetBorderGap(0);
+			// Use file browse icon.
+			HICON hOpenIcon = (HICON)LoadImage(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_FILE_BROWSE), IMAGE_ICON, 16, 15, LR_DEFAULTCOLOR | LR_SHARED);
+			//m_cButton->SetIcon( CSize(16,15),IDI_FILE_BROWSE );
+			m_cButton->SetIcon(CSize(16, 15), hOpenIcon);
+			m_cButton->SetBorderGap(0);
+		}
 		break;
 		/*
 		    case ePropertyList:
@@ -1284,6 +1300,11 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 		      }
 		      break;
 		 */
+	case ePropertyBool:
+		break;
+	default:
+		assert(0 && "Unsupported property type!!");
+		break;
 	}
 
 	MoveInPlaceControl(ctrlRect);
@@ -1349,13 +1370,13 @@ void CPropertyItem::CreateControls(CWnd* pWndParent, CRect& textRect, CRect& ctr
 
 			// (digits behind the comma, only used for floats)
 			if (m_type == ePropertyFloat)
-				m_cNumber->SetStep(m_step);
+				m_cNumber->SetStep(BADF m_step);
 
 			// Only for integers.
 			if (m_type == ePropertyInt)
 				m_cNumber->SetInteger(true);
 			m_cNumber->SetMultiplier(m_valueMultiplier);
-			m_cNumber->SetRange(m_bHardMin ? m_rangeMin : -FLT_MAX, m_bHardMax ? m_rangeMax : FLT_MAX);
+			m_cNumber->SetRange(m_bHardMin ? BADF m_rangeMin : -FLT_MAX, m_bHardMax ? BADF m_rangeMax : FLT_MAX);
 
 			m_cNumber->Create(pWndParent, nullRc, 1);
 			m_cNumber->SetLeftAlign(true);
@@ -1375,7 +1396,7 @@ void CPropertyItem::CreateControls(CWnd* pWndParent, CRect& textRect, CRect& ctr
 				m_cFillSlider->EnableUndo(m_name + " Modified");
 				m_cFillSlider->Create(WS_VISIBLE | WS_CHILD, nullRc, pWndParent, 2);
 				m_cFillSlider->SetUpdateCallback(functor(*this, &CPropertyItem::OnFillSliderCtrlUpdate));
-				m_cFillSlider->SetRangeFloat(m_rangeMin / m_valueMultiplier, m_rangeMax / m_valueMultiplier, m_step / m_valueMultiplier);
+				m_cFillSlider->SetRangeFloat(BADF m_rangeMin / m_valueMultiplier, BADF m_rangeMax / m_valueMultiplier, BADF m_step / m_valueMultiplier);
 				RegisterCtrl(m_cFillSlider);
 			}
 		}
@@ -1401,7 +1422,7 @@ void CPropertyItem::CreateControls(CWnd* pWndParent, CRect& textRect, CRect& ctr
 				pNumber->SetUpdateCallback(functor(*this, &CPropertyItem::OnNumberCtrlUpdate));
 				pNumber->EnableUndo(m_name + " Modified");
 				pNumber->SetMultiplier(m_valueMultiplier);
-				pNumber->SetRange(m_bHardMin ? m_rangeMin : -FLT_MAX, m_bHardMax ? m_rangeMax : FLT_MAX);
+				pNumber->SetRange(m_bHardMin ? BADF m_rangeMin : -FLT_MAX, m_bHardMax ? BADF m_rangeMax : FLT_MAX);
 				RegisterCtrl(pNumber);
 			}
 		}
@@ -2950,18 +2971,18 @@ void CPropertyItem::OnFillSliderCtrlUpdate(CSliderCtrlEx* ctrl)
 {
 	if (m_cFillSlider)
 	{
-		float fValue = m_cFillSlider->GetValue();
+		mpfloat fValue = BADMP(m_cFillSlider->GetValue());
 
-		if (m_step != 0.f)
+		if (m_step != 0)
 		{
 			// Round to next power of 10 below step.
-			float fRound = pow(10.f, floor(log(m_step) / log(10.f))) / m_valueMultiplier;
+			mpfloat fRound = pow(mpfloat(10), floor(log(m_step) / log(mpfloat(10)))) / BADMP(m_valueMultiplier); // PERSONAL TODO!!!!! Fix all the !@#$ BADMP and what not here!
 			fValue = int_round(fValue / fRound) * fRound;
 		}
-		fValue = clamp_tpl(fValue, m_rangeMin, m_rangeMax);
+		fValue = CLAMP(fValue, m_rangeMin, m_rangeMax);
 
 		CString val;
-		val.Format("%g", fValue);
+		val.Format("%s", fValue.str());
 		SetValue(val, true, true);
 	}
 }

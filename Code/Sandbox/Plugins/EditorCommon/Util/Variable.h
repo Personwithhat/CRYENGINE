@@ -279,33 +279,17 @@ struct EDITOR_COMMON_API IVariable : public IVariableContainer
 	//////////////////////////////////////////////////////////////////////////
 	// Value Limits.
 	//////////////////////////////////////////////////////////////////////////
-	template<class T>
-	void isSame() const {
-		switch (GetType())
-		{		
-			#define TCheck(X) case X:	assert((std::is_same<var_type::BaseType<X>::type, T>::value) && "Accessing limits with non-matching type!"); break;
-				TCheck(INT)
-				TCheck(BOOL)
-				TCheck(FLOAT)
-				TCheck(VECTOR2)
-				TCheck(VECTOR)
-				TCheck(VECTOR4)
-				TCheck(QUAT)
-				TCheck(STRING)
-				TCheck(ARRAY)
-				TCheck(TV)
-				TCheck(MP)
-			#undef TCheck
-			default:
-				assert(0 && "Missing a type here");
-				break;
-		}
+	/*
+	bool IsPercise() const {
+		int type = GetType();
+		if(type == MP || type == TV){ return true; }
+		return false;
 	}
 
 	template<class T> 
 	void SetLimits(const T& vMin, const T& vMax, const T& vStep = 0, bool bHardMin = true, bool bHardMax = true) { 
-		isSame<T>();
-		return static_cast<CVariable<T>*>(this)->SetLimits(vMin, vMax, vStep, bHardMin, bHardMax); 
+		assert(!(IsPercise() && !boost::is_convertible<T, mpfloat>::value) && "Anti-lossy Precaution: Can't set multi-precision type with non-multi-precision values!");
+		return SetLimitsG(mpfloat().lossy(vMin), mpfloat().lossy(vMax), mpfloat().lossy(vStep), bHardMin, bHardMax);
 	}
 
 	template<class T>
@@ -317,9 +301,26 @@ struct EDITOR_COMMON_API IVariable : public IVariableContainer
 	}
 	template<class T> 
 	void GetLimits(T& vMin, T& vMax, T& vStep, bool& bHardMin, bool& bHardMax) const { 
-		isSame<T>();
-		return static_cast<const CVariable<T>*>(this)->GetLimits(vMin, vMax, vStep, bHardMin, bHardMax);
+		assert(!(IsPercise() && !boost::is_convertible<T, mpfloat>::value) && "Anti-lossy Precaution: Can't get multi-precision type with non-multi-precision values!");
+		
+		mpfloat min, max, step;
+		GetLimitsG(min, max, step, bHardMin, bHardMax);
+
+		vMin  = (T)min;
+		vMax  = (T)max;
+		vStep = (T)step;
 	}
+*/
+
+	// Converts mpfloat to/from type automatically, for "I dont know the var" sets.
+	virtual void SetLimitsG(const mpfloat& vMin, const mpfloat& vMax, const mpfloat& vStep = 0, bool bHardMin = true, bool bHardMax = true) { assert(0); }
+	void GetLimitsG(mpfloat& vMin, mpfloat& vMax) const
+	{
+		mpfloat f;
+		bool b;
+		GetLimitsG(vMin, vMax, f, b, b);
+	}
+	virtual void GetLimitsG(mpfloat& vMin, mpfloat& vMax, mpfloat& vStep, bool& bHardMin, bool& bHardMax) const { assert(0); }
 
 	virtual void EnableNotifyWithoutValueChange(bool bFlag) {}
 
@@ -1150,6 +1151,13 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
 	void SetLimits(const B& vMin, const B& vMax, const B& vStep = 0, bool bHardMin = true, bool bHardMax = true) { assert(false && "This type is has no limits."); }
+	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
+	void GetLimits(B& vMin, B& vMax, B& vStep, bool& bHardMin, bool& bHardMax)										 const { assert(false && "This type is has no limits."); }
+	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
+	void SetLimitsG_IMP(const mpfloat& vMin, const mpfloat& vMax, const mpfloat& vStep, bool bHardMin = true, bool bHardMax = true) { assert(false && "This type is has no limits."); }
+	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
+	void GetLimitsG_IMP(mpfloat& vMin, mpfloat& vMax, mpfloat& vStep, bool& bHardMin, bool& bHardMax)								  const { assert(false && "This type is has no limits."); }
+
 
 	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value >::type* = 0>
 	void SetLimits(const B& vMin, const B& vMax, const B& vStep = 0, bool bHardMin = true, bool bHardMax = true)
@@ -1169,10 +1177,6 @@ public:
 		bool b;
 		GetLimits(vMin, vMax, f, b, b);
 	}
-
-	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
-	void GetLimits(B& vMin, B& vMax, B& vStep, bool& bHardMin, bool& bHardMax)						const { assert(false && "This type is has no limits."); }
-
 	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value >::type* = 0>
 	void GetLimits(B& vMin, B& vMax, B& vStep, bool& bHardMin, bool& bHardMax) const 
 	{
@@ -1187,6 +1191,33 @@ public:
 	void ClearLimits()
 	{
 		SetLimits(std::numeric_limits<B>::min(), std::numeric_limits<B>::max(), 0, false, false);
+	}
+
+	// Generic get/set with intermediary mpfloat.....
+	void SetLimitsG(const mpfloat& vMin, const mpfloat& vMax, const mpfloat& vStep = 0, bool bHardMin = true, bool bHardMax = true) override { SetLimitsG_IMP(vMin, vMax, vStep, bHardMin, bHardMax); }
+	void GetLimitsG(mpfloat& vMin, mpfloat& vMax, mpfloat& vStep, bool& bHardMin, bool& bHardMax) const override { GetLimitsG_IMP(vMin, vMax, vStep, bHardMin, bHardMax); }
+
+	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value >::type* = 0>
+	void SetLimitsG_IMP(const mpfloat& vMin, const mpfloat& vMax, const mpfloat& vStep, bool bHardMin = true, bool bHardMax = true){
+		SetLimits((T)vMin, (T)vMax, (T)vStep, bHardMin, bHardMax);
+	}
+	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value && !isTV>::type* = 0>
+	void GetLimitsG_IMP(mpfloat& vMin, mpfloat& vMax, mpfloat& vStep, bool& bHardMin, bool& bHardMax)	const {
+		T min, max, step;
+		GetLimits(min, max, step, bHardMin, bHardMax);
+
+		vMin.lossy(min);
+		vMax.lossy(max);
+		vStep.lossy(step);
+	}
+	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value && isTV>::type* = 0>
+	void GetLimitsG_IMP(mpfloat& vMin, mpfloat& vMax, mpfloat& vStep, bool& bHardMin, bool& bHardMax)	const {
+		T min, max, step;
+		GetLimits(min, max, step, bHardMin, bHardMax);
+
+		vMin = min.GetSeconds();	// PERSONAL VERIFY: Questionable choiceof setup for CTimeValue compatibility!
+		vMax = max.GetSeconds();
+		vStep = step.GetSeconds();
 	}
 
 	//////////////////////////////////////////////////////////////////////////

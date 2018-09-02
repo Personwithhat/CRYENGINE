@@ -583,28 +583,10 @@ IVariable* CFlowGraphManager::MakeInVar(const SInputPortConfig* pPortConfig, uin
 	}
 
 	// Set ranges if applicable
-	if (uiValueRanges.x != 0 || uiValueRanges.y != 0){	// PERSONAL VERIFY: Improve this somehow? At least readability....
-		switch (pVar->GetType())
-		{		
-			// Cast MPFloat value to related type. Perhaps apply type-converter to this as well?
-			#define TCheck(X) \
-				case IVariable::X:	\
-					pVar->SetLimits<var_type::BaseType<IVariable::X>::type>(\
-						(var_type::BaseType<IVariable::X>::type)uiValueRanges.x,\
-						(var_type::BaseType<IVariable::X>::type)uiValueRanges.y,\
-						true, true);\
-					break;
-				TCheck(INT)
-				TCheck(BOOL)
-				TCheck(FLOAT)
-				TCheck(TV)
-				TCheck(MP)
-			#undef TCheck
-			default:
-				assert(0 && "SetLimits on non-limit supported type.");
-				break;
-		}
+	if (uiValueRanges.x != 0 || uiValueRanges.y != 0){
+		pVar->SetLimitsG(uiValueRanges.x, uiValueRanges.y);
 	}
+
 	// Take care of predefined datatypes
 	if (!isEnumDataType)
 	{

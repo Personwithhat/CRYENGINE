@@ -329,6 +329,7 @@ private:
 		UNARY_OP_FUNCTOR(ceil)
 		UNARY_OP_FUNCTOR(sin)
 		UNARY_OP_FUNCTOR(log10)
+		UNARY_OP_FUNCTOR(log)
 	#undef UNARY_OP_FUNCTOR
 
 	#define BINARY_OP_FUNCTOR(func)\

@@ -35,7 +35,7 @@ _smart_ptr<IVariable> AddChildVariable(const _smart_ptr<IVariable>& pVariableArr
 template<typename TMin, typename TMax>
 void SetLimits(const _smart_ptr<IVariable>& pVariable, const TMin minValue, const TMax maxValue)
 {
-	pVariable->SetLimits(static_cast<float>(minValue), static_cast<float>(maxValue));
+	pVariable->SetLimitsG((mpfloat)minValue, (mpfloat)maxValue);
 }
 }
 
@@ -103,6 +103,7 @@ CVariableOArchive::CVariableOArchive()
 	m_structHandlers[TypeID::get < Serialization::RangeDecorator < int >> ().name()] = &CVariableOArchive::SerializeRangeInt;
 	m_structHandlers[TypeID::get < Serialization::RangeDecorator < unsigned int >> ().name()] = &CVariableOArchive::SerializeRangeUInt;
 	m_structHandlers[TypeID::get < StringListStaticValue > ().name()] = &CVariableOArchive::SerializeStringListStaticValue;
+	// PERSONAL VERIFY: Add mpfloat/ctimevalue here?
 }
 
 CVariableOArchive::~CVariableOArchive()
@@ -472,21 +473,23 @@ bool CVariableOArchive::SerializeIResourceSelector(const Serialization::SStruct&
 	return false;
 }
 
-template<class T>
-static void SetLimits(IVariable* pVariable, const Serialization::RangeDecorator<T>* pRange, float stepValue)
+template<class T, class R>
+static void SetLimits(IVariable* pVariableIn, const Serialization::RangeDecorator<R>* pRange, const T& stepValue)
 {
-	if (pRange->hardMin != std::numeric_limits<T>::lowest() || pRange->hardMax != std::numeric_limits<T>::max())
+	CVariable<T>* pVariable = static_cast<CVariable<T>*>(pVariableIn);
+	
+	if (pRange->hardMin != std::numeric_limits<R>::lowest() || pRange->hardMax != std::numeric_limits<R>::max())
 	{
-		float minimal = (float)pRange->hardMin;
-		float maximal = (float)pRange->hardMax;
+		T minimal = (T)pRange->hardMin;
+		T maximal = (T)pRange->hardMax;
 		bool hardMin = false;
 		bool hardMax = false;
-		if (pRange->hardMin != std::numeric_limits<T>::lowest())
+		if (pRange->hardMin != std::numeric_limits<R>::lowest())
 		{
 			minimal = pRange->hardMin;
 			hardMin = true;
 		}
-		if (pRange->hardMax != std::numeric_limits<T>::max())
+		if (pRange->hardMax != std::numeric_limits<R>::max())
 		{
 			maximal = pRange->hardMax;
 			hardMax = true;
@@ -495,9 +498,9 @@ static void SetLimits(IVariable* pVariable, const Serialization::RangeDecorator<
 	}
 	else
 	{
-		float minimal = 0.0f;
-		float maximal = 0.0f;
-		float oldStep = 0.0f;
+		T minimal;
+		T maximal;
+		T oldStep;
 		bool hardMin = false;
 		bool hardMax = false;
 		pVariable->GetLimits(minimal, maximal, oldStep, hardMin, hardMax);
@@ -520,7 +523,7 @@ bool CVariableOArchive::SerializeRangeInt(const Serialization::SStruct& ser, con
 	const Serialization::RangeDecorator<int>* const pRange = reinterpret_cast<Serialization::RangeDecorator<int>*>(ser.pointer());
 
 	_smart_ptr<IVariable> pVariable = VarUtil::AddChildVariable<int>(m_pVariable, *pRange->value, name, label);
-	SetLimits(pVariable.get(), pRange, 1.0f);
+	SetLimits(pVariable.get(), pRange, 1);
 	return true;
 }
 
@@ -529,7 +532,7 @@ bool CVariableOArchive::SerializeRangeUInt(const Serialization::SStruct& ser, co
 	const Serialization::RangeDecorator<unsigned int>* const pRange = reinterpret_cast<Serialization::RangeDecorator<unsigned int>*>(ser.pointer());
 
 	_smart_ptr<IVariable> pVariable = VarUtil::AddChildVariable<int>(m_pVariable, *pRange->value, name, label);
-	SetLimits(pVariable, pRange, 1.0f);
+	SetLimits(pVariable, pRange, 1);
 	return true;
 }
 

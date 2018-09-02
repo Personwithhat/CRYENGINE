@@ -2095,7 +2095,7 @@ void CEntityObject::GetScriptProperties(XmlNodeRef xmlEntityNode)
 			{
 				if (IVariable* pSnowFlakeCount = FindVariableInSubBlock(m_pLuaProperties, pSubBlockSnowFall, "nSnowFlakeCount"))
 				{
-					pSnowFlakeCount->SetLimits(0, 10000, 0, true, true);
+					pSnowFlakeCount->SetLimitsG(0, 10000, 0, true, true);
 				}
 			}
 
