@@ -172,7 +172,7 @@ void CSliderCtrlEx::EnableUndo(const CString& undoText)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSliderCtrlEx::SetRange(const mpfloat& min, const mpfloat&  max, const mpfloat&  step)
+void CSliderCtrlEx::SetRangeInternal(const mpfloat& min, const mpfloat& max, const mpfloat& step)
 {
 	if (m_bLocked)
 		return;

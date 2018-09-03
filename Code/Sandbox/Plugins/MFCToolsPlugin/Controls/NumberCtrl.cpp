@@ -19,7 +19,9 @@ namespace NumberCtrl_Private
 {
 	inline void FormatForUICString(CString& outstr, int significantDigits, const mpfloat& value)
 	{
-		outstr = value.str(significantDigits).GetString(); // PERSONAL TODO: Might be wrong, doesn't str(digits) currently start counting with any digits, not 'after decimal place' ????
+		outstr = value.str(significantDigits).GetString(); // PERSONAL VERIFY: Previwer, bottom right 'Time' thing is this. What is it???
+																			// ALSO: 'Fixed' reads poorly in UI sometimes, e.g. 0.0000000 vs 0
+																			// Need another flag that would get X digits after point, but not add padding!
 	}
 }
 

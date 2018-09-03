@@ -69,7 +69,8 @@ namespace boost { namespace multiprecision {
 /* 
 	PERSONAL TODO: 
 		3) std::string should be changed to CryString. 
-			Review any string=>mpfloat and mpfloat=>string usage, etc,
+			Review any string=>mpfloat and mpfloat=>string usage, etc. (string->mpfloat would be hard to trace down!)
+			Grep .str() usage and fix anything that doesn't make sense.
 		4) Cleanup canonical values etc.
 		5) Improve readability + macro's, convert inline to ILINE etc.
 		6) Review nTime * mpfloat etc. operations, might be good to do mpfloat operator*(nTime, mpfloat){} etc.
@@ -260,7 +261,37 @@ public: // Other re-implimented number<> functions
 	// Misc. funcs
 	inline bool is_zero() const { using default_ops::eval_is_zero; return eval_is_zero(m_backend); }
 	inline int sign()	    const { using default_ops::eval_get_sign; return eval_get_sign(m_backend); }
-	string str(std::streamsize digits = 0, std::ios_base::fmtflags f = std::ios_base::fmtflags(0)) const { return string(m_backend.str(digits, f).c_str()); }
+	string str(std::streamsize digits = 0, std::ios_base::fmtflags f = std::ios_base::fmtflags(0)) const {
+		if(digits != 0 && f == 0){ f = std::ios_base::fixed; }		// Default to 'digits after decimal point' not 'total number of digits'!
+		return string(m_backend.str(digits, f).c_str()); 
+	}
+	/* STR conversion test
+
+	mpfloat tmp("654321.12345678901234567890123456789");
+
+	CryLog("TESTING STR: %s", tmp.str());
+	CryLog("TESTING STR: %s", tmp.str(8));
+	CryLog("TESTING STR: %s", tmp.str(3));
+
+	CryLog("TESTING STR: %s", tmp.str(0, std::ios_base::showpos));
+	CryLog("TESTING STR: %s", tmp.str(0, std::ios_base::showpoint));
+	CryLog("TESTING STR: %s", tmp.str(0, std::ios_base::fixed));
+
+	CryLog("TESTING STR: %s", tmp.str(3, std::ios_base::showpos));
+	CryLog("TESTING STR: %s", tmp.str(3, std::ios_base::showpoint));
+	CryLog("TESTING STR: %s", tmp.str(3, std::ios_base::fixed));			<--- Currently using this mode if accuracy !=0!
+
+	// RESULTS
+		<06:32 : 34> TESTING STR : 654321.12345678901234567890123456789
+		<06 : 32 : 34> TESTING STR : 654321.12
+		<06 : 32 : 34> TESTING STR : 6.54e+05
+		<06 : 32 : 34> TESTING STR : +654321.12345678901234567890123456789
+		<06 : 32 : 34> TESTING STR : 654321.12345678901234567890123456789
+		<06 : 32 : 34> TESTING STR : 654321.0000000000000000
+		<06 : 32 : 34> TESTING STR : +6.54e+05
+		<06 : 32 : 34> TESTING STR : 6.54e+05
+		<06 : 32 : 34> TESTING STR : 654321.123
+	*/
 
 	// Backend()
 	ILINE Backend& backend() noexcept							  { return m_backend; }

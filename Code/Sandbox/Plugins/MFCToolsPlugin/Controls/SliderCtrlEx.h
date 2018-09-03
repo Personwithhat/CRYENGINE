@@ -19,7 +19,7 @@ public:
 	virtual void    EnableUndo(const CString& undoText);
 	virtual void    SetUpdateCallback(const UpdateCallback& cb) { m_updateCallback = cb; };
 
-	virtual void    SetRange(const mpfloat& min, const mpfloat& max, const mpfloat& step = 0);
+	virtual void    SetRangeInternal(const mpfloat& min, const mpfloat& max, const mpfloat& step = 0);
 	virtual void    SetValue(const mpfloat& val);
 	virtual const mpfloat& GetValue() const;
 	virtual CString GetValueAsString() const;

@@ -1001,7 +1001,7 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 	case ePropertyInt:
 	case ePropertyAngle:
 	case ePropertyMP:
-	case ePropertyTime: 	// PERSONAL TODO: Get Time/MP working here as expected-ish!.....
+	case ePropertyTime:
 		{
 			if (m_pEnumDBItem)
 			{
@@ -1052,7 +1052,7 @@ void CPropertyItem::CreateInPlaceControl(CWnd* pWndParent, CRect& ctrlRect)
 					m_cFillSlider->EnableUndo(m_name + " Modified");
 					m_cFillSlider->Create(WS_VISIBLE | WS_CHILD, nullRc, pWndParent, 2);
 					m_cFillSlider->SetUpdateCallback(functor(*this, &CPropertyItem::OnFillSliderCtrlUpdate));
-					m_cFillSlider->SetRange(m_rangeMin / m_valueMultiplier, m_rangeMax / m_valueMultiplier, m_step / m_valueMultiplier);
+					m_cFillSlider->SetRangeInternal(m_rangeMin / m_valueMultiplier, m_rangeMax / m_valueMultiplier, m_step / m_valueMultiplier);
 				}
 			}
 		}
@@ -1401,7 +1401,7 @@ void CPropertyItem::CreateControls(CWnd* pWndParent, CRect& textRect, CRect& ctr
 				m_cFillSlider->EnableUndo(m_name + " Modified");
 				m_cFillSlider->Create(WS_VISIBLE | WS_CHILD, nullRc, pWndParent, 2);
 				m_cFillSlider->SetUpdateCallback(functor(*this, &CPropertyItem::OnFillSliderCtrlUpdate));
-				m_cFillSlider->SetRange(m_rangeMin / m_valueMultiplier, m_rangeMax / m_valueMultiplier, m_step / m_valueMultiplier);
+				m_cFillSlider->SetRangeInternal(m_rangeMin / m_valueMultiplier, m_rangeMax / m_valueMultiplier, m_step / m_valueMultiplier);
 				RegisterCtrl(m_cFillSlider);
 			}
 		}
