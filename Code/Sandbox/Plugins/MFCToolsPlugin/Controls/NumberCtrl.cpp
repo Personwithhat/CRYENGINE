@@ -19,7 +19,7 @@ namespace NumberCtrl_Private
 {
 	inline void FormatForUICString(CString& outstr, int significantDigits, const mpfloat& value)
 	{
-		outstr = value.str(significantDigits).GetString(); // PERSONAL VERIFY: Previwer, bottom right 'Time' thing is this. What is it???
+		outstr = value.str(significantDigits).GetString(); // PERSONAL VERIFY: Previewer, bottom right 'Time' thing is this. What is it???
 																			// ALSO: 'Fixed' reads poorly in UI sometimes, e.g. 0.0000000 vs 0
 																			// Need another flag that would get X digits after point, but not add padding!
 																			// PLUS: When first loading these properties, it does not use significant digits!! Clicking on it -> formats and makes it significant......
@@ -36,7 +36,7 @@ CNumberCtrl::CNumberCtrl()
 	m_btnWidth = 10;
 	m_draggin = false;
 	m_value = 0;
-	m_min = -mpfloat::Min();
+	m_min = mpfloat::Min(); // PERSONAL VERIFY: Gotta go all over ze engine and fine Min() & Max() setups and compare. This one was a typo here!
 	m_max = mpfloat::Max();
 	m_step = "0.01";
 	m_enabled = true;
