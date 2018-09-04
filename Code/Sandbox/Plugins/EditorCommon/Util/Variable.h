@@ -410,8 +410,6 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// Set methods.
 	//////////////////////////////////////////////////////////////////////////
-	// PERSONAL VERIFY: The below GET() and SET() int/bool, don't bloody make sense...WHY USE THESE?
-	// Why does MannequinBase etc. use CVariableBase to call Get()/Set() ????????????????
 	void Set(int value)                       { assert(0); }
 	void Set(bool value)                      { assert(0); }
 
@@ -817,19 +815,6 @@ protected:
 namespace var_type
 {
 //////////////////////////////////////////////////////////////////////////
-template <int T> struct BaseType					 { typedef void type;		};
-template<> struct BaseType<IVariable::INT> 	 { typedef int type;			};
-template<> struct BaseType<IVariable::BOOL>	 { typedef bool type;		};
-template<> struct BaseType<IVariable::FLOAT>	 { typedef float type;		};
-template<> struct BaseType<IVariable::VECTOR2>{ typedef Vec2 type;		};
-template<> struct BaseType<IVariable::VECTOR> { typedef Vec3 type;		};
-template<> struct BaseType<IVariable::VECTOR4>{ typedef Vec4 type;		};
-template<> struct BaseType<IVariable::QUAT>	 { typedef Quat type;		};
-template<> struct BaseType<IVariable::STRING> { typedef string type;		};	// PERSONAL VERIFY: Debatable if CString or String.......ugh :\ 
-template<> struct BaseType<IVariable::MP>		 { typedef mpfloat type;	};
-template<> struct BaseType<IVariable::TV>		 { typedef CTimeValue type;};
-
-//////////////////////////////////////////////////////////////////////////
 template<int TypeID, bool IsStandart, bool IsInteger, bool IsSigned>
 struct type_traits_base
 {
@@ -954,7 +939,7 @@ struct type_convertor
 		value.SetIdentity();
 		sscanf((const char*)from, "%f,%f,%f,%f", &value.w, &value.v.x, &value.v.y, &value.v.z);
 	};
-	void operator()(const string& from, CTimeValue& to) const { to.SetSeconds(mpfloat(from.c_str())); }		// PERSONAL TODO: When mpfloat 'string' stuff updated fix stuff like this.
+	void operator()(const string& from, CTimeValue& to) const { to.SetSeconds(mpfloat(from.c_str())); }		// PERSONAL VERIFY: When mpfloat 'string' stuff updated fix stuff like this.
 	void operator()(const string& from, mpfloat& to)	 const { to = from.c_str(); }
 };
 
@@ -1051,14 +1036,9 @@ class CVariable : public CVariableBase
 	typedef CVariable<B> Self;
 public:
 
-	/*
-		PERSONAL TODO: I regret all the edits in this file X_X
-		There's Gotta'be a better way :\
+	// PERSONAL TODO: Vectors: Vec2/3/4 + fix the commented-out vector limit sets done earlier....
 
-		Plus need to get this to allow rTime/nTime/etc.!! Along with any other 'mpfloat only' systems -.-
-	*/
-
-	// Supported types that can deal with 'limits' PERSONAL TODO: Vectors and what not!!!
+	// Supported types that can deal with 'limits'
 	template <class U>
 	struct hasLimits
 		: public boost::mpl::bool_<
@@ -1215,7 +1195,7 @@ public:
 		T min, max, step;
 		GetLimits(min, max, step, bHardMin, bHardMax);
 
-		vMin = min.GetSeconds();	// PERSONAL VERIFY: Questionable choiceof setup for CTimeValue compatibility!
+		vMin = min.GetSeconds();
 		vMax = max.GetSeconds();
 		vStep = step.GetSeconds();
 	}

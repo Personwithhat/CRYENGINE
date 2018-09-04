@@ -125,7 +125,7 @@ public:
 		hardLimit_.min = std::numeric_limits<Type>::min();
 		hardLimit_.max = std::numeric_limits<Type>::max();
 		softLimit_ = hardLimit_;
-		singleStep_ = yasli::DefaultSinglestep<Type>::value();
+		singleStep_ = yasli::DefaultSinglestep<Type>();
 	}
 
 	void setValue(Type value, const void* handle, const yasli::TypeID& type) {
@@ -156,7 +156,7 @@ public:
 		hardLimit_.max = range->hardMax;
 		softLimit_.min = range->softMin;
 		softLimit_.max = range->softMax;
-		singleStep_ = convTo(range->singleStep);
+		singleStep_ = range->singleStep;
 	}
 
   bool assignTo(const yasli::Serializer& ser) const override 
@@ -268,8 +268,16 @@ public: // Incrementation
 	}
 
 public: // More incrementation
-	void add(PropertyTree* tree) override { addValue(tree, convType(singleStep_));  }
-	void sub(PropertyTree* tree) override { addValue(tree, convType(-singleStep_)); }
+	void add(PropertyTree* tree) override { addValue(tree, singleStep_);  }
+	void sub(PropertyTree* tree) override { subValue(tree, singleStep_); }
+
+	// PERSONAL NOTE: Has to be separate, can't pass in negative value since property might be Unsigned e.g. u64!
+	void subValue(PropertyTree* tree, const Type& value)
+	{
+		tree->model()->rowAboutToBeChanged(this);
+		value_ = CLAMP(value_ - value, hardLimit_.min, hardLimit_.max);
+		tree->model()->rowChanged(this, true);
+	}
 	void addValue(PropertyTree* tree, const Type& value)
 	{
 		tree->model()->rowAboutToBeChanged(this);
@@ -297,6 +305,6 @@ protected:
 	SLimits hardLimit_; 	// Enforced limit that the property can absolutely not exceed
 	SLimits softLimit_; 	// Soft limit enforced by UI sliders etc, should be lower than the hard limit
 
-	mpfloat singleStep_;	// Increment/de-increment step
+	Type singleStep_;	// Increment/de-increment step
 };
 

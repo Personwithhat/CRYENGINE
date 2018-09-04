@@ -1617,7 +1617,7 @@ void CharacterDocument::PreRender(const SRenderContext& context)
 				dir->SetState(enabled);
 				if (enabled)
 				{
-					dir->SetPolarCoordinatesSmoothTime(aimParameters.smoothTime.GetSeconds().conv<nTime>());
+					dir->SetPolarCoordinatesSmoothTime(aimParameters.smoothTime);
 					dir->SetLayer(layer);
 					if (aimParameters.direction == aimParameters.AIM_CAMERA)
 						dir->SetTarget(context.camera->GetPosition());

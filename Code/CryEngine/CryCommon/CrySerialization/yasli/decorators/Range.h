@@ -8,15 +8,10 @@
 
 namespace yasli
 {
+// PERSONAL VERIFY: Clean up all MPOff's and isMP's! To read neater/etc. (Perhaps remove the former? :\)
+MPOff  ILINE T DefaultSinglestep() { return (T)(std::is_integral<T>::value ? mpfloat(1) : mpfloat("0.1")); }
 
-template<typename Type>
-struct DefaultSinglestep
-{
-	static mpfloat value()
-	{
-		return std::is_integral<Type>::value ? mpfloat(1) : mpfloat("0.1");
-	}
-};
+MPOnly ILINE T DefaultSinglestep() { return T("0.1"); }
 
 template<class T>
 struct RangeDecorator
@@ -24,8 +19,10 @@ struct RangeDecorator
 	T* value;
 	T hardMin;
 	T hardMax;
+
 	// Limit for UI elements such as sliders
 	T softMin;
+
 	// Limit for UI elements such as sliders
 	T softMax;
 	T singleStep;
@@ -34,7 +31,7 @@ struct RangeDecorator
 };
 
 template<class T>
-RangeDecorator<T> Range(T& value, T hardMin, T hardMax, T singleStep = (T)DefaultSinglestep<T>::value())
+RangeDecorator<T> Range(T& value, T hardMin, T hardMax, T singleStep = yasli::DefaultSinglestep<T>())
 {
 	if (value < hardMin)
 	{
@@ -54,7 +51,7 @@ RangeDecorator<T> Range(T& value, T hardMin, T hardMax, T singleStep = (T)Defaul
 }
 
 template<class T>
-RangeDecorator<T> Range(T& value, T hardMin, T hardMax, T softMin, T softMax, T singleStep = (T)DefaultSinglestep<T>::value())
+RangeDecorator<T> Range(T& value, T hardMin, T hardMax, T softMin, T softMax, T singleStep = yasli::DefaultSinglestep<T>())
 {
 	if (value < hardMin)
 	{
@@ -76,7 +73,7 @@ RangeDecorator<T> Range(T& value, T hardMin, T hardMax, T softMin, T softMax, T 
 }
 
 template<class T>
-RangeDecorator<T> MinMaxRange(T& value, T singleStep = (T)yasli::DefaultSinglestep<T>::value())
+RangeDecorator<T> MinMaxRange(T& value, T singleStep = yasli::DefaultSinglestep<T>())
 {
 	return Range(value, std::numeric_limits<T>::lowest(), std::numeric_limits<T>::max(), singleStep);
 }

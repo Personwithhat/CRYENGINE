@@ -37,8 +37,7 @@ struct AimParameters
 	AimDirection direction;
 	float        offsetX;
 	float        offsetY;
-	CTimeValue   smoothTime;		// Normalized time. PERSONAL VERIFY: Yasli range serialization doesn't work on non-mpfloat, e.g. nTime/rTime
-											// Since the 'step' is mpfloat and (T)mpfloat can't work for (rTime)mpfloat on purpose.... >.>
+	nTime        smoothTime;
 	Vec3         targetPosition;
 
 	AimParameters()

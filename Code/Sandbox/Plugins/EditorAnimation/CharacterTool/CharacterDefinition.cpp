@@ -1239,8 +1239,7 @@ void CharacterAttachment::Serialize(Serialization::IArchive& ar)
 				ar(m_vclothParams.hide, "hide", "Hide");
 				ar(m_vclothParams.forceSkinning, "forceSkinning", "Force Skinning");
 				ar.doc("If enabled, simulation is skipped and skinning is always enforced.");
-				//ar(Serialization::Range(m_vclothParams.forceSkinningFpsThreshold, rTime(5), rTime::Max()), "forceSkinningFpsThreshold", "Force Skinning FPS Thresh");
-				ar(m_vclothParams.forceSkinningFpsThreshold, "forceSkinningFpsThreshold", "Force Skinning FPS Thresh");	// PERSONAL VERIFY: Same reason as in AimParameter smoothTime....range won't take rTime. 
+				ar(Serialization::Range(m_vclothParams.forceSkinningFpsThreshold, rTime(5), rTime::Max()), "forceSkinningFpsThreshold", "Force Skinning FPS Thresh");
 				ar.doc("If the framerate drops under the provided FPS, simulation is skipped and skinning is enforced.");
 				ar(Serialization::Range(m_vclothParams.forceSkinningTranslateThreshold, 0.0f, std::numeric_limits<float>::max()), "forceSkinningTranslateThreshold", "Force Skinning Translate Thresh");
 				ar.doc("If the translation exceeds the provided threshold, simulation is skipped and skinning is enforced.");

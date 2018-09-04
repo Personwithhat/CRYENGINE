@@ -457,7 +457,7 @@ FbxNode* CFBXExporter::CreateFBXAnimNode(FbxScene* pScene, FbxAnimLayer* pAnimBa
 			const Export::EntityAnimData* pAnimData = pObj->GetEntityAnimationData(animDataIndex);
 
 			FbxTime time = 0;
-			time.SetSecondDouble(pAnimData->keyTime.BADGetSeconds());	// PERSONAL TODO: All this FBX time!! Maybe something in there will be useful....sigh
+			time.SetSecondDouble(pAnimData->keyTime.BADGetSeconds());	// PERSONAL VERIFY: All this FBX time!! Maybe something in there will be useful.
 
 			FbxAnimCurve* pCurve = NULL;
 
