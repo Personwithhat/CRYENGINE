@@ -8,19 +8,11 @@
 
 #include <QPainter>
 
-
-/*
-	PERSONAL TODO:
-		This whole ruler system is a tad confusing.
-		Need to verify all edits to be sure that this works properly....urgh.
-	
-		This + timeline.h works together.
-*/
 namespace DrawingPrimitives
 {
 enum
 {
-	RULER_MIN_PIXELS_PER_SEC = 3,	// PERSONAL VERIFY: 3 fine or something else?
+	RULER_MIN_PIXELS_PER_SEC = 3,	// PERSONAL VERIFY: 3 fine or something else? Double check how well timeline/ruler works too.
 };
 
 // pScreenRulerRange == Range in PIXELS
@@ -54,15 +46,15 @@ void CalculateTicks(uint size, TRange<CTimeValue> visibleRange, TRange<CTimeValu
 	}
 
 	const CTimeValue scaleStep = pow(rTime(10), ceil(ticksPowerDelta)).conv<mpfloat>();
-	const nTime scaleStepPixels = (scaleStep * pixelsPerUnit);									// PERSONAL TODO: It should be mpfloat here not nTime :\ 
+	const mpfloat scaleStepPixels = (scaleStep * pixelsPerUnit);
 	const int numMarkers = int(totalDuration.GetSeconds() / scaleStep) + 1;
 
 	const CTimeValue startTimeRound = int(startTime / scaleStep) * scaleStep;
 	const int32 startOffsetMod      = int(startTime / scaleStep) % 10;
-	const nTime scaleOffsetPixels   = ((startTime - startTimeRound) * pixelsPerUnit);
+	const mpfloat scaleOffsetPixels   = ((startTime - startTimeRound) * pixelsPerUnit);
 
-	const nTime startX = (rulerRange.start - visibleRange.start) * pixelsPerUnit;
-	const nTime endX   = startX + (numMarkers - 1) * scaleStepPixels - scaleOffsetPixels;
+	const mpfloat startX = (rulerRange.start - visibleRange.start) * pixelsPerUnit;
+	const mpfloat endX   = startX + (numMarkers - 1) * scaleStepPixels - scaleOffsetPixels;
 
 	if (pScreenRulerRange)
 	{
@@ -73,15 +65,15 @@ void CalculateTicks(uint size, TRange<CTimeValue> visibleRange, TRange<CTimeValu
 	const int endLoop   = std::min((int)((size + scaleOffsetPixels - startX) / scaleStepPixels) + 1, numMarkers);
 
 	const int32 innerNumMarkers = innerRange ? int32((innerRange->end - innerRange->start) / scaleStep) : 0;
-	const nTime innerBegX = innerRange ? (innerRange->start - visibleRange.start) * pixelsPerUnit - 1 : startX;
-	const nTime innerEndX = innerRange ? innerBegX + innerNumMarkers * scaleStepPixels + 1 : endX;
+	const mpfloat innerBegX = innerRange ? (innerRange->start - visibleRange.start) * pixelsPerUnit - 1 : startX;
+	const mpfloat innerEndX = innerRange ? innerBegX + innerNumMarkers * scaleStepPixels + 1 : endX;
 
 	for (int i = startLoop; i < endLoop; ++i)
 	{
 		STick tick;
 
-		const nTime xi = startX + i;
-		const nTime x = xi * scaleStepPixels - scaleOffsetPixels;
+		const mpfloat xi = startX + i;
+		const mpfloat x = xi * scaleStepPixels - scaleOffsetPixels;
 		const CTimeValue value = startTimeRound + i * scaleStep;
 
 		tick.m_bTenth = (startOffsetMod + i) % 10 != 0;

@@ -648,7 +648,7 @@ void CSequencerDopeSheetBase::SetTimeRange(const CTimeValue& start, const CTimeV
 void CSequencerDopeSheetBase::SetTimeScale(const rTime& scaleIn, const CTimeValue& fAnchorTime)
 {
 	//m_leftOffset - m_scrollOffset.x + time*m_timeScale
-	nTime fOldOffset = -fAnchorTime * m_timeScale;
+	mpfloat fOldOffset = -fAnchorTime * m_timeScale;
 
 	rTime fOldScale = m_timeScale;
 	rTime timeScale = scaleIn;
@@ -657,7 +657,7 @@ void CSequencerDopeSheetBase::SetTimeScale(const rTime& scaleIn, const CTimeValu
 	if (timeScale > 100000)
 		timeScale = 100000;
 	m_timeScale = timeScale;
-	nTime fPixelsPerTick;
+	mpfloat fPixelsPerTick;
 
 	int steps = 0;
 	if (GetTickDisplayMode() == SEQTICK_INSECONDS)
@@ -703,7 +703,7 @@ void CSequencerDopeSheetBase::SetTimeScale(const rTime& scaleIn, const CTimeValu
 	//float
 	//m_scrollOffset.x*=timeScale/fOldScale;
 
-	nTime fCurrentOffset = -fAnchorTime * m_timeScale;
+	mpfloat fCurrentOffset = -fAnchorTime * m_timeScale;
 	m_scrollOffset.x += (int)(fOldOffset - fCurrentOffset);
 
 	Invalidate();

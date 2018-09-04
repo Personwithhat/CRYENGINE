@@ -101,10 +101,10 @@ struct SPositionAdjuster
 
 			const rTime targetTimeInverse = 1 / m_targetTime;
 
-			const nTime dt = deltaTime * targetTimeInverse;
+			const mpfloat dt = deltaTime * targetTimeInverse;
 
-			const nTime t = newTime * targetTimeInverse;
-			const nTime lastT = m_lastTime * targetTimeInverse;
+			const mpfloat t = newTime * targetTimeInverse;
+			const mpfloat lastT = m_lastTime * targetTimeInverse;
 
 			totalDeltaRot.SetSlerp(Quat(IDENTITY), m_deltaRot, BADF t);
 			lastTotalDeltaRot.SetSlerp(Quat(IDENTITY), m_deltaRot, BADF lastT);

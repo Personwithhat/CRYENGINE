@@ -271,7 +271,7 @@ private:
 	QuatT                                      m_lastCalculateRelativeMovement;
 	nTime                                      m_NormalizedTime;
 	nTime                                      m_NormalizedTimeSmooth;
-	nTime                                      m_NormalizedTimeRate;
+	rTime                                      m_NormalizedTimeRate;
 
 	CCamera                                    m_Camera;
 	AABB                                       m_AABB;

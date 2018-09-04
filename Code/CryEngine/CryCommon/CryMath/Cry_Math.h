@@ -614,7 +614,8 @@ ILINE int32 decm3(int32 i) { return i - 1 + ((i - 1) >> 31 & 3); }
 //! \param[in] timeDelta    time interval
 //! \param[in] to           the target value
 //! \param[in] smoothTime   timescale for smoothing
-template<typename T> ILINE void SmoothCD(
+template<typename T, typename boost::disable_if_c< isMP >::type* = 0> 
+ILINE void SmoothCD(
   T& val,
   T& valRate,
   const CTimeValue& timeDeltaIn,
@@ -642,6 +643,41 @@ template<typename T> ILINE void SmoothCD(
 	else
 	{
 		val = to;
+		valRate -= valRate; // zero it...
+	}
+}
+
+// Smoothing precise values
+template<typename T, typename boost::enable_if_c< isMP >::type* = 0> 
+ILINE void SmoothCD(
+		T& valIn,
+		rTime& valRate,
+		const CTimeValue& timeDelta,
+		const T& toIn,
+		const CTimeValue& smoothTime)
+{
+	const mpfloat val = valIn.conv<mpfloat>();
+	const mpfloat to  = toIn.conv<mpfloat>();
+
+	if (smoothTime > 0)
+	{
+		const rTime omega = 2 / smoothTime;
+		const mpfloat x = omega * timeDelta;
+		const mpfloat exp = 1 / (1 + x + "0.48" * x * x + "0.235" * x * x * x);
+
+		const mpfloat change = (val - to);
+		const mpfloat temp = (valRate + change * omega) * timeDelta;
+		valRate = (valRate - temp * omega) * exp;
+		valIn = (to + (change + temp) * exp).conv<T>();
+	}
+	else if (timeDelta > 0)
+	{
+		valRate = (to - val) / timeDelta;
+		valIn = toIn;
+	}
+	else
+	{
+		valIn = toIn;
 		valRate -= valRate; // zero it...
 	}
 }

@@ -171,7 +171,7 @@ void CPuppet::UpdateHealthTracking()
 	else
 	{
 		const CTimeValue fFrametime = GetAISystem()->GetFrameDeltaTime();
-		m_targetDamageHealthThr = max(0.0f, m_targetDamageHealthThr - BADF((1 / fTargetStayAliveTime) * fFrametime * BADnT(m_Parameters.m_fAccuracy)));
+		m_targetDamageHealthThr = max(0.0f, m_targetDamageHealthThr - BADF((1 / fTargetStayAliveTime) * fFrametime * BADMP(m_Parameters.m_fAccuracy)));
 	}
 
 	if (gAIEnv.CVars.DebugDrawDamageControl > 0)

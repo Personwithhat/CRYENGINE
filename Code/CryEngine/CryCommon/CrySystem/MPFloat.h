@@ -92,6 +92,8 @@ public:
 	T conv() const { return T(backend()); } // PERSONAL TODO: As usual need to go over all conv()'s for validity, improvements, etc.
 
 	// Precision lossy set.
+	// WARNING: A set of a double/float with the value 'INFINITY' will cause a silent death of the engine!
+	// Reproduction: BADMP(INFINITY)
 	template <typename T> rType& lossy(const T& inRhs) { backend() = canonical_value(inRhs); return *this; }
 
 	// PERSONAL VERIFY: Memory usage should probably be tracked for optimizing mpfloat size/etc.

@@ -60,7 +60,7 @@ public:
 
 		while (it != m_paramTargets.end())
 		{
-			nTime currentFraction = min(nTime(1), it->second.currentFraction + (it->second.blendRate * timePassed));
+			nTime currentFraction = min(nTime(1), it->second.currentFraction + (it->second.blendRate * timePassed).conv<nTime>());
 			float newValue = LERP(it->second.startValue, it->second.targetValue, BADF currentFraction);
 
 			m_actionController->SetParam(it->first, newValue);

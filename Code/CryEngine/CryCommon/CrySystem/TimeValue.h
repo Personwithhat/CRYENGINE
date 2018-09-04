@@ -227,9 +227,9 @@ public:
 	friend rTime operator/(const mpfloat& inLhs, const CTimeValue& inRhs)		{ return (inLhs / inRhs.m_lValue).conv<rTime>(); }
 	friend CTimeValue operator*(const mpfloat& inLhs, const CTimeValue& inRhs) { CTimeValue ret; ret.m_lValue = inLhs * inRhs.m_lValue; return ret; }
 
-	// rTime * Time = Time/Time = nTime
-	AcceptOnly(rTime) nTime  operator*(const T& inRhs)  const { mpfloat ret; ret = m_lValue * inRhs.conv<mpfloat>(); return ret.conv<nTime>(); }
-	limit2(rTime, CTimeValue) friend nTime operator*(const T& inLhs, const T2& inRhs) { mpfloat ret; ret = inLhs.conv<mpfloat>() * inRhs.m_lValue; return ret.conv<nTime>(); }
+	// rTime * Time = Time/Time = mpfloat, not ntime. Typically rTime is used for a rate, e.g. frames/second which would translate to 'mpfloat of Frames' rather than 'nTime of Frames'
+	AcceptOnly(rTime) mpfloat operator*(const T& inRhs)  const { mpfloat ret; ret = m_lValue * inRhs.conv<mpfloat>(); return ret; }
+	limit2(rTime, CTimeValue) friend mpfloat operator*(const T& inLhs, const T2& inRhs) { mpfloat ret; ret = inLhs.conv<mpfloat>() * inRhs.m_lValue; return ret; }
 
 	// nTime * Time = Time
 	AcceptOnly(nTime) CTimeValue  operator*(const T& inRhs)  const { CTimeValue ret; ret.m_lValue = m_lValue * inRhs.conv<mpfloat>(); return ret; }
@@ -345,9 +345,18 @@ public:
 	// 1/rTime == CTimeValue() 
 	AcceptOnly(rTime) ILINE CTimeValue operator/(const mpfloat& inLhs, const T& inRhs) { CTimeValue ret; ret = CTimeValue(inLhs / inRhs.conv<mpfloat>()); return ret; }
 
-	// PERSONAL TODO: mpfloat * rT should = rT
+	// PERSONAL TODO:
 	// Actually, mpfloat * any other strong-type should have the other strong-type convert to mpfloat (to avoid weird operators e.g. rTime*rTime), 
 	// do the operation, then convert back. e.g. Mpfloat is a mere ratio/etc. on other values.......
+	// Should also apply to some other types like nTime? Ofc don't allow interchangable implicit conversions for function calls. Just for * and / etc. ??
+
+	// mpfloat * rT == rT  SAME APPLIES FOR nTime
+	AcceptOnly(rTime) ILINE rTime operator*(const mpfloat& inLhs, const T& inRhs) { mpfloat ret; ret = inLhs * inRhs.conv<mpfloat>(); return ret.conv<rTime>(); }
+	AcceptOnly(mpfloat) ILINE rTime operator*(const rTime& inLhs, const T& inRhs) { mpfloat ret; ret = inLhs.conv<mpfloat>() * inRhs; return ret.conv<rTime>(); }
+
+	AcceptOnly(rTime) ILINE rTime operator*(const nTime& inLhs, const T& inRhs) { nTime ret; ret = inLhs * inRhs.conv<nTime>(); return ret.conv<rTime>(); }
+	AcceptOnly(nTime) ILINE rTime operator*(const rTime& inLhs, const T& inRhs) { nTime ret; ret = inLhs.conv<nTime>() * inRhs; return ret.conv<rTime>(); }
+
 	// limit2(nTime, CTimeValue) friend CTimeValue operator*(const T& inLhs, const T2& inRhs) { CTimeValue ret; ret.m_lValue = inLhs.conv<mpfloat>() * inRhs.m_lValue; return ret; }
 
 //**
