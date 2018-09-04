@@ -123,7 +123,7 @@ public:
 		m_pVarBlock->AddVariable(mv_attachment, "Attachment/Bone");
 		m_pVarBlock->AddVariable(mv_posOffset, "Position Offset");
 		m_pVarBlock->AddVariable(mv_rotOffset, "Rotation Angle");
-		//mv_rotOffset->SetLimits(-360, 360); PERSONAL VERIFY: More ugh with Vec3's. At least this 'limit' makes sense?
+		mv_rotOffset->SetLimits(Vec3(-360), Vec3(360));
 
 		mv_attachment = (CString)m_pEffector->GetParamString(EFE_PARAM_BONE_NAME);
 		mv_posOffset = m_pEffector->GetParamVec3(EFE_PARAM_BONE_POS_AXIS);

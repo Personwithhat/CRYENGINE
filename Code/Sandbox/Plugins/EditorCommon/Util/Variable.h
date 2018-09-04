@@ -1034,48 +1034,43 @@ template<class B>
 class CVariable : public CVariableBase
 {
 	typedef CVariable<B> Self;
-public:
 
-	// PERSONAL TODO: Vectors: Vec2/3/4 + fix the commented-out vector limit sets done earlier....
-
-	// Supported types that can deal with 'limits'
+	// Is a vector-type
 	template <class U>
-	struct hasLimits
+	struct isVecType
+		: public boost::mpl::bool_<
+		boost::is_same<U, Vec2>::value ||
+		boost::is_same<U, Vec3>::value || 
+		boost::is_same<U, Vec4>::value
+	> {};
+	#define isVec isVecType<T>::value
+
+	// Supported types that have acceptable 'limits'. Ofc doesn't work with bool/string/etc. cvars.
+	template <class U>
+	struct hasLimitsT
 		: public boost::mpl::bool_<
 		boost::is_same<U, int>::value ||
 		boost::is_same<U, float>::value || 
 		boost::is_same<U, mpfloat>::value || 
-		boost::is_same<U, CTimeValue>::value
+		boost::is_same<U, CTimeValue>::value || 
+		isVecType<U>::value
 	>{};
+	#define hasLimits hasLimitsT<T>::value
 
-	// Constructor.
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value >::type* = 0>
-	ILINE CVariable()
+public:
+	// Constructor
+	CVariable()
 	{
 		// Initialize value to zero or empty string.
 		var_type::init(m_valueDef);
-		SetLimits(0, 100, 0, false, false);
-	}
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value >::type* = 0>
-	ILINE  explicit CVariable(const B& set)
-	{
-		var_type::init(m_valueDef);   // Update F32NAN values in Debud mode
-		SetValue(set);
-		SetLimits(0, 100, 0, false, false);
+		if(hasLimitsT<B>::value){ SetLimitsG(0, 100, 0, false, false); }
 	}
 
-	// Constructor.
-	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
-	ILINE CVariable()
-	{
-		// Initialize value to zero or empty string.
-		var_type::init(m_valueDef);
-	}
-	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
-	ILINE explicit CVariable(const B& set)
+	explicit CVariable(const B& set)
 	{
 		var_type::init(m_valueDef);   // Update F32NAN values in Debud mode
 		SetValue(set);
+		if (hasLimitsT<B>::value) { SetLimitsG(0, 100, 0, false, false); }
 	}
 
 	//! Get name of parameter.
@@ -1129,20 +1124,30 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// Limits.
 	//////////////////////////////////////////////////////////////////////////
-	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
+	template <class T = B, typename boost::disable_if_c<hasLimits>::type* = 0>
 	void SetLimits(const B& vMin, const B& vMax, const B& vStep = 0, bool bHardMin = true, bool bHardMax = true) { assert(false && "This type is has no limits."); }
-	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
+	template <class T = B, typename boost::disable_if_c<hasLimits>::type* = 0>
 	void GetLimits(B& vMin, B& vMax, B& vStep, bool& bHardMin, bool& bHardMax)										 const { assert(false && "This type is has no limits."); }
-	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
+	template <class T = B, typename boost::disable_if_c<hasLimits>::type* = 0>
 	void SetLimitsG_IMP(const mpfloat& vMin, const mpfloat& vMax, const mpfloat& vStep, bool bHardMin = true, bool bHardMax = true) { assert(false && "This type is has no limits."); }
-	template <class T = B, typename boost::disable_if_c< hasLimits<T>::value >::type* = 0>
+	template <class T = B, typename boost::disable_if_c<hasLimits>::type* = 0>
 	void GetLimitsG_IMP(mpfloat& vMin, mpfloat& vMax, mpfloat& vStep, bool& bHardMin, bool& bHardMax)								  const { assert(false && "This type is has no limits."); }
 
 
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value >::type* = 0>
+	template <class T = B, typename boost::enable_if_c< hasLimits && !isVec >::type* = 0>
 	void SetLimits(const B& vMin, const B& vMax, const B& vStep = 0, bool bHardMin = true, bool bHardMax = true)
 	{
 		CRY_ASSERT_MESSAGE(vMin <= vMax, "Maximum value has to be bigger than minimum value!");
+		m_valueMin = vMin;
+		m_valueMax = vMax;
+		m_valueStep = vStep;
+		m_bHardMin = bHardMin;
+		m_bHardMax = bHardMax;
+	}
+	template <class T = B, typename boost::enable_if_c<isVec>::type* = 0>
+	void SetLimits(const B& vMin, const B& vMax, const B& vStep = B(0), bool bHardMin = true, bool bHardMax = true) // PERSONAL VERIFY: Vec2 etc. can take Vec3/Vec4 as input and auto-convert. Allow? Use/ignore?
+	{
+		// CRY_ASSERT_MESSAGE(vMin <= vMax, "Maximum value has to be bigger than minimum value!"); PERSONAL TODO: CryTek's gotta have a way to compare vec's neatly value-by-value....
 		m_valueMin = vMin;
 		m_valueMax = vMax;
 		m_valueStep = vStep;
@@ -1157,7 +1162,7 @@ public:
 		bool b;
 		GetLimits(vMin, vMax, f, b, b);
 	}
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value >::type* = 0>
+	template <class T = B, typename boost::enable_if_c<hasLimits>::type* = 0>
 	void GetLimits(B& vMin, B& vMax, B& vStep, bool& bHardMin, bool& bHardMax) const 
 	{
 		vMin = m_valueMin;
@@ -1167,21 +1172,31 @@ public:
 		bHardMax = m_bHardMax;
 	}
 
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value >::type* = 0>
+	template <class T = B, typename boost::enable_if_c< hasLimits && !isVec >::type* = 0>
 	void ClearLimits()
 	{
 		SetLimits(std::numeric_limits<B>::min(), std::numeric_limits<B>::max(), 0, false, false);
+	}
+	template <class T = B, typename boost::enable_if_c<isVec>::type* = 0>
+	void ClearLimits()
+	{
+		SetLimits(B(std::numeric_limits<f32>::min()), B(std::numeric_limits<f32>::max()), 0, false, false);
 	}
 
 	// Generic get/set with intermediary mpfloat.....
 	void SetLimitsG(const mpfloat& vMin, const mpfloat& vMax, const mpfloat& vStep = 0, bool bHardMin = true, bool bHardMax = true) override { SetLimitsG_IMP(vMin, vMax, vStep, bHardMin, bHardMax); }
 	void GetLimitsG(mpfloat& vMin, mpfloat& vMax, mpfloat& vStep, bool& bHardMin, bool& bHardMax) const override { GetLimitsG_IMP(vMin, vMax, vStep, bHardMin, bHardMax); }
 
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value >::type* = 0>
+	template <class T = B, typename boost::enable_if_c< hasLimits && !isVec >::type* = 0>
 	void SetLimitsG_IMP(const mpfloat& vMin, const mpfloat& vMax, const mpfloat& vStep, bool bHardMin = true, bool bHardMax = true){
 		SetLimits((T)vMin, (T)vMax, (T)vStep, bHardMin, bHardMax);
 	}
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value && !isTV>::type* = 0>
+	template <class T = B, typename boost::enable_if_c<isVec>::type* = 0>
+	void SetLimitsG_IMP(const mpfloat& vMin, const mpfloat& vMax, const mpfloat& vStep, bool bHardMin = true, bool bHardMax = true) {
+		SetLimits(T((f32)vMin), T((f32)vMax), T((f32)vStep), bHardMin, bHardMax);
+	}
+
+	template <class T = B, typename boost::enable_if_c< hasLimits && !(isTV || isVec) >::type* = 0>
 	void GetLimitsG_IMP(mpfloat& vMin, mpfloat& vMax, mpfloat& vStep, bool& bHardMin, bool& bHardMax)	const {
 		T min, max, step;
 		GetLimits(min, max, step, bHardMin, bHardMax);
@@ -1190,7 +1205,7 @@ public:
 		vMax.lossy(max);
 		vStep.lossy(step);
 	}
-	template <class T = B, typename boost::enable_if_c< hasLimits<T>::value && isTV>::type* = 0>
+	template <class T = B, typename boost::enable_if_c<isTV>::type* = 0>
 	void GetLimitsG_IMP(mpfloat& vMin, mpfloat& vMax, mpfloat& vStep, bool& bHardMin, bool& bHardMax)	const {
 		T min, max, step;
 		GetLimits(min, max, step, bHardMin, bHardMax);
@@ -1199,6 +1214,17 @@ public:
 		vMax = max.GetSeconds();
 		vStep = step.GetSeconds();
 	}
+	template <class T = B, typename boost::enable_if_c<isVec>::type* = 0>
+	void GetLimitsG_IMP(mpfloat& vMin, mpfloat& vMax, mpfloat& vStep, bool& bHardMin, bool& bHardMax)	const {
+		T min, max, step;
+		GetLimits(min, max, step, bHardMin, bHardMax);
+
+		vMin.lossy(min.x);		// PERSONAL VERIFY: Maintaining the whole "Same 2-4 values for Vec" setup. Can be improved with some more fixes/rewrites on how vec's are handled.
+		vMax.lossy(max.x);
+		vStep.lossy(step.x);
+	}
+#undef hasLimits
+#undef isVec
 
 	//////////////////////////////////////////////////////////////////////////
 	// Access operators.
