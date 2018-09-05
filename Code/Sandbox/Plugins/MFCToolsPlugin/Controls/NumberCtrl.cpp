@@ -19,11 +19,7 @@ namespace NumberCtrl_Private
 {
 	inline void FormatForUICString(CString& outstr, int significantDigits, const mpfloat& value)
 	{
-		outstr = value.str(significantDigits).GetString(); // PERSONAL VERIFY: Previewer, bottom right 'Time' thing is this. What is it???
-																			// ALSO: 'Fixed' reads poorly in UI sometimes, e.g. 0.0000000 vs 0
-																			// Need another flag that would get X digits after point, but not add padding!
-																			// PLUS: When first loading these properties, it does not use significant digits!! Clicking on it -> formats and makes it significant......
-																			// In current setup that means its "0", click -> becomes "0.0000000"
+		outstr = value.str(significantDigits).GetString();
 	}
 }
 

@@ -250,6 +250,10 @@ namespace PropertyItem_Private
 		FormatFloatForUI(crystr, significantDigits, value);
 		outstr = crystr.GetString();
 	}
+	inline void FormatMPForUICString(CString& outstr, int significantDigits, const mpfloat& value)
+	{
+		outstr = value.str(significantDigits).GetString();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2438,42 +2442,56 @@ void CPropertyItem::VarToValue()
 {
 	assert(m_pVariable != 0);
 
-	if (m_type == ePropertyColor)
-	{
-		if (m_pVariable->GetType() == IVariable::VECTOR)
-		{
-			Vec3 v(0, 0, 0);
-			m_pVariable->Get(v);
-			COLORREF col = CMFCUtils::ColorLinearToGamma(ColorF(v.x, v.y, v.z));
-			m_value.Format("%d,%d,%d", GetRValue(col), GetGValue(col), GetBValue(col));
-		}
-		else
-		{
-			int col(0);
-			m_pVariable->Get(col);
-			m_value.Format("%d,%d,%d", GetRValue((uint32)col), GetGValue((uint32)col), GetBValue((uint32)col));
-		}
-		return;
-	}
+	switch (m_type) {
+		case ePropertyColor:
+			{
+				if (m_pVariable->GetType() == IVariable::VECTOR)
+				{
+					Vec3 v(0, 0, 0);
+					m_pVariable->Get(v);
+					COLORREF col = CMFCUtils::ColorLinearToGamma(ColorF(v.x, v.y, v.z));
+					m_value.Format("%d,%d,%d", GetRValue(col), GetGValue(col), GetBValue(col));
+				}
+				else
+				{
+					int col(0);
+					m_pVariable->Get(col);
+					m_value.Format("%d,%d,%d", GetRValue((uint32)col), GetGValue((uint32)col), GetBValue((uint32)col));
+				}
+			}
+			break;
+		case ePropertyFloat: {
+				float value;
+				m_pVariable->Get(value);
+				PropertyItem_Private::FormatFloatForUICString(m_value, FLOAT_NUM_DIGITS, value); // PERSONAL VERIFY: Float formatting should match CNumberCtrl!
+			}
+			break;
+		case ePropertyTime:{
+				CTimeValue value;
+				m_pVariable->Get(value);
+				PropertyItem_Private::FormatMPForUICString(m_value, FLOAT_NUM_DIGITS, value.GetSeconds());
+			}
+			break;
+		case ePropertyMP: {
+				mpfloat value;
+				m_pVariable->Get(value);
+				PropertyItem_Private::FormatMPForUICString(m_value, FLOAT_NUM_DIGITS, value);
+			}
+			break;
+		case ePropertySOHelper:
+		case ePropertySONavHelper:
+		case ePropertySOAnimHelper: {
+				m_value = m_pVariable->GetDisplayValue();
 
-	if (m_type == ePropertyFloat)
-	{
-		float value;
-		m_pVariable->Get(value);
-
-		PropertyItem_Private::FormatFloatForUICString(m_value, FLOAT_NUM_DIGITS, value);
-	}
-	else
-	{
-		m_value = m_pVariable->GetDisplayValue();
-	}
-
-	if (m_type == ePropertySOHelper || m_type == ePropertySONavHelper || m_type == ePropertySOAnimHelper)
-	{
-		// hide smart object class part
-		int f = m_value.Find(':');
-		if (f >= 0)
-			m_value.Delete(0, f + 1);
+				// Hide smart object class part
+				int f = m_value.Find(':');
+				if (f >= 0)
+					m_value.Delete(0, f + 1);
+			}
+			break;
+		default:
+			m_value = m_pVariable->GetDisplayValue();
+			break;
 	}
 }
 

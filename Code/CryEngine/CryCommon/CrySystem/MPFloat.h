@@ -55,7 +55,7 @@ namespace boost { namespace multiprecision {\
 using boost::multiprecision::name;
 
 namespace boost{
-	// Does not match special std::string/etc. classes
+	// Does not match special std::string/etc. classes		PERSONAL TODO: Should it match CryString?
 	template <class T>
 	struct is_string
 		: public mpl::bool_<
@@ -75,6 +75,138 @@ namespace boost { namespace multiprecision {
 		5) Improve readability + macro's, convert inline to ILINE etc.
 		6) Review nTime * mpfloat etc. operations, might be good to do mpfloat operator*(nTime, mpfloat){} etc.
 */
+
+// TODO: Move this somewhere else, clean up this file and what not. It's messy up here!
+template <class S>
+void format_MP_string(S& str, boost::intmax_t my_exp, boost::intmax_t digits, std::ios_base::fmtflags f, bool iszero)
+{
+   typedef typename S::size_type size_type;
+   bool scientific = (f & std::ios_base::scientific)  == std::ios_base::scientific;
+	bool skipZero   = (f & std::ios_base::dec)			== std::ios_base::dec;
+   bool fixed      = ((f & std::ios_base::fixed)		== std::ios_base::fixed || skipZero); // SkipZero implies fixed.
+   bool showpoint  = (f & std::ios_base::showpoint)   == std::ios_base::showpoint;
+   bool showpos    = (f & std::ios_base::showpos)     == std::ios_base::showpos;
+
+   bool neg = str.size() && (str[0] == '-');
+
+   if(neg)
+      str.erase(0, 1);
+
+   if(digits == 0)
+   {
+      digits = (std::max)(str.size(), size_type(16));
+   }
+
+   if(iszero || str.empty() || (str.find_first_not_of('0') == S::npos))
+   {
+      // We will be printing zero, even though the value might not
+      // actually be zero (it just may have been rounded to zero).
+      str = "0";
+      if(scientific || fixed)
+      {
+         str.append(1, '.');
+         if(fixed && skipZero){ str.append(1, '0'); } else { str.append(size_type(digits), '0'); }
+         if(scientific)
+            str.append("e+00");
+      }
+      else if(showpoint)
+      {
+         str.append(1, '.');
+         if(digits > 1)
+				str.append(size_type(digits - 1), '0');
+      }
+      if(neg)
+         str.insert(static_cast<string::size_type>(0), 1, '-');
+      else if(showpos)
+         str.insert(static_cast<string::size_type>(0), 1, '+');
+      return;
+   }
+
+   if((!fixed || skipZero) && !scientific && !showpoint)
+   {
+      //
+      // Suppress trailing zeros:
+      //
+		int strLen = str.length();
+		int pos = strLen;
+		while(pos != 0 && str.at(--pos) == '0'){}
+      if(pos != strLen)
+         ++pos;
+      str.erase(pos, strLen);
+      if(str.empty())
+         str = "0";
+   }
+   else if(!fixed || (my_exp >= 0))
+   {
+      //
+      // Pad out the end with zero's if we need to:
+      //
+      boost::intmax_t chars = str.size();
+      chars = digits - chars;
+      if(scientific)
+         ++chars;
+      if(chars > 0)
+      {
+         str.append(static_cast<string::size_type>(chars), '0');
+      }
+   }
+
+   if(fixed || (!scientific && (my_exp >= -4) && (my_exp < digits)))
+   {
+      if(1 + my_exp > static_cast<boost::intmax_t>(str.size()))
+      {
+         // Just pad out the end with zeros:
+         str.append(static_cast<string::size_type>(1 + my_exp - str.size()), '0');
+         if(showpoint || fixed)
+            str.append(".");
+      }
+      else if(my_exp + 1 < static_cast<boost::intmax_t>(str.size()))
+      {
+         if(my_exp < 0)
+         {
+            str.insert(static_cast<string::size_type>(0), static_cast<string::size_type>(-1 - my_exp), '0');
+            str.insert(static_cast<string::size_type>(0), "0.");
+         }
+         else
+         {
+            // Insert the decimal point:
+            str.insert(static_cast<string::size_type>(my_exp + 1), 1, '.');
+         }
+      }
+      else if(showpoint || fixed) // we have exactly the digits we require to left of the point
+         str += ".0";
+
+      if(fixed && !skipZero)
+      {
+         // We may need to add trailing zeros:
+         boost::intmax_t l = str.find('.') + 1;
+         l = digits - (str.size() - l);
+         if(l > 0)
+            str.append(size_type(l), '0');
+      }
+   }
+   else
+   {
+      BOOST_MP_USING_ABS
+      // Scientific format:
+      if(showpoint || (str.size() > 1))
+         str.insert(static_cast<string::size_type>(1u), 1, '.');
+      str.append(static_cast<string::size_type>(1u), 'e');
+		S e = boost::lexical_cast<array<char, 16>>(abs(my_exp)).c_array();
+		if(e.size() < BOOST_MP_MIN_EXPONENT_DIGITS)
+         e.insert(static_cast<string::size_type>(0), BOOST_MP_MIN_EXPONENT_DIGITS - e.size(), '0');
+      if(my_exp < 0)
+         e.insert(static_cast<string::size_type>(0), 1, '-');
+      else
+         e.insert(static_cast<string::size_type>(0), 1, '+');
+      str.append(e);
+   }
+   if(neg)
+      str.insert(static_cast<string::size_type>(0), 1, '-');
+   else if(showpos)
+      str.insert(static_cast<string::size_type>(0), 1, '+');
+}
+
 // Base for any mpfloat values, accepts precise inputs only e.g. int's or stringified floats. No floats/doubles.
 template<class rType>
 class newNum {
@@ -263,37 +395,158 @@ public: // Other re-implimented number<> functions
 	// Misc. funcs
 	inline bool is_zero() const { using default_ops::eval_is_zero; return eval_is_zero(m_backend); }
 	inline int sign()	    const { using default_ops::eval_get_sign; return eval_get_sign(m_backend); }
-	string str(std::streamsize digits = 0, std::ios_base::fmtflags f = std::ios_base::fmtflags(0)) const {
-		if(digits != 0 && f == 0){ f = std::ios_base::fixed; }		// Default to 'digits after decimal point' not 'total number of digits'!
-		return string(m_backend.str(digits, f).c_str()); 
-	}
-	/* STR conversion test
 
-	mpfloat tmp("654321.12345678901234567890123456789");
+	/* STR conversion test: PERSONAL TODO, ofc implement a unit test system for this with mpfloat and what not!
 
-	CryLog("TESTING STR: %s", tmp.str());
-	CryLog("TESTING STR: %s", tmp.str(8));
-	CryLog("TESTING STR: %s", tmp.str(3));
+		// New string function
+		#define TFormat(x,y) tmp.str(x, y)
 
-	CryLog("TESTING STR: %s", tmp.str(0, std::ios_base::showpos));
-	CryLog("TESTING STR: %s", tmp.str(0, std::ios_base::showpoint));
-	CryLog("TESTING STR: %s", tmp.str(0, std::ios_base::fixed));
+		// Classic boost str conversion
+		//#define TFormat(x,y) string(tmp.backend().str(x, y).c_str())
+		mpfloat tmp("000654321.12345600");
+		CryLog("TESTING STR: %s",   TFormat(0,0));
+		CryLog("TESTING STR: %s",   TFormat(8,0));
+		CryLog("TESTING STR: %s\n", TFormat(3,0));
 
-	CryLog("TESTING STR: %s", tmp.str(3, std::ios_base::showpos));
-	CryLog("TESTING STR: %s", tmp.str(3, std::ios_base::showpoint));
-	CryLog("TESTING STR: %s", tmp.str(3, std::ios_base::fixed));			<--- Currently using this mode if accuracy !=0!
+		CryLog("TESTING STR: %s",   TFormat(0, std::ios_base::showpos));
+		CryLog("TESTING STR: %s",   TFormat(0, std::ios_base::showpoint));
+		CryLog("TESTING STR: %s",   TFormat(0, std::ios_base::fixed));
+		CryLog("TESTING STR: %s\n", TFormat(0, std::ios_base::dec));
 
-	// RESULTS
-		<06:32 : 34> TESTING STR : 654321.12345678901234567890123456789
-		<06 : 32 : 34> TESTING STR : 654321.12
-		<06 : 32 : 34> TESTING STR : 6.54e+05
-		<06 : 32 : 34> TESTING STR : +654321.12345678901234567890123456789
-		<06 : 32 : 34> TESTING STR : 654321.12345678901234567890123456789
-		<06 : 32 : 34> TESTING STR : 654321.0000000000000000
-		<06 : 32 : 34> TESTING STR : +6.54e+05
-		<06 : 32 : 34> TESTING STR : 6.54e+05
-		<06 : 32 : 34> TESTING STR : 654321.123
+		CryLog("TESTING STR: %s",   TFormat(3, std::ios_base::showpos));
+		CryLog("TESTING STR: %s",   TFormat(3, std::ios_base::showpoint));
+		CryLog("TESTING STR: %s",   TFormat(3, std::ios_base::fixed));
+		CryLog("TESTING STR: %s\n", TFormat(3, std::ios_base::dec));
+
+		CryLog("TESTING STR: %s",   TFormat(9, std::ios_base::showpos));
+		CryLog("TESTING STR: %s",   TFormat(9, std::ios_base::showpoint));
+		CryLog("TESTING STR: %s",   TFormat(9, std::ios_base::fixed));
+		CryLog("TESTING STR: %s\n", TFormat(9, std::ios_base::dec));
+		#undef TFormat
+
+		// RESULTS
+			<11:14:37> TESTING STR: 654321.123456
+			<11:14:37> TESTING STR: 654321.123456
+			<11:14:37> TESTING STR: 654321.123
+
+			<11:14:37> TESTING STR: +654321.123456
+			<11:14:37> TESTING STR: 654321.1234560000
+			<11:14:37> TESTING STR: 654321.0000000000000000
+			<11:14:37> TESTING STR: 654321.0						<-- Instead of just .
+
+			<11:14:37> TESTING STR: +6.54e+05
+			<11:14:37> TESTING STR: 6.54e+05
+			<11:14:37> TESTING STR: 654321.123
+			<11:14:37> TESTING STR: 654321.123
+
+			<11:14:37> TESTING STR: +654321.123
+			<11:14:37> TESTING STR: 654321.123
+			<11:14:37> TESTING STR: 654321.123456000
+			<11:14:37> TESTING STR: 654321.123456			<-- No leading zeroes! more readable.
 	*/
+
+	// Near-copy of Boosts's implementation. Uses CryTek's string instead of std::string with an extra skipZero flag convenience.
+	string str(std::streamsize digits = 0, std::ios_base::fmtflags f = 0) const 
+	{
+		auto m_data = backend().data();
+		BOOST_ASSERT(m_data[0]._mp_d);
+
+		if (digits != 0 && f == 0) { f = std::ios_base::dec; }		// Default precision is "Digits after decimal point". Don't pad zeroes.
+
+		bool scientific = (f & std::ios_base::scientific) == std::ios_base::scientific;
+		bool skipZero = (f & std::ios_base::dec) == std::ios_base::dec;
+		bool fixed = ((f & std::ios_base::fixed) == std::ios_base::fixed || skipZero); // SkipZero implies fixed.
+		std::streamsize org_digits(digits);
+
+		if (scientific && digits)
+			++digits;
+
+		string result;
+		mp_exp_t e;
+		void *(*alloc_func_ptr) (size_t);
+		void *(*realloc_func_ptr) (void *, size_t, size_t);
+		void(*free_func_ptr) (void *, size_t);
+		mp_get_memory_functions(&alloc_func_ptr, &realloc_func_ptr, &free_func_ptr);
+
+		if (mpf_sgn(m_data) == 0)
+		{
+			e = 0;
+			result = "0";
+			if (fixed && digits)
+				++digits;
+		}
+		else
+		{
+			char* ps = mpf_get_str(0, &e, 10, static_cast<std::size_t>(digits), m_data);
+			--e;  // To match with what our formatter expects.
+			if (fixed && e != -1)
+			{
+				// Oops we actually need a different number of digits to what we asked for:
+				(*free_func_ptr)((void*)ps, std::strlen(ps) + 1);
+				digits += e + 1;
+				if (digits == 0)
+				{
+					// We need to get *all* the digits and then possibly round up,
+					// we end up with either "0" or "1" as the result.
+					ps = mpf_get_str(0, &e, 10, 0, m_data);
+					--e;
+					unsigned offset = *ps == '-' ? 1 : 0;
+					if (ps[offset] > '5')
+					{
+						++e;
+						ps[offset] = '1';
+						ps[offset + 1] = 0;
+					}
+					else if (ps[offset] == '5')
+					{
+						unsigned i = offset + 1;
+						bool round_up = false;
+						while (ps[i] != 0)
+						{
+							if (ps[i] != '0')
+							{
+								round_up = true;
+								break;
+							}
+						}
+						if (round_up)
+						{
+							++e;
+							ps[offset] = '1';
+							ps[offset + 1] = 0;
+						}
+						else
+						{
+							ps[offset] = '0';
+							ps[offset + 1] = 0;
+						}
+					}
+					else
+					{
+						ps[offset] = '0';
+						ps[offset + 1] = 0;
+					}
+				}
+				else if (digits > 0)
+				{
+					ps = mpf_get_str(0, &e, 10, static_cast<std::size_t>(digits), m_data);
+					--e;  // To match with what our formatter expects.
+				}
+				else
+				{
+					ps = mpf_get_str(0, &e, 10, 1, m_data);
+					--e;
+					unsigned offset = *ps == '-' ? 1 : 0;
+					ps[offset] = '0';
+					ps[offset + 1] = 0;
+				}
+			}
+			result = ps;
+			(*free_func_ptr)((void*)ps, std::strlen(ps) + 1);
+		}
+		format_MP_string(result, e, org_digits, f, mpf_sgn(m_data) == 0);
+		return result;
+	}
 
 	// Backend()
 	ILINE Backend& backend() noexcept							  { return m_backend; }
@@ -318,7 +571,7 @@ private:
 		using default_ops::eval_convert_to;
 		eval_convert_to(result, m_backend);
 	}
-	void convert_to_imp(std::string* result)const	// PERSONAL TODO: String stuff is wrong now!
+	void convert_to_imp(string* result) const
 	{
 		*result = this->str();
 	}
