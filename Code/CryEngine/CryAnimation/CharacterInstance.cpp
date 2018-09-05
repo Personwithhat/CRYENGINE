@@ -64,7 +64,6 @@ void CCharInstance::RuntimeInit(CDefaultSkeleton* pExtDefaultSkeleton)
 	{
 		if (arrSkinningRendererData[i].pSkinningData)
 		{
-			// PERSONAL TODO: Close editor after changing some fragment values -> clicking 'Dont save' -> This runs with pSkinningData being invalid trash!!! Maybe bogus bug??
 			if (arrSkinningRendererData[i].pSkinningData->pPreviousSkinningRenderData->pAsyncJobs)
 				gEnv->pJobManager->WaitForJob(*arrSkinningRendererData[i].pSkinningData->pPreviousSkinningRenderData->pAsyncJobs);
 		}

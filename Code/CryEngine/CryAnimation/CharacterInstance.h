@@ -241,6 +241,13 @@ inline int CCharInstance::Release()
 {
 	if (--m_nRefCounter == 0)
 	{
+		// PERSONAL VERIFY: Load mannequin preview -> Exist/Close Sandbox editor -> Invalid pSkinningData, bogus data.
+		// By the time the char-instance is released, at least 1 pointer is now 'bogus data'.
+		// Removing all attachements eventually gets char-instance to be runtimeinit with default skeleton.
+		// Which waits for async jobs on skinning data -> Which crashes cuz said skinning data is invalid. The memset to 0 is a workaround..... Not sure if it breaks anything!
+		// NOT MY BUG -> CRYTEK BUG 
+		memset(arrSkinningRendererData, 0, sizeof(arrSkinningRendererData));
+
 		m_AttachmentManager.RemoveAllAttachments();
 		delete this;
 		return 0;
