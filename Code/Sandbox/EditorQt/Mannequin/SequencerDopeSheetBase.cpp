@@ -3066,9 +3066,17 @@ bool CSequencerDopeSheetBase::PasteKeys(CSequencerNode* pAnimNode, CSequencerTra
 
 		if (nPasteToItem >= 0)
 		{
+			/* PERSONAL VERIFY:
+				1) m_startDragMouseOverItemID may be invalid. E.g. go in, copy-paste from fragment to a new empty sequence track. Would die here but I added a messy-ish check! :\
+				2) How do you copy from a fragment track to other tracks e.g. preview sequence track??? Won't let me copy.
+			*/
 			// If actual valid item cannot be used for dropping, use default item where dragging has been started
 			Item const* itemTemp = &GetItem(nPasteToItem);
-			const Item& item = (!itemTemp || !(itemTemp->node) || !(itemTemp->track)) ? GetItem(m_startDragMouseOverItemID) : *itemTemp;
+			const Item& item = (!itemTemp || !(itemTemp->node) || !(itemTemp->track))
+									? (m_startDragMouseOverItemID < 0)
+										? Item()
+										: GetItem(m_startDragMouseOverItemID)
+									: *itemTemp;
 
 			// If cursor is dragged over something which isn't a valid track
 			if (item.node == NULL || item.track == NULL)

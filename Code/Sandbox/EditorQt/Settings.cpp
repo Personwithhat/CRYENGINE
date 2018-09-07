@@ -26,6 +26,11 @@ static QSettings* s_pCurrentQSettings = 0;
 
 const int EditorSettingsVersion = 1; // bump this up on every substantial settings change
 
+// To get this pre-loaded in this translation unit, for debugger natvis.
+#define MP_FUNCTION(T) template<> std::string IgnoreThis_MPSTUFF(const boost::multiprecision::newNum<T>& in) { return in.debugStr(); };
+	#include "CrySystem/mpfloat.types"
+#undef MP_FUNCTION
+
 //////////////////////////////////////////////////////////////////////////
 SEditorSettings::SEditorSettings()
 {

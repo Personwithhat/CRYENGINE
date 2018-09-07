@@ -12,7 +12,7 @@ namespace DrawingPrimitives
 {
 enum
 {
-	RULER_MIN_PIXELS_PER_SEC = 3,	// PERSONAL VERIFY: 3 fine or something else? Double check how well timeline/ruler works too.
+	RULER_MIN_PIXELS_PER_SEC = 3,
 };
 
 // pScreenRulerRange == Range in PIXELS

@@ -135,6 +135,11 @@ CMTSafeHeap* g_pPakHeap = 0;// = &g_pakHeap;
 //////////////////////////////////////////////////////////////////////////
 #include "Validator.h"
 
+// To get this pre-loaded in this translation unit, for debugger natvis.
+#define MP_FUNCTION(T) template<> std::string IgnoreThis_MPSTUFF(const boost::multiprecision::newNum<T>& in) { return in.debugStr(); };
+	#include "CrySystem/mpfloat.types"
+#undef MP_FUNCTION
+
 #if CRY_PLATFORM_ANDROID
 namespace
 {

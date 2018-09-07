@@ -548,6 +548,9 @@ public: // Other re-implimented number<> functions
 		return result;
 	}
 
+	// For Natvis special visualizer, to see mpfloat value during debug.
+	ILINE std::string debugStr() const { return std::string(str(0, 0)); }
+
 	// Backend()
 	ILINE Backend& backend() noexcept							  { return m_backend; }
 	ILINE constexpr const Backend& backend() const noexcept { return m_backend; }
@@ -730,6 +733,9 @@ private:
 #define MP_FUNCTION(T) decl_mp_type(T)
 	#include "mpfloat.types" // PERSONAL VERIFY: grep this and clean up access paths .-.
 #undef MP_FUNCTION
+
+// Just to get debugStr() accessible in debugger memory regardless of whether it was called in the scope or not!
+template<class T> std::string IgnoreThis_MPSTUFF(const boost::multiprecision::newNum<T>& in) { return in.debugStr(); };
 
 // Any precision-losing casts should be done like this.
 #define BADF       (float)
