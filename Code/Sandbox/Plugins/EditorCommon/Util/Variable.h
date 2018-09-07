@@ -939,7 +939,7 @@ struct type_convertor
 		value.SetIdentity();
 		sscanf((const char*)from, "%f,%f,%f,%f", &value.w, &value.v.x, &value.v.y, &value.v.z);
 	};
-	void operator()(const string& from, CTimeValue& to) const { to.SetSeconds(mpfloat(from.c_str())); }		// PERSONAL VERIFY: When mpfloat 'string' stuff updated fix stuff like this.
+	void operator()(const string& from, CTimeValue& to) const { to.SetSeconds(mpfloat(from.c_str())); }		// PERSONAL TODO: When mpfloat 'string' stuff updated fix stuff like this.
 	void operator()(const string& from, mpfloat& to)	 const { to = from.c_str(); }
 };
 

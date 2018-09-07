@@ -103,7 +103,7 @@ CVariableOArchive::CVariableOArchive()
 	m_structHandlers[TypeID::get < Serialization::RangeDecorator < int >> ().name()] = &CVariableOArchive::SerializeRangeInt;
 	m_structHandlers[TypeID::get < Serialization::RangeDecorator < unsigned int >> ().name()] = &CVariableOArchive::SerializeRangeUInt;
 	m_structHandlers[TypeID::get < StringListStaticValue > ().name()] = &CVariableOArchive::SerializeStringListStaticValue;
-	// PERSONAL VERIFY: Add mpfloat/ctimevalue here?
+	// PERSONAL TODO: Add mpfloat/ctimevalue here?
 }
 
 CVariableOArchive::~CVariableOArchive()

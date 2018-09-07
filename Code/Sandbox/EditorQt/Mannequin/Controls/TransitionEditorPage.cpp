@@ -1338,7 +1338,7 @@ void CTransitionEditorPage::OnUpdateTV(bool forceUpdate)
 							updated = true;
 							if (key.tranFlags & SFragmentBlend::Cyclic)
 							{
-								// PERSONAL VERIFY: Messy assumption that select time/etc. is 'normalized' if it's cyclic. Ends up with messy storage......ugh
+								// PERSONAL TODO: Messy assumption that select time/etc. is 'normalized' if it's cyclic. Ends up with messy storage......ugh
 								//clipSelectTime = (fragKey.tranSelectTime - fragKey.tranLastClipEffectiveStart) / fragKey.tranLastClipDuration;
 								blendCopy.selectTime = CTimeValue(((key.m_time - key.prevClipStart) / key.prevClipDuration).conv<mpfloat>());
 								CryLogAlways("Pre-clip select time: %f", blendCopy.selectTime);

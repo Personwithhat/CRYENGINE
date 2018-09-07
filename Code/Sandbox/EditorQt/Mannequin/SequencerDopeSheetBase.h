@@ -371,7 +371,7 @@ protected:
 	TRange<CTimeValue> m_realTimeRange;
 	TRange<CTimeValue> m_timeMarked;
 
-	//! Number of ticks to place every second. Value of 10 means 10 per second. PERSONAL VERIFY: <--
+	//! Number of ticks to place every second.
 	rTime m_ticksStep;
 
 	//////////////////////////////////////////////////////////////////////////

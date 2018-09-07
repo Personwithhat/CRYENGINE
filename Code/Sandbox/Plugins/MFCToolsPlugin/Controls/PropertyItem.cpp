@@ -1993,7 +1993,7 @@ void CPropertyItem::SendToControl()
 	{
 		if (m_cNumber1 && m_cNumber2 && m_cNumber3)
 		{
-			char x[256]; char y[256]; char z[256]; char w[256];		// PERSONAL VERIFY: More 'is 256 enough for mpfloat???' questions! At least make this abstract (macro/etc.) not hardcoded!
+			char x[256]; char y[256]; char z[256]; char w[256];		// PERSONAL DEBUG: More 'is 256 enough for mpfloat???' questions! At least make this abstract (macro/etc.) not hardcoded!
 			sscanf(m_value, "%[^,],%[^,],%[^,],%s", &x, &y, &z, &w);	// ALSO: Verify that these sscanf's work properly.
 			m_cNumber->SetValue(x);
 			m_cNumber1->SetValue(y);
@@ -2463,7 +2463,7 @@ void CPropertyItem::VarToValue()
 		case ePropertyFloat: {
 				float value;
 				m_pVariable->Get(value);
-				PropertyItem_Private::FormatFloatForUICString(m_value, FLOAT_NUM_DIGITS, value); // PERSONAL VERIFY: Float formatting should match CNumberCtrl!
+				PropertyItem_Private::FormatFloatForUICString(m_value, FLOAT_NUM_DIGITS, value); // PERSONAL TODO: Float formatting should match CNumberCtrl!
 			}
 			break;
 		case ePropertyTime:{

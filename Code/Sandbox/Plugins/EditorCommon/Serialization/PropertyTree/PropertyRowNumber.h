@@ -113,7 +113,7 @@ inline void clampedNumberFromString(T* value, const char* str)\
 #undef MP_FUNCTION
 
 /*
-	PERSONAL VERIFY: 
+	PERSONAL TODO: 
 		All these edits in this file, really messy.
 		Good starting point for rewrites & multi-type compatibility with floats/mpfloat/etc. as the underlying basis t-t
 */
@@ -293,7 +293,7 @@ public: // Limit settings
 	Type minValue() const { return hasMinMax() ? hardLimit_.min : std::numeric_limits<Type>::min(); }
 	Type maxValue() const { return hasMinMax() ? hardLimit_.max : std::numeric_limits<Type>::max(); }
 
-	// PERSONAL VERIFY: Until Q-related stuff has increased accuracy, limited to doubles......
+	// PERSONAL TODO: Until Q-related stuff has increased accuracy, limited to doubles......
 	double minValueD() const override { return (double)minValue(); } 
 	double maxValueD() const override { return (double)maxValue(); }
 

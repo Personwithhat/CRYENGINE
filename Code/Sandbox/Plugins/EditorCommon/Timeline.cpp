@@ -2127,7 +2127,7 @@ CTimeline::CTimeline(QWidget* parent)
 
 CTimeline::~CTimeline()
 {
-	// PERSONAL VERIFY: Might fail only in debug mode according to QT "Possible RIP's in debug mode". CryTek bug, not me!
+	// PERSONAL CRYTEK: Might fail only in debug mode according to QT "Possible RIP's in debug mode". CryTek bug, not me!
 	// Moved from destroyed() bind to CTimeLine ded bind.....
 	// Reproducing: Build in debug, click 'mannequin' layout -> from that layout go to 'default' layout -> Sandbox crashes.
 	disconnect(m_highlightedConnection);

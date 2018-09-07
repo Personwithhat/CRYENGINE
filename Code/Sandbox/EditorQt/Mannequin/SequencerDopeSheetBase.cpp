@@ -43,8 +43,9 @@ static const int MARGIN_FOR_MAGNET_SNAPPING = 10;
 IMPLEMENT_DYNAMIC(CSequencerDopeSheetBase, CWnd)
 
 /*
-	PERSONAL TODO: Verify this as with rest of sandbox.
+PERSONAL DEBUG: This looks like it has some bugs on pasting keys, drag&drop, etc.
 
+PERSONAL NOTE:
 	Time in seconds * Tickstep = Number Ticks!!!
 	Seconds = 1/TickStep  ==> 1 tick's worth of time
 
@@ -3066,10 +3067,9 @@ bool CSequencerDopeSheetBase::PasteKeys(CSequencerNode* pAnimNode, CSequencerTra
 
 		if (nPasteToItem >= 0)
 		{
-			/* PERSONAL VERIFY:
-				1) m_startDragMouseOverItemID may be invalid. E.g. go in, copy-paste from fragment to a new empty sequence track. Would die here but I added a messy-ish check! :\
-				2) How do you copy from a fragment track to other tracks e.g. preview sequence track??? Won't let me copy.
-			*/
+			// PERSONAL DEBUG:  How do you copy from a fragment track to other tracks? Won't let me copy to preview, or transition! Both 'fail' weirdly/silently. Something wrong with serialization?
+			// PERSONAL CRYTEK: m_startDragMouseOverItemID may be invalid. E.g. go in, copy-paste from fragment to a new empty sequence track. Would die here but I added a messy-ish check! :\
+
 			// If actual valid item cannot be used for dropping, use default item where dragging has been started
 			Item const* itemTemp = &GetItem(nPasteToItem);
 			const Item& item = (!itemTemp || !(itemTemp->node) || !(itemTemp->track))
@@ -3602,7 +3602,7 @@ void CSequencerDopeSheetBase::MouseMoveMove(CPoint point, UINT nFlags)
 		const mpfloat tscale = "0.005";
 		const CTimeValue tofs = ofs.x * tscale;
 		// Offset all selected keys by this offset.
-		ScaleSelectedKeys(1 + tofs.GetSeconds(), bTickSnap);		// PERSONAL VERIFY: If the scale is proper units.....
+		ScaleSelectedKeys(1 + tofs.GetSeconds(), bTickSnap);		// PERSONAL DEBUG: If the scale is proper units.....
 		m_keyTimeOffset = tofs;
 	}
 	else
