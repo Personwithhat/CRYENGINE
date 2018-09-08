@@ -2463,7 +2463,7 @@ void CPropertyItem::VarToValue()
 		case ePropertyFloat: {
 				float value;
 				m_pVariable->Get(value);
-				PropertyItem_Private::FormatFloatForUICString(m_value, FLOAT_NUM_DIGITS, value); // PERSONAL TODO: Float formatting should match CNumberCtrl!
+				PropertyItem_Private::FormatFloatForUICString(m_value, FLOAT_NUM_DIGITS, value); // PERSONAL VERIFY: Float formatting should match CNumberCtrl!
 			}
 			break;
 		case ePropertyTime:{

@@ -1147,7 +1147,7 @@ public:
 	template <class T = B, typename boost::enable_if_c<isVec>::type* = 0>
 	void SetLimits(const B& vMin, const B& vMax, const B& vStep = B(0), bool bHardMin = true, bool bHardMax = true) // PERSONAL VERIFY: Vec2 etc. can take Vec3/Vec4 as input and auto-convert. Allow? Use/ignore?
 	{
-		// CRY_ASSERT_MESSAGE(vMin <= vMax, "Maximum value has to be bigger than minimum value!"); PERSONAL TODO: CryTek's gotta have a way to compare vec's neatly value-by-value....
+		//CRY_ASSERT_MESSAGE(vMin <= vMax, "Maximum value has to be bigger than minimum value!"); // PERSONAL VERIFY: Ask CryTek on best way to compare X values between vectors!
 		m_valueMin = vMin;
 		m_valueMax = vMax;
 		m_valueStep = vStep;

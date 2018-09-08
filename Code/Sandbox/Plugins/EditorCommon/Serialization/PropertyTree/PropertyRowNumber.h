@@ -99,7 +99,6 @@ inline void clampedNumberFromString(double* value, const char* str)
 	*value = parseFloat(str);
 }
 
-
 inline void clampedNumberFromString(CTimeValue* value, const char* str)
 {
 	*value = CTimeValue(str);
@@ -112,11 +111,7 @@ inline void clampedNumberFromString(T* value, const char* str)\
 #include <CrySystem\mpfloat.types>
 #undef MP_FUNCTION
 
-/*
-	PERSONAL TODO: 
-		All these edits in this file, really messy.
-		Good starting point for rewrites & multi-type compatibility with floats/mpfloat/etc. as the underlying basis t-t
-*/
+
 template<class Type>
 class PropertyRowNumber : public PropertyRowNumberField{
 public:
@@ -179,21 +174,7 @@ public:
 		ar(softLimit_.max, "softMax", "SoftMax");
 	}
 
-
-public: // Incrementation
-	void startIncrement() override
-	{
-		incrementStartValue_ = value_;
-	}
-	void endIncrement(PropertyTree* tree) override
-	{
-		if (value_ != incrementStartValue_) {
-			Type value = value_;
-			value_ = incrementStartValue_;
-			value_ = value;
-			tree->model()->rowChanged(this, true);
-		}
-	}
+public: // Conversions PERSONAL VERIFY: Perhaps in rewrites implement this as a cleaner workaround?
 
 	// Convert from mpfloat TO lossy/other-strong types.
 	template <class T = Type, typename boost::enable_if_c<isMP>::type* = 0>
@@ -215,6 +196,21 @@ public: // Incrementation
 		return mpfloat().lossy(val);
 	}
 
+public: // Incrementation
+	void startIncrement() override
+	{
+		incrementStartValue_ = value_;
+	}
+	void endIncrement(PropertyTree* tree) override
+	{
+		if (value_ != incrementStartValue_) {
+			Type value = value_;
+			value_ = incrementStartValue_;
+			value_ = value;
+			tree->model()->rowChanged(this, true);
+		}
+	}
+
 	void incrementLog(const mpfloat& screenFraction, const mpfloat& valueFieldFraction) override
 	{
 		mpfloat screenFractionMultiplier = 1000;
@@ -232,13 +228,6 @@ public: // Incrementation
 			newValue = incValue + delta;
 		else
 			newValue = incValue - delta;
-
-		/*if (!IsValid(newValue)) {
-			if (screenFraction > 0)
-				newValue = std::numeric_limits<Type>::max();
-			else
-				newValue = std::numeric_limits<Type>::mmin();
-		}*/
 
 		value_ = CLAMP(convType(newValue), softLimit_.min, softLimit_.max);
 	}
@@ -293,7 +282,7 @@ public: // Limit settings
 	Type minValue() const { return hasMinMax() ? hardLimit_.min : std::numeric_limits<Type>::min(); }
 	Type maxValue() const { return hasMinMax() ? hardLimit_.max : std::numeric_limits<Type>::max(); }
 
-	// PERSONAL TODO: Until Q-related stuff has increased accuracy, limited to doubles......
+	// PERSONAL VERIFY: Until Q-related stuff has increased accuracy, limited to doubles......
 	double minValueD() const override { return (double)minValue(); } 
 	double maxValueD() const override { return (double)maxValue(); }
 

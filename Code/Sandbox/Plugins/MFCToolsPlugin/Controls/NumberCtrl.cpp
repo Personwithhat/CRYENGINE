@@ -32,7 +32,7 @@ CNumberCtrl::CNumberCtrl()
 	m_btnWidth = 10;
 	m_draggin = false;
 	m_value = 0;
-	m_min = mpfloat::Min(); // PERSONAL TODO: Gotta go all over ze engine and fine Min() & Max() setups and compare. This one was a typo here!
+	m_min = mpfloat::Min();
 	m_max = mpfloat::Max();
 	m_step = "0.01";
 	m_enabled = true;

@@ -74,6 +74,7 @@ namespace boost { namespace multiprecision {
 		4) Cleanup canonical values etc.
 		5) Improve readability + macro's, convert inline to ILINE etc.
 		6) Review nTime * mpfloat etc. operations, might be good to do mpfloat operator*(nTime, mpfloat){} etc.
+		7) Review Max() & Min() usage for accuracy/usefullness. Same applies to EPSILON setups.
 */
 
 // TODO: Move this somewhere else, clean up this file and what not. It's messy up here!
