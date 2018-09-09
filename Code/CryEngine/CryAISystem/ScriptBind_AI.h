@@ -1573,7 +1573,7 @@ public:
 	//!		<param name="channelName">The name of the channel where the communication will play</param>
 	int PlayCommunication(IFunctionHandler* pH, ScriptHandle entityId, const char* commName, const char* channelName,
 	                      const CTimeValue contextExpiry); 	// PERSONAL NOTE: 'reference must be initialized' issue when using const CTimeValue&
-																				// Can't pass ref's here, and no default val's. Leave as is and comment on this later.
+																				// Can't pass ref's here, and no default val's.
 	//! <code>AI.StopCommunication(playID)</code>
 	//! <description>Stops given communication.</description>
 	//!		<param name="playID">The id of the communication to stop.</param>

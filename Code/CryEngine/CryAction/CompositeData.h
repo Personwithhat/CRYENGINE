@@ -32,7 +32,7 @@ enum EBasicTypes4CC
 	eBT_quat = 'quat', // Quat<f32>
 	eBT_qutt = 'qutt', // QuatT<f32>
 
-	eBT_TVal = 'tval', // CTimeValue PERSONAL VERIFY: MAke sure all of this works!!!
+	eBT_TVal = 'tval', // CTimeValue
 };
 
 typedef boost::mpl::vector<int8, uint8, int16, uint16, int32, uint32, int64, uint64, f32, f64, string, Vec3, Matrix34, Quat, QuatT, CTimeValue> TBasicTypes;
@@ -113,6 +113,7 @@ static inline TBasicType ComposeValue(const IMetadata* metadata)
 	case eBT_TVal:
 		// WARNING: memcpy issues?
 		//v = TBasicType(ComposeValue<CTimeValue>(dt, sz));
+		assert(0);
 		break;
 	default:
 		break;

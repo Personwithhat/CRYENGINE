@@ -36,7 +36,7 @@ namespace Schematyc2
 		static const size_t s_vec3StringBufferSize   = 154;
 		static const size_t s_ang3StringBufferSize   = 154;
 		static const size_t s_quatStringBufferSize	= 208;
-		static const size_t s_MPStringBufferSize		= 154; // PERSONAL VERIFY: Proper Multi-precision size.....
+		static const size_t s_MPStringBufferSize		= 154; // PERSONAL TODO: Proper Multi-precision size.....
 
 		// Convert hexadecimal character to unsigned char.
 		////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -669,7 +669,7 @@ namespace Schematyc2
 		}
 
 
-		// PERSONAL VERIFY: Why the diff between CryStringUtils and Schematyc utils???
+		// PERSONAL TODO: Why the diff between CryStringUtils and Schematyc utils???
 		// Also, why tbe buffer limit?
 
 		// Write MPfloat to string.

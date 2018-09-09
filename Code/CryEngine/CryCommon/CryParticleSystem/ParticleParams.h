@@ -348,7 +348,7 @@ struct TVarParam : S
 		T operator()(type_min) const
 		{ return T(1) - T(Range()); }
 
-		// PERSONAL VERIFY: For color's floatv, vector * mpfloat doesn't work.... Considering this is random it probably doesn't matter.
+		// PERSONAL NOTE: For color's floatv, vector * mpfloat doesn't work.... Considering this is random it probably doesn't matter.
 		T operator()(const mpfloat& fInterp) const
 		{ return T(1) + T(Range() * BADF(fInterp - 1)); }
 
@@ -572,7 +572,7 @@ struct TRangeParam
 	TRangeParam(S _min, S _max)
 		: Min(_min), Max(_max) {}
 
-	// PERSONAL VERIFY: Inaccurate here due to ColorV * mpfloat undefined. Considering this is random it probably doesn't matter.
+	// PERSONAL NOTE: Inaccurate here due to ColorV * mpfloat undefined. Considering this is random it probably doesn't matter.
 	S Interp(const mpfloat& t) const
 	{ return Min * BADF(1 - t) + Max * BADF(t); }
 

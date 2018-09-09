@@ -24,7 +24,7 @@ struct IFrameProfilePeakCallback
 	virtual void OnFrameProfilerPeak(CFrameProfiler* pProfiler, float fPeakValue) = 0;
 
 	// PERSONAL NOTE: "Time in ms" comment was nonsense.
-	// It can be "time in ms", memory,etc. It's a peak displayed-value....
+	// It can be "time in ms", memory, etc. It's a peak displayed-value.
 };
 
 struct SPeakRecord

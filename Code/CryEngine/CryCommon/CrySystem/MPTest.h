@@ -1,6 +1,6 @@
 /*
 	Helper class to debug some MPFloat, reflects an abbreviated class of mpfloat.
-	PERSONAL TODO: Improve this system. Somehow setup a way to copy-paste mpfloat.h with minimal edits and achieve the same 'setup'?
+	PERSONAL IMPROVE: Improve this system. Somehow setup a way to copy-paste mpfloat.h with minimal edits and achieve the same 'setup'?
 */
 #ifndef MPTEST
 	#define MPTEST

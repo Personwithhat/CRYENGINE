@@ -220,7 +220,7 @@ void MemoryWriter::write(const char* value)
     write((void*)value, strlen(value));
 }
 
-bool MemoryWriter::write(const void* data, size_t size)	// PERSONAL VERIFY: Possible CTimeValue() issue here..........not a POD type so :\ Convert to str() before writing?
+bool MemoryWriter::write(const void* data, size_t size)	// PERSONAL TODO: Possible CTimeValue() issue here..........not a POD type so :\ Convert to str() before writing?
 {
     YASLI_ASSERT(memory_ <= position_);
     YASLI_ASSERT(position() < this->size());

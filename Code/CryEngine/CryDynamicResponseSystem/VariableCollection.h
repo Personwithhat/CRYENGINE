@@ -77,7 +77,6 @@ public:
 		 CVariable*           CreateVariable(const CHashedString& name, const CTimeValue& initialValue) override;
 		 bool                 SetVariableValue(const CHashedString& name, const CTimeValue& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) override;
 		 
-		 // PERSONAL VERIFY: Maybe come up with a more readable way of defining said macro's etc....unlikely.
 		 #define MP_FUNCTION(T)\
 		 CVariable*           CreateVariable(const CHashedString& name, const T& initialValue) override;\
 		 bool                 SetVariableValue(const CHashedString& name, const T& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) override;

@@ -46,7 +46,6 @@ ILINE floatv CParticleSpline::Interpolate(const floatv time) const
 	const SplineKey* __restrict pKey = &*m_keys.begin();
 	const SplineKey* __restrict pEndKey = &*(m_keys.end() - 1);
 
-	// PERSONAL VERIFY: Will this break anything?
 	float tKey  = BADF pKey->time;
 	float tMult = BADF pKey->timeMult;
 	float tEnd  = BADF pEndKey->time;

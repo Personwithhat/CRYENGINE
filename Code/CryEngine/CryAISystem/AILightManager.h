@@ -66,7 +66,7 @@ private:
 		EAILightEventType      type;
 
 		CTimeValue             t;
-		CTimeValue             tmax; // PERSONAL VERIFY: tMax = Time * 1000....why?
+		CTimeValue             tmax;
 	};
 	std::vector<SAIDynLightSource> m_dynLights;
 

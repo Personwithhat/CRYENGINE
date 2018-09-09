@@ -227,7 +227,7 @@ private:
 	// World space matrix
 	Matrix34 m_matrix;
 
-	// Playback PERSONAL VERIFY: CTimeValue volatile issues.
+	// Playback PERSONAL TODO: CTimeValue volatile issues.
 	volatile float m_playbackTime;
 
 	// Streaming flag

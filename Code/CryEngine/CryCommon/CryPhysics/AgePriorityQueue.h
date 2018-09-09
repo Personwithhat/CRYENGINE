@@ -14,9 +14,6 @@ namespace boost{ namespace multiprecision{
 using boost::multiprecision::mpfloat;
 
 // POINT OF INTEREST : This + Deferred Action Queue
-
-
-// PERSONAL VERIFY: This + DeferredActionQueue() need double-checks to see if this works properly.
 template<typename ValueType, typename AgeType = CTimeValue, typename PriorityType = mpfloat>
 struct AgePriorityQueue
 {

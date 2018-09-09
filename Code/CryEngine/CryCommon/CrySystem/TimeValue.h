@@ -269,12 +269,8 @@ public:
 	void GetMemoryUsage(class ICrySizer* pSizer)		  const { /*Nothing*/ }
 	void GetMemoryStatistics(class ICrySizer* pSizer) const { /*Nothing*/ }
 
-	/*
-		PERSONAL NOTE: HACK!!!
-		This 'fix' for un-initialized mpfloat heap only works when ran before the data is accessed/compared.
-		Might memory leak? etc. Trace this down and remove :<
-	*/
-	void memHACK(){ m_lValue.backend().unsafe()[0]._mp_d = 0; }
+	// See mpfloat func description
+	void memHACK(){ m_lValue.memHACK(); }
 
 	// PERSONAL VERIFY: That this is correct!
 	//! Useful for periodic events (e.g. water wave, blinking).

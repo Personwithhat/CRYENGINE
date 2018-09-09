@@ -29,7 +29,7 @@ public:
 
 	MPOnly void Put(const char* key, const T& value) {
 		SStreamRecord rec(key);
-		cry_sprintf(rec.value, "%s", value.str()); // PERSONAL VERIFY: This 'one other one'...maybe more that are hard to debug/test
+		cry_sprintf(rec.value, "%s", value.str()); // PERSONAL TODO: Trace down sprintf's etc.!
 		Put(rec);
 	};
 	TVOnly void Put(const char* key, const T& value)

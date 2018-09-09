@@ -164,7 +164,7 @@ struct SEntityUpdateContext
 	//! Delta time for this frame
 	CTimeValue  fFrameTime;
 	//! Current game simulation time at the start of the entity update - see ITimer::GetFrameStartTime()
-	CTimeValue  fCurrTime; // PERSONAL VERIFY: Should probably be renamed to startTime or something?
+	CTimeValue  fCurrTime; // PERSONAL IMPROVE: Should probably be renamed to startTime or something? Maybe with some other variables/functions for clarity.
 	//! The current frame identifier, see gEnv->nMainFrameID
 	uint32 frameID;
 };

@@ -42,7 +42,7 @@ inline bool operator==(const SFlowSystemVoid& a, const SFlowSystemVoid& b)
 //! By adding types to this list, we can extend the flow system to handle new data types.
 //! Important: If types need to be added, add them at the end, otherwise it breaks serialization.
 //! \note CFlowData::ConfigureInputPort must be updated simultaneously.
-//! \see CFlowData::ConfigureInputPort. PERSONAL VERIFY: Of COURSE.......said function doesn't exist :D
+//! \see CFlowData::ConfigureInputPort. PERSONAL NOTE: Of COURSE.......said function doesn't exist :D
 typedef CryVariant<
 	SFlowSystemVoid,
 	int,
@@ -143,7 +143,7 @@ struct SFlowSystemConversion
 	}
 };
 
-// PERSONAL VERIFY: A bunch of nonsense, preventing conversion from various values....urgh.....
+// PERSONAL NOTE: A bunch of nonsense, preventing conversion from various values. Ugh.
 #define NoConv(T, X)\
 	template<>\
 	struct SFlowSystemConversion<T, X>\
@@ -453,7 +453,7 @@ struct SFlowSystemConversion<string, CTimeValue>
 {                                                               
   static ILINE bool ConvertValue(const string &from, CTimeValue& to)
   {            
-    to.SetSeconds(from.c_str()); // PERSONAL VERIFY: More if() issues
+    to.SetSeconds(from.c_str());
 	 return true;
   }                                                             
 };
@@ -1282,7 +1282,7 @@ struct SFlowNodeConfig
 	}
 	void AddInputPort(int slot, const SInputPortConfig& cfgIn)
 	{
-		// PERSONAL VERIFY: Changed to "Copying a pointer to a new() value"
+		// PERSONAL NOTE: Changed to "Copying a pointer to a new() value"
 		// Messier allocation/de-allocation BUT preserves const * + allows for non-POD type like CTimeValue/mpfloat etc.....
 		const SInputPortConfig* cfg = new SInputPortConfig(cfgIn);
 		const SInputPortConfig* spot = &pInputPorts[slot];

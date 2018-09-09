@@ -122,7 +122,7 @@ inline bool IsValid(const T& val)
 MPOnly
 inline bool IsValid(const T& val)
 {
-	return true; // PERSONAL VERIFY: Perhaps add better IsValid's for mpfloat/CTimeValue
+	return true; // PERSONAL TODO: Perhaps add better IsValid's for mpfloat/CTimeValue
 }
 
 // Alias

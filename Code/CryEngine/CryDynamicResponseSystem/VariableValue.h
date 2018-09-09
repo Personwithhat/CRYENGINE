@@ -55,7 +55,7 @@ public:
 	#define WarnIfTypeDiffers(other)
 #endif
 
-	// PERSONAL VERIFY: In order to store mpfloat/CTimeValue, changed to mpfloat base storage. Can probably be improved.....
+	// PERSONAL NOTE: In order to store mpfloat/CTimeValue, changed to mpfloat base storage.
 	CVariableValue() : m_value(DEFAULT_VALUE) { SetTypeInfoOfValue(eDRVT_Undefined); }
 	CVariableValue(int value) { m_value = value; SetTypeInfoOfValue(eDRVT_Int); }
 	CVariableValue(bool value) { m_value = (value) ? 1 : 0; SetTypeInfoOfValue(eDRVT_Boolean); }

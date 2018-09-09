@@ -53,7 +53,7 @@ string TCurve<S >::ToString(FToString flags) const
 		if (i > 0)
 			str += ";";
 		key_type k = key(i);
-		SplineElem<mpfloat, TMod> elem = { k.time, k.value, k.flags }; // PERSONAL NOTE: With TStore updated, update this too.
+		SplineElem<mpfloat, TMod> elem = { k.time, k.value, k.flags }; // PERSONAL TODO: Make sure T == proper time value storage type!
 		str += ::TypeInfo(&elem).ToString(&elem, flags);
 	}
 	return str;

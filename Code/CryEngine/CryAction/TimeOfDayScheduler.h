@@ -68,7 +68,7 @@ protected:
 		}
 
 		TimeOfDayTimerId       id;          // 4 bytes
-		CTimeValue             time;        // 4 bytes PERSONAL VERIFY: Er, why the bytes? This might overshoot?
+		CTimeValue             time;        // XX bytes PERSONAL VERIFY: Er, why the bytes? This might overshoot?
 		TimeOfDayTimerCallback callback;    // 4/8 bytes
 		void*                  pUserData;   // 4/8 bytes
 		//                                   = 32/48 bytes

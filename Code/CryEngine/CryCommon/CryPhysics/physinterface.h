@@ -362,7 +362,7 @@ public:
 	template<class F>   unused_marker& operator,(Vec3_tpl<F>& x)                 { return *this, x.x; }
 	template<class F>   unused_marker& operator,(Quat_tpl<F>& x)                 { return *this, x.w; }
 	template<class F>   unused_marker& operator,(strided_pointer<F>& x)          { return *this, x.data; }
-	MPOnly				  unused_marker& operator,(T& x)								     { x.backend().unsafe()[0]._mp_d = 0; return *this; }
+	MPOnly				  unused_marker& operator,(T& x)								     { x.memHACK(); return *this; }
 	TVOnly				  unused_marker& operator,(T& x)									  { return *this, x.m_lValue; }
 };
 //! \endcond
@@ -2211,7 +2211,7 @@ struct intersection_params
 	int           iUnprojectionMode;       //!< 0-angular, 1-rotational
 	Vec3          centerOfRotation;        //!< for mode 1 only
 	Vec3          axisOfRotation;          //!< if left 0, will be set based on collision area normal
-	float		     time_interval;           //!< used to set unprojection limits PERSONAL VERIFY: Very, very, rarely used as 'Time'. Typically length/etc.
+	float		     time_interval;           //!< used to set unprojection limits PERSONAL NOTE: Rarely used as 'Time'. Typically length etc., so kept as float.
 	float         vrel_min;                //!< if local relative velocity in contact area is above this, unprojects along its derection; otherwise along area normal
 	float         maxSurfaceGapAngle;      //!< theshold for generating area contacts
 	float         minAxisDist;             //!< disables rotational unprojection if contact point is closer than this to the axis

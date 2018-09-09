@@ -314,7 +314,7 @@ protected:
 		}
 	};
 
-	// PERSONAL VERIFY: TStore should function as a compressed mpfloat value. 
+	// PERSONAL IMPROVE: TStore should function as a compressed mpfloat value. 
 	// How to set this up depends on other compression setups....etc.....
 	//typedef UnitFloat8                        TStore;
 	typedef mpfloat	                        TStore;
@@ -331,14 +331,12 @@ protected:
 		void   set_key(const TStore& t, value_type v)
 		{
 			/*
-				PERSONAL NOTE: HACK!!!
+				PERSONAL NOTE:
 				They go about creating a value here in a weird way. e.g. accessing a non-existant index in aElem (has 1 value, but they access [1])
 									m_pSpline->aElems[i].set_key(source.time(i), source.value(i));
-				This creates mpfloat but its contents are bogus. Have to be 'initialized'. Setting _mp_d to 0 forces it.
-				And then the following assignment works just fine. >.>
+				This creates mpfloat but its contents are bogus. Have to force intialization.
 			*/
-			st.backend().data()[0]._mp_d = 0;
-
+			st.memHACK();
 			st = t;
 			sv = v;
 		}
@@ -359,7 +357,7 @@ protected:
 			sd = dv - s1;
 		}
 
-		/* PERSONAL NOTE: 
+		/* PERSONAL IMPROVE: 
 			Up until the final interpolation/eval calculation 'time' accuracy is preserved.
 			Splines also store 'time' into VStore, e.g. ParticleLifetime...atm in floats, but the core system can be improved to allow spline's of CTimeValue's.
 		*/

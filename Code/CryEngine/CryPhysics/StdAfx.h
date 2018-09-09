@@ -90,7 +90,7 @@ class CStream;
 #define DoBreak { __debugbreak(); }
 #endif
 
-// PERSONAL NOTE: More'n likely is_valid should be replaced by NumberValid() etc.
+// PERSONAL IMPROVE: More'n likely is_valid should be replaced by NumberValid() etc.
 // The same goes for used/unused, could easily do 'SetInvalid()' and the like......
 MPOnly ILINE bool is_valid(const T& op) { return NumberValid(op); }
 TVOnly ILINE bool is_valid(const T& op) { return NumberValid(op); }

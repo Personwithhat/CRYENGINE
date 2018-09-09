@@ -112,7 +112,7 @@ struct SGeomCacheStreamInfo
 
 	uint                         m_numFrames;
 
-	// PERSONAL VERIFY: Setting up Volatile CTimeValue() => no def's for mpfloat volatile = and == , so this fails.
+	// PERSONAL TODO: Setting up Volatile CTimeValue() => no def's for mpfloat volatile = and == , so this fails.
 	volatile float					  m_displayedFrameTime;
 	volatile float					  m_wantedPlaybackTime;
 	volatile uint                m_wantedFloorFrame;

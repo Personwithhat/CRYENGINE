@@ -117,9 +117,7 @@ struct CRY_ALIGN (16)GlobalAnimationHeaderCAF:public GlobalAnimationHeader
 	/* PERSONAL NOTE: 
 		AnimationNormalizedTime == Normalized Clip Time
 
-		Hence, AnimInfo->m_fAnimTimePrev == normalized animation clip time?
-
-		What about 'regular' animation time?
+		Hence, AnimInfo->m_fAnimTimePrev == normalized animation clip time
 	*/
 
 	//! Converts normalized time to key-time.  

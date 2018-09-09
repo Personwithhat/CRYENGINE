@@ -115,7 +115,7 @@ private:
 	CryAudio::EOcclusionType m_currentAudioOcclusionType;
 	bool m_bExecuteAudioTrigger;
 
-	// PERSONAL VERIFY: Should tHuge usage be replaced with CTimeValue::Max()? Accomplishes the same in principle?
+	// PERSONAL TODO: Should tHuge usage be replaced with CTimeValue::Max()? Accomplishes the same in principle?
 	// State.
 	CTimeValue m_fStartAge;              // Relative age when scheduled to start (default 0).
 	CTimeValue m_fStopAge;               // Relative age when scheduled to end (tHUGE if never).

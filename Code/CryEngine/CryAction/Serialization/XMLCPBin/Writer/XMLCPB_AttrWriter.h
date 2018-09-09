@@ -60,7 +60,7 @@ public:
 	void        Set(const char* pAttrName, const char* pStr);
 	void        Set(const char* pAttrName, const uint8* data, uint32 len, bool needInmediateCopy);
 
-	// PERSONAL VERIFY: Sometime, if this is actually used, implement this.
+	// PERSONAL IMPROVE: Sometime, if this is actually used, implement this.
 	MPOnly void Set(const char* pAttrName, const T& val){ CRY_ASSERT(false); }
 	TVOnly void Set(const char* pAttrName, const T& val){ CRY_ASSERT(false); }
 

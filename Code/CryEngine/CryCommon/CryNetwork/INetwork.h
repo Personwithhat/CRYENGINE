@@ -278,7 +278,7 @@ struct SNetMessageDef
 	  TSerialize,
 	  uint32 curSeq,
 	  uint32 oldSeq,
-	  uint32 timeFraction32, // PERSONAL VERIFY: Complicated networking setup with memento predictors and time in 'fraction' form......
+	  uint32 timeFraction32, // PERSONAL IMPROVE: Complicated networking setup with memento predictors and time in 'fraction' form......
 	  EntityId* pRmiObject,
 	  INetChannel* pChannel
 	  );

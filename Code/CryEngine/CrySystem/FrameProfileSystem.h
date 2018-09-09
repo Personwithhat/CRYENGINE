@@ -321,7 +321,7 @@ public:
 	int                               m_maxProfileCount;
 
 	//////////////////////////////////////////////////////////////////////////
-	//! PERSONAL VERIFY, obviously not 'smooth frame time in ms' but can also include memory!
+	//! PERSONAL IMPROVE: Not only 'smooth frame time in ms' but can also include memory!
 	CFrameProfilerSamplesHistory<float, 32> m_frameTimeHistory;
 	CFrameProfilerSamplesHistory<float, 32> m_frameTimeLostHistory;
 

@@ -628,7 +628,7 @@ struct SMMRMUpdateContext
 	SMMRMProjectile*            projectiles;
 	int                         nprojectiles;
 	int                         max_iter;
-	CTimeValue                  dt, abstime, dtscale; // PERSONAL NOTE: dtscale is not used to scale time.... dt + dtscale.....why??
+	CTimeValue                  dt, abstime, dtscale; // PERSONAL NOTE: dtscale is not used to scale time, but rather increment. dt + dtscale.
 	float                       zRotation;
 	Vec3                        rotationOrigin;
 	Vec3                        _max, _min;

@@ -57,7 +57,7 @@ public:
 	void          Get(const char*& pStr) const;
 	void          Get(uint8*& rdata, uint32& outSize) const;
 
-	// PERSONAL VERIFY: Sometime, if this is actually used, implement this.
+	// PERSONAL IMPROVE: Sometime, if this is actually used, implement this.
 	MPOnly void Get(T& val) const{ CRY_ASSERT(false); }
 	TVOnly void Get(T& val) const{ CRY_ASSERT(false); }
 

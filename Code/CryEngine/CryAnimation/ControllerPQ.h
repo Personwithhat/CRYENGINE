@@ -180,7 +180,6 @@ public:
 	// return key value in f32 format
 	f32 GetKeyValueFloat(uint32 key) const { return (m_pKeys[key]); }
 
-	// PERSONAL VERIFY: Honestly not too sure on the usage of keyTime's.....perhaps precision is not needed.
 	// return key number for keyTime
 	uint32 GetKey(const kTime& keyTime, kTime& difference_time)
 	{
@@ -346,7 +345,7 @@ public:
 	{
 		kTime realtime = keyTime;
 
-		// PERSONAL VERIFY: More complicated encodings for TKeyTime storage&reading in int16/float/etc.
+		// PERSONAL IMPROVE: More complicated encodings for TKeyTime storage&reading in int16/float/etc.
 		// Not sure why so many variations, probably no 'easy' way to implement time for this.
 		if (BADF realtime < m_arrKeys[0])
 			return 0;

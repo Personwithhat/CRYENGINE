@@ -311,6 +311,15 @@ public: // Constructors and assignment operators
 			return *this;
 		}
 
+		/*
+			PERSONAL IMPROVE: HACK!!!
+			This 'fix' for un-initialized mpfloat heap only works when ran before the data is accessed/compared.
+			Might memory leak? etc. Trace this down and preferably remove.
+
+			Also used to show an 'Unused' mpfloat value in physics etc.!j
+		*/
+		void memHACK(){ backend().unsafe()[0]._mp_d = 0; }
+
 public: // Math operations
 		rType operator-() const { rType ret; ret.backend() = backend(); ret.backend().negate(); return ret; };
 

@@ -88,9 +88,6 @@ public:
 	CGameQueryListener();
 	~CGameQueryListener();
 
-	// PERSONAL VERIFY: Each of this 'pings' were in uint32, of some unknown time format.
-	// Need to be sure that it does not auto-convert to CTimeValue etc. 
-
 	// IGameQueryListener
 	virtual void        AddServer(const char* description, const char* target, const char* additionalText, const CTimeValue& ping);
 	virtual void        RemoveServer(string address);
