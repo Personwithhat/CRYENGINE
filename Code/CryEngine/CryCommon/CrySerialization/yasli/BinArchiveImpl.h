@@ -233,19 +233,18 @@ bool BinOArchive::operator()(u64& value, const char* name, const char* label)
 
 bool BinOArchive::operator()(CTimeValue& value, const char* name, const char* label)
 {
-	//return (*this)(value.m_lValue);  PERSONAL VERIFY: For some reason this won't work with Bin archive. Says mpfloat& serializer doesn't exist??
-	openNode(name);
-	stream_.write(value.m_lValue);
-	closeNode(name);
-	return true;
+	return (*this)(value.m_lValue, name, label);
 }
 
 #define MP_FUNCTION(T)\
 bool BinOArchive::operator()(T& value, const char* name, const char* label)\
 {\
-	openNode(name);\
-	stream_.write(value);\
-	closeNode(name);\
+	string v = value.str();\
+	bool size8 = strlen(v) + 1 < SIZE16;\
+	openNode(name, size8);\
+	stream_ << v;\
+	stream_.write(char(0));\
+	closeNode(name, size8);\
 	return true;\
 }
 #include <CrySystem\mpfloat.types>
@@ -623,32 +622,26 @@ bool BinIArchive::operator()(char& value, const char* name, const char* label)
 
 bool BinIArchive::operator()(CTimeValue& value, const char* name, const char* label)
 {
-	//return (*this)(value.m_lValue); PERSONAL VERIFY: For some reason this won't work with Bin archive. Says mpfloat& serializer doesn't exist??
-	if(!*name){
-		read(value.m_lValue);
-		return true;
-	}
-
-	if(!openNode(name))
-		return false;
-
-	read(value.m_lValue);
-	closeNode(name);
-	return true;
+	return (*this)(value.m_lValue, name, label);
 }
 
+// Non-POD type, read and write as string. PERSONAL IMPROVE: Convert to StringSTL handling? Unfortunately not a str so reference won't work.
 #define MP_FUNCTION(T)\
 bool BinIArchive::operator()(T& value, const char* name, const char* label)\
 {\
 	if(!*name){\
-		read(value);\
+		stringBuffer_.clear();\
+		read(stringBuffer_);\
+		value = stringBuffer_.c_str();\
 		return true;\
 	}\
 \
 	if(!openNode(name))\
 		return false;\
 \
-	read(value);\
+	stringBuffer_.clear();\
+	read(stringBuffer_);\
+	value = stringBuffer_.c_str();\
 	closeNode(name);\
 	return true;\
 }

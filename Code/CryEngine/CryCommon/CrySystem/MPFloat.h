@@ -747,6 +747,9 @@ private:
 // Just to get debugStr() accessible in debugger memory regardless of whether it was called in the scope or not!
 template<class T> std::string IgnoreThis_MPSTUFF(const boost::multiprecision::newNum<T>& in) { return in.debugStr(); };
 
+// String buffer size for MPFloats. PERSONAL DEBUG & PERSONAL IMPROVE!!!
+#define MP_SIZE 256u
+
 // Any precision-losing casts should be done like this.
 #define BADF       (float)
 #define BADMP(x)   mpfloat().lossy(x)

@@ -131,7 +131,7 @@ private:
 		  void read(void *data, int size)
 		  {
 			  if(curr_ + size <= end_){
-					memcpy(data, curr_, size);		// PERSONAL VERIFY: Honestly MemoryWriter, binarchive, etc. memcpy.....how to work around dis?
+					memcpy(data, curr_, size);
 					curr_ += size;	
 			  }
 			  else

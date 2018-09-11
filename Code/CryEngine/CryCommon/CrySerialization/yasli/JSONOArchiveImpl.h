@@ -629,7 +629,7 @@ bool JSONOArchive::operator()(char& value, const char* name, const char* label)
 
 bool JSONOArchive::operator()(CTimeValue& value, const char* name, const char* label)
 {
-	return (*this)(value.m_lValue);
+	return (*this)(value.m_lValue, name, label);
 }
 
 #define MP_FUNCTION(T)\

@@ -93,7 +93,7 @@ public:
 
 	ILINE IDataWriteStream& operator<<(const mpfloat& val)
 	{
-		Write8(&val);
+		WriteString(val.str());
 		return *this;
 	}
 
@@ -172,17 +172,16 @@ public:
 		Write4(&val);
 	}
 
-	//! PERSONAL VERIFY: Make sure that writing and reading etc. is working properly....
 	//! Write mpfloat value to stream.
 	ILINE void WriteFloatMP(const mpfloat val)
 	{
-		Write8(&val);
+		WriteString(val.str());
 	}
 
 	//! Write CTimeValue to stream.
 	ILINE void WriteTime(const CTimeValue val)
 	{
-		WriteFloatMP(val.GetSeconds());
+		WriteFloatMP(val.m_lValue);
 	}
 };
 
@@ -275,7 +274,7 @@ public:
 
 	ILINE IDataReadStream& operator<<(mpfloat& val)
 	{
-		Read8(&val);
+		val = ReadString().c_str();
 		return *this;
 	}
 
@@ -367,12 +366,10 @@ public:
 		return val;
 	}
 
-	//! Read mpfloat from stream.
+	//! Read mpfloat from stream. Non-POD type so read/write as str.
 	ILINE mpfloat ReadFloatMP()
 	{
-		mpfloat val = 0;
-		Read8(&val);
-		return val;
+		return mpfloat(ReadString().c_str());
 	}
 
 	//! Read CTimeValue from stream.
@@ -583,7 +580,7 @@ public:
 //! CryString serialization helper (read).
 ILINE IDataReadStream& operator<<(IDataReadStream& stream, string& outString)
 {
-	const uint32 kMaxTempString = 256;
+	const uint32 kMaxTempString = 256u < MP_SIZE ? MP_SIZE : 256u;
 
 	// read length
 	uint32 length = 0;

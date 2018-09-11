@@ -125,9 +125,10 @@ inline void cutTrailingZeros(const char* str)
 
 MemoryWriter& MemoryWriter::operator<<(const CTimeValue& value)
 {
-	return operator<<(value.GetSeconds());
+	return operator<<(value.m_lValue);
 }
 
+// Non-POD type -> conver to string first.
 #define MP_FUNCTION(T)\
 MemoryWriter& MemoryWriter::operator<<(const T& value)\
 {\
@@ -220,7 +221,7 @@ void MemoryWriter::write(const char* value)
     write((void*)value, strlen(value));
 }
 
-bool MemoryWriter::write(const void* data, size_t size)	// PERSONAL TODO: Possible CTimeValue() issue here..........not a POD type so :\ Convert to str() before writing?
+bool MemoryWriter::write(const void* data, size_t size)
 {
     YASLI_ASSERT(memory_ <= position_);
     YASLI_ASSERT(position() < this->size());

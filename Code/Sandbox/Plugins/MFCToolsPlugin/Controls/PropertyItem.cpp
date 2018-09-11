@@ -132,7 +132,7 @@ struct
 	{ IVariable::DT_SIMPLE,                        "Bool",                             ePropertyBool,                  2  },
 	{ IVariable::DT_SIMPLE,                        "Int",                              ePropertyInt,                   0  },
 	{ IVariable::DT_SIMPLE,                        "Float",                            ePropertyFloat,                 0  },
-	{ IVariable::DT_SIMPLE,                        "Time",                             ePropertyTime,                  4  },	// PERSONAL VERIFY: Need an icon for multi-precision types!
+	{ IVariable::DT_SIMPLE,                        "Time",                             ePropertyTime,                  4  },	// PERSONAL IMPROVE: Need an icon for multi-precision types!
 	{ IVariable::DT_SIMPLE,                        "MPFloat",                          ePropertyMP,                    4  },
 	{ IVariable::DT_SIMPLE,                        "Vector",                           ePropertyVector2,               10 },
 	{ IVariable::DT_SIMPLE,                        "Vector",                           ePropertyVector,                10 },
@@ -1993,8 +1993,8 @@ void CPropertyItem::SendToControl()
 	{
 		if (m_cNumber1 && m_cNumber2 && m_cNumber3)
 		{
-			char x[256]; char y[256]; char z[256]; char w[256];		// PERSONAL DEBUG: More 'is 256 enough for mpfloat???' questions! At least make this abstract (macro/etc.) not hardcoded!
-			sscanf(m_value, "%[^,],%[^,],%[^,],%s", &x, &y, &z, &w);	// ALSO: Verify that these sscanf's work properly.
+			char x[MP_SIZE]; char y[MP_SIZE]; char z[MP_SIZE]; char w[MP_SIZE];	// PERSONAL DEBUG: Verify that these sscanf's work properly.
+			sscanf(m_value, "%[^,],%[^,],%[^,],%s", &x, &y, &z, &w);
 			m_cNumber->SetValue(x);
 			m_cNumber1->SetValue(y);
 			m_cNumber2->SetValue(z);
@@ -2002,7 +2002,7 @@ void CPropertyItem::SendToControl()
 		}
 		else if (m_cNumber1 && m_cNumber2)
 		{
-			char x[256]; char y[256]; char z[256];
+			char x[MP_SIZE]; char y[MP_SIZE]; char z[MP_SIZE];
 			sscanf(m_value, "%[^,],%[^,],%s", &x, &y, &z);
 			m_cNumber->SetValue(x);
 			m_cNumber1->SetValue(y);
@@ -2010,7 +2010,7 @@ void CPropertyItem::SendToControl()
 		}
 		else if (m_cNumber1)
 		{
-			char x[256]; char y[256];
+			char x[MP_SIZE]; char y[MP_SIZE];
 			sscanf(m_value, "%[^,],%s", &x, &y);
 			m_cNumber->SetValue(x);
 			m_cNumber1->SetValue(y);
@@ -2463,7 +2463,7 @@ void CPropertyItem::VarToValue()
 		case ePropertyFloat: {
 				float value;
 				m_pVariable->Get(value);
-				PropertyItem_Private::FormatFloatForUICString(m_value, FLOAT_NUM_DIGITS, value); // PERSONAL VERIFY: Float formatting should match CNumberCtrl!
+				PropertyItem_Private::FormatFloatForUICString(m_value, FLOAT_NUM_DIGITS, value); // PERSONAL IMPROVE: Float formatting should match CNumberCtrl!
 			}
 			break;
 		case ePropertyTime:{
