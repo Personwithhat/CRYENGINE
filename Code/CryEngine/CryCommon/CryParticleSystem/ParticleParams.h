@@ -23,11 +23,12 @@ BASIC_TYPE_INFO(CCryName);
 
 ///////////////////////////////////////////////////////////////////////
 
+// PERSONAL IMPROVE: Should tHuge usage be replaced with CTimeValue::Max()? Accomplishes the same in principle?
 //! Use for practically infinite values, to simplify comparisons.
 //! 1e9 s > 30 years, 1e9 m > earth-moon distance.
 //! Convertible to int32.
 #define fHUGE 1e9f
-#define tHUGE (CTimeValue::Max())
+#define tHUGE (CTimeValue(1'000'000'000))
 
 //! Convert certain parameters where zero denotes an essentially infinite value.
 ILINE float ZeroIsHuge(float f)

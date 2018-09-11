@@ -21,6 +21,7 @@ void CryFatalError(const char*, ...);
 #define isMP   std::is_base_of<boost::multiprecision::newNum<T>, T>::value
 
 // Limit a function to mpfloat-type's e.g. mpfloat, rTime, nTime, kTime, etc.
+// PERSONAL IMPROVE: Get only the 'typename XXXX =0' portion into macro, to keep 'template XX' setup??
 #define MPOnly template <class T, typename boost::enable_if_c<isMP>::type* = 0>
 
 // Limit a function to NON mpfloat types

@@ -8,9 +8,7 @@
 
 namespace yasli
 {
-// PERSONAL TODO: Clean up all MPOff's and isMP's! To read neater/etc. (Perhaps remove the former? :\)
 MPOff  ILINE T DefaultSinglestep() { return (T)(std::is_integral<T>::value ? mpfloat(1) : mpfloat("0.1")); }
-
 MPOnly ILINE T DefaultSinglestep() { return T("0.1"); }
 
 template<class T>

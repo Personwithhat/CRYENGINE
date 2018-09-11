@@ -614,8 +614,7 @@ ILINE int32 decm3(int32 i) { return i - 1 + ((i - 1) >> 31 & 3); }
 //! \param[in] timeDelta    time interval
 //! \param[in] to           the target value
 //! \param[in] smoothTime   timescale for smoothing
-template<typename T, typename boost::disable_if_c< isMP >::type* = 0> 
-ILINE void SmoothCD(
+MPOff ILINE void SmoothCD(
   T& val,
   T& valRate,
   const CTimeValue& timeDeltaIn,
@@ -648,8 +647,7 @@ ILINE void SmoothCD(
 }
 
 // Smoothing precise values
-template<typename T, typename boost::enable_if_c< isMP >::type* = 0> 
-ILINE void SmoothCD(
+MPOnly ILINE void SmoothCD(
 		T& valIn,
 		rTime& valRate,
 		const CTimeValue& timeDelta,

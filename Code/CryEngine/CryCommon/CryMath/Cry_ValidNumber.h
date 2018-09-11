@@ -113,7 +113,7 @@ void SetInvalid(T& val)
 }
 
 // Similar setup to CryMath/Random.h
-template <class T, typename boost::disable_if_c<isMP>::type* = 0>
+MPOff
 inline bool IsValid(const T& val)
 {
 	return ValidNumber::Type<T>::type::IsValid(val);
@@ -122,7 +122,7 @@ inline bool IsValid(const T& val)
 MPOnly
 inline bool IsValid(const T& val)
 {
-	return true; // PERSONAL TODO: Perhaps add better IsValid's for mpfloat/CTimeValue
+	return true;
 }
 
 // Alias

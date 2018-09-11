@@ -247,13 +247,11 @@ class OptSpline
 	typedef OptSpline<T> self_type;
 
 public:
-
 	typedef T                 value_type;
 	typedef ClampedKey<T>     key_type;
 	typedef TSpline<key_type> source_spline;
 
-protected:
-
+public:
 	static const int DIM = sizeof(value_type) / sizeof(float);
 
 	template<class S>
@@ -321,8 +319,8 @@ protected:
 	typedef array<UnitFloat8>                 VStore;
 	typedef array<TFixed<int8, 2, 127, true>> SStore;
 
+protected:
 	// Element storage
-
 	struct Point
 	{
 		TStore st;	//!< Time of this point.

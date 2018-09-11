@@ -174,7 +174,7 @@ public:
 		ar(softLimit_.max, "softMax", "SoftMax");
 	}
 
-public: // Conversions PERSONAL VERIFY: Perhaps in rewrites implement this as a cleaner workaround?
+public: // Conversions PERSONAL IMPROVE: Perhaps in rewrites implement this as a cleaner workaround?
 
 	// Convert from mpfloat TO lossy/other-strong types.
 	template <class T = Type, typename boost::enable_if_c<isMP>::type* = 0>
@@ -282,7 +282,7 @@ public: // Limit settings
 	Type minValue() const { return hasMinMax() ? hardLimit_.min : std::numeric_limits<Type>::min(); }
 	Type maxValue() const { return hasMinMax() ? hardLimit_.max : std::numeric_limits<Type>::max(); }
 
-	// PERSONAL VERIFY: Until Q-related stuff has increased accuracy, limited to doubles......
+	// PERSONAL IMPROVE: Until Q-related stuff has increased accuracy, limited to doubles......
 	double minValueD() const override { return (double)minValue(); } 
 	double maxValueD() const override { return (double)maxValue(); }
 

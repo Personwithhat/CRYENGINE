@@ -53,7 +53,7 @@ bool Serialize(Serialization::IArchive& ar, std::vector<SBezierKey>& value, cons
 			key = str.Tokenize(",", curPos);
 			while (!key.empty())
 			{
-				char keyTime[256];
+				char keyTime[MP_SIZE];
 				float keyValue;
 				Vec2 keyInTan;
 				Vec2 keyOutTan;

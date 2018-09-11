@@ -158,9 +158,8 @@ struct ScriptAnyValue
 	bool CopyFromTableTo(Vec3& value) const    { return CopyFromTableToXYZ(value.x, value.y, value.z); }
 	bool CopyFromTableTo(Ang3& value) const    { return CopyFromTableToXYZ(value.x, value.y, value.z); }
 
-	// PERSONAL TODO: As with any .conv<> setups, some additional overhead due to construction/conversino. Can perhaps be improved.
-						//	  Plus, might need to allow rTime/etc. storage in variant type directly to remove excess casts......
-						// Hrm, maybe create an 'mpfloat/rTime/etc.' variant type???
+	// PERSONAL IMPROVE: Create a 'variant-compatible' mpfloat etc. type that can work without excessive conversions (no .conv<>())
+	// So that ScriptAnyValue could handle rTime, nTime, etc. instead of just mpfloat. OR do a #include of mpfloat.types >.>
 	MPOnly bool CopyTo(T& value) const { if (GetType() == EScriptAnyType::MPFloat) { value = GetMP().conv<T>(); return true; } return false; }
 	TVOnly bool CopyTo(T& value) const { if (GetType() == EScriptAnyType::Time)	 { value = GetTime();			return true; } return false; }
 

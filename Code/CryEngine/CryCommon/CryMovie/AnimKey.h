@@ -25,7 +25,7 @@
 
 struct STrackKey
 {
-	CTimeValue          m_time; // PERSONAL TODO: Is this normalized time?
+	CTimeValue          m_time;
 
 	static const char* GetType()                 { return "Key"; }
 	static bool        DerivesTrackDurationKey() { return false; }

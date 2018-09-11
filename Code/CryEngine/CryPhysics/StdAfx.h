@@ -101,11 +101,8 @@ ILINE bool is_valid(unsigned int op) { return true; }
 ILINE bool is_valid(const Quat& op) { return is_valid(op|op); }
 
 // Prevent CTimeValue/mpfloat ambiguity's
-template<class T, typename boost::disable_if_c<
-	isMP || std::is_same<T,CTimeValue>::value
->::type* = 0>
+template<class T, typename boost::disable_if_c< isMP || isTV >::type* = 0>
 bool is_valid(const T&op) { return is_valid(op.x*op.x + op.y*op.y + op.z*op.z); }
-
 
 #define VALIDATOR_LOG(pLog,str) if (pLog) pLog->Log("%s", str) //OutputDebugString(str)
 #define VALIDATORS_START bool validate( const char *strSource, ILog *pLog, const Vec3 &pt,\

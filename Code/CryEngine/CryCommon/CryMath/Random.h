@@ -51,7 +51,7 @@ inline uint32 cry_random_uint32()
 //! Scalar ranged random function.
 //! Any orderings work correctly: minValue <= maxValue and minValue >= minValue.
 //! \return Random value between minValue and maxValue (inclusive).
-template <class T, typename boost::disable_if_c<isMP>::type* = 0>
+MPOff
 inline T cry_random(const T minValue, const T maxValue)
 {
 	return gEnv->pSystem->GetRandomGenerator().GetRandom(minValue, maxValue);
