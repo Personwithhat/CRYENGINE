@@ -762,7 +762,9 @@ bool CTrackViewBatchRenderDlg::LoadOutputPreset(const char* szPathName)
 		if (selectedFpsIdx == -1)
 		{
 			const char* szCustomFps = fpsNode->getContent();
-			sscanf(szCustomFps, "%d", &m_customFPS);
+			int tmp = 0;
+			sscanf(szCustomFps, "%d", &tmp);
+			m_customFPS = tmp;
 
 			m_outputGroup.pFpsField->setCurrentIndex(-1);
 			m_outputGroup.pFpsField->setCurrentText(QObject::tr(szCustomFps));

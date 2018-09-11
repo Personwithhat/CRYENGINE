@@ -377,17 +377,11 @@ bool CXmlNode::getAttr(const char* key, CryGUID& value) const
 //////////////////////////////////////////////////////////////////////////
 void CXmlNode::setAttr(const char* key, const CTimeValue& value)
 {
-	setAttr(key, value.GetSeconds());
+	setAttr(key, value.m_lValue);
 }
 bool CXmlNode::getAttr(const char* key, CTimeValue& value) const
 {
-	const char* svalue = GetValue(key);
-	if (svalue)
-	{
-		value.SetSeconds(svalue);
-		return true;
-	}
-	return false;
+	return getAttr(key, value.m_lValue);
 }
 
 #define MP_FUNCTION(T)\

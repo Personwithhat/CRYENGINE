@@ -58,10 +58,6 @@ bool Serialize(Serialization::IArchive& ar, std::vector<SBezierKey>& value, cons
 				Vec2 keyInTan;
 				Vec2 keyOutTan;
 				int keyInTanType, keyOutTanType, keyBreakTan;
-
-				// PERSONAL TODO: Hard to debug/test/catch these types of edits.
-				// Probably best to grep sscanf. Not TOO many files.
-				// Also would need to clarify on buffer sizing, 256? Lower, higher? Convert to CVAR as before.
 				int res = sscanf(key, "%[^:]:%g:%g:%g:%g:%g:%d:%d:%d",
 				                 &keyTime, &keyValue,
 				                 &keyInTan.x, &keyInTan.y,

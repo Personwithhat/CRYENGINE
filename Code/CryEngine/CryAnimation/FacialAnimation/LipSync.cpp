@@ -314,15 +314,16 @@ void CFacialSentence::Serialize(XmlNodeRef& node, bool bLoading)
 			while (!key.empty())
 			{
 				char sPhoneme[128];
-				string start, end;
-				PREFAST_SUPPRESS_WARNING(6031) sscanf(key, "%s:%s:%127s", &start, &end, sPhoneme); // PERSONAL VERIFY:
+				char start[MP_SIZE];
+				char end[MP_SIZE];
+				PREFAST_SUPPRESS_WARNING(6031) sscanf(key, "%s:%s:%127s", &start, &end, sPhoneme);
 				key = strall.Tokenize(",", curPos);
 
 				Phoneme ph;
 				cry_strcpy(ph.phoneme, sPhoneme);
 				ph.intensity = 1;
-				ph.time.SetSeconds(start.c_str());
-				ph.endtime.SetSeconds(end.c_str());
+				ph.time.SetSeconds(start);
+				ph.endtime.SetSeconds(end);
 				m_phonemes.push_back(ph);
 			}
 		}

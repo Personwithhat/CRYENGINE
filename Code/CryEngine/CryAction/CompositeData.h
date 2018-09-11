@@ -111,7 +111,7 @@ static inline TBasicType ComposeValue(const IMetadata* metadata)
 		v = TBasicType(ComposeValue<QuatT>(dt, sz));
 		break;
 	case eBT_TVal:
-		// WARNING: memcpy issues?
+		// PERSONAL DEBUG: memcpy issues?
 		//v = TBasicType(ComposeValue<CTimeValue>(dt, sz));
 		assert(0);
 		break;

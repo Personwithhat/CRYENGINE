@@ -664,8 +664,8 @@ void CResponseManager::SetAllResponseData(DRS::ValuesListIterator start, DRS::Va
 	}
 
 	uint32 executionCounter;
-	string startTime;
-	string endTime;
+	char startTime[MP_SIZE];
+	char endTime[MP_SIZE];
 
 	DRS::ValuesString collectionAndVariable;
 	DRS::ValuesString collectionName;
@@ -683,12 +683,11 @@ void CResponseManager::SetAllResponseData(DRS::ValuesListIterator start, DRS::Va
 			ResponsePtr pResponse = GetResponse(responseName);
 			if (pResponse)
 			{
-				// PERSONAL VERIFY: Stuff like this is hard to catch. Grep all sscanf?
-				if (sscanf(it->second.c_str(), "%u,%s,%s", &executionCounter, &startTime, &endTime) == 3)
+				if (sscanf(it->second.c_str(), "%u,%[^,],%s", &executionCounter, &startTime, &endTime) == 3)
 				{
 					pResponse->SetExecutionCounter(executionCounter);
-					pResponse->SetLastStartTime(startTime.c_str());
-					pResponse->SetLastEndTime(endTime.c_str());
+					pResponse->SetLastStartTime(startTime);
+					pResponse->SetLastEndTime(endTime);
 				}
 				else
 				{

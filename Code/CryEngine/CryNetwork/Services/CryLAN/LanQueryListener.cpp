@@ -171,23 +171,21 @@ void CLanQueryListener::ProcessPongFrom(const uint8* buffer, size_t bufferLength
 		return;
 	if (0 != memcmp(PONG, buffer, PONG_LENGTH))
 		return;
-	string serNumber;
-/*#if defined(__GNUC__)
+	char serNumber[MP_SIZE];
+#if defined(__GNUC__)
 	{
 		char serNumBuffer[bufferLength - PONG_LENGTH + 1];
 		memcpy(serNumBuffer, buffer + PONG_LENGTH, bufferLength - PONG_LENGTH);
 		serNumBuffer[bufferLength - PONG_LENGTH] = 0;
-		long long num = 0;
-		if (sscanf(serNumBuffer, "%lld", &num) != 1)
+		if (sscanf(serNumBuffer, "%s", &serNumber) != 1)
 			return;
-		serNumber = (int64)num;
 	}
-#else*/
+#else
 	if (1 != _snscanf((const char*)buffer + PONG_LENGTH, bufferLength - PONG_LENGTH, "%s", &serNumber))
 		return;
-//#endif
+#endif
 
-	CTimeValue when(serNumber.c_str());
+	CTimeValue when(serNumber);
 	// make sure it matches what we stored
 	if (when != iter->second)
 		return;

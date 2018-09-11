@@ -142,7 +142,7 @@ bool IsEquivalent(const T& a, const U& b)
 	return ValidNumber::Type<T>::type::IsEquivalent(a, b);
 }
 
-// Similar setup to CryMath/Random.h, a tad messier....this is done for unit tests though so it doesn't matter all that much(?)
+// PERSONAL NOTE: Similar setup to CryMath/Random.h, a tad messier....this is done for unit tests though so it doesn't matter all that much(?)
 template<typename T, typename U, typename E, typename boost::enable_if_c<isMP>::type* = 0>
 bool IsEquivalent(const T& a, const U& b, E e)
 {

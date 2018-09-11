@@ -115,12 +115,7 @@ MPOnly bool DecodeString(const char* buf, T& value)
 }
 TVOnly bool DecodeString(const char* buf, T& value)
 {
-	value.SetSeconds(0);
-	mpfloat temp;
-	bool ok = DecodeString(buf, temp);
-	if (ok)
-		value.SetSeconds(temp);
-	return ok;
+	return DecodeString(buf, value.m_lValue);
 }
 
 bool DecodeString(const char* buf, ScriptAnyValue& value)

@@ -30,8 +30,7 @@ public:
 
 	void Visit(CTimeValue& i)
 	{
-		m_ok = 1;
-		i.SetSeconds(m_data); // PERSONAL VERIFY: Urgh...how to do zie checks/etc. instead fo sscanf??
+		Visit(i.m_lValue);
 	}
 
 	void Visit(Vec3& i)
@@ -122,7 +121,7 @@ public:
 
 	void Visit(CTimeValue i)
 	{
-		m_out = i.GetSeconds().str();
+		Visit(i.m_lValue);
 	}
 
 	void Visit(Vec3 i)

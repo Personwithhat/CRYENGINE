@@ -64,7 +64,7 @@ struct STimeDemoHeader
 	//////////////////////////////////////////////////////////////////////////
 	int    numFrames;   // Number of frames.
 	int    nFrameSize;  // Size of the per frame data in bytes.
-	CTimeValue totalTime; // WARNING: memcpy issues?
+	CTimeValue totalTime; // PERSONAL DEBUG: memcpy issues?
 	char   levelname[128];
 	// @see ETimeDemoFileFlags
 	uint32 nDemoFlags;

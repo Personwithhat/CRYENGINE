@@ -65,18 +65,18 @@ namespace NullDRS
 		virtual DRS::IVariable*      CreateVariable(const CHashedString& name, const CHashedString& initialValue) override { return nullptr; }
 
 		virtual DRS::IVariable*		  CreateVariable(const CHashedString& name, const CTimeValue& initialValue) override { return nullptr; }
-		virtual bool					  SetVariableValue(const CHashedString& name, const CTimeValue& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) override { return true; }
+		virtual bool					  SetVariableValue(const CHashedString& name, const CTimeValue& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) override { return true; }
 
 		#define MP_FUNCTION(T)\
 		virtual DRS::IVariable*		  CreateVariable(const CHashedString& name, const T& initialValue) override { return nullptr; }\
-		virtual bool					  SetVariableValue(const CHashedString& name, const T& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) override { return true; }
+		virtual bool					  SetVariableValue(const CHashedString& name, const T& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) override { return true; }
       #include <CrySystem\mpfloat.types>
 		#undef MP_FUNCTION
 
-		virtual bool                 SetVariableValue(const CHashedString& name, int newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) override { return true; }
-		virtual bool                 SetVariableValue(const CHashedString& name, float newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) override { return true; }
-		virtual bool                 SetVariableValue(const CHashedString& name, bool newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) override { return true; }
-		virtual bool                 SetVariableValue(const CHashedString& name, const CHashedString& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) override { return true; }
+		virtual bool                 SetVariableValue(const CHashedString& name, int newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) override { return true; }
+		virtual bool                 SetVariableValue(const CHashedString& name, float newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) override { return true; }
+		virtual bool                 SetVariableValue(const CHashedString& name, bool newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) override { return true; }
+		virtual bool                 SetVariableValue(const CHashedString& name, const CHashedString& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) override { return true; }
 
 
 		virtual DRS::IVariable*      GetVariable(const CHashedString& name) const override { return nullptr; }

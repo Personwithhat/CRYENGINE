@@ -243,11 +243,10 @@ void CStatoscopeIntervalGroup::WriteDescEvent(void* p) const
 	}
 }
 
-// PERSONAL VERIFY: More data double-checks.
 #define MP_FUNCTION(T)\
 void CStatoscopeFrameRecordWriter::AddValue(const T& f)\
 {\
-	m_pDataWriter->WriteData(f);\
+	m_pDataWriter->WriteDataStr(f.str().c_str());\
 	++m_nWrittenElements;\
 }
 #include <CrySystem\mpfloat.types>
@@ -255,7 +254,7 @@ void CStatoscopeFrameRecordWriter::AddValue(const T& f)\
 
 void CStatoscopeFrameRecordWriter::AddValue(const CTimeValue& f)
 {
-	AddValue(f.GetSeconds());
+	AddValue(f.m_lValue);
 }
 
 void CStatoscopeFrameRecordWriter::AddValue(float f)

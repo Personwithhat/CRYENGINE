@@ -526,7 +526,7 @@ protected:
 			                + 1
 #endif
 			;
-			m_pSpline = new(malloc(nAlloc))Spline(nKeys);
+			m_pSpline = new(malloc(nAlloc))Spline(nKeys);		// PERSONAL DEBUG: Allocation issues with ctimevalue/mpfloat?
 		}
 		else
 			m_pSpline = NULL;
@@ -554,7 +554,7 @@ public:
 		if (!in.empty() && in.num_keys() != 0)
 		{
 			alloc(in.num_keys());
-			memcpy(m_pSpline, in.m_pSpline, in.m_pSpline->alloc_size()); // WARNING: memcpy issues with CTimeValue?
+			memcpy(m_pSpline, in.m_pSpline, in.m_pSpline->alloc_size()); // PERSONAL DEBUG: memcpy issues with CTimeValue?
 			m_pSpline->validate();
 		}
 		else

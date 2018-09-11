@@ -138,11 +138,11 @@ struct IVariableCollection
 	virtual IVariable* CreateVariable(const CHashedString& name, const CHashedString& initialValue) = 0;
 
 	virtual IVariable* CreateVariable(const CHashedString& name, const CTimeValue& initialValue) = 0;
-	virtual bool SetVariableValue(const CHashedString& name, const CTimeValue& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) = 0;
+	virtual bool SetVariableValue(const CHashedString& name, const CTimeValue& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) = 0;
 
 	#define MP_FUNCTION(T)\
 	virtual IVariable* CreateVariable(const CHashedString& name, const T& initialValue) = 0;\
-	virtual bool SetVariableValue(const CHashedString& name, const T& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) = 0;
+	virtual bool SetVariableValue(const CHashedString& name, const T& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) = 0;
 	#include "../CrySystem/mpfloat.types"
 	#undef MP_FUNCTION
 
@@ -159,10 +159,10 @@ struct IVariableCollection
 	 * @return Returns if the Set operation was successful.
 	 * @see CreateVariable, SetVariableValue (by Variable-Pointer), GetVariable
 	 */
-	virtual bool SetVariableValue(const CHashedString& name, int newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) = 0;
-	virtual bool SetVariableValue(const CHashedString& name, float newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) = 0;
-	virtual bool SetVariableValue(const CHashedString& name, bool newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) = 0;
-	virtual bool SetVariableValue(const CHashedString& name, const CHashedString& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = CTimeValue(-1)) = 0;
+	virtual bool SetVariableValue(const CHashedString& name, int newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) = 0;
+	virtual bool SetVariableValue(const CHashedString& name, float newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) = 0;
+	virtual bool SetVariableValue(const CHashedString& name, bool newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) = 0;
+	virtual bool SetVariableValue(const CHashedString& name, const CHashedString& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) = 0;
 
 	/**
 	 * Will Fetch the variable from the collection with the specified name.

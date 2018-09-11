@@ -697,8 +697,6 @@ namespace Schematyc2
 			CRY_ASSERT(szInput);\
 			if (szInput)\
 			{\
-				/*const int	itemCount = sscanf(szInput, MPFLOAT_FMT, &output);*/\
-				/*CRY_ASSERT(itemCount == 1);*/\
 				output = szInput;\
 			}\
 			return output;\
@@ -717,15 +715,7 @@ namespace Schematyc2
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		inline CTimeValue TimeFromString(const char* szInput, const CTimeValue& defaultOutput = 0)
 		{
-			CTimeValue output = defaultOutput;
-			CRY_ASSERT(szInput);
-			if (szInput)
-			{
-				//const int	itemCount = sscanf(szInput, MPFLOAT_FMT, &output);
-				//CRY_ASSERT(itemCount == 1);
-				output.SetSeconds(szInput);
-			}
-			return output;
+			return CTimeValue(MPFromString(szInput, defaultOutput.m_lValue));
 		}
 
 		// Write float to string.

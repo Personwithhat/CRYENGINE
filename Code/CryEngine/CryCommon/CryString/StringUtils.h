@@ -104,7 +104,7 @@ MPOnly inline string toString(const T& nNumber)
 
 TVOnly inline string toString(const T& nNumber)
 {
-	return nNumber.GetSeconds().str();
+	return toString(nNumber.m_lValue);
 }
 
 inline string toString(bool nNumber)
