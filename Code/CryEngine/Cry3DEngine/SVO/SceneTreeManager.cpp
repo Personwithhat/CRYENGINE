@@ -232,7 +232,7 @@ void CSvoManager::Render(bool bSyncUpdate)
 						break;
 					}
 
-					CrySleep(5);
+					CryLowLatencySleep("0.005");
 				}
 
 				gSvoEnv->m_svoFreezeTime.SetSeconds(-1);

@@ -256,7 +256,7 @@ void CCompressionManager::ThreadEntry()
 {
 	while (!m_threadRequestQuit)
 	{
-		CrySleep(60);
+		CryLowLatencySleep("0.06");
 
 		ManagePolicies();
 	}

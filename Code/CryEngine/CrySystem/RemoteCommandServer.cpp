@@ -718,7 +718,7 @@ void CRemoteCommandServer::ThreadEntry()
 		// Limit the CPU usage
 		// TODO: consider using some event based mechanism since the only source of
 		// work for this thread is the network we can esily be triggered by that.
-		CrySleep(5);
+		CryLowLatencySleep("0.005");
 	}
 }
 

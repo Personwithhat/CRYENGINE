@@ -1732,7 +1732,7 @@ void CGeometryManager::PrepareGeometry(SMMRMGeometry* geometry)
 		success &= PrepareLOD(geometry, statObj, i, bResubmit);
 		IF (bResubmit, 0)
 		{
-			CrySleep(10);
+			CryLowLatencySleep("0.01");
 			TPVRNPrepGeomJob job(geometry);
 			job.SetClassInstance(this);
 			job.RegisterJobState(&geometry->geomPrepareState);

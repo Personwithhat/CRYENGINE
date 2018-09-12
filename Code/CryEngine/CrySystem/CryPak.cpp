@@ -372,7 +372,7 @@ static void fileAccessMessage(int threadIndex, const char* inName)
 		OutputDebugString(msg);
 
 		CryMessageBox(msg.c_str(), "TRC/TCR Fail: Synchronous File Access", eMB_Error);
-		CrySleep(33);
+		CryLowLatencySleep("0.033");
 
 		s_threadAndRecursionGuard = false;
 	}

@@ -5476,7 +5476,7 @@ void NavigationSystemBackgroundUpdate::Thread::ThreadEntry()
 		}
 		else
 		{
-			CryLowLatencySleep(CTimeValue().SetMilliSeconds(50));
+			CryLowLatencySleep("0.05");
 		}
 	}
 }

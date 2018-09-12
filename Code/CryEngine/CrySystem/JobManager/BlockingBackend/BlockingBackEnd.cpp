@@ -318,7 +318,7 @@ void JobManager::BlockingBackEnd::CBlockingBackEndWorkerThread::ThreadEntry()
 				int iter = 0;
 				while (!pJobInfoBlockState->IsReady())
 				{
-					CrySleep(iter++ > 10 ? 1 : 0);
+					CryLowLatencySleep(iter++ > 10 ? "0.001" : "0");
 				}
 				;
 

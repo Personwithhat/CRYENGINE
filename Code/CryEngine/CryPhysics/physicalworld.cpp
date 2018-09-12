@@ -2444,7 +2444,7 @@ void CPhysicalWorld::TimeStep(const CTimeValue& time_intervalIn, int flags)
 			}
 		}
 		for(; m_nWorkerThreads!=m_vars.numThreads-FIRST_WORKER_THREAD; )
-			CrySleep(1);
+			CryLowLatencySleep("0.001");
 	}
 
 	{

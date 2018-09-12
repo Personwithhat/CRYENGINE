@@ -3041,7 +3041,7 @@ Start:
 				SShaderAsyncInfo::FlushPendingShaders();
 			}
 			else
-				CrySleep(1);
+				CryLowLatencySleep("0.001");
 		}
 		// Compile FXC shaders or next iteration of internal shaders
 		SShaderAsyncInfo::FlushPendingShaders();
@@ -4100,7 +4100,7 @@ void CAsyncShaderTask::CShaderThread::ThreadEntry()
 		if (!CRenderer::CV_r_shadersasynccompiling)
 			CrySleep(250);
 		else
-			CrySleep(25);
+			CryLowLatencySleep("0.025");
 	}
 }
 

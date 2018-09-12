@@ -230,7 +230,7 @@ void CStreamingIOThread::ThreadEntry()
 
 				while (m_bPaused)
 				{
-					CrySleep(10);
+					CryLowLatencySleep("0.01");
 				}
 			}
 

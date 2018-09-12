@@ -1573,7 +1573,7 @@ void C3DEngine::RenderScene(const int nRenderFlags, const SRenderingPassInfo& pa
 
 	if (GetCVars()->e_Sleep > 0)
 	{
-		CrySleep(GetCVars()->e_Sleep);
+		CryLowLatencySleep(GetCVars()->e_Sleep);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////

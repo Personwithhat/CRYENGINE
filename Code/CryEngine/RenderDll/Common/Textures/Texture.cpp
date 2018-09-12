@@ -956,7 +956,7 @@ void CTexture::RT_Precache()
 					StreamState_UpdatePrep();
 				}
 
-				CrySleep(1);
+				CryLowLatencySleep("0.001");
 			}
 
 			SRenderStatistics::Write().m_fTexUploadTime += (iTimer->GetAsyncTime() - time0).GetSeconds();

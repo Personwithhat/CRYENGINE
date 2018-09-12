@@ -723,7 +723,7 @@ void CTexture::StreamCopyMipsTexToTex(STexPoolItem* const pSrcItem, int nSrcMipO
 		// We can use the move engine!
 		UINT64 fence = StreamCopyMipsTexToTex_MoveEngine(pSrcItem, nSrcMipOffset, pDstItem, nDstMipOffset, nNumMips);
 		while (gcpRendD3D->GetPerformanceDevice().IsFencePending(fence))
-			CrySleep(1);
+			CryLowLatencySleep("0.001");
 	}
 #endif
 	else

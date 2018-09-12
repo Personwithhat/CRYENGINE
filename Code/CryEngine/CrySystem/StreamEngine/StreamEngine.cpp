@@ -560,7 +560,7 @@ void CStreamEngine::UpdateAndWait(bool bAbortAll)
 		// we wake the io threads here to ensure they are removed correctly;
 		for (uint32 i = 0; i < (uint32)eIOThread_Last; ++i)
 			SignalToStartWork((EIOThread)i, true);
-		CrySleep(10);
+		CryLowLatencySleep("0.01");
 	}
 
 	if (bAbortAll)

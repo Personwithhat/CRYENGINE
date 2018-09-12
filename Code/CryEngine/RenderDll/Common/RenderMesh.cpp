@@ -4424,7 +4424,7 @@ bool CRenderMesh::SyncAsyncUpdate(int threadID, bool block)
 		{
 			if (!block)
 				return false;
-			CrySleep(iter > 10 ? 1 : 0);
+			CryLowLatencySleep(iter > 10 ? "0.001" : "0");
 			++iter;
 		}
 		UnlockStream(VSF_GENERAL);

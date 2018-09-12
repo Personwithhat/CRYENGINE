@@ -3176,7 +3176,7 @@ void CDataWriter::WriteData(const void* vpData, int vsize)
 				return;
 			}
 
-			CrySleep(1);
+			CryLowLatencySleep("0.001");
 		}
 		while (true);
 
@@ -3427,7 +3427,7 @@ void CTelemetryDataWriter::SendToSocket(const char* pData, size_t nSize, const c
 					return;
 				}
 			}
-			CrySleep(1);
+			CryLowLatencySleep("0.001");
 		}
 	}
 }
@@ -3460,7 +3460,7 @@ void CStatoscopeIOThread::Flush()
 	CTimeValue startTime = gEnv->pTimer->GetAsyncTime();
 	while (m_sendJobs.size())
 	{
-		CrySleep(1);
+		CryLowLatencySleep("0.001");
 		CTimeValue currentTime = gEnv->pTimer->GetAsyncTime();
 		CTimeValue timeout = m_pDataWriter->GetWriteTimeout();
 		if (timeout != 0 && (currentTime - startTime) > timeout)
@@ -3497,7 +3497,7 @@ void CStatoscopeIOThread::ThreadEntry()
 		}
 		else
 		{
-			CrySleep(1);
+			CryLowLatencySleep("0.001");
 		}
 	}
 }

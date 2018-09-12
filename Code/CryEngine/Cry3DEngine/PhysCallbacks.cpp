@@ -754,7 +754,7 @@ void CDeferredCollisionEventOnPhysCollision::Sync()
 	// in normal execution case, m_bTaskRunning should always be false when we are here
 	while (m_bTaskRunning)
 	{
-		CrySleep(1); // yield
+		CryLowLatencySleep("0.001"); // yield
 	}
 }
 

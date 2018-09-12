@@ -91,7 +91,7 @@ void CStroboscope::StopProfiling()
 void CStroboscope::ThreadEntry()
 {
 	while (gEnv->pTimer->GetAsyncCurTime() < m_startTime)
-		CrySleep(10);
+		CryLowLatencySleep("0.01");
 
 	gEnv->pLog->LogAlways("[Stroboscope] Profiling started!");
 
@@ -130,7 +130,7 @@ void CStroboscope::ProfileThreads()
 	m_sampling.StartFrame = -1;
 	while (m_run)
 	{
-		CrySleep(100 / m_throttle);
+		CryLowLatencySleep(mpfloat("0.1") / m_throttle);
 		frameId = gEnv->pRenderer->GetFrameID();
 		if (m_sampling.StartFrame == -1)
 			m_sampling.StartFrame = frameId;

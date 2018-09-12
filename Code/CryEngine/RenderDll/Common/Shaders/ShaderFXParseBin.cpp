@@ -1116,7 +1116,7 @@ SShaderBin* CShaderManBin::GetBinShader(const char* szName, bool bInclude, uint3
 						{
 							CryMessageBox(acTemp, "Invalid ShaderCache", eMB_Error);
 							bShowMessageBox = false;
-							CrySleep(33);
+							CryLowLatencySleep("0.033");
 						}
 					}
 				}

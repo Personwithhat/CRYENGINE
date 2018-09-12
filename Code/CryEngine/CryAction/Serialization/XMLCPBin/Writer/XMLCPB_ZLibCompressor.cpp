@@ -154,7 +154,7 @@ public:
 				{
 					if (pFile->m_blocks.empty())
 					{
-						CrySleep(1); // yield to give other threads a chance to do some work
+						CryLowLatencySleep("0.001"); // yield to give other threads a chance to do some work
 					}
 
 					while (!pFile->m_blocks.empty())

@@ -1289,7 +1289,7 @@ void CSystem::SleepIfInactive()
 				if (gEnv->pGameFramework->IsInTimeDemo())
 					break;
 			}
-			CrySleep(5);
+			CryLowLatencySleep("0.005");
 		}
 	}
 #endif

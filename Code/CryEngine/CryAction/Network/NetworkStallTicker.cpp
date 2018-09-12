@@ -28,11 +28,11 @@ void CNetworkStallTickerThread::ThreadEntry()
 
 		if (gotLockLastTime)
 		{
-			CrySleep(33);
+			CryLowLatencySleep("0.033");
 		}
 		else
 		{
-			CrySleep(1);
+			CryLowLatencySleep("0.001");
 		}
 
 		{

@@ -859,7 +859,7 @@ DynArray<std::uint16_t> CTexture::RenderEnvironmentCMHDR(std::size_t size, const
 				break;
 
 			// Update streaming engine
-			CrySleep(10);
+			CryLowLatencySleep("0.01");
 			gEnv->pSystem->GetStreamEngine()->Update(eStreamTaskTypeTerrain | eStreamTaskTypeTexture | eStreamTaskTypeGeometry);
 
 			// Flush and garbage collect
@@ -1281,7 +1281,7 @@ void CTexture::CopySliceChain(CDeviceTexture* const pDstDevTex, int nDstNumMips,
 		UINT64 fence = pDMA->InsertFence(D3D11_INSERT_FENCE_NO_KICKOFF);
 		pDMA->Submit();
 		while (gcpRendD3D->GetPerformanceDevice().IsFencePending(fence))
-			CrySleep(1);
+			CryLowLatencySleep("0.001");
 	}
 #endif
 	else

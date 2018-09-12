@@ -2800,7 +2800,7 @@ void CClothPiece::DrawDebug(const SVertexAnimationJob* pVertexAnimation)
 {
 	// wait till the SW-Skinning jobs have finished
 	while (*pVertexAnimation->pRenderMeshSyncVariable)
-		CrySleep(1);
+		CryLowLatencySleep("0.001");
 	m_simulator.DrawHelperInformation();
 }
 

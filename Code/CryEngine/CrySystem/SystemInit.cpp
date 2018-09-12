@@ -378,7 +378,7 @@ public:
 		while (true)
 		{
 			CmdCrashTest(&commandArg);
-			CrySleep(1); // Allow other threads to run
+			CryLowLatencySleep("0.001"); // Allow other threads to run
 		}
 	}
 

@@ -235,7 +235,7 @@ void CReadStream::Wait(const CTimeValue& nMaxWait)
 		}
 		if (!m_bFileRequestComplete)
 		{
-			CrySleep(5);
+			CryLowLatencySleep("0.005");
 		}
 
 		if (nMaxWait > 0)

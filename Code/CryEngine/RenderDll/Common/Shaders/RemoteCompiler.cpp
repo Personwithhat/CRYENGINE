@@ -363,7 +363,7 @@ EServerError CShaderSrv::Recv(CRYSOCKET Socket, std::vector<uint8>& rCompileData
 					waitingtime += 5;
 
 					// sleep a bit and try again
-					CrySleep(5);
+					CryLowLatencySleep("0.005");
 				}
 				else
 				{
