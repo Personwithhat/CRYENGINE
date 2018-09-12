@@ -501,7 +501,7 @@ void CSplineCtrlEx::MoveKeyTimes(int numChanges, int* indices, const mpfloat& sc
 	{
 		ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
-		CTimeValue lastKeyTime = -CTimeValue::Max();
+		CTimeValue lastKeyTime = CTimeValue::Min();
 		pSpline->Update();
 		for (int keyIndex = 0, keys = pSpline->GetKeyCount(); keyIndex <= keys; )
 		{
@@ -2207,14 +2207,14 @@ void CSplineCtrlEx::TimeScaleKeys(const CTimeValue& time, const CTimeValue& star
 	m_nHitKeyIndex = -1;
 
 	CTimeValue affectedRangeMin = CTimeValue::Max();
-	CTimeValue affectedRangeMax = -affectedRangeMin;
+	CTimeValue affectedRangeMax = CTimeValue::Min();
 	for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
 	{
 		ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
 		int keyCount = pSpline->GetKeyCount();
 		CTimeValue keyRangeMin = CTimeValue::Max();
-		CTimeValue keyRangeMax = -keyRangeMin;
+		CTimeValue keyRangeMax = CTimeValue::Min();
 		for (int i = 0; i < keyCount; i++)
 		{
 			if (pSpline->IsKeySelectedAtAnyDimension(i))
@@ -2253,7 +2253,7 @@ void CSplineCtrlEx::TimeScaleKeys(const CTimeValue& time, const CTimeValue& star
 			affectedRangeMax = max(affectedRangeMax, (lastAffectedKey >= keyCount - 1 ? m_timeRange.end : pSpline->GetKeyTime(lastAffectedKey)));
 
 			// Loop through all moved keys, checking whether there are multiple keys on the same frame.
-			CTimeValue lastKeyTime = -CTimeValue::Max();
+			CTimeValue lastKeyTime = CTimeValue::Min();
 			pSpline->Update();
 			for (int keyIndex = 0, keys = pSpline->GetKeyCount(); keyIndex <= keys; )
 			{
@@ -2342,7 +2342,7 @@ void CSplineCtrlEx::MoveSelectedKeys(Vec2 offset, bool copyKeys)
 	}
 
 	CTimeValue affectedRangeMin = CTimeValue::Max();
-	CTimeValue affectedRangeMax = -affectedRangeMin;
+	CTimeValue affectedRangeMax = CTimeValue::Min();
 	// For each spline...
 	for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
 	{
@@ -2350,7 +2350,7 @@ void CSplineCtrlEx::MoveSelectedKeys(Vec2 offset, bool copyKeys)
 
 		int keyCount = pSpline->GetKeyCount();
 		CTimeValue keyRangeMin = CTimeValue::Max();
-		CTimeValue keyRangeMax = -keyRangeMin;
+		CTimeValue keyRangeMax = CTimeValue::Min();
 		for (int i = 0; i < keyCount; i++)
 		{
 			CTimeValue oldTime = pSpline->GetKeyTime(i);
@@ -2966,7 +2966,7 @@ void CSplineCtrlEx::CopyKeys()
 
 	int i;
 	CTimeValue minTime = CTimeValue::Max();
-	CTimeValue maxTime = -minTime;
+	CTimeValue maxTime = CTimeValue::Min();
 
 	ISplineInterpolator* pSpline = m_splines[0].pSpline;
 
@@ -3151,7 +3151,7 @@ void CSplineCtrlEx::FitSplineToViewWidth()
 {
 	// Calculate time zoom so that whole time range fits.
 	CTimeValue t0 = CTimeValue::Max();
-	CTimeValue t1 = -CTimeValue::Max();
+	CTimeValue t1 = CTimeValue::Min();
 
 	bool bAnyKey = false;
 	for (int i = 0; i < int(m_splines.size()); ++i)

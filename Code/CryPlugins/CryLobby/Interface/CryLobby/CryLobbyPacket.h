@@ -256,9 +256,8 @@ public:
 
 	void WriteMP(const mpfloat& data)
 	{
-		// PERSONAL TODO: Should be a better way.
-		string str = data.str().c_str();
-		WriteString(str, str.size());
+		string str = data.str();
+		WriteString(str, MP_SIZE);
 	}
 
 	void WriteTime(const CTimeValue& data)
@@ -268,8 +267,9 @@ public:
 	
 	mpfloat ReadMP()
 	{
-		// PERSONAL TODO: Need a better way, can't predict str size....etc....
-		return mpfloat("");
+		char tmp[MP_SIZE];
+		ReadString(tmp, MP_SIZE);
+		return mpfloat(tmp);
 	}
 
 	CTimeValue ReadTime()

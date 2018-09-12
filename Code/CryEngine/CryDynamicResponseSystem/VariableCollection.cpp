@@ -79,7 +79,7 @@ CVariable* CVariableCollection::CreateVariable(const CHashedString& name, const 
 CVariable* CVariableCollection::CreateVariable(const CHashedString& name, const T& initialValue){\
 	return CreateVariable(name, CVariableValue(initialValue));\
 };
-#include "../CrySystem/mpfloat.types"
+#include <CrySystem\mpfloat.types>
 #undef MP_FUNCTION
 
 //--------------------------------------------------------------------------------------------------
@@ -204,7 +204,7 @@ bool CVariableCollection::SetVariableValue(const CHashedString& name, const T& n
 {\
 	return SetVariableValue(name, CVariableValue(newValue), createIfNotExisting, resetTime);\
 }
-#include "../CrySystem/mpfloat.types"
+#include <CrySystem\mpfloat.types>
 #undef MP_FUNCTION
 
 //--------------------------------------------------------------------------------------------------

@@ -227,7 +227,10 @@ private:
 	// World space matrix
 	Matrix34 m_matrix;
 
-	// Playback PERSONAL TODO: CTimeValue volatile issues.
+	// PERSONAL IMPROVE: Setting up Volatile CTimeValue() => MPFloat is not volatile compatible.
+	// Tricky to implement....postponed for now but threading won't work properly otherwise!
+	// Would require volatile overloads for everything unless I'm missing something, ugh >.>
+	// Playback
 	volatile float m_playbackTime;
 
 	// Streaming flag

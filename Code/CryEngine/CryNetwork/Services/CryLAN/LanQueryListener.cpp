@@ -287,8 +287,7 @@ void CLanQueryListener::GQ_SendPingTo(CNameRequestPtr pReq)
 	//NET_ASSERT( GetFrameType(PING_SERVER[0]) == QueryFrameHeader );
 	char buffer[64];
 	CTimeValue when = g_time;
-	string serNumber = when.GetSeconds().str();
-	cry_sprintf(buffer, "%s %s", "PING", serNumber);
+	cry_sprintf(buffer, "%s %s", "PING", when.GetSeconds().str());
 
 	m_pSocket->Send((const uint8*)buffer, strlen(buffer), addrVec[0]);
 	m_outstandingPings[addrVec[0]] = when;

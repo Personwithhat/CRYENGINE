@@ -784,7 +784,7 @@ int CLivingEntity::GetStateSnapshot(CStream &stm,const CTimeValue& time_back,int
 	}
 	if (m_timeFlying>0) {
 		stm.Write(true);
-		stm.Write(m_timeFlying.GetSeconds().str());
+		stm.Write(m_timeFlying.GetSeconds().str().c_str());
 	} else stm.Write(false);
 	unsigned int imft = 0;
 	stm.WriteNumberInBits(imft,2);
@@ -885,7 +885,7 @@ int CLivingEntity::SetStateFromSnapshot(CStream &stm, int flags)
 	}
 	stm.Read(bnz); if (bnz) {
 		const char* str;
-		stm.Read(str); m_timeFlying = CTimeValue(str); // PERSONAL VERIFY: Make sure this Read()/Write() works. Was it limited to 4MB before? 
+		stm.Read(str); m_timeFlying = CTimeValue(str); // PERSONAL DEBUG: Make sure this Read()/Write() works. Was it limited to 4MB before? 
 																	  // See void CAttrWriter::Set(const char* pAttrName, float val)
 	} else m_timeFlying.SetSeconds(0);
 	unsigned int imft; stm.ReadNumberInBits(imft,2);

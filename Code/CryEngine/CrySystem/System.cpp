@@ -2440,7 +2440,7 @@ void CSystem::GetUpdateStats(SSystemUpdateStats& stats)
 	else
 	{
 		stats.avgUpdateTime.SetSeconds(0);
-		stats.maxUpdateTime = -CTimeValue::Max();
+		stats.maxUpdateTime = CTimeValue::Min();
 		stats.minUpdateTime = CTimeValue::Max();
 		for (std::vector<std::pair<CTimeValue, CTimeValue>>::const_iterator it = m_updateTimes.begin(), eit = m_updateTimes.end(); it != eit; ++it)
 		{

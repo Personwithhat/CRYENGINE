@@ -38,7 +38,7 @@ public:
 		void                 SetValue(const CTimeValue& newValue)	override  { m_value = CVariableValue(newValue); }
 		#define MP_FUNCTION(T)\
 		void                 SetValue(const T& newValue)				override  { m_value = CVariableValue(newValue); }
-		#include "../CrySystem/mpfloat.types"
+		#include <CrySystem\mpfloat.types>
 		#undef MP_FUNCTION
 
 		int                  GetValueAsInt() const override                   { return m_value.GetValueAsInt(); };

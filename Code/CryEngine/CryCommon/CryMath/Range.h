@@ -3,7 +3,7 @@
 //! \cond INTERNAL
 
 #pragma once
-#include "../CrySystem/MPFloat.h"
+#include <CrySystem\MPFloat.h>
 
 /*!
     Class TRange, can represent anything that is a range between two values.

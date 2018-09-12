@@ -5,7 +5,7 @@
 #include "CryStringUtils.h"
 #include "CryString.h"
 #include "UnicodeFunctions.h"
-#include "../CrySystem/TimeValue.h"
+#include <CrySystem\TimeValue.h>
 
 #ifndef NOT_USE_CRY_STRING
 #include <CryCore/Platform/CryWindows.h>

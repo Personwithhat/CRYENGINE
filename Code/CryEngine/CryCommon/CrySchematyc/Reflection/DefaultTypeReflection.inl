@@ -90,7 +90,7 @@ inline void ReflectType(CTypeDesc<float>& desc)
 // #SchematycTODO : Move to STDEnv/MathTypes.h?
 inline void TimeValueToString(IString& output, const CTimeValue& input)
 {
-	output.Format("%s", string(input.GetSeconds().str()));
+	output.Format("%s", input.GetSeconds().str());
 }
 
 inline void ReflectType(CTypeDesc<CTimeValue>& desc)
@@ -106,7 +106,7 @@ inline void ReflectType(CTypeDesc<CTimeValue>& desc)
 // #SchematycTODO : Move to STDEnv/MathTypes.h?
 inline void MPToString(IString& output, const mpfloat& input)
 {
-	output.Format("%s", string(input.str())); // PERSONAL VERIFY: More hard-to-find .Format() setups with mpfloat etc.
+	output.Format("%s", input.str());
 }
 
 inline void ReflectType(CTypeDesc<mpfloat>& desc)

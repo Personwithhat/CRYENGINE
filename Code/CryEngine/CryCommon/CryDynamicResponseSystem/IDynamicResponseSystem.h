@@ -102,7 +102,7 @@ struct IVariable
 	virtual void                 SetValue(const CTimeValue& newValue) = 0;
 	#define MP_FUNCTION(T)\
 	virtual void                 SetValue(const T& newValue) = 0;
-	#include "../CrySystem/mpfloat.types"
+	#include <CrySystem\mpfloat.types>
 	#undef MP_FUNCTION
 
 	//REMARK: Fetching values as wrong type, will log warnings in non-release builds. But you will still get the misinterpreted data.
@@ -143,7 +143,7 @@ struct IVariableCollection
 	#define MP_FUNCTION(T)\
 	virtual IVariable* CreateVariable(const CHashedString& name, const T& initialValue) = 0;\
 	virtual bool SetVariableValue(const CHashedString& name, const T& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) = 0;
-	#include "../CrySystem/mpfloat.types"
+	#include <CrySystem\mpfloat.types>
 	#undef MP_FUNCTION
 
 	/**

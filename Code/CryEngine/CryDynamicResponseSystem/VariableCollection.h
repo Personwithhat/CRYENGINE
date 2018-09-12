@@ -80,7 +80,7 @@ public:
 		 #define MP_FUNCTION(T)\
 		 CVariable*           CreateVariable(const CHashedString& name, const T& initialValue) override;\
 		 bool                 SetVariableValue(const CHashedString& name, const T& newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) override;
-       #include "../CrySystem/mpfloat.types"
+		 #include <CrySystem\mpfloat.types>
 		 #undef MP_FUNCTION
 
 		 bool                 SetVariableValue(const CHashedString& name, int newValue, bool createIfNotExisting = true, const CTimeValue& resetTime = -1) override;

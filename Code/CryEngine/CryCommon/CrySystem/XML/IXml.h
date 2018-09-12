@@ -22,7 +22,7 @@ struct CryGUID;
 class CTimeValue;
 
 // For multi-precision float definition.
-#include "../MPFloat.h"
+#include <CrySystem\MPFloat.h>
 
 #if defined(_AFX) && !defined(RESOURCE_COMPILER)
 #include <CryCore/ToolsHelpers/GuidUtil.h>
@@ -263,7 +263,7 @@ public:
 	
 	virtual void setAttr(const char* key, const CTimeValue& value) = 0;
 	#define MP_FUNCTION(T) virtual void setAttr(const char* key, const T& value) = 0;
-		#include "../mpfloat.types"
+	#include <CrySystem\mpfloat.types>
 	#undef MP_FUNCTION
 
 #if (CRY_PLATFORM_LINUX && CRY_PLATFORM_64BIT) || CRY_PLATFORM_APPLE
@@ -308,7 +308,7 @@ public:
 	virtual bool getAttr(const char* key, CTimeValue& value) const = 0;
 	#define MP_FUNCTION(T)\
 	virtual bool getAttr(const char* key, T& value) const = 0;
-	#include "../mpfloat.types"
+	#include <CrySystem\mpfloat.types>
 	#undef MP_FUNCTION
 
 #if (CRY_PLATFORM_LINUX && CRY_PLATFORM_64BIT) || CRY_PLATFORM_APPLE

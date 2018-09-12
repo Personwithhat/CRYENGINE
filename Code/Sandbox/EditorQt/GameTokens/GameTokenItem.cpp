@@ -147,7 +147,7 @@ public:
 
 	void Visit(const CTimeValue& i)
 	{
-		m_out = i.str();
+		Visit(i.m_lValue);
 	}
 
 	void Visit(const mpfloat& i)

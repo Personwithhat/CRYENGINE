@@ -92,8 +92,8 @@ public:
 	};
 
 public:
-	// Harcoded animation update-value. PERSONAL VERIFY: Does this HAVE to be 6000??
-	// Why not use CPU ticks per second here from CTimer???
+	// Harcoded animation update-value. 
+	// PERSONAL DEBUG: Does this HAVE to be 6000?? Why not use CPU ticks per second here from CTimer???
 	static const int32 numTicksPerSecond = 6000;
 
 	// Enum to int or string value
@@ -163,8 +163,8 @@ public:
 	CTimeValue& SetMilliSeconds(const mpfloat& indwMilliSec) { m_lValue = indwMilliSec * mpfloat("0.001");    return *this; }
 	CTimeValue& SetMicroSeconds(const mpfloat& indwMicroSec) { m_lValue = indwMicroSec * mpfloat("0.000001"); return *this; }
 
-	// PERSONAL VERIFY: Unsure how to implement multi-threaded timevalues....
-	ILINE void AddValueThreadSafe(const CTimeValue& val) { /*CryInterlockedAdd(&m_value, val);*/ }
+	// PERSONAL IMPROVE: Unsure how to implement multi-threaded CTimeValue's
+	//ILINE void AddValueThreadSafe(const CTimeValue& val) { /*CryInterlockedAdd(&m_value, val);*/ }
 
 //**
 //** Getters
@@ -178,13 +178,9 @@ public:
 
 	string str()				  const { return m_lValue.str(); }
 
-	/* PERSONAL VERIFY: 
-			1) Need to review Max()/Min() setups, might have misplaced them!
-			2) Perhaps convert this to constexpr or whatever....find the right way.
-			3) If this min/max setup is correct, from SAnimTime max/min's.....leave as is or change limits?
-	*/
-	static CTimeValue Min() { return CTimeValue(std::numeric_limits<int32>::min()); }
-	static CTimeValue Max() { return CTimeValue(std::numeric_limits<int32>::max()); }
+	// NOTE: Returns 'lowest' not 'min()'
+	static CTimeValue Min() { return CTimeValue(mpfloat::Min()); }
+	static CTimeValue Max() { return CTimeValue(mpfloat::Max()); }
 
 //**
 //** Math Operations - CTimeValue & CTimeValue
@@ -236,7 +232,7 @@ public:
 	limit2(nTime, CTimeValue) friend CTimeValue operator*(const T& inLhs, const T2& inRhs) { CTimeValue ret; ret.m_lValue = inLhs.conv<mpfloat>() * inRhs.m_lValue; return ret; }
 
 //**
-//** Snapping time to frame multiple	PERSONAL TODO: Messy location, find a way to make this all look neater.
+//** Snapping time to frame multiple
 //** 
 	// Return time snapped to nearest multiple of given frame rate
 	CTimeValue SnapToNearest(const SAnimData::EFrameRate frameRate) const { return SnapToNearest(SAnimData::GetFrameRateValue(frameRate)); }
@@ -263,16 +259,15 @@ public:
 	CTimeValue StepToPrev(const uint frameRate)							 const { return (*this - "0.0001").SnapToPrev(frameRate); }
 
 //**
-//** Miscellaneous other functions. (Perhaps move to getters/setters? Xd)
+//** Miscellaneous other functions.
 //**
-	// PERSONAL VERIFY: Memory usage should probably be tracked for optimizing mpfloat size/etc.
+	// PERSONAL IMPROVE: Memory usage should probably be tracked for optimizing mpfloat size/etc.
 	void GetMemoryUsage(class ICrySizer* pSizer)		  const { /*Nothing*/ }
 	void GetMemoryStatistics(class ICrySizer* pSizer) const { /*Nothing*/ }
 
 	// See mpfloat func description
 	void memHACK(){ m_lValue.memHACK(); }
 
-	// PERSONAL VERIFY: That this is correct!
 	//! Useful for periodic events (e.g. water wave, blinking).
 	//! Changing TimePeriod can results in heavy changes in the returned value.
 	//! \return [0..1]
@@ -286,10 +281,10 @@ public:
 			if (!keyNode->getAttr(pName, m_lValue))
 			{
 				/*
-				// Backwards compatibility
-				float fTime = 0.0f;
-				keyNode->getAttr(pLegacyName, time);
-				m_lValue = BADMP(fTime);
+					// Backwards compatibility
+					float fTime = 0.0f;
+					keyNode->getAttr(pLegacyName, time);
+					m_lValue = BADMP(fTime);
 				*/
 				assert(false && "Should not be using legacy names anymore!");
 			}
@@ -299,36 +294,8 @@ public:
 		}
 	}
 
-	// PERSONAL VERIFY: Where should this go again? >.>
+	// Type-Info generation
 	AUTO_STRUCT_INFO;
-
-// PERSONAL VERIFY: Setting up Volatile CTimeValue() => no def's for mpfloat volatile = and == , so this fails.
-// Tricky to implement....postponed for now but threading won't work properly otherwise!
-/*public: //! For GeomCacheRenderNode.h/cpp 
-	CTimeValue(const volatile CTimeValue& inValue)
-	{
-		m_lValue = inValue.m_lValue;
-	}
-
-	mpfloat GetSeconds() const volatile
-	{
-		return *const_cast<const mpfloat*>(&m_lValue);
-	}
-
-	//! Volatile assignment
-	volatile CTimeValue& SetVol(const CTimeValue& inRhs) volatile
-	{
-		m_lValue = inRhs.m_lValue;
-		return *this;
-	};
-	volatile CTimeValue& SetVol(const volatile CTimeValue& inRhs) volatile
-	{
-		m_lValue = inRhs.m_lValue;
-		return *this;
-	};
-
-	bool operator==(const volatile CTimeValue& inRhs) const volatile { return m_lValue == inRhs.m_lValue; };
-*/
 
 public:
 	mpfloat m_lValue;     //!< Time in Seconds. Storage limited to 'least-accurate number', in this case 'Seconds'.
@@ -362,7 +329,7 @@ public:
 
 	ILINE CTimeValue abs(const CTimeValue& time) { return (time >= CTimeValue(0)) ? time : -time; }
 
-	// PERSONAL VERIFY: This is ofc not optimized....used during inrange() Fix this etc.
+	// Used during inrange()
 	ILINE int32 isneg(const CTimeValue& time) { return (time < 0) ? 1 : 0; }
 	ILINE int32 sgn(const CTimeValue& time)   { return time.GetSeconds().sign(); } // sign returns -1 if negative, 0 if zero, 1 if positive
 

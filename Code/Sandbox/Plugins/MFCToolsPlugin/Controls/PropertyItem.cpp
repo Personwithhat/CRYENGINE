@@ -1431,7 +1431,7 @@ void CPropertyItem::CreateControls(CWnd* pWndParent, CRect& textRect, CRect& ctr
 				pNumber->SetUpdateCallback(functor(*this, &CPropertyItem::OnNumberCtrlUpdate));
 				pNumber->EnableUndo(m_name + " Modified");
 				pNumber->SetMultiplier(m_valueMultiplier);
-				pNumber->SetRange(m_bHardMin ? m_rangeMin : mpfloat::Max(), m_bHardMax ? m_rangeMax : mpfloat::Min());
+				pNumber->SetRange(m_bHardMin ? m_rangeMin : mpfloat::Min(), m_bHardMax ? m_rangeMax : mpfloat::Max());
 				RegisterCtrl(pNumber);
 			}
 		}

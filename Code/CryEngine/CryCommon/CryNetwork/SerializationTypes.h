@@ -21,5 +21,5 @@ SERIALIZATION_TYPE(XmlNodeRef) // not for network - only for save games
 // POINT OF INTEREST: Serialization type is just like mpfloat type, but the chain works! :O
 SERIALIZATION_TYPE(CTimeValue)
 #define MP_FUNCTION(T) SERIALIZATION_TYPE(T)
-#include "../CrySystem/mpfloat.types"
+#include <CrySystem\mpfloat.types>
 #undef MP_FUNCTION

@@ -270,7 +270,8 @@ void CRenderPipelineProfiler::UpdateMultithreadedSection(uint32 index, bool bSec
 		CryInterlockedAdd(&section.numPolys, numPolys);
 #endif
 
-		section.endTimeCPU.AddValueThreadSafe(deltaTimestamp);
+		// PERSONAL IMPROVE: I can't do multi-threading.....
+		// section.endTimeCPU.AddValueThreadSafe(deltaTimestamp);
 
 		if (bIssueTimestamp)
 		{
