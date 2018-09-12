@@ -241,7 +241,7 @@ void CrySleep(unsigned int dwMilliseconds)
 	// Also Optimize timer-resolution, and if many Sleep(1)'s is better compared to one Sleep(X - varTicks). Excess sleeps?
 void CryLowLatencySleep(const CTimeValue& sleepTime)
 {
-	assert(sleepTime > 0);
+	assert(sleepTime >= 0);
 
 	// PERSONAL TODO: Sleeps, high resolution timers/etc. have only been reworked for Windows. 
 	// Linux/etc. should be done later.......
