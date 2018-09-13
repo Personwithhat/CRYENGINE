@@ -40,11 +40,27 @@ public:
 	// Current check for legitimate operations/comparisons on e.g. integers but no floats
 	template <class V> using valid_check = is_compatible_arithmetic_type<V, rType>;
 
+	// PERSONAL IMPROVE : .conv usage
+	/*
+		 time/time = nTime but used as mpfloat e.g. 'Scale', a new time value, etc. (pretty frequent)
+
+		 nTime *=mpfloat -> mpfloat used as 'nTime'
+ 
+		 mpfloat * int ANIMATION_HZ -> converted to kTime
+ 
+		 kTime converted to mpfloat for interpolation
+ 
+		 X conversion during a ? AA : BB statement with different strong-type results.
+			e.g. blah = time2 > 0 ? time/time2 : time;
+
+		Basically the use of nTime is questionable(but ofc need something to tell apart literal time and animation time!! hrm :\)
+		kTime needs a better trigger, and rTime/CTimeValue/mpfloat are fine as they are.
+	*/
 	// For explicit conversion across strong-types
 	template <class T, typename boost::enable_if_c<
 		std::is_base_of<newNum<T>, T>::value //&& !boost::is_same<rType, T>::value
 	>::type* = 0> 
-	T conv() const { return T(backend()); } // PERSONAL TODO: As usual need to go over all conv()'s for validity, improvements, etc.
+	T conv() const { return T(backend()); }
 
 	// Impercise set
 	// WARNING: A set of a double/float with the value 'INFINITY' will cause a silent death of the engine!
@@ -142,7 +158,7 @@ public: // Math operations
 			template <class V> ILINE typename enable_if<valid_check<V>, rType& >::type\
 			operator##op= (const V& v)\
 			{ using default_ops::eval_##name; eval_##name(backend(), rType::canonical_value(v)); return *this; }\
-			/*newNum ?? newNum, for cross-mpfloat functions. PERSONAL TODO: Need to verify that this doesn't conflict.*/\
+			/*newNum ?? newNum, for cross-mpfloat functions. PERSONAL DEBUG: Need tests to avoid implicit conversion to newNum<> and allowing cross-strong type addition etc.*/\
 			ILINE newNum  operator##op (const newNum& inRhs)  const\
 			{ newNum ret; using default_ops::eval_##name; eval_##name(ret.backend(), backend(), inRhs.backend()); return ret; }
 
@@ -523,7 +539,7 @@ private:
 	template <class rType> ILINE int64 int_ceil(const newNum<rType>& f)  { int64 i = int64(f); return (f > i) ? i + 1 : i; }
 	template <class rType> ILINE int64 int_round(const newNum<rType>& f) { return f < 0 ? int64(f - "0.5") : int64(f + "0.5"); }
 
-	// PERSONAL TODO: < operator slightly hacky here.... can't implement newNum<> comparisons easily, ambiguous conflicts.
+	// PERSONAL IMPROVE: < operator slightly hacky here.... can't implement newNum<> comparisons easily, ambiguous conflicts.
 	// ILINE float div_min(float n, float d, float m) { return n * d < m * d * d ? n / d : m; }
 	template <class rType> ILINE rType div_min(const newNum<rType>& n, const newNum<rType>& d, const newNum<rType>& m) {
 		return (rType)(n * d < rType(m * d * d) ? n / d : m);

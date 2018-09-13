@@ -47,7 +47,7 @@ void CSequencerDopeSheetToolbar::SetTime(const CTimeValue& tIn, const rTime& fFp
 	int nSecs = (int)fTime.GetSeconds();
 	fTime -= nSecs;
 	int nMillis = (int)fTime.GetMilliSeconds();
-	int nFrames = (int)(fTime.GetSeconds() / (1 / CLAMP(fFps.conv<mpfloat>(), MP_EPSILON, mpfloat::Max())));
+	int nFrames = (int)(fTime / (mpfloat(1) / CLAMP(fFps, MP_EPSILON.conv<rTime>(), rTime::Max())));
 
 	CString sText;
 	sText.Format("%02d:%02d:%02d (%02d)", nMins, nSecs, nMillis, nFrames);

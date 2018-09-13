@@ -99,7 +99,7 @@ bool CPoseBlenderAim::PrepareInternal(const SAnimationPoseModifierParams& params
 			const CTimeValue fFrameTime = max(CTimeValue(0), params.timeDelta);
 			const bool bFadeOut = (m_blender.m_nDirIKDistanceFadeOut || m_blender.m_dataIn.bUseDirIK == 0);
 			const rTime fIKBlendRate = bFadeOut ? -m_blender.m_dataIn.fDirIKFadeOutTime : m_blender.m_dataIn.fDirIKFadeInTime;
-			const mpfloat fIkBlendDelta = fIKBlendRate.conv<mpfloat>() * fFrameTime.GetSeconds();
+			const mpfloat fIkBlendDelta = fIKBlendRate * fFrameTime;
 			m_blender.m_dataOut.fDirIKBlend = CLAMP(m_blender.m_dataOut.fDirIKBlend + BADF fIkBlendDelta, 0, 1);
 		}
 	}

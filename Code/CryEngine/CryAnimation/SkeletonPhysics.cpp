@@ -99,7 +99,7 @@ bool CSkeletonPhysics::Initialize(CSkeletonPose& skeletonPose)
 	m_iSurfaceIdx = 0;
 	m_fPhysBlendTime.SetSeconds(1'000'000);
 	m_fPhysBlendMaxTime.SetSeconds(1);
-	m_frPhysBlendMaxTime.SetSeconds(1);
+	m_frPhysBlendMaxTime = 1;
 	m_stiffnessScale = 0.0f;
 	m_fScale = 0.01f;
 	m_fMass = 0.0f;
@@ -1735,12 +1735,12 @@ IPhysicalEntity* CSkeletonPhysics::RelinquishCharacterPhysics(const Matrix34& mt
 	m_fPhysBlendMaxTime = Console::GetInst().ca_DeathBlendTime;
 	if (m_fPhysBlendMaxTime > "0.001")
 	{
-		m_frPhysBlendMaxTime = CTimeValue((1 / m_fPhysBlendMaxTime).conv<mpfloat>());
+		m_frPhysBlendMaxTime = 1 / m_fPhysBlendMaxTime;
 	}
 	else
 	{
 		m_fPhysBlendMaxTime.SetSeconds(0);
-		m_frPhysBlendMaxTime.SetSeconds(1);
+		m_frPhysBlendMaxTime = 1;
 	}
 
 	// No blending if this ragdoll is caused by loading a checkpoint

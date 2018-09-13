@@ -349,7 +349,7 @@ private:
 	DynArray<aux_phys_data> m_auxPhys;
 	CTimeValue              m_fPhysBlendTime;
 	CTimeValue              m_fPhysBlendMaxTime;
-	CTimeValue              m_frPhysBlendMaxTime;
+	rTime                   m_frPhysBlendMaxTime;
 	float                   m_stiffnessScale;
 	f32                     m_fScale;
 	f32                     m_fMass;

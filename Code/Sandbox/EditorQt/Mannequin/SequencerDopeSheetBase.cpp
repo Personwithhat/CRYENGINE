@@ -355,12 +355,12 @@ void CSequencerDopeSheetBase::DrawTimeLineInFrames(CDC* dc, CRect& rc, COLORREF&
 		int x = TimeToClient(st);
 		dc->MoveTo(x, rc.bottom - 2);
 
-		mpfloat fFrame = (st * fFramesPerSec).conv<mpfloat>();
+		mpfloat fFrame = st * fFramesPerSec;
 		/*float fPowerOfN = float(pow (double(fN), double(nFramePowerOfN)));
 		   float fFramePow = fFrame * fPowerOfN;
 		   float nFramePow = float(pos_directed_rounding(fFramePow));*/
 
-		rTime fFrameScaled = fFrame.conv<rTime>() * fInvFrameLabelStep;
+		rTime fFrameScaled = fFrame * fInvFrameLabelStep;
 		if (abs(fFrameScaled - uint64(fFrameScaled + "0.5")) < "0.001")
 		{
 			dc->SelectObject(black);

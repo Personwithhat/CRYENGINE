@@ -201,7 +201,7 @@ public:
 	CTimeValue& operator+=(const CTimeValue& inRhs) { m_lValue += inRhs.m_lValue; return *this; }
 	CTimeValue& operator-=(const CTimeValue& inRhs) { m_lValue -= inRhs.m_lValue; return *this; }
 
-	TVOnly mpfloat operator*(const T& inRhs)  const { return m_lValue * inRhs.m_lValue; }					   //! Time * Time = float (For convenience)
+	TVOnly mpfloat operator*(const T& inRhs)  const { return m_lValue * inRhs.m_lValue; }					   //! Time * Time = mpfloat (For convenience)
 	TVOnly nTime   operator/(const T& inRhs)  const { return (m_lValue / inRhs.m_lValue).conv<nTime>(); }	//! Time / Time = normalized time
 
 	// Time vs Time comparisons ----------------------------
@@ -304,15 +304,16 @@ public:
 //** 
 //** Other operators
 //** 
-	// PERSONAL TODO: Will currently only work with mpfloat/rTime. int/rTime will have ambiguous overloads!!
+	// PERSONAL IMPROVE: Will currently only work with mpfloat/rTime. int/rTime will have ambiguous overloads!!
 	// 1/rTime == CTimeValue() 
 	AcceptOnly(rTime) ILINE CTimeValue operator/(const mpfloat& inLhs, const T& inRhs) { CTimeValue ret; ret = CTimeValue(inLhs / inRhs.conv<mpfloat>()); return ret; }
 
-	// PERSONAL TODO:
+	// PERSONAL IMPROVE:
 	// Actually, mpfloat * any other strong-type should have the other strong-type convert to mpfloat (to avoid weird operators e.g. rTime*rTime), 
 	// do the operation, then convert back. e.g. Mpfloat is a mere ratio/etc. on other values.......
-	// Should also apply to some other types like nTime? Ofc don't allow interchangable implicit conversions for function calls. Just for * and / etc. ??
+	// Should also apply to some other types like nTime??? Ofc don't allow interchangable implicit conversions for function calls. Just for * and / etc.
 
+	// For now, the below workarounds.
 	// mpfloat * rT == rT  SAME APPLIES FOR nTime
 	AcceptOnly(rTime) ILINE rTime operator*(const mpfloat& inLhs, const T& inRhs) { mpfloat ret; ret = inLhs * inRhs.conv<mpfloat>(); return ret.conv<rTime>(); }
 	AcceptOnly(mpfloat) ILINE rTime operator*(const rTime& inLhs, const T& inRhs) { mpfloat ret; ret = inLhs.conv<mpfloat>() * inRhs; return ret.conv<rTime>(); }

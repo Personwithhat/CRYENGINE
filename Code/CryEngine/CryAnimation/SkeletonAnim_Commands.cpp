@@ -433,7 +433,7 @@ void CSkeletonAnim::Commands_BasePlayback(const CAnimation& rAnim, Command::CBuf
 		{
 			mpfloat fKeys = totdur.GetSeconds() * ANIMATION_30Hz;
 			mpfloat fKeyTime = time_new.conv<mpfloat>() * fKeys;
-			ac->m_fETimeNew = BADF (uint32(fKeyTime + "0.45") / fKeys).conv<nTime>();
+			ac->m_fETimeNew = BADF (uint32(fKeyTime + "0.45") / fKeys);
 		}
 
 #ifdef BLENDSPACE_VISUALIZATION
@@ -459,7 +459,7 @@ void CSkeletonAnim::Commands_BasePlayback(const CAnimation& rAnim, Command::CBuf
 		CTimeValue fDuration = max(ANIMATION_FSTEP, rAIM.m_fTotalDuration);
 		mpfloat fKeys = fDuration.GetSeconds() * ANIMATION_30Hz;
 		mpfloat fKeyTime = BADMP(ac->m_fETimeNew) * fKeys;
-		ac->m_fETimeNew = BADF (uint32(fKeyTime + "0.45") / fKeys).conv<nTime>();
+		ac->m_fETimeNew = BADF (uint32(fKeyTime + "0.45") / fKeys);
 		assert(ac->m_fETimeNew >= 0 && ac->m_fETimeNew <= 1);
 	}
 }
@@ -695,7 +695,7 @@ void CSkeletonAnim::Commands_LPlayback(const CAnimation& rAnim, uint32 nTargetBu
 		CTimeValue fDuration = max(rCAF.GetTotalDuration(), ANIMATION_FSTEP);
 		mpfloat fKeys = fDuration.GetSeconds() * ANIMATION_30Hz;
 		mpfloat fKeyTime = BADMP(ac->m_fAnimTime) * fKeys;
-		ac->m_fAnimTime = BADF (uint32(fKeyTime + "0.45") / fKeys).conv<nTime>();
+		ac->m_fAnimTime = BADF (uint32(fKeyTime + "0.45") / fKeys);
 		//	float fColor2[4] = {1,0,0,1};
 		//	g_pAuxGeom->Draw2dLabel( 1,g_YLine, 2.3f, fColor2, false,"fKeys: %f  fKeyTime: %f   m_fETimeNew: %f",fKeys,fKeyTime,ac->m_fAnimTime);
 		//	g_YLine+=23;
