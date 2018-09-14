@@ -277,7 +277,7 @@ void CVariableValue::Serialize(Serialization::IArchive& ar)
 			}
 			else
 			{
-				// PERSONAL VERIFY: As usual, make sure saving/reading of CTimeValue/MPFloat's is proper.
+				// PERSONAL DEBUG: As usual, make sure saving/reading of CTimeValue/MPFloat's is proper.
 				string valueAsString;
 				valueAsString = GetValueAsString();
 				ar(valueAsString, "value", "^>130>");

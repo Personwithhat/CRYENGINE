@@ -54,13 +54,13 @@ void CD3D9Renderer::LimitFramerate(const int maxFPS)
 
 	if (maxFPS > 0)
 	{
-		// PERSONAL VERIFY: This margin nonsensical. 1/0.5=2 != 2fps, and why not just clamp to 30fps??
-		const mpfloat safeMarginFPS = "0.5"; // Safe margin to not drop below 30 fps
+		// PERSONAL CRYTEK: Strange/pointless margin. 
+		// const mpfloat safeMarginFPS = "0.5"; // Safe margin to not drop below 30 fps
 		static CTimeValue sTimeLast = gEnv->pTimer->GetAsyncTime();
 		CTimeValue currentTime = gEnv->pTimer->GetAsyncTime();
 
-		// Target time-step based on max FPS
-		CTimeValue tStep = CTimeValue(1 / (maxFPS + safeMarginFPS));
+		// Target time-step based on max FPS. Minimum of 30.
+		CTimeValue tStep = 1 / mpfloat(max(maxFPS, 30));
 		CTimeValue tLeft = tStep - (currentTime - sTimeLast);
 
 		if(tLeft > 0){

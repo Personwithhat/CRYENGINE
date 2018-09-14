@@ -21,7 +21,7 @@
 #include "rigidentity.h"
 #include "softentity.h"
 
-#include "CrySystem\ITimer.h" // PERSONAL VERIFY: Why is this needed? Wa happened?
+#include "CrySystem\ITimer.h" // PERSONAL TODO: Why is this needed? Wa happened?
 
 RigidBody g_StaticRigidBodies[MAX_PHYS_THREADS];
 CPhysicalEntity g_StaticPhysicalEntity(0);

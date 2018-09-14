@@ -95,7 +95,7 @@ struct SBreakRequest {
 
 struct pe_PODcell {
 	int inextActive;
-	CTimeValue lifeTime; // PERSONAL VERIFY: Is/was this lifetime in (ms)??? Even so, values are pretty huge for dummyPODcell, e.g. 1'000'000'000!!
+	CTimeValue lifeTime;
 	int nObjects;
 	Vec2 zlim;
 };

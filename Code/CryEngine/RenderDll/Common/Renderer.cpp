@@ -290,7 +290,6 @@ void CRenderer::InitRenderer()
 	ZeroArray(m_streamZonesRoundId);
 
 	SRenderStatistics::s_pCurrentOutput = &m_frameRenderStats[0];
-	//memset(SRenderStatistics::s_pCurrentOutput, 0, sizeof(m_frameRenderStats)); PERSONAL VERIFY: Time memset issues.
 	for(int i = 0; i< RT_COMMAND_BUF_COUNT; i++){ m_frameRenderStats[i] = SRenderStatistics{}; }
 }
 
@@ -1585,7 +1584,7 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl)
 			!(pPosTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
 			CTimeValue duration = max(pPosTrack->GetKeyTime(pPosTrack->GetNumKeys() - 1), CTimeValue("0.001"));
-			CTimeValue timeNormalized = (time + phase * duration) % duration; // PERSONAL VERIFY: Note, this is not normalized time xd
+			CTimeValue timeNormalized = (time + phase * duration) % duration; // PERSONAL CRYTEK: This is not normalized time, plus all the ones below.
 			Vec3 vOffset = stl::get<Vec3>(pPosTrack->GetValue(timeNormalized));
 			dl->m_Origin = dl->m_BaseOrigin + vOffset;
 		}
@@ -1594,7 +1593,7 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl)
 			!(pRotTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
 			CTimeValue duration = max(pRotTrack->GetKeyTime(pRotTrack->GetNumKeys() - 1), CTimeValue("0.001"));
-			CTimeValue timeNormalized = (time + phase * duration) % duration; // PERSONAL VERIFY: Note, this is not normalized time xd
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			Vec3 vRot = stl::get<Vec3>(pRotTrack->GetValue(timeNormalized));
 			static_cast<SRenderLight*>(dl)->SetMatrix(
 				dl->m_BaseObjMatrix * Matrix34::CreateRotationXYZ(Ang3(DEG2RAD(vRot.x), DEG2RAD(vRot.y), DEG2RAD(vRot.z))),
@@ -1605,7 +1604,7 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl)
 			!(pColorTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
 			CTimeValue duration = max(pColorTrack->GetKeyTime(pColorTrack->GetNumKeys() - 1), CTimeValue("0.001"));
-			CTimeValue timeNormalized = (time + phase * duration) % duration; // PERSONAL VERIFY: Note, this is not normalized time xd
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			Vec3 vColor = stl::get<Vec3>(pColorTrack->GetValue(timeNormalized));
 			dl->m_Color = ColorF(vColor.x / 255.0f, vColor.y / 255.0f, vColor.z / 255.0f);
 		}
@@ -1618,7 +1617,7 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl)
 			!(pDiffMultTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
 			CTimeValue duration = max(pDiffMultTrack->GetKeyTime(pDiffMultTrack->GetNumKeys() - 1), CTimeValue("0.001"));
-			CTimeValue timeNormalized = (time + phase * duration) % duration; // PERSONAL VERIFY: Note, this is not normalized time xd
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			float diffMult = stl::get<float>(pDiffMultTrack->GetValue(timeNormalized));
 			dl->m_Color = dl->m_BaseColor * diffMult;
 		}
@@ -1627,7 +1626,7 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl)
 			!(pRadiusTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
 			CTimeValue duration = max(pRadiusTrack->GetKeyTime(pRadiusTrack->GetNumKeys() - 1), CTimeValue("0.001"));
-			CTimeValue timeNormalized = (time + phase * duration) % duration; // PERSONAL VERIFY: Note, this is not normalized time xd
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			float radius = stl::get<float>(pRadiusTrack->GetValue(timeNormalized));
 			dl->SetRadius(radius);
 		}
@@ -1636,7 +1635,7 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl)
 			!(pSpecMultTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
 			CTimeValue duration = max(pSpecMultTrack->GetKeyTime(pSpecMultTrack->GetNumKeys() - 1), CTimeValue("0.001"));
-			CTimeValue timeNormalized = (time + phase * duration) % duration; // PERSONAL VERIFY: Note, this is not normalized time xd
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			float specMult = stl::get<float>(pSpecMultTrack->GetValue(timeNormalized));
 			dl->m_SpecMult = specMult;
 		}
@@ -1645,7 +1644,7 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl)
 			!(pHDRDynamicTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
 			CTimeValue duration = max(pHDRDynamicTrack->GetKeyTime(pHDRDynamicTrack->GetNumKeys() - 1), CTimeValue("0.001"));
-			CTimeValue timeNormalized = (time + phase * duration) % duration; // PERSONAL VERIFY: Note, this is not normalized time xd
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			float hdrDynamic = stl::get<float>(pHDRDynamicTrack->GetValue(timeNormalized));
 			dl->m_fHDRDynamic = hdrDynamic;
 		}

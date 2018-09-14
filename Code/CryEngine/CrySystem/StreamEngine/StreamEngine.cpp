@@ -44,9 +44,6 @@ CStreamEngine::CStreamEngine()
 	m_Statistics.nCurrentDecompressCount = 0;
 	m_Statistics.nCurrentFinishedCount = 0;
 
-	// PERSONAL NOTE: memset does not work with mpfloats! Causes m_data to be nullptr => crashes if comparison/etc. is done before an assignment happens.
-	// Cuz m_data is zeroe'd out so a lot of assert's fail. Better to just not use memset.....
-	//memset(&m_decompressStats, 0, sizeof(m_decompressStats));
 	m_decompressStats = SStreamEngineDecompressStats();
 
 	m_nUnzipBandwidth = 0;

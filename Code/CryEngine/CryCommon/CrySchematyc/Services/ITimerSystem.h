@@ -33,8 +33,6 @@ struct STimerDuration
 	{
 	}
 
-	// PERSONAL VERIFY: Changed Frame setup to specific function call, conflicts with CTimeValue if in construction.
-	// Does this conflict with how schematyc handles/uses/sets up STimerDuration?
 	inline STimerDuration& Frames(uint32 _frames)
 	{
 		*this = STimerDuration();
@@ -58,7 +56,6 @@ struct STimerDuration
 		range.max = _max;
 	}
 
-	// PERSONAL NOTE: For same reason as in StreamEngine.cpp, mpfloat/CTimeValue can't be memset. It also can't be memcopied.
 	inline STimerDuration(const STimerDuration& rhs)
 	{
 		units = rhs.units;
@@ -97,7 +94,7 @@ struct STimerDuration
 
 	ETimerUnits units;
 
-	// PERSONAL NOTE: No union. Cuz time-value memcpy, union management, etc. issues. Perhaps solved later.
+	// PERSONAL NOTE: No union. Cuz time-value memcpy, union management, etc. issues.
 	uint32 frames;
 	CTimeValue seconds;
 	struct

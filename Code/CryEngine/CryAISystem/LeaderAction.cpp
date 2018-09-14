@@ -1097,7 +1097,7 @@ bool CLeaderAction_Attack_SwitchPositions::ProcessSignal(const AISIGNAL& signal)
 					break;
 				}
 
-			// PERSONAL VERIFY: How to update and trace AI signals better?? More'n likely missed Signal time creation & reading....
+			// PERSONAL DEBUG: How to update and trace AI signals better?? More'n likely missed Signal time creation & reading....
 			// Hard to grep/trace down.....SignalCRC's don't help much.
 			m_DangerPoints.push_back(SDangerPoint(pData->tVal, pData->fValue, dpoint));
 

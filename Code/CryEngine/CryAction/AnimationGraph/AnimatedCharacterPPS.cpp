@@ -120,8 +120,7 @@ void CAnimatedCharacter::PreAnimationUpdate()
 
 float CAnimatedCharacter::GetAngularSpeedHorizontal() const
 {
-	// PERSONAL VERIFY: Is approximation needed for optimization here? __fsel is deprecated so....
-	const rTime prevFrameTimeInv = max(rTime(0), (1 / m_prevFrameTime));
+	const mpfloat prevFrameTimeInv = __fsel(-m_prevFrameTime.GetSeconds(), mpfloat(0), 1/(m_prevFrameTime.GetSeconds()));
 	return m_actualEntMovement.q.GetRotZ() * BADF prevFrameTimeInv;
 }
 
@@ -1300,11 +1299,8 @@ void CAnimatedCharacter::GetCurrentEntityLocation()
 
 	m_actualEntMovement = GetWorldOffset(m_prevEntLocation, m_entLocation);
 
-	// PERSONAL VERIFY: Is approximation needed for optimization here? __fsel is deprecated so....
-	//ORIGINAL: const float prevFrameTimeInv = (float)__fsel(-(float)m_prevFrameTime, 0.0f, __fres((float)m_prevFrameTime + FLT_MIN));  // approximates: (m_prevFrameTime > 0.0f) ? (1.0f / (float)m_prevFrameTime) : 0.0f;
-
 	// actualEntMovement measures from the previous frame, so we need to use prevFrameTime.
-	const float prevFrameTimeInv = BADF max(rTime(0), (1 / m_prevFrameTime));
+	const float prevFrameTimeInv = BADF __fsel(-m_prevFrameTime.GetSeconds(), mpfloat(0), 1/m_prevFrameTime.GetSeconds());  // approximates: (m_prevFrameTime > 0.0f) ? (1.0f / (float)m_prevFrameTime) : 0.0f;
 
 	const Vec3 velocity = m_actualEntMovement.t * prevFrameTimeInv;
 	const float speed = velocity.GetLength();

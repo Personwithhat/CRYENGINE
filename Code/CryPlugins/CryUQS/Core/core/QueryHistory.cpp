@@ -818,11 +818,11 @@ namespace UQS
 				consumer.AddTextLineToCurrentHistoricQuery(color, "elapsed frames until result:  %i", (int)m_finalStatistics.totalElapsedFrames);
 
 				// elapsed time (this is NOT the same as the *consumed* time)
-				const CTimeValue elapsedTime = ComputeElapsedTimeFromQueryCreationToDestruction(); // PERSONAL TODO: Why was it time/1024?
-				consumer.AddTextLineToCurrentHistoricQuery(color, "elapsed seconds until result: %f (%.2f milliseconds)", elapsedTime.GetSeconds(), elapsedTime.GetMilliSeconds());
+				const CTimeValue elapsedTime = ComputeElapsedTimeFromQueryCreationToDestruction();
+				consumer.AddTextLineToCurrentHistoricQuery(color, "elapsed seconds until result: %f (%.2f milliseconds)", (float)elapsedTime.GetSeconds(), (float)elapsedTime.GetMilliSeconds());
 
 				// consumed time (this is the accumulation of the granted and consumed amounts of time per update call while the query was running)
-				consumer.AddTextLineToCurrentHistoricQuery(color, "consumed seconds:             %f (%.2f milliseconds)", m_finalStatistics.totalConsumedTime.GetSeconds(), m_finalStatistics.totalConsumedTime.GetMilliSeconds());
+				consumer.AddTextLineToCurrentHistoricQuery(color, "consumed seconds:             %f (%.2f milliseconds)", (float)m_finalStatistics.totalConsumedTime.GetSeconds(), (float)m_finalStatistics.totalConsumedTime.GetMilliSeconds());
 
 				// timestamps of when the query was created and destroyed (notice: if the query was canceled prematurely it will miss the timestamp of query destruction)
 				// -> "h:mm:ss:mmm"

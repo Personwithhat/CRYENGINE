@@ -304,7 +304,6 @@ void CRainDrops::SpawnParticle(SRainDrop*& pParticle, int iRTWidth, int iRTHeigh
 	float fUserSize = 5.0f;//m_pSize->GetParam();
 	float fUserSizeVar = 2.5f;//m_pSizeVar->GetParam();
 
-	// PERSONAL VERIFY: Implement GetParam() for mpfloat/CTimeValue etc. perhaps not needed.
 	if (cry_random(0.0f, 1.0f) > 0.5f && abs(PostProcessUtils().m_pTimer->GetFrameStartTime() - fLastSpawnTime) > BADTIME(m_pSpawnTimeDistance->GetParam()))
 	{
 		pParticle->m_pPos.x = cry_random(0.0f, 1.0f);

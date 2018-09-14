@@ -32,7 +32,7 @@ public:
 			InputPortConfig<bool>("paused", false, _HELP("When set to true will pause time output")),
 			{ 0 }
 		};
-		// PERSONAL VERIFY: Port configs don't fail to compile if float vs CTimeValue. Somehow should be checked.
+		// PERSONAL IMPROVE: Port configs don't fail to compile if float vs CTimeValue. Somehow should be checked.
 		static const SOutputPortConfig out_config[] = {
 			OutputPortConfig<CTimeValue>("seconds", _HELP("Outputs the current time in seconds.")),
 			OutputPortConfig_Void("tick",      _HELP("Outputs event at this port every frame.")),

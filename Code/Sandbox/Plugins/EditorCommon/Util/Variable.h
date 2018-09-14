@@ -939,7 +939,7 @@ struct type_convertor
 		value.SetIdentity();
 		sscanf((const char*)from, "%f,%f,%f,%f", &value.w, &value.v.x, &value.v.y, &value.v.z);
 	};
-	void operator()(const string& from, CTimeValue& to) const { to.SetSeconds(mpfloat(from.c_str())); }		// PERSONAL TODO: When mpfloat 'string' stuff updated fix stuff like this.
+	void operator()(const string& from, CTimeValue& to) const { to.SetSeconds(mpfloat(from.c_str())); }
 	void operator()(const string& from, mpfloat& to)	 const { to = from.c_str(); }
 };
 
@@ -1145,9 +1145,9 @@ public:
 		m_bHardMax = bHardMax;
 	}
 	template <class T = B, typename boost::enable_if_c<isVec>::type* = 0>
-	void SetLimits(const B& vMin, const B& vMax, const B& vStep = B(0), bool bHardMin = true, bool bHardMax = true) // PERSONAL VERIFY: Vec2 etc. can take Vec3/Vec4 as input and auto-convert. Allow? Use/ignore?
+	void SetLimits(const B& vMin, const B& vMax, const B& vStep = B(0), bool bHardMin = true, bool bHardMax = true) // PERSONAL IMPROVE: Vec2 etc. can take Vec3/Vec4 as input and auto-convert. Allow? Use/ignore?
 	{
-		//CRY_ASSERT_MESSAGE(vMin <= vMax, "Maximum value has to be bigger than minimum value!"); // PERSONAL VERIFY: Ask CryTek on best way to compare X values between vectors!
+		//CRY_ASSERT_MESSAGE(vMin <= vMax, "Maximum value has to be bigger than minimum value!"); // PERSONAL CRYTEK: Ask CryTek on best way to compare X values between vectors!
 		m_valueMin = vMin;
 		m_valueMax = vMax;
 		m_valueStep = vStep;
@@ -1219,7 +1219,7 @@ public:
 		T min, max, step;
 		GetLimits(min, max, step, bHardMin, bHardMax);
 
-		vMin.lossy(min.x);		// PERSONAL VERIFY: Maintaining the whole "Same 2-4 values for Vec" setup. Can be improved with some more fixes/rewrites on how vec's are handled.
+		vMin.lossy(min.x);		// PERSONAL IMPROVE: Maintaining the whole "Same 2-4 values for Vec" setup. Can be improved with some more fixes/rewrites on how vec's are handled.
 		vMax.lossy(max.x);
 		vStep.lossy(step.x);
 	}

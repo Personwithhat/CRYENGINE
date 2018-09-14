@@ -2407,7 +2407,7 @@ uint32 CCTPEndpoint::SendPacket(CTimeValue nTime, const SSendPacketParams& param
 	//
 	// send message stream
 	//
-	// PERSONAL VERIFY: More 'why does it have this precision' as with ArithModel.cpp
+	// PERSONAL TODO: Increase replication time precision? as with ArithModel.cpp
 	uint32 timeToSend = (uint32)(gEnv->pTimer->GetReplicationTime().GetSeconds() * REPLICATION_TIME_PRECISION);
 
 	m_outputStreamImpl.GetOutput().WriteBits(timeToSend, 32);

@@ -33,9 +33,9 @@ void SAuthenticationSalt::SerializeWith(TSerialize ser)
 
 CWhirlpoolHash SAuthenticationSalt::Hash(const string& password) const
 {
-	//char n1[32];
+	char n1[32];
 	char n2[32];
-	const char* n1 = fTime.GetSeconds().str(); // PERSONAL VERIFY: Will this hashing/etc. work properly?
+	cry_sprintf(n1, "%f", (float)fTime.GetSeconds());
 	cry_sprintf(n2, "%.8x", nRand);
 	string buffer = password + ":" + n1 + ":" + n2;
 	return CWhirlpoolHash(buffer);

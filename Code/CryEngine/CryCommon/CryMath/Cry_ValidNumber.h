@@ -11,6 +11,7 @@
 //--------------------------------------------------------------------------------
 // IsValid() overloads for basic types
 
+// PERSONAL TODO: With how particle's use SetInvalid() for floats etc., with lifetime set to CTimeValue we need the same SetInvalid() setup here too!!
 namespace ValidNumber
 {
 template<typename T, bool Converted> struct Float

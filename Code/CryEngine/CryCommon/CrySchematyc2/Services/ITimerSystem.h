@@ -31,8 +31,6 @@ namespace Schematyc2
 		{
 		}
 
-		// PERSONAL VERIFY: Changed Frame setup to specific function call, conflicts with CTimeValue if in construction.
-		// Does this conflict with how schematyc handles/uses/sets up STimerDuration?
 		inline STimerDuration& Frames(uint32 _frames)
 		{
 			*this = STimerDuration();
@@ -56,7 +54,6 @@ namespace Schematyc2
 			range.max = _max;
 		}
 
-		// PERSONAL NOTE: For same reason as in StreamEngine.cpp, mpfloat/CTimeValue can't be memset. It also can't be memcopied.
 		inline STimerDuration(const STimerDuration& rhs)
 		{
 			units = rhs.units;

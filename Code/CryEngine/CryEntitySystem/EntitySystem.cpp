@@ -1443,7 +1443,7 @@ void CEntitySystem::UpdateEntityComponents(const CTimeValue& fFrameTime)
 	SEntityEvent event;
 	event.event = ENTITY_EVENT_UPDATE;
 	event.nParam[0] = (INT_PTR)&ctx;
-	event.tVal = ctx.fFrameTime; // PERSONAL NOTE: Perhaps this entity event should stick with ctx.frameTime instead of .tVal or fParam[0] etc.
+	event.tVal = ctx.fFrameTime; // PERSONAL IMPROVE: Perhaps this entity event should stick with ctx.frameTime instead of .tVal or fParam[0] etc.
 
 #ifdef INCLUDE_ENTITYSYSTEM_PRODUCTION_CODE
 	if (CVar::pUpdateEntities->GetIVal() == 0)

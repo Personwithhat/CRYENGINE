@@ -835,7 +835,6 @@ CForceFeedBackSystem::SFFOutput CForceFeedBackSystem::SActiveEffect::Update(cons
 	{
 		bool isLoopingEffect = (effectTime <= 0);
 
-		// PERSONAL VERIFY: Units are strange here, very if sampletime normalized or not etc.
 		const rTime effectTimeInv = !isLoopingEffect ? 1 / effectTime : 1;
 		const CTimeValue sampleTime = (runningTime * effectTimeInv).conv<mpfloat>();
 

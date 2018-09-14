@@ -120,7 +120,8 @@ CNetCVars::CNetCVars()
 	REGISTER_CVAR2_DEV_ONLY("net_channelLocalSleepTime", &channelLocalSleepTime, CTimeValue(0), VF_DUMPTODISK, "Sleep time on a local channel. Maximum number of local packets per second = 1/sleepTime.");
 	#endif // USE_ACCURATE_NET_TIMERS
 #endif   // LOCK_NETWORK_FREQUENCY == 0
-	// PERSONAL VERIFY: Honsetly not sure if CTimeValue("0.001") or CTimeValue.SetMilliSeconds() is better.......alternatives?
+	// PERSONAL IMPROVE: Honestly not sure if CTimeValue("0.001") or CTimeValue.SetMilliSeconds() is better....
+	// Perhaps create an alternative macro/type that returns CTimeValue(), e.g. 'Milli()' and 'Micro()' for readability?
 	REGISTER_CVAR2_DEDI_ONLY("net_socketMaxTimeout", &socketMaxTimeout, CTimeValue().SetMilliSeconds(33), VF_DUMPTODISK, "Maximum timeout that a socket should wait for received data");
 	REGISTER_CVAR2_DEDI_ONLY("net_socketBoostTimeout", &socketBoostTimeout, CTimeValue().SetMilliSeconds(1), VF_DUMPTODISK, "Single Player Only, acts as throttle during context establishment, the higher the value the longer it takes to load");
 	REGISTER_CVAR2_DEDI_ONLY("net_socketMaxTimeoutMultiplayer", &socketMaxTimeoutMultiplayer, CTimeValue().SetMilliSeconds(4), VF_DUMPTODISK, "Maximum timeout that a socket should wait for received data in multiplayer");

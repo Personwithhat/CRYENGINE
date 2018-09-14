@@ -34,7 +34,7 @@ protected:
 	uint32                              m_numTimestamps;
 	uint32                              m_groupIndex;
 
-	// PERSONAL VERIFY: Overcomplicated timestamp setup. Can perhaps be changed later.
+	// PERSONAL IMPROVE: Overcomplicated timestamp setup. Can perhaps be changed later.
 	DeviceFenceHandle                   m_fence;
 	UINT64                              m_frequency;
 	std::array<uint64, kMaxTimestamps>  m_timeValues;

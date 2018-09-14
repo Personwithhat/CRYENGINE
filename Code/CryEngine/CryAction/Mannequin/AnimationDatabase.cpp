@@ -146,7 +146,7 @@ CTimeValue AppendLayers(SFragmentData& fragmentData, const CFragment& fragment, 
 						// animation start is clipped by fragment transition
 						CTimeValue animStartOffset = startOffset - animStartTime;
 						animClip.blend.startTime += CTimeValue(( animStartOffset / max(animDuration, CTimeValue("0.001")) ).conv<mpfloat>());
-						// PERSONAL VERIFY: According to startTime definition.
+						// PERSONAL CRYTEK: According to startTime definition.
 								// StartTime			- Time in secs for the following clip to start off advanced to
 						// Why is it normalized time + clamped 0-1 then???
 						// Plus (above), GetDuration() for sure returns (EndSeconds-StartSeconds), but it's - startTime......

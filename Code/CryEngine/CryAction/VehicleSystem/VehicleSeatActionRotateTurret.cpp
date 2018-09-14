@@ -456,7 +456,7 @@ void CVehicleSeatActionRotateTurret::UpdatePartRotation(EVehicleTurretRotationTy
 	}
 
 	m_rotations[eType].m_orientation.Set(Quat::CreateRotationXYZ(angles));
-	m_rotations[eType].m_orientation.Update(frameTime.BADGetSeconds()); // PERSONAL VERIFY: Complicated interp helper classes.
+	m_rotations[eType].m_orientation.Update(frameTime.BADGetSeconds());
 
 	m_rotations[eType].m_action = 0.0f;
 	m_rotations[eType].m_aimAssist = 0.0f;

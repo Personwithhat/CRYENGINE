@@ -42,7 +42,7 @@ inline bool operator==(const SFlowSystemVoid& a, const SFlowSystemVoid& b)
 //! By adding types to this list, we can extend the flow system to handle new data types.
 //! Important: If types need to be added, add them at the end, otherwise it breaks serialization.
 //! \note CFlowData::ConfigureInputPort must be updated simultaneously.
-//! \see CFlowData::ConfigureInputPort. PERSONAL NOTE: Of COURSE.......said function doesn't exist :D
+//! \see CFlowData::ConfigureInputPort. PERSONAL CRYTEK: Of COURSE.......said function doesn't exist :D
 typedef CryVariant<
 	SFlowSystemVoid,
 	int,

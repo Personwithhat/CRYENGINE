@@ -31,7 +31,7 @@
 #include "waterman.h"
 #include <CryCore/Platform/CryWindows.h>
 
-#include "CrySystem\ITimer.h"  // PERSONAL VERIFY: Why is this needed? Wa happened?
+#include "CrySystem\ITimer.h"  // PERSONAL TODO: Why is this needed? Wa happened?
 
 int g_dummyBuf[16];
 

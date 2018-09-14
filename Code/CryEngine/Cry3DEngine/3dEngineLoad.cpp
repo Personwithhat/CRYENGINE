@@ -1161,7 +1161,7 @@ void C3DEngine::LoadEnvironmentSettingsFromXML(XmlNodeRef pInputNode)
 
 	m_dawnStart = (dawnTime - dawnDuration * "0.5") / 60;
 	m_dawnEnd   = (dawnTime + dawnDuration * "0.5") / 60;
-	m_duskStart = CTimeValue(12) + (duskTime - duskDuration * "0.5") / 60;	// PERSONAL NOTE: Not too sure if friend-syntax shouldn't be done. e.g. int + Time?
+	m_duskStart = CTimeValue(12) + (duskTime - duskDuration * "0.5") / 60;
 	m_duskEnd   = CTimeValue(12) + (duskTime + duskDuration * "0.5") / 60;
 
 	if (m_dawnEnd > m_duskStart)

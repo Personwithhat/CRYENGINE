@@ -171,7 +171,14 @@ void CTimer::UpdateOnFrameStart()
 	return;
 #endif
 
-	// Enforce minimum framerate by sleeping when timestep is negative.
+		// Fixed-time-step = The highest FPS that Server/Host can handle on average. e.g. FPS should never be higher and if it's lower = gives warnings! In case of performance spikes.
+			// Debug only...need to figure out how to sync server/host etc.
+		// Vsync/maxRate = Another frame-cap on Host/Server
+
+	// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARGH
+	// PERSONAL TODO: Re-name/define fixed_time_step to a framerate enforcer, because that's how it's being used! >.>
+
+	// Enforce minimum framerate by sleeping when timestep is negative.  PERSONAL TODO: Nomenclauter is wrong. I'm enforcing maximum framerate, but if its less then I give warnings.
 	// No frame-cap.
 	if (m_fixed_time_step < 0)
 	{

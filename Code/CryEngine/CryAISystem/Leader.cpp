@@ -223,7 +223,7 @@ void CLeader::ProcessSignal(AISIGNAL& signal)
 
 	if (signal.Compare(gAIEnv.SignalCRCs.m_nAIORD_ATTACK))
 	{
-		// PERSONAL VERIFY: How to update and trace AI signals better?? More'n likely missed Signal time creation & reading....
+		// PERSONAL DEBUG: How to update and trace AI signals better?? More'n likely missed Signal time creation & reading....
 		// Hard to grep/trace down.....SignalCRC's don't help much.
 		ELeaderActionSubType attackType = static_cast<ELeaderActionSubType>(data.iValue);
 		LeaderActionParams params;

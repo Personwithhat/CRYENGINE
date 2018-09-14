@@ -5446,7 +5446,7 @@ void CSystem::CreateSystemVars()
 	REGISTER_INT("sys_screensaver_allowed", 0, VF_NULL, "Specifies if screen saver is allowed to start up while the game is running.");
 #endif
 
-// PERSONAL VERIFY: Get the appropriate default for this, and test the whole resolution system etc.! .-.
+// PERSONAL DEBUG: Get the appropriate default for this, and test the whole resolution system etc.! .-.
 #if CRY_PLATFORM_WINDOWS
 	REGISTER_CVAR2("sys_system_timer_resolution", &g_cvars.sys_timeres, 5000, VF_REQUIRE_APP_RESTART,
 		"(Windows only) Value of the system timer resolution in units of 100 nanoseconds. The default 5,000 = 0.5 milliseconds (ms)"

@@ -264,7 +264,7 @@ public:
 	}
 
 private:
-	mpfloat         m_fMinFrameRate; // PERSONAL VERIFY: Update this to rTime once supported
+	mpfloat         m_fMinFrameRate;
 	mpfloat         m_fMaxFrameRate;
 	mpfloat         m_fSumFrameRate;
 	unsigned long m_lFrameCounter;

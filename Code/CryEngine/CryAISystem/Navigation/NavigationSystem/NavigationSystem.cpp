@@ -5469,7 +5469,7 @@ void NavigationSystemBackgroundUpdate::Thread::ThreadEntry()
 
 			const CTimeValue elapsedTime = gEnv->pTimer->GetAsyncTime() - startedUpdate;
 
-			// PERSONAL VERIFY: WTH is this nonsense? it should be min(max()) not max(min()).......0 or lower sleep time???? wow....
+			// PERSONAL CRYTEK: This nonsense would always end up with 10ms of sleep-time. Should've been min(max())
 			//	const unsigned int sleepTime = max(10u, min(0u, 33u - (unsigned int)lastUpdateTime.GetMilliSeconds()));
 			const mpfloat sleepMS = CLAMP(33 - elapsedTime.GetMilliSeconds(), 0, 10);
 			CryLowLatencySleep(CTimeValue().SetMilliSeconds(sleepMS));

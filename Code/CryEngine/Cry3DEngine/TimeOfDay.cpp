@@ -1504,7 +1504,7 @@ void CTimeOfDay::Serialize(TSerialize ser)
 	}
 	ser.EndGroup();
 
-	ser.Value("AdvInfoSpeed", m_advancedInfo.fAnimSpeed); // PERSONAL VERIFY: Verify that NetSerialization of a CTimeValue() and mpfloats works properly!!
+	ser.Value("AdvInfoSpeed", m_advancedInfo.fAnimSpeed);
 	ser.Value("AdvInfoStart", m_advancedInfo.fStartTime);
 	ser.Value("AdvInfoEnd", m_advancedInfo.fEndTime);
 
@@ -1521,7 +1521,7 @@ void CTimeOfDay::NetSerialize(TSerialize ser, const CTimeValue&  lag, uint32 fla
 	{
 		if (ser.IsWriting())
 		{
-			ser.Value("time", m_fTime, 'tod'); // PERSONAL VERIFY:  And if TOD serialization profile breaks that....
+			ser.Value("time", m_fTime, 'tod'); // PERSONAL DEBUG: Check if 'tod' breaks mpfloat/timevalue serialization.
 		}
 		else
 		{

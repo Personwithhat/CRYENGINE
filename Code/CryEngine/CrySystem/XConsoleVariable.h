@@ -151,7 +151,6 @@ public:
 	virtual float       GetFVal() const   { return (float)atof(m_sValue); }
 	virtual const char* GetString() const { return m_sValue; }
 
-	// PERSONAL VERIFY: Make absolutely sure that this works properly!
 	using ICVar::Set; // Needed due to inability to inherit overloads......no point re-defining. Can probably be cleaned up.
 	virtual void        Set(const char* s)
 	{
@@ -592,7 +591,7 @@ private: // --------------------------------------------------------------------
 	float& m_fValue;                                  //!<
 };
 
-// PERSONAL VERIFY: That for CVar's registration/setting/getting etc. works as expected.
+// PERSONAL DEBUG: That for CVar's registration/setting/getting etc. works as expected.
 template<class mpType>
 class CXConsoleVariableMPFloatRef : public CXConsoleVariableBase
 {

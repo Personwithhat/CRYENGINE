@@ -113,11 +113,10 @@ void CGameplayRecorder::CExampleMetadataListener::RecordGameData()
 	IGameplayRecorder* pRecorder = CCryAction::GetCryAction()->GetIGameplayRecorder();
 
 	{
-		// PERSONAL VERIFY: Verify that composite types work....along with other serializations etc.
 		CTimeValue t = gEnv->pTimer->GetFrameStartTime();
 		IMetadataPtr pMetadata;
 		pMetadata->SetTag(eDT_frame);
-		pMetadata->SetValue(eBT_TVal, (uint8*)&t, 8);
+		pMetadata->SetValue(eBT_TVal, (uint8*)&t.GetSeconds().str(), 8); // PERSONAL DEBUG: Possible memcpy issues.
 		//m_pMetadataRecorder->RecordIt( pMetadata.get() );
 		pRecorder->OnGameData(pMetadata.get());
 	}

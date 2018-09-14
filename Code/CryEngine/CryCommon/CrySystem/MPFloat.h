@@ -77,6 +77,8 @@ public:
 		Might memory leak? etc. Trace this down and preferably remove.
 			Also used to show an 'Unused' mpfloat value in physics etc.!
 	*/
+	// WARNING: memset, in general, does not work with mpfloats! Causes m_data to be nullptr => crashes if comparison/etc. is done before an assignment happens.
+	// And memcpy of course is bad because mpfloat/CTimeValue are not POD types. Alternative solutions include notusing memcpy to begin with, or converting to std::copy()
 	void memHACK(){ backend().unsafe()[0]._mp_d = 0; }
 
 	// PERSONAL NOTE: Previous attempts at overloads/etc.

@@ -621,7 +621,6 @@ void CActionController::Install(IAction& action, const CTimeValue& timeRemaining
 			if (waitingOnRootScope && scope.HasFragment())
 			{
 				CTimeValue rootStartTime = scope.GetFragmentStartTime();
-				//timeRemaining = rootStartTime; PERSONAL VERIFY: Not used later, and not passed in via reference so this does nothing.
 				rootScope = i;
 
 				isOneShot = scope.m_isOneShot;

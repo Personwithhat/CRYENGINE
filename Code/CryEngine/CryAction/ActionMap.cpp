@@ -800,7 +800,7 @@ bool CActionMap::CanProcessInput(const SInputEvent& inputEvent, CActionMap* pAct
 	IGameFramework* pGameFramework = gEnv->pGameFramework;
 	if (pGameFramework && pGameFramework->IsGamePaused())
 	{
-		// PERSONAL VERIFY: UI-time doesn't clamp/scale as well.......wouldn't clamped input time => non-clamped time matter?
+		// PERSONAL TODO: UI-time doesn't clamp/scale as well.......wouldn't clamped input time => non-clamped time matter?
 		// Shouldn't Input be using UI-time by default since it should be calculating from a player's perspective, in 'real' time?
 		// Due to this, need to verify a lot of the GetFrameStartTime() affects on systems such as:
 		// Input, particle effects, various timers, etc.

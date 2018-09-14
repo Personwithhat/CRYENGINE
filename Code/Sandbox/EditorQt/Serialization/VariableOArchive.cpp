@@ -103,7 +103,7 @@ CVariableOArchive::CVariableOArchive()
 	m_structHandlers[TypeID::get < Serialization::RangeDecorator < int >> ().name()] = &CVariableOArchive::SerializeRangeInt;
 	m_structHandlers[TypeID::get < Serialization::RangeDecorator < unsigned int >> ().name()] = &CVariableOArchive::SerializeRangeUInt;
 	m_structHandlers[TypeID::get < StringListStaticValue > ().name()] = &CVariableOArchive::SerializeStringListStaticValue;
-	// PERSONAL VERIFY: Add mpfloat/ctimevalue here?
+	// PERSONAL IMPROVE: Add mpfloat/CTimeValue here
 }
 
 CVariableOArchive::~CVariableOArchive()
@@ -241,6 +241,8 @@ bool CVariableOArchive::operator()(const Serialization::SStruct& ser, const char
 	{
 		StructHandlerFunctionPtr pHandler = it->second;
 		return (this->*pHandler)(ser, name, label);
+	}else{
+		assert(0 && "Handler not found for type!");
 	}
 
 	return SerializeStruct(ser, name, label);

@@ -50,7 +50,7 @@ public:
 		if(pParent)
 			pParent->ComponentParams().m_maxParticleLife;
 		else 
-			SetInvalid(parentParticleLife);	// PERSONAL VERIFY: Need to review setinvalid/etc. usage.....make this neater and what not!
+			SetInvalid(parentParticleLife);
 
 		const CTimeValue preDelay = pParams->m_maxTotalLIfe;
 		CTimeValue delay = preDelay + BADTIME(m_delay.GetValueRange().end);

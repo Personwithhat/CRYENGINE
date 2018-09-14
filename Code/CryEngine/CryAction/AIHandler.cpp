@@ -2333,7 +2333,7 @@ void CAIHandler::DoReadibilityPackForAIObjectsOfType(unsigned short int nType, c
 	// Send response request.
 	if (nearestInGroup)
 	{
-		// PERSONAL VERIFY: How to update and trace AI signals better?? More'n likely missed Signal time creation & reading....
+		// PERSONAL DEBUG: How to update and trace AI signals better?? More'n likely missed Signal time creation & reading....
 		// Hard to grep/trace down.....SignalCRC's don't help much.
 		IAISignalExtraData* pData = pAISystem->CreateSignalExtraData();
 		pData->iValue = 0;																						  // Default Priority.

@@ -3303,9 +3303,9 @@ void CCryMatchMaking::ProcessServerPing(const TNetAddress& addr, CCrySharedLobby
 			for (uint32 itemIndex = 0; itemIndex < itemCount; ++itemIndex)
 			{
 				uid.m_uid = pPacket->ReadUINT32();
-				CTimeValue pingToServer = pPacket->ReadTime(); // PERSONAL TODO: Reading/writing time might have been missed somewhere etc.
+				CTimeValue pingToServer = pPacket->ReadTime();
 	#if defined(LOG_SERVER_PING_INFO)
-				NetLog("[Server Ping]: RECEIVED " PRFORMAT_SH ", " PRFORMAT_UID ", ping %ims", PRARG_SH(handle), PRARG_UID(uid), pingToServer);
+				NetLog("[Server Ping]: RECEIVED " PRFORMAT_SH ", " PRFORMAT_UID ", ping %ims", PRARG_SH(handle), PRARG_UID(uid), (int)pingToServer.GetMilliSeconds());
 	#endif
 
 				if (FindConnectionFromSessionUID(handle, uid, &id))

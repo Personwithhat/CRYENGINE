@@ -138,7 +138,6 @@ void CSystem::ExternalUpdate()
 	DrawAudioDebugData();
 #endif // INCLUDE_AUDIO_PRODUCTION_CODE
 
-	// PERSONAL VERIFY: More volatile stuff, needs rewrites.
 	m_accumulatedFrameTime += gEnv->pTimer->GetFrameTime().BADGetSeconds();
 	++m_externalThreadFrameId;
 

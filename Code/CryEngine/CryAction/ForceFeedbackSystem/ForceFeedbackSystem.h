@@ -106,7 +106,6 @@ private:
 		{
 			assert((time >= 0) && (time <= 1));
 
-			// PERSONAL VERIFY: Messy. What does this calculate exactly? Units might not make sense etc.
 			const nTime fSampleIdx = floor(time / FFSYSTEM_PATTERN_SAMPLE_STEP);
 			int sampleIdx1 = (int)fSampleIdx;
 			assert((sampleIdx1 >= 0) && (sampleIdx1 < FFSYSTEM_MAX_PATTERN_SAMPLES));

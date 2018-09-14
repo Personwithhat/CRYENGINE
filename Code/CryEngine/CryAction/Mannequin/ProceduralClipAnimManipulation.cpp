@@ -227,7 +227,7 @@ public:
 
 			nTime paramValue = 0;
 
-			if (GetParam(m_dataStringCRC, paramValue)) // PERSONAL VERIFY: Make sure GetParam() works here....
+			if (GetParam(m_dataStringCRC, paramValue)) // PERSONAL DEBUG: Make sure GetParam() works here.
 			{
 				pSkeletonAnim->SetAnimationNormalizedTime(pAnimation, paramValue);
 			}

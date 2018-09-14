@@ -259,7 +259,7 @@ bool CActionScope::CanInstall(EPriorityComparison priorityComp, FragmentID fragI
 				{
 					if (queryRes1.pFragmentBlend->flags & SFragmentBlend::CycleLocked)
 					{
-						mpfloat cycleDiff = startTime.GetSeconds() - m_normalisedTime.conv<mpfloat>(); // PERSONAL VERIFY: What does this mean? Time - normalized time???
+						mpfloat cycleDiff = startTime.GetSeconds() - m_normalisedTime.conv<mpfloat>(); // PERSONAL CRYTEK: What does this mean? Time - normalized time???
 						if ((m_lastNormalisedTime.conv<mpfloat>() < startTime.GetSeconds()) || (m_lastNormalisedTime > m_normalisedTime))
 						{
 							cycleDiff = max(cycleDiff, mpfloat(0));
@@ -278,7 +278,7 @@ bool CActionScope::CanInstall(EPriorityComparison priorityComp, FragmentID fragI
 				}
 				else
 				{
-					// PERSONAL VERIFY: More 0 sense, Seconds + normalizedTime if startTime is changed to normTime to make above make sense.
+					// PERSONAL CRYTEK: More 0 sense, Seconds + normalizedTime if startTime is changed to normTime to make above make sense.
 					// CalculateFragmentTimeRemaining() has to return duration in seconds, since it uses blend.exitTime/startTime which should be in 'seconds'.....
 					// because getting duration to set exitTime => uses endSec-startSec which is ofc in seconds for sure......AAAAAAAAAAAAAAAAAAAAAARGH
 					timeRemaining = CalculateFragmentTimeRemaining() + startTime;

@@ -62,7 +62,6 @@ inline void TranslateAddress(const CRYSOCKADDR_IN& addr, ServiceNetworkAddress& 
 }
 }
 
-// PERSONAL VERIFY: Perhaps there's a neater way for static CTimeValue's .-.
 //-----------------------------------------------------------------------------
 const CTimeValue CServiceNetworkConnection::kInitializationPeriod = 1;
 const CTimeValue CServiceNetworkConnection::kKeepAlivePeriod = 2;

@@ -845,7 +845,7 @@ void CSystem::ShutDown()
 	CryGetIMemReplay()->Stop();
 #endif
 
-// Revert timer resolution PERSONAL TODO: Make sure this works
+// Revert timer resolution PERSONAL DEBUG: Make sure this works
 #if CRY_PLATFORM_WINDOWS
 	HMODULE hModNtDll = GetModuleHandleA("ntdll");
 
@@ -1005,7 +1005,7 @@ public:
 	{
 		m_bStopRequested = 0;
 		m_bIsActive = 0;
-		m_stepRequested.SetSeconds(0);
+		m_stepRequested = 0;
 		m_bProcessing = 0;
 		m_doZeroStep = 0;
 		m_lastStepTimeTaken = 0U;
@@ -1059,10 +1059,10 @@ public:
 				QueryPerformanceCounter(&stepStart);
 #endif
 				IGameFramework* pIGameFramework = gEnv->pGameFramework;
-				while ((step = m_stepRequested) > 0 || m_doZeroStep)
+				while ((step = BADTIME(m_stepRequested)) > 0 || m_doZeroStep)
 				{
 					stepped = true;
-					m_stepRequested.SetSeconds(0);
+					m_stepRequested = 0;
 					m_bProcessing = 1;
 					m_doZeroStep = 0;
 
@@ -1071,7 +1071,7 @@ public:
 					gEnv->pPhysicalWorld->TracePendingRays();
 					if (kSlowdown != 1)
 					{
-						//step = max(1, FtoI(step * kSlowdown * 50 - " 0.5")) * 0.02f; PERSONAL TODO: This is just for approximation?
+						//step = max(1, FtoI(step * kSlowdown * 50 - " 0.5")) * 0.02f; PERSONAL CRYTEK: This is just for approximation?
 						step = step * kSlowdown;
 						pVars->timeScalePlayers = 1 / max(kSlowdown, mpfloat("0.2"));
 					}
@@ -1120,7 +1120,7 @@ public:
 			PhysicsVars* vars = gEnv->pPhysicalWorld->GetPhysVars();
 			vars->lastTimeStep.SetSeconds(0);
 			m_bIsActive = 0;
-			m_stepRequested = min(m_stepRequested, 2 * vars->maxWorldStep);
+			m_stepRequested = min(m_stepRequested, (2 * vars->maxWorldStep).BADGetSeconds());
 			while (m_bProcessing);
 			return 1;
 		}
@@ -1141,8 +1141,8 @@ public:
 	{
 		if (m_bIsActive && dt > TV_EPSILON)
 		{
-			m_stepRequested += dt;
-			m_stepRequested = min(m_stepRequested, 10 * gEnv->pPhysicalWorld->GetPhysVars()->maxWorldStep);
+			m_stepRequested += dt.BADGetSeconds();
+			m_stepRequested = min(m_stepRequested, (10 * gEnv->pPhysicalWorld->GetPhysVars()->maxWorldStep).BADGetSeconds());
 			if (dt <= 0)
 				m_doZeroStep = 1;
 			m_FrameEvent.Set();
@@ -1150,7 +1150,7 @@ public:
 
 		return m_bProcessing;
 	}
-	const CTimeValue& GetRequestedStep() { return m_stepRequested; }
+	const float GetRequestedStep() { return m_stepRequested; }
 
 	uint64 LastStepTaken() const
 	{
@@ -1180,8 +1180,7 @@ protected:
 
 	volatile int    m_bStopRequested;
 	volatile int    m_bIsActive;
-	//volatile CTimeValue m_stepRequested; PERSONAL VERIFY: This should be volatile! And 'volatile float' too messy to implement here.
-	CTimeValue m_stepRequested;
+	volatile float  m_stepRequested; // PERSONAL IMPROVE: More volatile mpfloat/ctimevalue issues! Preferably don't even use threaded physics for now until this is fixed!!!
 	volatile int    m_bProcessing;
 	volatile int    m_doZeroStep;
 	volatile uint64 m_lastStepTimeTaken;
@@ -1336,10 +1335,7 @@ void CSystem::SleepIfNeeded()
 	}
 
 	// PERSONAL TODO: Should FPS enforcement happen during CTimer::UpdateOnFrameStart(), or here at the end of DoFrame()??
-		// Fixed-time-step = Minimum FPS that Server/Host can handle on average. e.g. FPS should never be lower than this timestep + higher = gives warnings!
-			// Debug only...need to figure out how to sync server/host etc.
-		// Vsync/maxRate = Maximum FPS on Host/Server
-
+	// Cap frames if throtteled server/paused or loading/configured.
 	if (maxFPS > 0)
 	{
 		static CTimeValue sTimeLast = gEnv->pTimer->GetAsyncTime();
@@ -2178,7 +2174,7 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 			if ((nPauseMode != 1) && !(updateFlags & ESYSUPDATE_IGNORE_PHYSICS))
 			{
 				pPhysicsThreadTask->Resume();
-				CTimeValue lag = pPhysicsThreadTask->GetRequestedStep();
+				CTimeValue lag = BADTIME(pPhysicsThreadTask->GetRequestedStep());
 
 				if (pPhysicsThreadTask->RequestStep(m_Time.GetFrameTime()))
 				{

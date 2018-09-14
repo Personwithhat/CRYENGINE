@@ -1287,7 +1287,7 @@ void CVehicle::ProcessEvent(const SEntityEvent& entityEvent)
 		{
 			for (TVehicleSeatVector::iterator ite = m_seats.begin(); ite != m_seats.end(); ++ite)
 			{
-				ite->second->PrePhysUpdate(entityEvent.tVal); // PERSONAL NOTE: GetFrameTime() or event tVal?
+				ite->second->PrePhysUpdate(gEnv->pTimer->GetFrameTime());
 			}
 		}
 		break;

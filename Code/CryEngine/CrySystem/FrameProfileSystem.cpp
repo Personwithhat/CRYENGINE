@@ -272,7 +272,7 @@ void CFrameProfileSystem::Init()
 		"Enable drawing of page faults graph.");
 	REGISTER_CVAR(profile_network, 0, 0,
 		"Enables network profiling");
-	REGISTER_CVAR(profile_peak, PEAK_TOLERANCE, 0, // PERSONAL VERIFY: Although, perhaps, this milliseconds IS milliseconds and not memory bytes etc.????
+	REGISTER_CVAR(profile_peak, PEAK_TOLERANCE, 0, // PERSONAL CRYTEK: Isn't this also memory-bytes/etc.?
 		"Profiler Peaks Tolerance in Milliseconds");
 	REGISTER_CVAR(profile_peak_display, CTimeValue(8), 0,
 		"hot to cold time for peak display");

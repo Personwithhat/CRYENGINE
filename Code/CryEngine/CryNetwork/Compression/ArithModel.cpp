@@ -276,7 +276,8 @@ CTimeValue CArithModel::ReadTimeWithDelta(CCommInputStream& stm, ETimeStream tim
 	uint16 reallyEncoded, left, right;
 #endif
 
-	// PERSONAL VERIFY: Time is in milliseconds of precision or so. Perhaps this can be improved once the general timeFraction system is understood xd
+	// PERSONAL TODO: Increase replication time precision? as with CTDEndpoint.cpp
+	// Once I understand how this time fraction system works ugh.
 	int32 dt = 0;
 	if (adapt.timeFraction32 != 0)
 		dt = (m_timeFraction32 - adapt.timeFraction32) * 1000 / (int32)REPLICATION_TIME_PRECISION;
