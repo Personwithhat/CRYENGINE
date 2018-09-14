@@ -76,9 +76,7 @@ struct CSmartObjectEvent
 	// < 0 means this event should be removed
 	// 0 means just started
 	// 1 means ready to be used
-	mpfloat m_Delay;  // PERSONAL TOOD: Hard to tell if m_delay should be in nTime(how its set) or mpfloat (how it's used)
-							// Perhaps, checkout nTime * mpfloat etc. operator overloads.....
-							// This happens in a few other places as well .-.
+	mpfloat m_Delay;
 };
 
 ///////////////////////////////////////////////

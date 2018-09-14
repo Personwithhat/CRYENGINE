@@ -104,11 +104,11 @@ struct SVisibilityParams
 struct STimingParams
 {
 	CTimeValue m_maxParticleLife = 0;  // Max time a particle can live
-	CTimeValue m_maxTotalLIfe    = 0;  // Max time an emitter can live
+	CTimeValue m_maxTotalLife    = 0;  // Max time an emitter can live
 	CTimeValue m_stableTime      = 0;  // Max time for particles, including children, to die
 	CTimeValue m_equilibriumTime = 0;  // Time for emitter to reach equilibrium after activation
 
-	bool  IsImmortal() const { return !IsValid(m_maxTotalLIfe); }
+	bool  IsImmortal() const { return !IsValid(m_maxTotalLife); }
 };
 
 struct SComponentParams: STimingParams

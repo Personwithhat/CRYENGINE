@@ -244,7 +244,7 @@ void CParticleComponent::UpdateTimings()
 		pChild->UpdateTimings();
 		const STimingParams& timingsChild = pChild->ComponentParams();
 		SetMax(maxChildEq, timingsChild.m_equilibriumTime);
-		SetMax(maxChildLife, timingsChild.m_maxTotalLIfe);
+		SetMax(maxChildLife, timingsChild.m_maxTotalLife);
 	}
 
 	// PERSONAL TODO: Check the 'IsValid()' setup here and above!!!
@@ -257,7 +257,7 @@ void CParticleComponent::UpdateTimings()
 	const CTimeValue moreLife = maxChildLife - (IsValid(m_Params.m_maxParticleLife) ? m_Params.m_maxParticleLife : 0);
 	if (moreLife > 0)
 	{
-		m_Params.m_maxTotalLIfe += moreLife;
+		m_Params.m_maxTotalLife += moreLife;
 	}
 }
 

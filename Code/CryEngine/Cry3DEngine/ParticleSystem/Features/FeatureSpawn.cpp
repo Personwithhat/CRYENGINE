@@ -52,7 +52,7 @@ public:
 		else 
 			SetInvalid(parentParticleLife);
 
-		const CTimeValue preDelay = pParams->m_maxTotalLIfe;
+		const CTimeValue preDelay = pParams->m_maxTotalLife;
 		CTimeValue delay = preDelay + BADTIME(m_delay.GetValueRange().end);
 		CTimeValue stableTime = IsValid(pParams->m_maxParticleLife) ? pParams->m_maxParticleLife : 0;
 		CTimeValue equilibriumTime = delay + stableTime;
@@ -68,7 +68,7 @@ public:
 
 		SetMax(pParams->m_stableTime, stableTime);
 		SetMax(pParams->m_equilibriumTime, equilibriumTime);
-		SetMax(pParams->m_maxTotalLIfe, maxLife);
+		SetMax(pParams->m_maxTotalLife, maxLife);
 	}
 
 	virtual void InitSubInstances(CParticleComponentRuntime& runtime, SUpdateRange instanceRange) override

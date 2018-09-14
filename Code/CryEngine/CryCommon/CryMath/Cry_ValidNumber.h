@@ -11,7 +11,8 @@
 //--------------------------------------------------------------------------------
 // IsValid() overloads for basic types
 
-// PERSONAL TODO: With how particle's use SetInvalid() for floats etc., with lifetime set to CTimeValue we need the same SetInvalid() setup here too!!
+// PERSONAL IMPROVE: Honestly IsValid() and IsUnused() should be merged. The former is barely used anywhere outside of debug.....
+// Well, it used to be used for particle lifetime in FeatureSpawn.cpp
 namespace ValidNumber
 {
 template<typename T, bool Converted> struct Float
@@ -27,9 +28,44 @@ template<typename T, bool Converted> struct Float
 	static bool IsEquivalent(T a, T b, T e = std::numeric_limits<T>::epsilon())
 	{
 		float e2 = sqr(e);
+		if (e < 0) // Negative epsilon denotes a relative comparison
+			e2 *= max(sqr(a), sqr(b));
+		return sqr(a - b) <= e2;
+	}
+};
+
+template<typename T> struct MPTest
+{
+	static void SetInvalid(T& val)
+	{
+		val.memHACK();
+	}
+	static bool IsValid(const T& val)
+	{
+		return x.backend().unsafe()[0]._mp_d == 0;
+	}
+	static bool IsEquivalent(const T& a, const T& b, const T& e = 0)
+	{
+		T e2 = sqr(e);
 		if (e < 0) // Negative epislon denotes a relative comparison
 			e2 *= max(sqr(a), sqr(b));
 		return sqr(a - b) <= e2;
+	}
+};
+
+template<typename T> struct TimeTest
+{
+	static void SetInvalid(T& val)
+	{
+		return MPTest<mpfloat>::SetInvalid(val.m_lValue);
+	}
+	static bool IsValid(const T& val)
+	{
+		return MPTest<mpfloat>::IsValid(val.m_lValue);
+	}
+	static bool IsEquivalent(const T& a, const T& b, const T& e = 0)
+	{
+		return MPTest<mpfloat>::IsEquivalent(a.m_lValue, b.m_lValue, e.m_lValue);
 	}
 };
 
@@ -90,14 +126,20 @@ template<typename T> struct Type
 	typedef typename std::conditional<
 		std::is_floating_point<T>::value, ValidNumber::Float<T, 0>,
 		typename std::conditional<
-			std::is_same<T, bool>::value, ValidNumber::Boolean<T>,
+		isMP, ValidNumber::MPTest<T>,
 			typename std::conditional<
-				std::is_integral<T>::value || std::is_enum<T>::value, ValidNumber::Integral<T, 0>,
+			isTV, ValidNumber::TimeTest<T>,
 				typename std::conditional<
-					std::is_convertible<T, float>::value, ValidNumber::Float<T, 1>,
+					std::is_same<T, bool>::value, ValidNumber::Boolean<T>,
 					typename std::conditional<
-						std::is_convertible<T, int>::value, ValidNumber::Integral<T, 1>,
-						ValidNumber::Class<T>
+						std::is_integral<T>::value || std::is_enum<T>::value, ValidNumber::Integral<T, 0>,
+						typename std::conditional<
+							std::is_convertible<T, float>::value, ValidNumber::Float<T, 1>,
+							typename std::conditional<
+								std::is_convertible<T, int>::value, ValidNumber::Integral<T, 1>,
+								ValidNumber::Class<T>
+							>::type
+						>::type
 					>::type
 				>::type
 			>::type
@@ -113,17 +155,10 @@ void SetInvalid(T& val)
 	ValidNumber::Type<T>::type::SetInvalid(val);
 }
 
-// Similar setup to CryMath/Random.h
-MPOff
-inline bool IsValid(const T& val)
+template<typename T>
+bool IsValid(const T& val)
 {
 	return ValidNumber::Type<T>::type::IsValid(val);
-}
-
-MPOnly
-inline bool IsValid(const T& val)
-{
-	return true;
 }
 
 // Alias
@@ -132,33 +167,13 @@ template<typename T> bool NumberValid(const T& val)
 	return IsValid(val); 
 }
 
-template<typename T, typename U, typename E, typename boost::disable_if_c<isMP>::type* = 0> 
+template<typename T, typename U, typename E> 
 bool IsEquivalent(const T& a, const U& b, E e)
 {
 	return ValidNumber::Type<T>::type::IsEquivalent(a, b, e);
 }
-template<typename T, typename U, typename boost::disable_if_c<isMP>::type* = 0> 
+template<typename T, typename U> 
 bool IsEquivalent(const T& a, const U& b)
 {
 	return ValidNumber::Type<T>::type::IsEquivalent(a, b);
-}
-
-// PERSONAL NOTE: Similar setup to CryMath/Random.h, a tad messier....this is done for unit tests though so it doesn't matter all that much(?)
-template<typename T, typename U, typename E, typename boost::enable_if_c<isMP>::type* = 0>
-bool IsEquivalent(const T& a, const U& b, E e)
-{
-	mpfloat b2 = mpfloat(b);
-	mpfloat e2 = sqr(mpfloat(e));
-	if (e < 0) // Negative epislon denotes a relative comparison
-		e2 *= max(sqr(a), sqr(b2));
-	return sqr(a - b2) <= e2;
-}
-template<typename T, typename U, typename boost::enable_if_c<isMP>::type* = 0>
-bool IsEquivalent(const T& a, const U& b)
-{
-	mpfloat b2 = mpfloat(b);
-	mpfloat e2 = sqr(mpfloat().lossy(std::numeric_limits<float>::epsilon()));
-	if (e < 0) // Negative epislon denotes a relative comparison
-		e2 *= max(sqr(a), sqr(b2));
-	return sqr(a - b2) <= e2;
 }
