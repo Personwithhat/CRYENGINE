@@ -97,16 +97,23 @@ set(COMMON_LIBS Ntdll User32 Advapi32 Ntdll Ws2_32)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-## PERSONAL EDITS : To add GMP
+## PERSONAL EDITS : To add GMP and MPFR
 	## Additional Include Directories
 	include_directories("${SDK_DIR}/boost")
 	include_directories("${SDK_DIR}/GMP/include")
-	
+	include_directories("${SDK_DIR}/MPFR/include")
+
 	## Additional Library Directories
 	link_directories("${SDK_DIR}/GMP/lib")
-	
-	## Additional GMP Dependencies NOTE: msys64 (mingw64) libgcc copied to GMP/lib for convenience.
+	link_directories("${SDK_DIR}/MPFR/lib")
+
+	## Additional GMP Dependencies
 	set(COMMON_LIBS ${COMMON_LIBS} libgcc legacy_stdio_definitions libgmpxx libgmp)
+		
+	## Additional Dependencies for MPFR
+	set(COMMON_LIBS ${COMMON_LIBS} libgcc_s libgcc_eh libwinpthread libmpfr)
+	deploy_runtime_files("${SDK_DIR}/MPFR/lib/libgcc_s_seh-1.dll")
+	deploy_runtime_files("${SDK_DIR}/MPFR/lib/libwinpthread-1.dll")
 ## ~PERSONAL EDITS
 
 #Libs

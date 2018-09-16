@@ -11,6 +11,9 @@ void CryFatalError(const char*, ...);
 // Boost wrapper around GNU Multiple Precision Arithmetic Library (GMP)
 #include <boost/multiprecision/gmp.hpp>
 
+// PERSONAL TODO: Convert to this instead!!!! Test to see if build works at all.....
+#include <boost/multiprecision/mpfr.hpp>
+
 /* PERSONAL IMPROVE & PERSONAL DEBUG:
 	1) To prevent ambiguous sets, at the moment mpfloat does not accept 'string' as input, only const char*. Try it out, maybe it'll work?
 	2) Improve readability + macro's, cleanup canonical values, convert inline to ILINE etc.
