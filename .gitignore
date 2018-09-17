@@ -44,3 +44,19 @@ __pycache__/*
 
 # These are handled elsewhere.
 /Code/SDKs/*
+
+##
+## As a just-in-case + record keeping. SDK zip installation will override this and should match!
+##
+!/Code/SDKs/SDK_LIST_EDITS.txt
+
+# .gitignore workarounds xd
+!/Code/SDKs/boost
+/Code/SDKs/boost/*
+!/Code/SDKs/boost/boost
+/Code/SDKs/boost/boost/*
+!/Code/SDKs/boost/boost/multiprecision/
+/Code/SDKs/boost/boost/multiprecision/*
+
+!/Code/SDKs/boost/boost/multiprecision/gmp.hpp
+!/Code/SDKs/boost/boost/multiprecision/mpfr.hpp
