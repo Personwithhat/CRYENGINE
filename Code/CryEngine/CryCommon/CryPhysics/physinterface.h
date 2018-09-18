@@ -385,9 +385,9 @@ template<class F> bool   is_unused(const Vec3_tpl<F>& x)   { return is_unused(x.
 template<class F> bool   is_unused(const Quat_tpl<F>& x)   { return is_unused(x.w); }
 inline bool              is_unused(const double& x)        { unused_marker::d2i u; u.d = x; return (u.i[eLittleEndian ? 1 : 0] & 0xFFF40000) == 0xFFF40000; }
 
-// PERSONAL NOTE: _mpd_d -> can't compare etc. unused value until assigned something like 0 (until it becomes 'used' heh)
-// Similar result if memset(0) is done. Maybe there's a better solution?
-MPOnly bool is_unused(const T& x) { return x.backend().unsafe()[0]._mp_d == 0; }
+// PERSONAL NOTE: memHack() -> can't compare etc. unused value until assigned something like 0 (until it becomes 'used' heh)
+// Same result if memset(0) is done. Maybe there's a better solution?
+MPOnly bool is_unused(const T& x) { return !x.valid(); }
 TVOnly bool is_unused(const T& x) { return is_unused(x.m_lValue); }
 
 #define MARK_UNUSED unused_marker(),

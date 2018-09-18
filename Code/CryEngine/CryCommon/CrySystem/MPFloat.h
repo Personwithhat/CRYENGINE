@@ -37,7 +37,8 @@ namespace boost { namespace multiprecision {
 template<class rType>
 class newNum {
 public:
-	typedef gmp_float<50> Backend;
+	typedef mpfr_float_backend<50, allocate_stack> Backend;
+	typedef std::numeric_limits<number<Backend>> limits;		// PERSONAL IMPROVE: ATM Using number's limits, can implement custom numeric limits later. Would be cleaner.
 	#define this static_cast<rType*>(this)
 
 	// Current check for legitimate operations/comparisons on e.g. integers but no floats
@@ -66,23 +67,28 @@ public:
 	T conv() const { return T(backend()); }
 
 	// Impercise set
-	// WARNING: A set of a double/float with the value 'INFINITY' will cause a silent death of the engine!
-	// Reproduction: BADMP(INFINITY)
 	template <typename T> rType& lossy(const T& inRhs) { backend() = canonical_value(inRhs); return *this; }
 
 	// PERSONAL IMPROVE: Memory usage should probably be tracked for optimizing mpfloat size/etc.
 	void GetMemoryUsage(class ::ICrySizer* pSizer)		  const { /*nothing*/ };
 	void GetMemoryStatistics(class ::ICrySizer* pSizer)  const { /*nothing*/ };
 
+	// WARNING: memset, in general, does not work with mpfloats!
+	// Exception is memset(0) which causes m_data to be nullptr => crashes if comparison/etc. is done before an assignment happens.
+	// And memcpy of course is bad because mpfloat/CTimeValue are not POD types. Alternative solutions include not using memcpy (heh), or converting to std::copy()
 	/*
-		PERSONAL IMPROVE: HACK!!!
-		This 'fix' for un-initialized mpfloat heap only works if mpfloat has a value before the data is accessed/compared.
-		Might memory leak? etc. Trace this down and preferably remove.
-			Also used to show an 'Unused' mpfloat value in physics etc.!
+		PERSONAL IMPROVE: Used as a HACK in some scenarios!
+		This is a 'fix' for un-initialized mpfloat heap and is_unused() checks.
+		Possible memory leak for allocate_dynamically MPFR and regular GMP. Stack is zero'd out for allocate_stack MPFR.
 	*/
-	// WARNING: memset, in general, does not work with mpfloats! Causes m_data to be nullptr => crashes if comparison/etc. is done before an assignment happens.
-	// And memcpy of course is bad because mpfloat/CTimeValue are not POD types. Alternative solutions include notusing memcpy to begin with, or converting to std::copy()
-	void memHACK(){ backend().unsafe()[0]._mp_d = 0; }
+	// PERSONAL TODO: With allocate_stack MPFR, will memcpy work properly???? Probably not :<
+	void memHACK(){ memset(&backend(), 0, sizeof(Backend)); }
+
+	// Check if this var was memset/etc. and zero'd out.
+	bool valid() const { return backend().valid(); }
+
+	// Check if this value is NaN
+	bool IsNaN() const { return mpfr_nan_p(backend().data()); }
 
 	// PERSONAL NOTE: Previous attempts at overloads/etc.
 	/*
@@ -422,11 +428,10 @@ public: // Other re-implimented number<> functions
 	}
 
 	// Near-copy of Boosts's implementation. Uses CryTek's string instead of std::string with an extra skipZero flag convenience.
-	string str(std::streamsize digits = 0, std::ios_base::fmtflags f = 0) const 
-	{
+   string str(std::streamsize digits = 0, std::ios_base::fmtflags f = 0)const
+   {
 		auto m_data = backend().data();
-		BOOST_ASSERT(m_data[0]._mp_d);
-
+      BOOST_ASSERT(m_data[0]._mpfr_d);
 		if (digits != 0 && f == 0) { f = std::ios_base::dec; }		// Default precision is "Digits after decimal point". Don't pad zeroes.
 
 		bool scientific = (f & std::ios_base::scientific) == std::ios_base::scientific;
@@ -434,95 +439,104 @@ public: // Other re-implimented number<> functions
 		bool fixed = ((f & std::ios_base::fixed) == std::ios_base::fixed || skipZero); // SkipZero implies fixed.
 		std::streamsize org_digits(digits);
 
-		if (scientific && digits)
-			++digits;
+      if(scientific && digits)
+         ++digits;
 
-		string result;
-		mp_exp_t e;
-		void *(*alloc_func_ptr) (size_t);
-		void *(*realloc_func_ptr) (void *, size_t, size_t);
-		void(*free_func_ptr) (void *, size_t);
-		mp_get_memory_functions(&alloc_func_ptr, &realloc_func_ptr, &free_func_ptr);
-
-		if (mpf_sgn(m_data) == 0)
-		{
-			e = 0;
-			result = "0";
-			if (fixed && digits)
-				++digits;
-		}
-		else
-		{
-			char* ps = mpf_get_str(0, &e, 10, static_cast<std::size_t>(digits), m_data);
-			--e;  // To match with what our formatter expects.
-			if (fixed && e != -1)
-			{
-				// Oops we actually need a different number of digits to what we asked for:
-				(*free_func_ptr)((void*)ps, std::strlen(ps) + 1);
-				digits += e + 1;
-				if (digits == 0)
-				{
-					// We need to get *all* the digits and then possibly round up,
-					// we end up with either "0" or "1" as the result.
-					ps = mpf_get_str(0, &e, 10, 0, m_data);
-					--e;
-					unsigned offset = *ps == '-' ? 1 : 0;
-					if (ps[offset] > '5')
-					{
-						++e;
-						ps[offset] = '1';
-						ps[offset + 1] = 0;
-					}
-					else if (ps[offset] == '5')
-					{
-						unsigned i = offset + 1;
-						bool round_up = false;
-						while (ps[i] != 0)
-						{
-							if (ps[i] != '0')
-							{
-								round_up = true;
-								break;
-							}
-						}
-						if (round_up)
-						{
-							++e;
-							ps[offset] = '1';
-							ps[offset + 1] = 0;
-						}
-						else
-						{
-							ps[offset] = '0';
-							ps[offset + 1] = 0;
-						}
-					}
-					else
-					{
-						ps[offset] = '0';
-						ps[offset + 1] = 0;
-					}
-				}
-				else if (digits > 0)
-				{
-					ps = mpf_get_str(0, &e, 10, static_cast<std::size_t>(digits), m_data);
-					--e;  // To match with what our formatter expects.
-				}
-				else
-				{
-					ps = mpf_get_str(0, &e, 10, 1, m_data);
-					--e;
-					unsigned offset = *ps == '-' ? 1 : 0;
-					ps[offset] = '0';
-					ps[offset + 1] = 0;
-				}
-			}
-			result = ps;
-			(*free_func_ptr)((void*)ps, std::strlen(ps) + 1);
-		}
-		format_MP_string(result, e, org_digits, f, mpf_sgn(m_data) == 0);
-		return result;
-	}
+      string result;
+      mp_exp_t e;
+      if(mpfr_inf_p(m_data))
+      {
+         if(mpfr_sgn(m_data) < 0)
+            result = "-inf";
+         else if(f & std::ios_base::showpos)
+            result = "+inf";
+         else
+            result = "inf";
+         return result;
+      }
+      if(mpfr_nan_p(m_data))
+      {
+         result = "nan";
+         return result;
+      }
+      if(mpfr_zero_p(m_data))
+      {
+         e = 0;
+         result = "0";
+      }
+      else
+      {
+         char* ps = mpfr_get_str (0, &e, 10, static_cast<std::size_t>(digits), m_data, GMP_RNDN);
+        --e;  // To match with what our formatter expects.
+         if(fixed && e != -1)
+         {
+            // Oops we actually need a different number of digits to what we asked for:
+            mpfr_free_str(ps);
+            digits += e + 1;
+            if(digits == 0)
+            {
+               // We need to get *all* the digits and then possibly round up,
+               // we end up with either "0" or "1" as the result.
+               ps = mpfr_get_str (0, &e, 10, 0, m_data, GMP_RNDN);
+               --e;
+               unsigned offset = *ps == '-' ? 1 : 0;
+               if(ps[offset] > '5')
+               {
+                  ++e;
+                  ps[offset] = '1';
+                  ps[offset + 1] = 0;
+               }
+               else if(ps[offset] == '5')
+               {
+                  unsigned i = offset + 1;
+                  bool round_up = false;
+                  while(ps[i] != 0)
+                  {
+                     if(ps[i] != '0')
+                     {
+                        round_up = true;
+                        break;
+                     }
+                  }
+                  if(round_up)
+                  {
+                     ++e;
+                     ps[offset] = '1';
+                     ps[offset + 1] = 0;
+                  }
+                  else
+                  {
+                     ps[offset] = '0';
+                     ps[offset + 1] = 0;
+                  }
+               }
+               else
+               {
+                  ps[offset] = '0';
+                  ps[offset + 1] = 0;
+               }
+            }
+            else if(digits > 0)
+            {
+               ps = mpfr_get_str (0, &e, 10, static_cast<std::size_t>(digits), m_data, GMP_RNDN);
+               --e;  // To match with what our formatter expects.
+            }
+            else
+            {
+               ps = mpfr_get_str (0, &e, 10, 1, m_data, GMP_RNDN);
+               --e;
+               unsigned offset = *ps == '-' ? 1 : 0;
+               ps[offset] = '0';
+               ps[offset + 1] = 0;
+            }
+         }
+         result = ps ? ps : "0";
+         if(ps)
+            mpfr_free_str(ps);
+      }
+		format_MP_string(result, e, org_digits, f, 0 != mpfr_zero_p(m_data));
+      return result;
+   }
 
 	// For Natvis special visualizer, to see mpfloat value during debug.
 	ILINE std::string debugStr() const { return std::string(str(0, 0)); }
@@ -587,9 +601,6 @@ private:
 	#undef BINARY_OP_FUNCTOR
 }} // END boost::multiprecision namespaces
 
-// Just to get debugStr() accessible in debugger memory regardless of whether it was called in scope or not!
-template<class T> std::string IgnoreThis_MPSTUFF(const boost::multiprecision::newNum<T>& in) { return in.debugStr(); };
-
 // String buffer size for MPFloats, used for sscanf() etc. PERSONAL DEBUG & PERSONAL IMPROVE!!!
 #define MP_SIZE 256u
 
@@ -624,12 +635,13 @@ namespace boost { namespace multiprecision {\
 		\
 	   const CTypeInfo& TypeInfo() const { static MPInfo<name> Info(#name); return Info; }\
 		\
-		/* PERSONAL IMPROVE: ATM Using number's limits, can implement custom numeric limits later. */\
-		static name Min() { return std::numeric_limits<number<name::Backend>>::lowest().backend(); }\
-		static name Max() { return std::numeric_limits<number<name::Backend>>::max().backend(); }\
+		static name Min() { return limits::lowest().backend(); }\
+		static name Max() { return limits::max().backend(); }\
 	};\
 }}\
-using boost::multiprecision::name;
+using boost::multiprecision::name;\
+/* Just to get debugStr() accessible in debugger memory regardless of whether it was called in scope or not! */\
+static std::string(boost::multiprecision::newNum<name>::*IgnoreThis_MPSTUFF)() const = &boost::multiprecision::newNum<name>::debugStr;
 
 // TypeInfo for mpfloat types
 	/* Was Split in CryTypeInfo.inl and TypeInfo_decl.h. Didn't work.

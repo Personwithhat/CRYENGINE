@@ -11,8 +11,7 @@
 //--------------------------------------------------------------------------------
 // IsValid() overloads for basic types
 
-// PERSONAL IMPROVE: Honestly IsValid() and IsUnused() should be merged. The former is barely used anywhere outside of debug.....
-// Well, it used to be used for particle lifetime in FeatureSpawn.cpp
+// PERSONAL IMPROVE: Honestly IsValid() and IsUnused() should be merged.
 namespace ValidNumber
 {
 template<typename T, bool Converted> struct Float
@@ -38,16 +37,17 @@ template<typename T> struct MPTest
 {
 	static void SetInvalid(T& val)
 	{
-		val.memHACK();
+		val.memHack(); // Treating this as a 'Signaling' NAN!
 	}
 	static bool IsValid(const T& val)
 	{
-		return x.backend().unsafe()[0]._mp_d == 0;
+		static_assert(T::limits::has_quiet_NaN && T::limits::has_infinity, "Type must support quiet NaN & infinity.");
+		return val.valid() && !(val == T(T::limits::infinity().backend()) || mpfr_nan_p(val.backend().data()));
 	}
 	static bool IsEquivalent(const T& a, const T& b, const T& e = 0)
 	{
 		T e2 = sqr(e);
-		if (e < 0) // Negative epislon denotes a relative comparison
+		if (e < 0) // Negative epsilon denotes a relative comparison
 			e2 *= max(sqr(a), sqr(b));
 		return sqr(a - b) <= e2;
 	}

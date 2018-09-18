@@ -362,6 +362,12 @@ struct mpfr_float_imp<digits10, allocate_dynamic>
       BOOST_ASSERT(m_data[0]._mpfr_d);
       return m_data;
    }
+
+	// PERSONAL EDITS: Check to see if this has been zero'd out by memset(0) and the like.
+	bool valid() const {
+		return (m_data[0]._mpfr_prec != 0);
+	}
+
 protected:
    mpfr_t m_data;
    static unsigned& get_default_precision() BOOST_NOEXCEPT
@@ -411,24 +417,33 @@ struct mpfr_float_imp<digits10, allocate_stack>
    }
    mpfr_float_imp& operator = (const mpfr_float_imp& o)
    {
-      mpfr_set(m_data, o.m_data, GMP_RNDN);
+		if (!valid())
+			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
+		if (o.valid())
+			mpfr_set(m_data, o.m_data, GMP_RNDN);
       return *this;
    }
 #ifdef BOOST_HAS_LONG_LONG
 #ifdef _MPFR_H_HAVE_INTMAX_T
    mpfr_float_imp& operator = (boost::ulong_long_type i)
    {
+		if (!valid())
+			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
       mpfr_set_uj(m_data, i, GMP_RNDN);
       return *this;
    }
    mpfr_float_imp& operator = (boost::long_long_type i)
    {
+		if (!valid())
+			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
       mpfr_set_sj(m_data, i, GMP_RNDN);
       return *this;
    }
 #else
    mpfr_float_imp& operator = (boost::ulong_long_type i)
    {
+		if (!valid())
+			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
       boost::ulong_long_type mask = ((((1uLL << (std::numeric_limits<unsigned long>::digits - 1)) - 1) << 1) | 1uL);
       unsigned shift = 0;
       mpfr_t t;
@@ -449,6 +464,8 @@ struct mpfr_float_imp<digits10, allocate_stack>
    }
    mpfr_float_imp& operator = (boost::long_long_type i)
    {
+		if (!valid())
+			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
       bool neg = i < 0;
       *this = boost::multiprecision::detail::unsigned_abs(i);
       if(neg)
@@ -459,26 +476,36 @@ struct mpfr_float_imp<digits10, allocate_stack>
 #endif
    mpfr_float_imp& operator = (unsigned long i)
    {
+		if (!valid())
+			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
       mpfr_set_ui(m_data, i, GMP_RNDN);
       return *this;
    }
    mpfr_float_imp& operator = (long i)
    {
+		if (!valid())
+			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
       mpfr_set_si(m_data, i, GMP_RNDN);
       return *this;
    }
    mpfr_float_imp& operator = (double d)
    {
+		if (!valid())
+			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
       mpfr_set_d(m_data, d, GMP_RNDN);
       return *this;
    }
    mpfr_float_imp& operator = (long double a)
    {
+		if (!valid())
+			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
       mpfr_set_ld(m_data, a, GMP_RNDN);
       return *this;
    }
    mpfr_float_imp& operator = (const char* s)
    {
+		if (!valid())
+			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
       if(mpfr_set_str(m_data, s, 10, GMP_RNDN) != 0)
       {
          BOOST_THROW_EXCEPTION(std::runtime_error(std::string("Unable to parse string \"") + s + std::string("\"as a valid floating point number.")));
@@ -631,6 +658,12 @@ struct mpfr_float_imp<digits10, allocate_stack>
    {
       return m_data;
    }
+
+	// PERSONAL EDITS: Check to see if this has been zero'd out by memset(0) and the like. Plus above auto-initialization if invalid.
+	bool valid() const {
+		return (m_data[0]._mpfr_prec != 0);
+	}
+
 protected:
    mpfr_t m_data;
    mp_limb_t m_buffer[limb_count];

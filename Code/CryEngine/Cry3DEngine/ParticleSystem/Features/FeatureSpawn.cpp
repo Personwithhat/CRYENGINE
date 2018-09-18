@@ -46,11 +46,7 @@ public:
 
 		// Compute equilibrium and full life times
 		CParticleComponent* pParent = pComponent->GetParentComponent();
-		CTimeValue parentParticleLife;
-		if(pParent)
-			pParent->ComponentParams().m_maxParticleLife;
-		else 
-			SetInvalid(parentParticleLife);
+		const CTimeValue parentParticleLife = pParent ? pParent->ComponentParams().m_maxParticleLife : mpfloat::limits::quiet_NaN().backend();
 
 		const CTimeValue preDelay = pParams->m_maxTotalLife;
 		CTimeValue delay = preDelay + BADTIME(m_delay.GetValueRange().end);

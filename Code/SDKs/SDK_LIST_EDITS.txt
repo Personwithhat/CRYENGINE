@@ -24,7 +24,8 @@ Boost:
 		Used for 'is_unused()' checks. Non-conflicting with any existing code and what not.
 	
 	Also edited mpfr.hpp:
-		Added checks for zeroed out buffer in stack_allocated version (replicates dynamic_allocated) Due to memset(0)'s selective usefulness.
+		Added checks for zeroed out buffer in 'allocate_stack' version (replicates allocate_dynamic) 
+			Due to memset(0)'s selective usefulness.
 			Only for assignment. No asserts added.
 	
 -------------------------

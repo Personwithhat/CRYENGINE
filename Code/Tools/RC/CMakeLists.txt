@@ -112,8 +112,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 		
 	## Additional Dependencies for MPFR
 	set(COMMON_LIBS ${COMMON_LIBS} libgcc_s libgcc_eh libwinpthread libmpfr)
-	deploy_runtime_files("${SDK_DIR}/MPFR/lib/libgcc_s_seh-1.dll")
-	deploy_runtime_files("${SDK_DIR}/MPFR/lib/libwinpthread-1.dll")
 ## ~PERSONAL EDITS
 
 #Libs

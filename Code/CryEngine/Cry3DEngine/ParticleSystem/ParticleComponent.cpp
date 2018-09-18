@@ -117,7 +117,6 @@ void SComponentParams::Serialize(Serialization::IArchive& ar)
 
 void SComponentParams::GetMaxParticleCounts(int& total, int& perFrame, float minFPS, float maxFPS) const
 {
-	// PERSONAL TODO: max particle life can be invalid!! ????
 	total = m_maxParticlesBurst;
 	const float rate = m_maxParticleRate + m_maxParticlesPerFrame * maxFPS;
 	const float extendedLife = m_maxParticleLife.BADGetSeconds() + rcp(minFPS); // Particles stay 1 frame after death
@@ -247,7 +246,6 @@ void CParticleComponent::UpdateTimings()
 		SetMax(maxChildLife, timingsChild.m_maxTotalLife);
 	}
 
-	// PERSONAL TODO: Check the 'IsValid()' setup here and above!!!
 	const CTimeValue moreEq = maxChildEq - (IsValid(m_Params.m_maxParticleLife) ? m_Params.m_maxParticleLife : 0);
 	if (moreEq > 0)
 	{

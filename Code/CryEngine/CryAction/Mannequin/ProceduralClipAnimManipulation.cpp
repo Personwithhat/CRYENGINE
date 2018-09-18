@@ -225,11 +225,10 @@ public:
 		{
 			pAnimation->SetStaticFlag(CA_MANUAL_UPDATE);
 
-			nTime paramValue = 0;
-
-			if (GetParam(m_dataStringCRC, paramValue)) // PERSONAL DEBUG: Make sure GetParam() works here.
+			float paramValue = 0;
+			if (GetParam(m_dataStringCRC, paramValue)) // PERSONAL IMPROVE: QuatT size is smaller than mpfloat. Can't alias cast that! >.>
 			{
-				pSkeletonAnim->SetAnimationNormalizedTime(pAnimation, paramValue);
+				pSkeletonAnim->SetAnimationNormalizedTime(pAnimation, BADnT(paramValue));
 			}
 		}
 	}
@@ -247,8 +246,7 @@ public:
 
 	virtual void Update(const CTimeValue& timePassed)
 	{
-		nTime paramValue = 0;
-
+		float paramValue = 0;
 		if (GetParam(m_dataStringCRC, paramValue))
 		{
 			CAnimation* pAnimation = NULL;
@@ -256,7 +254,7 @@ public:
 
 			if (GetSkeletonAndAnimation(pSkeletonAnim, pAnimation))
 			{
-				pSkeletonAnim->SetAnimationNormalizedTime(pAnimation, paramValue);
+				pSkeletonAnim->SetAnimationNormalizedTime(pAnimation, BADnT(paramValue));
 			}
 		}
 	}
@@ -584,12 +582,11 @@ private:
 
 	void UpdateLayerAnimSpeed()
 	{
-		mpfloat paramValue = 0;
-
+		float paramValue = 0;
 		if (GetParam(m_dataStringCRC, paramValue))
 		{
 			paramValue = m_invert ? 1 - paramValue : paramValue;
-			m_charInstance->GetISkeletonAnim()->SetLayerPlaybackScale(m_animLayer, paramValue);
+			m_charInstance->GetISkeletonAnim()->SetLayerPlaybackScale(m_animLayer, BADMP(paramValue));
 		}
 	}
 
