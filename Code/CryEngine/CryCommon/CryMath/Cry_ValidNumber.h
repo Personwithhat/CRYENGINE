@@ -42,7 +42,7 @@ template<typename T> struct MPTest
 	static bool IsValid(const T& val)
 	{
 		static_assert(T::limits::has_quiet_NaN && T::limits::has_infinity, "Type must support quiet NaN & infinity.");
-		return val.valid() && !(val == T(T::limits::infinity().backend()) || mpfr_nan_p(val.backend().data()));
+		return val.valid() && !(val == T(T::limits::infinity().backend()) || val.IsNaN());
 	}
 	static bool IsEquivalent(const T& a, const T& b, const T& e = 0)
 	{

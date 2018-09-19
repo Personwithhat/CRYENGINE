@@ -417,10 +417,14 @@ struct mpfr_float_imp<digits10, allocate_stack>
    }
    mpfr_float_imp& operator = (const mpfr_float_imp& o)
    {
-		if (!valid())
-			mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
-		if (o.valid())
+		// PERSONAL NOTE: 
+			// If both values are memset to 0, then it used to initialize value 1 to NaN and skip the set to 0.
+			// And now we have 1 NaN value.....best to keep both at 000 to show that they were never assigned with a valid value post memset.
+		if (o.valid()){
+			if (!valid())
+				mpfr_custom_init_set(m_data, MPFR_NAN_KIND, 0, digits2, m_buffer);
 			mpfr_set(m_data, o.m_data, GMP_RNDN);
+		}
       return *this;
    }
 #ifdef BOOST_HAS_LONG_LONG

@@ -45,7 +45,7 @@ inline uint32 cry_random_uint32()
 	return gEnv->pSystem->GetRandomGenerator().GenerateUint32();
 }
 
-// PERSONAL NOTE: A tad messier due to conflicting templates, just as with Cry_ValidNumber.
+// PERSONAL NOTE: A tad messier due to conflicting templates.
 // Plus header dependencies......simpler to put overloads here.
 
 //! Scalar ranged random function.

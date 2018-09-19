@@ -291,7 +291,7 @@ int CPhysArea::ApplyParams(const Vec3& pt, Vec3& gravity, const Vec3 &vel, pe_pa
 						if (true) {//fabs_tpl((org-m_pb.waterPlane.origin)*n)-sz*n.abs() < 1.5f) {
 							sz = (Rabs=m_R*Matrix33(transG.q)).Fabs()*sz;
 							heightfield hf, *phf=&hf;
-							int iyscale=1,vmask=0; float *pdata; Vec3 vel(ZERO),*pvel=&vel;
+							int iyscale=1,vmask=0; float *pdata = nullptr; Vec3 vel(ZERO),*pvel=&vel;
 							float (*getHeight)(float *data,getHeightCallback func, int ix,int iy);
 							if (m_pWaterMan) {
 								hf.size.set(m_pWaterMan->m_nCells,m_pWaterMan->m_nCells);

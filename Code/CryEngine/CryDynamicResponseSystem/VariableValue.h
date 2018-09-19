@@ -42,9 +42,9 @@ typedef mpfloat VariableValueData;
 class CVariableValue
 {
 public:
-	static const VariableValueData POS_INFINITE;    //we need these two for conditions like VALUE < x, because we do all of our checks like (y < VALUE && VALUE < x), so in this case we would just define y = INT_MIN, which is then always true
-	static const VariableValueData NEG_INFINITE;
-	static const VariableValueData DEFAULT_VALUE;
+	static const int POS_INFINITE = INT_MAX;  //we need these two for conditions like VALUE < x, because we do all of our checks like (y < VALUE && VALUE < x), so in this case we would just define y = INT_MIN, which is then always true
+	static const int NEG_INFINITE = INT_MIN;
+	static const int DEFAULT_VALUE = 0;			//remark: the default value is 0, so a variable which was never set to anything will have the value 0
 
 #if defined (ENABLE_VARIABLE_VALUE_TYPE_CHECKINGS)
 	#define SetTypeInfoOfValue(x)    if (m_value == POS_INFINITE) m_type = eDRVT_PosInfinite; else if (m_value == NEG_INFINITE) \

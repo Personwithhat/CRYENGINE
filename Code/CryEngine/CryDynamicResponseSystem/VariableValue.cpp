@@ -8,10 +8,6 @@
 
 using namespace CryDRS;
 
-const VariableValueData CVariableValue::NEG_INFINITE = INT_MIN;
-const VariableValueData CVariableValue::POS_INFINITE = INT_MAX;
-const VariableValueData CVariableValue::DEFAULT_VALUE = 0;  //remark: the default value is 0, so a variable which was never set to anything will have the value 0
-
 SERIALIZATION_ENUM_BEGIN(EDynamicResponseVariableType, "Attachment Type")
 SERIALIZATION_ENUM(eDRVT_None, "none", "None")
 SERIALIZATION_ENUM(eDRVT_Int, "int", "Int")

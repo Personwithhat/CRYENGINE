@@ -8,10 +8,7 @@
 void CryFatalError(const char*, ...);
 #include <CryCore/BoostHelpers.h>
 
-// Boost wrapper around GNU Multiple Precision Arithmetic Library (GMP)
-#include <boost/multiprecision/gmp.hpp>
-
-// PERSONAL TODO: Convert to this instead!!!! Test to see if build works at all.....
+// Boost wrapper around MPFR. A floating-point multi-precision library in radix 2, not decimal!
 #include <boost/multiprecision/mpfr.hpp>
 
 /* PERSONAL IMPROVE & PERSONAL DEBUG:
@@ -191,6 +188,9 @@ public: // Math operations
 	#undef this
 public: // Comparisons
 
+	// WARNING: Comparing NaN == XX, will always return true! Use 'IsNaN()' instead and avoid comparing with NaN values!
+	// PERSONAL TODO: Somehow get MPFR_FLAGS_ERANGE() and maybe MPFR_FLAGS_OVERFLOW to throw global exceptions to avoid above warning!!
+	// Plus, maybe MPFR_FLAGS_INEXACT as a warning in debug mode?
 	/*rType ?? rType*/
 		#define check if (detail::is_unordered_comparison(*this, inRhs)) return false;
 		bool operator==(const rType& inRhs) const { check return  (backend().compare(inRhs.backend()) == 0); }
@@ -276,24 +276,26 @@ public: // Other re-implimented number<> functions
 		#undef TFormat
 
 		// RESULTS
-			<11:14:37> TESTING STR: 654321.123456
-			<11:14:37> TESTING STR: 654321.123456
-			<11:14:37> TESTING STR: 654321.123
+		Not decimal, so can't represent decimal values exactly. However, intermediary calculations/etc. are faster & more precise. 
+		See https://doc.lagout.org/science/0_Computer%20Science/3_Theory/Handbook%20of%20Floating%20Point%20Arithmetic.pdf page 51 for more info.
+			<09:45:27> TESTING STR: 654321.1234560000000000000000000000000000000000000006
+			<09:45:27> TESTING STR: 654321.123456
+			<09:45:27> TESTING STR: 654321.123
 
-			<11:14:37> TESTING STR: +654321.123456
-			<11:14:37> TESTING STR: 654321.1234560000
-			<11:14:37> TESTING STR: 654321.0000000000000000
-			<11:14:37> TESTING STR: 654321.0						<-- Instead of just .
+			<09:45:27> TESTING STR: +654321.1234560000000000000000000000000000000000000006
+			<09:45:27> TESTING STR: 654321.1234560000000000000000000000000000000000000006
+			<09:45:27> TESTING STR: 654321.0000000000000000
+			<09:45:27> TESTING STR: 654321.0						<-- Instead of just .
 
-			<11:14:37> TESTING STR: +6.54e+05
-			<11:14:37> TESTING STR: 6.54e+05
-			<11:14:37> TESTING STR: 654321.123
-			<11:14:37> TESTING STR: 654321.123
+			<09:45:27> TESTING STR: +6.54e+05
+			<09:45:27> TESTING STR: 6.54e+05
+			<09:45:27> TESTING STR: 654321.123
+			<09:45:27> TESTING STR: 654321.123
 
-			<11:14:37> TESTING STR: +654321.123
-			<11:14:37> TESTING STR: 654321.123
-			<11:14:37> TESTING STR: 654321.123456000
-			<11:14:37> TESTING STR: 654321.123456			<-- No leading zeroes! more readable.
+			<09:45:27> TESTING STR: +654321.123
+			<09:45:27> TESTING STR: 654321.123
+			<09:45:27> TESTING STR: 654321.123456000
+			<09:45:27> TESTING STR: 654321.123456			<-- No leading zeroes! more readable.
 	*/
 
 	// MPFloat -> str() conversion.
@@ -641,7 +643,7 @@ namespace boost { namespace multiprecision {\
 }}\
 using boost::multiprecision::name;\
 /* Just to get debugStr() accessible in debugger memory regardless of whether it was called in scope or not! */\
-static std::string(boost::multiprecision::newNum<name>::*IgnoreThis_MPSTUFF)() const = &boost::multiprecision::newNum<name>::debugStr;
+static std::string(boost::multiprecision::newNum<name>::*IgnoreThis_MPSTUFF_##name)() const = &boost::multiprecision::newNum<name>::debugStr;
 
 // TypeInfo for mpfloat types
 	/* Was Split in CryTypeInfo.inl and TypeInfo_decl.h. Didn't work.
