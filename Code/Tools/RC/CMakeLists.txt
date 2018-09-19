@@ -112,6 +112,36 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 		
 	## Additional Dependencies for MPFR
 	set(COMMON_LIBS ${COMMON_LIBS} libgcc_s libgcc_eh libwinpthread libmpfr)
+	
+	## Regretfully-messy CMake edits to push said DLL into proper directory. Urgh.
+	set(BASE_OUTPUT_DIRECTORY	"${OUTPUT_DIRECTORY}")
+	macro(set_base_outdir)
+		set(base_outdir ${BASE_OUTPUT_DIRECTORY})
+		if(NOT ${CMAKE_GENERATOR} MATCHES "Visual Studio")
+			string( TOUPPER ${CMAKE_BUILD_TYPE} BUILD_CONFIG )
+			set(base_outdir ${BASE_OUTPUT_DIRECTORY_${BUILD_CONFIG}})
+		endif()
+		if(OUTPUT_DIRECTORY_SUFFIX)
+			set(base_outdir "${base_outdir}_${OUTPUT_DIRECTORY_SUFFIX}")
+		endif()
+		if(OPTION_DEDICATED_SERVER)
+			set(base_outdir "${base_outdir}_dedicated")
+		endif()
+	endmacro()
+
+	set(FILE_PATH "${SDK_DIR}/MPFR/lib/libgcc_s_seh-1.dll")
+	get_filename_component(FILE_NAME "${FILE_PATH}" NAME)
+	set_base_outdir()
+	install(FILES "${FILE_PATH}" DESTINATION bin)
+	get_filename_component(DEST_DIR "${base_outdir}/${FILE_NAME}" DIRECTORY)
+	file(COPY "${FILE_PATH}" DESTINATION "${DEST_DIR}" NO_SOURCE_PERMISSIONS)
+	
+	set(FILE_PATH "${SDK_DIR}/MPFR/lib/libwinpthread-1.dll")
+	get_filename_component(FILE_NAME "${FILE_PATH}" NAME)
+	set_base_outdir()
+	install(FILES "${FILE_PATH}" DESTINATION bin)
+	get_filename_component(DEST_DIR "${base_outdir}/${FILE_NAME}" DIRECTORY)
+	file(COPY "${FILE_PATH}" DESTINATION "${DEST_DIR}" NO_SOURCE_PERMISSIONS)
 ## ~PERSONAL EDITS
 
 #Libs
