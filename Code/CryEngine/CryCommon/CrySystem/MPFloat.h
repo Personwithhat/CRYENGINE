@@ -541,7 +541,7 @@ public: // Other re-implimented number<> functions
    }
 
 	// For Natvis special visualizer, to see mpfloat value during debug.
-	ILINE std::string debugStr() const { return std::string(str(0, 0)); }
+	std::string debugStr() const { return std::string(str(0, 0)); }
 
 private:
 	// Conversion implementation.
@@ -643,7 +643,7 @@ namespace boost { namespace multiprecision {\
 }}\
 using boost::multiprecision::name;\
 /* Just to get debugStr() accessible in debugger memory regardless of whether it was called in scope or not! */\
-static std::string(boost::multiprecision::newNum<name>::*IgnoreThis_MPSTUFF_##name)() const = &boost::multiprecision::newNum<name>::debugStr;
+static std::string(name::*IgnoreThis_MPSTUFF_##name)() const = &name::debugStr;
 
 // TypeInfo for mpfloat types
 	/* Was Split in CryTypeInfo.inl and TypeInfo_decl.h. Didn't work.
