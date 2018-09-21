@@ -255,7 +255,7 @@ void CMouse::Update(bool bFocus)
 	// mouse inertia
 	if (inertia > 0)
 	{
-		CTimeValue dt = gEnv->pTimer->GetFrameTime();
+		CTimeValue dt = gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI);
 		if (dt > "0.1") dt.SetSeconds("0.1");
 		m_deltas = (m_deltasInertia += (m_deltas - m_deltasInertia) * inertia * dt.BADGetSeconds());
 	}
@@ -341,7 +341,8 @@ void CMouse::SmoothDeltas(float accel, float decel)
 	}
 	else//mouse smooth with acceleration
 	{
-		float dt = min(gEnv->pTimer->GetFrameTime(), CTimeValue("0.1")).BADGetSeconds();
+		// PERSONAL DEBUG: Should this be in UI or Game time? Hard to tell.
+		float dt = min(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI), CTimeValue("0.1")).BADGetSeconds();
 
 		Vec2 delta;
 

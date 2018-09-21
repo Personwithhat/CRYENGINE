@@ -1599,12 +1599,8 @@ void CActionMapManager::GetMemoryStatistics(ICrySizer* pSizer)
 //------------------------------------------------------------------------
 bool CActionMapManager::HandleAcceptedEvents(const SInputEvent& event, TBindPriorityList& priorityList)
 {
-	CTimeValue fCurrTime = gEnv->pTimer->GetFrameStartTime();
+	CTimeValue fCurrTime = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
 	IGameFramework* pGameFramework = gEnv->pGameFramework;
-	if (pGameFramework && pGameFramework->IsGamePaused())
-	{
-		fCurrTime = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
-	}
 
 	TBindPriorityList::iterator itBind = priorityList.begin();
 	TBindPriorityList::const_iterator itBindEnd = priorityList.end();

@@ -796,17 +796,10 @@ bool CActionMap::CanProcessInput(const SInputEvent& inputEvent, CActionMap* pAct
 	CRY_PROFILE_FUNCTION(PROFILE_ACTION);
 	bool bRes = false;
 
-	CTimeValue fCurrTime = gEnv->pTimer->GetFrameStartTime();
+	// PERSONAL CRYTEK: UI-time doesn't clamp/scale as well.......wouldn't clamped input time => non-clamped time matter?
+	// Shouldn't Input be using UI-time by default since it should be calculating from a player's perspective, in 'real' time?
+	CTimeValue fCurrTime = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
 	IGameFramework* pGameFramework = gEnv->pGameFramework;
-	if (pGameFramework && pGameFramework->IsGamePaused())
-	{
-		// PERSONAL TODO: UI-time doesn't clamp/scale as well.......wouldn't clamped input time => non-clamped time matter?
-		// Shouldn't Input be using UI-time by default since it should be calculating from a player's perspective, in 'real' time?
-		// Due to this, need to verify a lot of the GetFrameStartTime() affects on systems such as:
-		// Input, particle effects, various timers, etc.
-		// During rollback setup&testing and what not this'll be very important.
-		fCurrTime = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
-	}
 
 	if (m_enabled)
 	{
@@ -956,12 +949,8 @@ bool CActionMap::IsActionInputTriggered(const SInputEvent& inputEvent, CActionMa
 		return bRes;
 	}
 
-	CTimeValue fCurrTime = gEnv->pTimer->GetFrameStartTime();
+	CTimeValue fCurrTime = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
 	IGameFramework* pGameFramework = gEnv->pGameFramework;
-	if (pGameFramework && pGameFramework->IsGamePaused())
-	{
-		fCurrTime = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
-	}
 
 	// currentMode -> bit flag based on key state needed for trigger, and actual key state
 	// Special handling for certain types of logic

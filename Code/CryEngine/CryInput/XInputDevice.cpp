@@ -234,8 +234,8 @@ void CXInputDevice::Update(bool bFocus)
 
 	UpdateConnectedState(connected);
 
-	CTimeValue frameTime = gEnv->pTimer->GetFrameTime();
-	CTimeValue now = gEnv->pTimer->GetFrameStartTime();
+	CTimeValue frameTime = gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI);
+	CTimeValue now = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
 	if ((m_fVibrationTimer != 0 && m_fVibrationTimer < now) || g_pInputCVars->i_forcefeedback == 0 ||
 	    gEnv->pSystem->IsPaused() || frameTime < "0.001")
 	{
@@ -542,7 +542,7 @@ bool CXInputDevice::SetVibration(USHORT leftMotor, USHORT rightMotor, const CTim
 
 		if (effectId == eFF_Rumble_Basic)
 		{
-			const CTimeValue now = gEnv->pTimer->GetFrameStartTime();
+			const CTimeValue now = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
 
 			if (m_fVibrationTimer > 0)
 			{
