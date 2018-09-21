@@ -74,7 +74,7 @@ public: //** Time Getters
 	//! Returns real-time since the last UpdateOnFrameStart(), no dilation, smoothing, clamping, etc...
 	virtual CTimeValue GetRealFrameTime() const = 0;
 
-	//! Returns Real (UI) and Simulation (Game) time since last timer Reset(), cached during UpdateOnFrameStart()
+	//! Returns Real (UI) or Simulation (Game) time since last timer Reset(), cached during UpdateOnFrameStart()
 	virtual const CTimeValue& GetFrameStartTime(ETimer which = ETIMER_GAME) const = 0;
 
 	//! Get the absolute real-time at the last UpdateOnFrameStart() call.
@@ -82,6 +82,9 @@ public: //** Time Getters
 
 	//! Returns sum of simulation frame-time's. Used for networking.
 	virtual const CTimeValue& GetReplicationTime() const = 0;
+
+	//! Returns the (synched) absolute real-time of the server (So use this for timed events, such as MP round times)
+	virtual const CTimeValue GetServerTime() const = 0;
 
 	//! Returns recent simulation frame-time's averaged over a time period (e.g. 0.25 seconds)
 	virtual const CTimeValue& GetAverageFrameTime() const = 0;

@@ -328,7 +328,7 @@ int CScriptBind_Action::ConnectToServer(IFunctionHandler* pFH, char* server)
 //------------------------------------------------------------------------
 int CScriptBind_Action::GetServerTime(IFunctionHandler* pFH)
 {
-	return pFH->EndFunction(m_pCryAction->GetServerTime().GetSeconds());
+	return pFH->EndFunction(gEnv->pTimer->GetServerTime().GetSeconds());
 }
 
 //------------------------------------------------------------------------

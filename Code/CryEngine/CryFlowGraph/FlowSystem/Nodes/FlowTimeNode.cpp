@@ -759,7 +759,7 @@ public:
 			break;
 		case eFE_Update:
 			{
-				CTimeValue now = gEnv->pGameFramework->GetServerTime();
+				CTimeValue now = gEnv->pTimer->GetServerTime();
 
 				if (now != m_lasttime)
 				{

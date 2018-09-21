@@ -196,7 +196,6 @@ public:
 	virtual IEntity*                      GetClientEntity() const;
 	virtual EntityId                      GetClientEntityId() const;
 	virtual INetChannel*                  GetClientChannel() const;
-	virtual CTimeValue                    GetServerTime();
 	virtual uint16                        GetGameChannelId(INetChannel* pNetChannel);
 	virtual INetChannel*                  GetNetChannel(uint16 channelId);
 	virtual void                          SetServerChannelPlayerId(uint16 channelId, EntityId id);

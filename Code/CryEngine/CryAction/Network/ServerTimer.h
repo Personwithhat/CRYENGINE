@@ -37,7 +37,8 @@ public:
 			 const CTimeValue& GetFrameStartTime(ETimer which = ETIMER_GAME) const { return m_remoteFrameStartTime; } //<<
 			 const CTimeValue& GetRealStartTime()    const { assert(false); return bogusTime; }
 			 const CTimeValue& GetAverageFrameTime() const { assert(false); return bogusTime; }
-			 const CTimeValue& GetReplicationTime()  const { return m_replicationTime; };			//<<
+			 const CTimeValue& GetReplicationTime()  const { return m_replicationTime; };						//<<
+			 const CTimeValue  GetServerTime()		  const { return gEnv->pTimer->GetServerTime(); };
 
 			 CTimeValue	GetAsyncTime()		const { return gEnv->pTimer->GetAsyncTime();	  }
 			 CTimeValue GetAsyncCurTime() const { return gEnv->pTimer->GetAsyncCurTime(); }

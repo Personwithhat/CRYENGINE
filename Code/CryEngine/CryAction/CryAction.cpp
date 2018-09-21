@@ -4024,34 +4024,6 @@ IGameObjectExtension* CCryAction::QueryGameObjectExtension(EntityId id, const ch
 		return NULL;
 }
 
-#if defined(GAME_CHANNEL_SYNC_CLIENT_SERVER_TIME)
-CTimeValue CCryAction::GetServerTime()
-{
-	if (gEnv->bServer)
-		return gEnv->pTimer->GetAsyncTime();
-
-	if (CGameClientNub* pGameClientNub = GetGameClientNub())
-	{
-		if (CGameClientChannel* pGameClientChannel = pGameClientNub->GetGameClientChannel())
-		{
-			const CTimeValue localTime = gEnv->pTimer->GetAsyncTime();
-			const CTimeValue serverTime = localTime + pGameClientChannel->GetClock().GetServerTimeOffset();
-			return serverTime;
-		}
-	}
-
-	return CTimeValue(0);
-}
-#else
-CTimeValue CCryAction::GetServerTime()
-{
-	if (gEnv->bServer)
-		return gEnv->pTimer->GetFrameStartTime();
-
-	return GetClientChannel() ? GetClientChannel()->GetRemoteTime() : CTimeValue(0.0f);
-}
-#endif
-
 uint16 CCryAction::GetGameChannelId(INetChannel* pNetChannel)
 {
 	if (gEnv->bServer)

@@ -839,9 +839,6 @@ struct IGameFramework
 	//! Returns the INetChannel associated with the client (or NULL)
 	virtual INetChannel* GetClientChannel() const = 0;
 
-	//! Returns the (synched) time of the server (so use this for timed events, such as MP round times)
-	virtual CTimeValue GetServerTime() = 0;
-
 	//! Retrieve the Game Server Channel Id associated with the specified INetChannel.
 	//! \return The Game Server ChannelId associated with the specified INetChannel.
 	virtual uint16 GetGameChannelId(INetChannel* pNetChannel) = 0;

@@ -54,6 +54,7 @@ public:
 			 const CTimeValue& GetRealStartTime()    const { return m_realStartTime; }
 			 const CTimeValue& GetAverageFrameTime() const { return m_prevAvgFrameTime; }
 			 const CTimeValue& GetReplicationTime()  const { return m_replicationTime; };
+			 const CTimeValue GetServerTime() const;
 
 			 CTimeValue	GetAsyncTime() const;
 			 CTimeValue GetAsyncCurTime() const;

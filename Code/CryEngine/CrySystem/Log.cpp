@@ -942,8 +942,8 @@ void CLog::LogStringToFile(const char* szString, bool bAdd, bool bError)
 		{
 			if (gEnv->pGameFramework)
 			{
-				CTimeValue serverTime = gEnv->pGameFramework->GetServerTime();
-				cry_sprintf(sTime, "<%.2f> ", serverTime.GetSeconds());
+				CTimeValue serverTime = gEnv->pTimer->GetServerTime();
+				cry_sprintf(sTime, "<%.2f> ", (float)serverTime.GetSeconds());
 				tempString.insert(0, sTime);
 			}
 			dwCVarState = 1; // Afterwards insert time as-if Log_IncludeTime == 1

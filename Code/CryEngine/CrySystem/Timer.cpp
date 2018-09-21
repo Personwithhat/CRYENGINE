@@ -7,6 +7,12 @@
 #include <CrySystem/IConsole.h>
 #include <CrySystem/ILog.h>
 #include <CryNetwork/ISerialize.h>
+// PERSONAL IMPROVE: the macro def location should be changed to avoid mess.
+// For GAME_CHANNEL_SYNC_CLIENT_SERVER_TIME setup.
+#include "../CryAction/CryAction.h"
+#include <CryNetwork\NetHelpers.h>
+#include "../CryAction/Network/GameClientChannel.h"
+#include "../CryAction/Network/GameClientNub.h"
 /////////////////////////////////////////////////////
 #include <CryCore/Platform/CryWindows.h>
 
@@ -515,6 +521,35 @@ CTimeValue CTimer::GetAsyncTime() const
 	int64 llNow = CryGetTicks();
 	return CTimeValue(TicksToTime(llNow));
 }
+
+#if defined(GAME_CHANNEL_SYNC_CLIENT_SERVER_TIME)
+const CTimeValue CTimer::GetServerTime() const
+{
+	if (gEnv->bServer)
+		return GetAsyncTime();
+
+	if (CGameClientNub* pGameClientNub = static_cast<CGameClientNub*>(gEnv->pGameFramework->GetIGameClientNub()))
+	{
+		if (CGameClientChannel* pGameClientChannel = pGameClientNub->GetGameClientChannel())
+		{
+			return (GetAsyncTime() + pGameClientChannel->GetClock().GetServerTimeOffset());
+		}
+	}
+
+	return CTimeValue(0);
+}
+#else
+// PERSONAL CRYTEK: The time's used by the two versions do not match.
+// Default is absolute real time at moment of call, but this one here is in game-simulation start-of-frame time.
+const CTimeValue CTimer::GetServerTime() const
+{
+	if (gEnv->bServer)
+		return GetFrameStartTime();
+
+	const auto* chan = gEnv->pGameFramework->GetClientChannel();
+	return chan ? chan->GetRemoteTime() : CTimeValue(0);
+}
+#endif
 
 /////////////////////////////////////////////////////
 mpfloat CTimer::GetTimeScale() const
