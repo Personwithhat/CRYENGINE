@@ -840,7 +840,7 @@ void CSystem::ShutDown()
 	CryGetIMemReplay()->Stop();
 #endif
 
-// Revert timer resolution PERSONAL DEBUG: Make sure this works
+// Revert timer resolution
 #if CRY_PLATFORM_WINDOWS
 	HMODULE hModNtDll = GetModuleHandleA("ntdll");
 
@@ -1333,11 +1333,11 @@ void CSystem::SleepIfNeeded()
 	// Cap frames if throtteled server/paused or loading/configured.
 	if (maxFPS > 0)
 	{
-		static CTimeValue sTimeLast = gEnv->pTimer->GetAsyncTime();
+		static CTimeValue sTimeLast = 0;
 		CTimeValue currentTime = gEnv->pTimer->GetAsyncTime();
 
 		// Target time-step based on max FPS
-		CTimeValue tStep = CTimeValue(1 / mpfloat(maxFPS));
+		CTimeValue tStep = 1 / mpfloat(maxFPS);
 		CTimeValue tLeft = tStep - (currentTime - sTimeLast);
 
 		if(tLeft > 0){

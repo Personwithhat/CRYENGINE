@@ -3855,13 +3855,11 @@ bool CSystem::Initialize(SSystemInitParams& startupParams)
 	// All CVars should be registered by this point, we must now flush the cvar groups
 	OnSysSpecChange(m_sys_spec);
 
-// PERSONAL TODO: Make sure the clamp is proper, cvar is loaded, warning works, etc.
-// Perhaps move this to the start of CSystem::Initialize() instead of the end (here)
 #if CRY_PLATFORM_WINDOWS
 	/* PERSONAL NOTE: 
-			This:	// Fix to improve wait() time within third party APIs using sleep()
-			Before,System.cpp/here used to force a timer resolution of 1 millisecond (when possible).
-
+			Fix to improve wait() time within third party APIs using sleep()
+			
+			Before, System.cpp forced a timer resolution of 1 millisecond.
 			The below bypasses the timerBeginPeriod() abstraction to allow finer resolution (< 1ms) (when possible)
 			CryLowLatencySleep() is based on this resolution.
 	*/
@@ -3899,7 +3897,7 @@ bool CSystem::Initialize(SSystemInitParams& startupParams)
 	if (targetRes < curRes)
 	{
 		assert(!pNtSetTimerResolution(targetRes, TRUE, &curRes) && "Failed to adjust timer resolution");
-		gEnv->pLog->LogAlways("System timer resolution configured to %.2f ms (was %.2f ms before)", curRes * 1e-4, original * 1e-4);
+		gEnv->pLog->LogAlways("System timer resolution configured to %.2f ms (was %.2f ms)", curRes * 1e-4, original * 1e-4);
 
 		// Store current time resolution.
 		curTimerRes = curRes;
@@ -5444,10 +5442,6 @@ void CSystem::CreateSystemVars()
 
 #if CRY_PLATFORM_WINDOWS
 	REGISTER_INT("sys_screensaver_allowed", 0, VF_NULL, "Specifies if screen saver is allowed to start up while the game is running.");
-#endif
-
-// PERSONAL DEBUG: Get the appropriate default for this, and test the whole resolution system etc.! .-.
-#if CRY_PLATFORM_WINDOWS
 	REGISTER_CVAR2("sys_system_timer_resolution", &g_cvars.sys_timeres, 5000, VF_REQUIRE_APP_RESTART,
 		"(Windows only) Value of the system timer resolution in units of 100 nanoseconds. The default 5,000 = 0.5 milliseconds (ms)"
 	);

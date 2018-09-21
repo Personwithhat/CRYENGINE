@@ -56,7 +56,7 @@ void CD3D9Renderer::LimitFramerate(const int maxFPS)
 	{
 		// PERSONAL CRYTEK: Strange/pointless margin. 
 		// const mpfloat safeMarginFPS = "0.5"; // Safe margin to not drop below 30 fps
-		static CTimeValue sTimeLast = gEnv->pTimer->GetAsyncTime();
+		static CTimeValue sTimeLast = 0;
 		CTimeValue currentTime = gEnv->pTimer->GetAsyncTime();
 
 		// Target time-step based on max FPS. Minimum of 30.

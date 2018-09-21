@@ -66,15 +66,20 @@ public: //** Lifecycle
 
 
 public: //** Time Getters
+	/*
+		2 types of times:
+			Async or ServerTime == At moment of function call
+			Everything else: Cached during UpdateOnFrameStart()
+	*/
 
 	//! Returns simulation time since the last UpdateOnFrameStart(), clamped/smoothed/scaled etc.
 	//! \note Pass true to ignore pauses
 	virtual CTimeValue GetFrameTime(bool ignorePause = false) const = 0;
 
-	//! Returns real-time since the last UpdateOnFrameStart(), no dilation, smoothing, clamping, etc...
+	//! Returns real-time since the last UpdateOnFrameStart(), no dilation/smoothing/clamping etc
 	virtual CTimeValue GetRealFrameTime() const = 0;
 
-	//! Returns Real (UI) or Simulation (Game) time since last timer Reset(), cached during UpdateOnFrameStart()
+	//! Returns Real (UI) or Simulation (Game) time since last timer Reset().
 	virtual const CTimeValue& GetFrameStartTime(ETimer which = ETIMER_GAME) const = 0;
 
 	//! Get the absolute real-time at the last UpdateOnFrameStart() call.
@@ -83,7 +88,7 @@ public: //** Time Getters
 	//! Returns sum of simulation frame-time's. Used for networking.
 	virtual const CTimeValue& GetReplicationTime() const = 0;
 
-	//! Returns the (synched) absolute real-time of the server (So use this for timed events, such as MP round times)
+	//! Returns the (synched) absolute real-time of the server at moment of call. (So use this for timed events, such as MP round times)
 	virtual const CTimeValue GetServerTime() const = 0;
 
 	//! Returns recent simulation frame-time's averaged over a time period (e.g. 0.25 seconds)
@@ -98,7 +103,7 @@ public: //** Time Getters
 
 public: //** Timescales
 
-	// PERSONAL VERIFY: As noted elsewhere, only affects simulation-frame-time!!!! and also replication time.... 
+	// PERSONAL TODO: As noted elsewhere, only affects simulation-frame-time!!!! and also replication time.... 
 	// Have to review all timer comments AGAIN after that's fixed.
 	//! Returns the time scale applied on simulation time.
 	virtual mpfloat GetTimeScale() const = 0;
@@ -161,7 +166,7 @@ protected:
 };
 
 //! Include this string AUTO_PROFILE_SECTION(pITimer, g_fTimer) for the section of code where the profiler timer must be turned on and off.
-//! The profiler timer is just some global or static float or double value that accumulates the time (in seconds) spent in the given block of code.
+//! The profiler timer is just some global CTimeVAlue that accumulates the time spent in the given block of code.
 //! pITimer is a pointer to the ITimer interface, g_fTimer is the global accumulator.
 #define AUTO_PROFILE_SECTION(pITimer, g_fTimer) CITimerAutoProfiler<CTimeValue> __section_auto_profiler(pITimer, g_fTimer)
 
