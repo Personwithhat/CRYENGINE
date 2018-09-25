@@ -177,8 +177,6 @@ public:
 		// Sleep(0): Give OS the CPU ... something none game related could block the core for a while (same for SwitchToThread())
 		// Sleep(1): System timer resolution dependent. Usual default is 1/64sec. So the worst case is we have to wait 15.6ms.
 
-		// POINT OF INTEREST: PERSONAL IMPROVE: Possible imporvement to sleep system!
-
 		// Simply yield processor (good for hyper threaded systems. Allows the logical core to run)
 		_mm_pause();
 	}

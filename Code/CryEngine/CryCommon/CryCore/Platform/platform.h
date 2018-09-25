@@ -410,7 +410,7 @@ class CTimeValue;
 bool			CryInitializeEngine(struct SSystemInitParams& startupParams, bool bManualEngineLoop = false);
 void            CryDebugBreak();
 void            CrySleep(unsigned int dwMilliseconds);
-void            CryLowLatencySleep(const CTimeValue& sleepTime);
+void            CryLowLatencySleep(const CTimeValue& sleepTime, bool check = true);
 EQuestionResult CryMessageBox(const char* lpText, const char* lpCaption, EMessageBox uType = eMB_Info);
 EQuestionResult CryMessageBox(const wchar_t* lpText, const wchar_t* lpCaption, EMessageBox uType = eMB_Info);
 bool            CryCreateDirectory(const char* lpPathName);

@@ -1725,7 +1725,7 @@ void CServiceNetwork::ThreadEntry()
 
 		// Internal delay
 		// TODO: this is guess work right now
-		CryLowLatencySleep("0.005");
+		CryLowLatencySleep("0.005", false);
 	}
 }
 

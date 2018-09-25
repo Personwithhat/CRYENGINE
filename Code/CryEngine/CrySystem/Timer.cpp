@@ -57,17 +57,12 @@ CTimer::CTimer()
 
 bool CTimer::Init()
 {
-	REGISTER_CVAR2("t_FixedStep", &m_fixed_time_step, CTimeValue(0), VF_NET_SYNCED,
-	               "Game updated with a minimum of this frame time\n"
-	               "0 = off [default]\n"
-	               "e.g. 0.033 (30 fps), 0.1 (10 fps), 0.01 (100 fps)");
-
 	REGISTER_CVAR2("t_MaxStep", &m_max_time_step, CTimeValue("0.25"), 0,
 	               "Game systems clamped to this frame time. [default] = 0.25");
 
 	// TODO: reconsider exposing this as cvar (negative time, same value is used by Trackview, better would be another value multipled with the internal one)
 	REGISTER_CVAR2("t_Scale", &m_cvar_time_scale, 1, VF_NET_SYNCED | VF_DEV_ONLY,
-		"Game time scaled by this - for variable slow motion. [default] = 1");
+		"Game (simulation) time scaled by this - for variable slow motion. [default] = 1");
 
 	REGISTER_CVAR2("t_Smoothing", &m_TimeSmoothing, 1, 0,
 		"Use averaged simulation frame time?"
@@ -87,6 +82,10 @@ bool CTimer::Init()
 	REGISTER_CVAR2("profile_weighting", &m_profile_weighting, 1, 0,
 	               "Profiler smoothing mode: 0 = legacy, 1 = average [default], 2 = peak weighted, 3 = peak hold");
 
+	REGISTER_CVAR2("t_FixedStep", &m_fixed_time_step, CTimeValue(0), VF_NET_SYNCED | VF_DEV_ONLY,
+	               "Game simulation time pretends this was real-time, before scaling/smoothing/etc.\n"
+	               "0 = off [default]\n"
+	               "e.g. 0.033333(30 fps), 0.1(10 fps), 0.01(100 fps)");
 	return true;
 }
 
@@ -176,26 +175,9 @@ void CTimer::UpdateOnFrameStart()
 	RefreshUITime(m_lLastTime);
 	return;
 #endif
-
-		// Fixed-time-step = The highest FPS that Server/Host can handle on average. e.g. FPS should never be higher and if it's lower = gives warnings! In case of performance spikes.
-			// Debug only...need to figure out how to sync server/host etc.
-		// Vsync/maxRate = Another frame-cap on Host/Server
-
-	// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARGH
-	// PERSONAL TODO: Re-name/define fixed_time_step to a framerate enforcer, because that's how it's being used! >.>
-
-	// Enforce minimum framerate by sleeping when timestep is negative.  PERSONAL TODO: Nomenclauter is wrong. I'm enforcing maximum framerate, but if its less then I give warnings.
-	// No frame-cap.
-	if (m_fixed_time_step < 0)
-	{
-		// Time left = Target timestep - (CurTime - StartTime)
-		CTimeValue tDif = (-m_fixed_time_step) - (GetAsyncTime() - GetRealStartTime());
-		if(tDif > 0){
-			CryLowLatencySleep(tDif);
-		}else{
-			// PERSONAL VERIFY: Probably move logging here in case server/client 'overshoot' their target timestep.
-		};
-	}
+	
+	// Enforce any frame-rate caps needed before caching times.
+	CheckSleeps();
 
 	const int64 now = CryGetTicks();
 	assert(now + 1 >= m_lBaseTime && "Invalid base time"); //+1 margin because QPC may be one off across cores
@@ -204,9 +186,11 @@ void CTimer::UpdateOnFrameStart()
 	int64 realTicks = now - m_lBaseTime - m_lLastTime;
 	m_fRealFrameTime = TicksToTime(realTicks);
 
-	// PERSONAL VERIFY: What is the point of clamping? And why do this BEFORE time scaling in default Timer.cpp ?
+	// PERSONAL CRYTEK: What is the point of clamping? And why do this BEFORE time scaling in default Timer.cpp ?
 	// Simulation time = clamp'd & scaled real time.
-	m_fFrameTime = min(m_fRealFrameTime * GetTimeScale(), m_max_time_step);
+	// If defined, use fixed-time-step as a base instead of real time.
+	CTimeValue tmp = (m_fixed_time_step != 0 ? m_fixed_time_step : m_fRealFrameTime);
+	m_fFrameTime = min(tmp * GetTimeScale(), m_max_time_step);
 
 	// Update the running simulation frame-time average
 	UpdateAverageFrameTime();
@@ -243,12 +227,12 @@ void CTimer::UpdateOnFrameStart()
 	RefreshUITime(currentTime);
 	if (!m_bGameTimerPaused)
 	{
-		// PERSONAL VERIFY: Game simulation time is NOT affected by time-scaling, smoothing, and clamping. Can only be paused.....
+		// PERSONAL CRYTEK: Running Game simulation time is NOT affected by time-scaling, smoothing, and clamping. Can only be paused/set()
 		// This doesn't sound right, simulation time should follow simulation frame-time. If there are any errors they should be consistent.
 		// Should make more sense once the purpose of smoothing/clamping is known. Time-scaling sounds like it should apply to simulation time for sure though.
 		RefreshGameTime(currentTime);
 
-		// PERSONAL VERIFY: Why does replication time (used by networking) use simulation time and not real time?
+		// PERSONAL CRYTEK: Why does replication time (used by networking) use simulation time and not real time?
 		// Especially since GameTime() is NOT cumulative 'simulation frame time', e.g. not affected by averaging/smoothing/etc.
 		// But this is!!!!
 		m_replicationTime += m_fFrameTime;
@@ -527,7 +511,7 @@ mpfloat CTimer::GetProfileFrameBlending(CTimeValue* pfBlendTime, int* piBlendMod
 */
 void CTimer::UpdateAverageFrameTime()
 {
-	// Clamped simulation-time (Again).
+	// Clamped simulation-time (Again).						PERSONAL CRYTEK: More clamping for some reason! Should it be 0.25 or 0.2???
 	CTimeValue cTime = CLAMP(m_fFrameTime, 0, "0.2");
 
 	// Don't smooth if we pause the game.
@@ -557,6 +541,97 @@ void CTimer::UpdateAverageFrameTime()
 	AverageFrameTime /= FrameAmount;
 
 	m_prevAvgFrameTime = AverageFrameTime;
+}
+/////////////////////////////////////////////////////
+void CTimer::CheckSleeps(){
+//**
+//** Server CPU Throttle, VSync, and system cvar for maximum FPS.
+//** 
+	static ICVar * pSysMaxFPS = NULL;
+	static ICVar* pVSync = NULL;
+
+	if (pSysMaxFPS == NULL && gEnv && gEnv->pConsole)
+		pSysMaxFPS = gEnv->pConsole->GetCVar("sys_MaxFPS");
+	if (pVSync == NULL && gEnv && gEnv->pConsole)
+		pVSync = gEnv->pConsole->GetCVar("r_Vsync");
+
+	mpfloat maxFPS = mpfloat::Max();
+	if (gEnv->IsDedicated())
+	{
+		maxFPS = gEnv->pSystem->GetDedicatedMaxRate()->GetMPVal();
+	}
+	else
+	{
+		if (pSysMaxFPS && pVSync)
+		{
+			uint32 vSync = pVSync->GetIVal();
+			if (vSync == 0)
+			{
+				maxFPS = pSysMaxFPS->GetIVal();
+				if (maxFPS == 0)
+				{
+					const bool bInLoading = (ESYSTEM_GLOBAL_STATE_RUNNING != gEnv->pSystem->GetSystemGlobalState());
+					if (bInLoading || gEnv->pSystem->IsPaused())
+					{
+						maxFPS = 60;
+					}
+				}
+			}
+		}
+	}
+
+//**
+//** Limit FPS when window's inactive
+//**
+#if CRY_PLATFORM_WINDOWS
+	// Disable throttling, when various Profilers are in use
+	bool skip = false;
+	#if !defined(_RELEASE) || defined(PERFORMANCE_BUILD)
+		#if defined(CRY_PROFILE_MARKERS_USE_GPA)
+		skip = true;
+		#endif
+		#if ALLOW_BROFILER
+		if (::Profiler::IsActive()) { skip = true; }
+		#endif
+		if (gEnv->pConsole->GetCVar("e_StatoscopeEnabled")->GetIVal()) { skip = true; }
+	#endif
+
+	// ProcessSleep()
+	if (gEnv->IsDedicated() || gEnv->IsEditor() || gEnv->bMultiplayer || (gEnv->pGameFramework && gEnv->pGameFramework->IsInTimeDemo()))
+		skip = true;
+
+	if (!skip && gEnv->pSystem->GetIRenderer())
+	{
+		WIN_HWND hRendWnd = gEnv->pSystem->GetIRenderer()->GetHWND();
+		if (hRendWnd && ::GetActiveWindow() != hRendWnd)
+			maxFPS = min(mpfloat(15), maxFPS);	// Limiting to 15fps atm, perhaps convert to CVar.
+	}
+#endif
+
+//**
+//** Actually enforce the frame cap
+//**
+	CTimeValue target = 0;
+
+	// If fixed CVar is negative, cap frames to timestep.
+	if (m_fixed_time_step < 0) { target = abs(m_fixed_time_step); }
+
+	if(maxFPS != mpfloat::Max()) {
+		target = max(CTimeValue(1/maxFPS), target);
+	}
+
+	if(target > 0){
+		// Time left = Target timestep - (CurTime - StartTime)
+		CTimeValue tLeft = target - (GetAsyncTime() - GetRealStartTime());
+		if(tLeft > 0){
+			CryLowLatencySleep(tLeft);
+		}else{
+			CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, 
+					"CTimer: Took longer than frame cap [%.2fms] %.2fms %.2fms", 
+					(float)target.GetMilliSeconds(), (float)(target - tLeft).GetMilliSeconds(), (float)abs(tLeft.GetMilliSeconds())
+			);
+		};
+	}
 }
 
 /////////////////////////////////////////////////////

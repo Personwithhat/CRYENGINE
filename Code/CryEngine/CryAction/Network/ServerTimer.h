@@ -5,9 +5,9 @@
 
 #pragma once
 
-// PERSONAL VERIFY: Considering the usage of frame-time, this is a very messy class.......
-// Most of these func's are empty, there's really only 3 gets + 1 update function!
-// Also, edited clamping setup a bit to include CVar to clamp game systems instead of harcoded 0.25 + no minimum 0.0001 frame time anymore.
+// PERSONAL CRYTEK: Why is this timer updated on CActionGame::Update() instead of when the other global system timer is updated?
+// Probably why it was split off like this. But.....why not just merge the functionality a little instead of all this nonsense? >.>
+// For now, assert(false) everywhere to prevent nonsensical calls that redirect to global timer anyway/dont-apply to server timer.
 class CServerTimer : public ITimer
 {
 public:
@@ -19,45 +19,44 @@ public:
 			 void  ResetTimer()									{ CRY_ASSERT(false); }
 			 void  Serialize(TSerialize ser)					{ CRY_ASSERT(false); }
 
-			 // PERSONAL VERIFY: Why is this timer updated on CActionGame::Update() instead of when the other timer is updated???
 			 void  UpdateOnFrameStart();																		//<<
-			 bool	 SetTimer(ETimer which, const CTimeValue& timeInSeconds){ return false; }
+			 bool	 SetTimer(ETimer which, const CTimeValue& timeInSeconds){ assert(false); return false; }
 
 			 bool	 PauseTimer(ETimer which, bool bPause) { assert(false); return false; }
-			 bool	 IsTimerPaused(ETimer which)				{ return false; }
+			 bool	 IsTimerPaused(ETimer which)				{ assert(false); return false; }
 
 
 			 void  EnableTimer(const bool bEnable)			{ CRY_ASSERT(false); }
-			 bool  IsTimerEnabled() const						{ return true; }
+			 bool  IsTimerEnabled() const						{ assert(false); return true; }
 
 		// Time getters
 			 CTimeValue GetFrameTime(bool ignorePause = false) const { return m_frameTime; } //<<
-			 CTimeValue GetRealFrameTime() const { return gEnv->pTimer->GetRealFrameTime(); }
+			 CTimeValue GetRealFrameTime() const { CRY_ASSERT(false); return bogusTime; }
 
 			 const CTimeValue& GetFrameStartTime(ETimer which = ETIMER_GAME) const { return m_remoteFrameStartTime; } //<<
 			 const CTimeValue& GetRealStartTime()    const { assert(false); return bogusTime; }
 			 const CTimeValue& GetAverageFrameTime() const { assert(false); return bogusTime; }
 			 const CTimeValue& GetReplicationTime()  const { return m_replicationTime; };						//<<
-			 const CTimeValue  GetServerTime()		  const { return gEnv->pTimer->GetServerTime(); };
+			 const CTimeValue  GetServerTime()		  const { assert(false); return bogusTime; }
 
-			 CTimeValue	GetAsyncTime()		const { return gEnv->pTimer->GetAsyncTime();	  }
-			 CTimeValue GetAsyncCurTime() const { return gEnv->pTimer->GetAsyncCurTime(); }
+			 CTimeValue	GetAsyncTime()		const { assert(false); return bogusTime; }
+			 CTimeValue GetAsyncCurTime() const { assert(false); return bogusTime; }
 
 		// Timescales
-			 mpfloat     GetTimeScale() const										{ return 1; }
-			 mpfloat     GetTimeScale(uint32 channel) const						{ return 1; }
-			 void        ClearTimeScales()											{};
-			 void        SetTimeScale(const mpfloat& scale, uint32 channel = 0)	{};
+			 mpfloat     GetTimeScale() const										{ assert(false); return 1; }
+			 mpfloat     GetTimeScale(uint32 channel) const						{ assert(false); return 1; }
+			 void        ClearTimeScales()											{ assert(false); };
+			 void        SetTimeScale(const mpfloat& scale, uint32 channel = 0)	{ assert(false); };
 
 		// Other misc.
-			 CTimeValue  TicksToTime(int64 ticks) const { return gEnv->pTimer->TicksToTime(ticks); }
-			 int64		 GetTicksPerSecond()		  const { return gEnv->pTimer->GetTicksPerSecond(); }
+			 CTimeValue  TicksToTime(int64 ticks) const { assert(false); return bogusTime; }
+			 int64		 GetTicksPerSecond()		  const { assert(false); return 0; }
 
-			 rTime       GetFrameRate()						{ return gEnv->pTimer->GetFrameRate(); }
-			 mpfloat     GetProfileFrameBlending(CTimeValue* pfBlendTime = 0, int* piBlendMode = 0) { return 1; }
+			 rTime       GetFrameRate()					  { assert(false); return rTime(0); }
+			 mpfloat     GetProfileFrameBlending(CTimeValue* pfBlendTime = 0, int* piBlendMode = 0) { assert(false); return 1; }
 
-			 void			 SecondsToDateUTC(time_t time, struct tm& outDateUTC) { gEnv->pTimer->SecondsToDateUTC(time, outDateUTC); };
-			 time_t		 DateToSecondsUTC(struct tm& timePtr)						{ return gEnv->pTimer->DateToSecondsUTC(timePtr); }
+			 void			 SecondsToDateUTC(time_t time, struct tm& outDateUTC) { assert(false); }
+			 time_t		 DateToSecondsUTC(struct tm& timePtr)						{ assert(false); return time_t(); }
 	// ~ Interface ITimer---------------------------------------------------------------------
 
 private:

@@ -847,7 +847,8 @@ void CSystem::ShutDown()
 	typedef LONG(WINAPI * FP_NtSetTimerResolution)(ULONG, BOOLEAN, PULONG);
 	FP_NtSetTimerResolution pNtSetTimerResolution = (FP_NtSetTimerResolution)GetProcAddress(hModNtDll, "NtSetTimerResolution");
 
-	assert(!pNtSetTimerResolution(curTimerRes, FALSE, &curTimerRes) && "Failed to unset timer resolution");
+	ULONG blah;
+	assert(!pNtSetTimerResolution(g_cvars.sys_timeres, FALSE, &blah) && "Failed to unset timer resolution");
 #endif // CRY_PLATFORM_WINDOWS
 }
 
@@ -1231,123 +1232,6 @@ int CSystem::SetThreadState(ESubsystem subsys, bool bActive)
 	return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CSystem::SleepIfInactive()
-{
-	LOADING_TIME_PROFILE_SECTION;
-#if !defined(_RELEASE) || defined(PERFORMANCE_BUILD)
-	// Disable throttling, when various Profilers are in use
-
-	#if defined(CRY_PROFILE_MARKERS_USE_GPA)
-	return;
-	#endif
-
-	#if ALLOW_BROFILER
-	if (::Profiler::IsActive())
-	{
-		return;
-	}
-	#endif
-
-	if (gEnv->pConsole->GetCVar("e_StatoscopeEnabled")->GetIVal())
-	{
-		return;
-	}
-#endif
-
-	// ProcessSleep()
-	if (m_env.IsDedicated() || m_bEditor || gEnv->bMultiplayer)
-		return;
-
-#if CRY_PLATFORM_WINDOWS
-	if (GetIRenderer())
-	{
-		WIN_HWND hRendWnd = GetIRenderer()->GetHWND();
-		if (!hRendWnd)
-			return;
-
-		// Loop here waiting for window to be activated.
-		for (int nLoops = 0; nLoops < 5; nLoops++)
-		{
-			WIN_HWND hActiveWnd = ::GetActiveWindow();
-			if (hActiveWnd == hRendWnd)
-				break;
-
-			if (m_hWnd)
-			{
-				PumpWindowMessage(true, m_hWnd);
-			}
-			if (gEnv->pGameFramework)
-			{
-				// During the time demo, do not sleep even in inactive window.
-				if (gEnv->pGameFramework->IsInTimeDemo())
-					break;
-			}
-			CryLowLatencySleep("0.005");
-		}
-	}
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::SleepIfNeeded()
-{
-	CRY_PROFILE_FUNCTION(PROFILE_SYSTEM)
-
-	static ICVar * pSysMaxFPS = NULL;
-	static ICVar* pVSync = NULL;
-
-	if (pSysMaxFPS == NULL && gEnv && gEnv->pConsole)
-		pSysMaxFPS = gEnv->pConsole->GetCVar("sys_MaxFPS");
-	if (pVSync == NULL && gEnv && gEnv->pConsole)
-		pVSync = gEnv->pConsole->GetCVar("r_Vsync");
-
-	int32 maxFPS = 0;
-
-	if (m_env.IsDedicated())
-	{
-		const float maxRate = m_svDedicatedMaxRate->GetFVal();
-		maxFPS = int32(maxRate);
-	}
-	else
-	{
-		if (pSysMaxFPS && pVSync)
-		{
-			uint32 vSync = pVSync->GetIVal();
-			if (vSync == 0)
-			{
-				maxFPS = pSysMaxFPS->GetIVal();
-				if (maxFPS == 0)
-				{
-					const bool bInLoading = (ESYSTEM_GLOBAL_STATE_RUNNING != m_systemGlobalState);
-					if (bInLoading || IsPaused())
-					{
-						maxFPS = 60;
-					}
-				}
-			}
-		}
-	}
-
-	// PERSONAL TODO: Should FPS enforcement happen during CTimer::UpdateOnFrameStart(), or here at the end of DoFrame()??
-	// Cap frames if throtteled server/paused or loading/configured.
-	if (maxFPS > 0)
-	{
-		static CTimeValue sTimeLast = 0;
-		CTimeValue currentTime = gEnv->pTimer->GetAsyncTime();
-
-		// Target time-step based on max FPS
-		CTimeValue tStep = 1 / mpfloat(maxFPS);
-		CTimeValue tLeft = tStep - (currentTime - sTimeLast);
-
-		if(tLeft > 0){
-			CryLowLatencySleep(tLeft);
-		}
-
-		sTimeLast = gEnv->pTimer->GetAsyncTime();
-	}
-}
-
 //////////////////////////////////////////////////////////////////////
 #if CRY_PLATFORM_WINDOWS
 HWND g_hBreakWnd;
@@ -1690,8 +1574,6 @@ bool CSystem::DoFrame(const SDisplayContextKey& displayContextKey, CEnumFlags<ES
 		m_env.pFrameProfileSystem->EndFrame();
 	}
 
-	SleepIfNeeded();
-
 	return continueRunning;
 }
 
@@ -1725,6 +1607,7 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 
 	gEnv->pOverloadSceneManager->Update();
 
+	// PERSONAL NOTE: Uses out of date frame-time but it doesn't matter, just uses it for m_delayLevelStartIcon which is ~5 secs anyway.
 	m_pPlatformOS->Tick(m_Time.GetRealFrameTime());
 
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
@@ -1771,9 +1654,6 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 		gEnv->pRenderer->ScreenShot(m_sDelayedScreeenshot.c_str());
 		m_sDelayedScreeenshot.clear();
 	}
-
-	// Check if game needs to be sleeping when not active.
-	SleepIfInactive();
 
 	if (m_pUserCallback)
 		m_pUserCallback->OnUpdate();
@@ -1874,6 +1754,13 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 		return true;
 #endif //EXCLUDE_UPDATE_ON_CONSOLE
 
+	/*
+		PERSONAL NOTE: Moved here since char manager depends on frame time.
+		Now handles ALL main-thread frame-capping/etc. sleeps.
+	*/
+	// Update time subsystem 
+	m_Time.UpdateOnFrameStart();
+
 	const bool bNotLoading = !IsLoading();
 
 	if (m_env.pCharacterManager)
@@ -1894,8 +1781,10 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
 	//check what is the current process
 	IProcess* pProcess = GetIProcess();
-	if (!pProcess)
-		return (true); //should never happen
+	if (!pProcess){
+		assert(0 && "Should never happen");
+		return (true);
+	}
 
 	if (m_sysNoUpdate && m_sysNoUpdate->GetIVal())
 	{
@@ -1924,9 +1813,6 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 #endif
 
 	//////////////////////////////////////////////////////////////////////
-	//update time subsystem
-	m_Time.UpdateOnFrameStart();
-
 	// Don't do a thing if we're not in a level
 	if (m_env.p3DEngine && bNotLoading)
 		m_env.p3DEngine->OnFrameStart();

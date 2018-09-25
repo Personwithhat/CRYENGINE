@@ -4100,7 +4100,7 @@ void CAsyncShaderTask::CShaderThread::ThreadEntry()
 		if (!CRenderer::CV_r_shadersasynccompiling)
 			CrySleep(250);
 		else
-			CryLowLatencySleep("0.025");
+			CryLowLatencySleep("0.025", false);
 	}
 }
 

@@ -5,7 +5,7 @@
 #include "MPFloat.h"	 //! MPfloat definitions
 #include "XML\IXml.h" //! For serialization
 
-/* PERSONAL VERIFY: 
+/* PERSONAL TODO: 
 		2) Add ILINE after profiling/testing etc.
 		3) Increase/decrease standard mpfloat precision (ATM 50 digits)
 			

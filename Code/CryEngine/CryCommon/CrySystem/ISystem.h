@@ -161,6 +161,7 @@ class CFrameProfilerSection;
 struct INotificationNetwork;
 struct IPlatformOS;
 struct ICryPerfHUD;
+struct ICVar;
 
 namespace JobManager {
 struct IJobManager;
@@ -1334,8 +1335,12 @@ struct ISystem
 	virtual void DumpWinHeaps() = 0;
 	virtual int  DumpMMStats(bool log) = 0;
 
-	//! \return Current system timer resolution, in units of 100nanoseconds
-	virtual const ULONG& GetTimeResolution() const = 0;
+	// PERSONAL IMPROVE: Convert to global static function perhaps?
+	//! \return Current system timer resolution, in units of 100nanoseconds. 5,000 = 0.5 milliseconds (ms)
+	virtual ULONG GetTimeResolution() const = 0;
+
+	//! \return Dedicated server maximum FPS cvar
+	virtual const ICVar* GetDedicatedMaxRate() const = 0;
 
 	//! \param bValue Set to true when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
 	virtual void SetForceNonDevMode(const bool bValue) = 0;

@@ -18,9 +18,6 @@ public:
 
 	bool Init();
 
-	// PERSONAL TODO LIST:
-		// 4) Compare to Timer.cpp (5.5) to verify functionality.
-
 	// Interface ITimer ----------------------------------------------------------
 		// Lifecycle
 			 ITimer* CreateNewTimer();
@@ -81,6 +78,9 @@ private:
 	// The argument is the new number of ticks since the last Reset().
 	void SetOffsetToMatchGameTime(int64 ticks);
 
+	// Check any frame-limiting sleeps 
+	void CheckSleeps();
+
 private:
 
 	enum
@@ -92,26 +92,26 @@ private:
 	// Dynamic state, reset by ResetTimer()
 	//////////////////////////////////////////////////////////////////////////
 	CTimeValue m_CurrTime[ETIMER_LAST]; // Real (UI) and Simulation (Game) time since last Reset().
-	CTimeValue m_realStartTime;			// Absolute real-time at frame start, basically GetAsyncTime().
+	CTimeValue m_realStartTime;			// Absolute real-time at last Update()
 	
-	int64      m_lBaseTime;   // Absolute time (in ticks) when timer was last Reset()
-	int64      m_lLastTime;   // Ticks since last Reset(). This is the base for UI time. UI time is monotonic, it always moves forward at a constant rate until the timer is Reset().
-	int64      m_lOffsetTime; // Additional ticks for Game time (relative to UI time). Game time can be affected by loading, pausing, time smoothing and time clamping, as well as SetTimer(). PERSONAL TODO: NOPE! See comments in timer.cpp on ACTUAL game-time, not just game-frame-time...
+	int64      m_lBaseTime;   // Absolute real-time (in ticks) at last Reset().
+	int64      m_lLastTime;   // Absolute real-time (in ticks) since last Reset(). This is the base for UI time.
+	int64      m_lOffsetTime; // Additional ticks for Game time (relative to UI time).
 	
-	CTimeValue m_replicationTime; // Sum of all frame times used in replication
-	CTimeValue m_fFrameTime;      // Simulation time since the last Update(), clamped/smoothed etc.
-	CTimeValue m_fRealFrameTime;  // Real time since the last Update(), no clamping/smoothing/pausing etc.
+	CTimeValue m_replicationTime; // Sum of all simulation frame times used in replication.
+	CTimeValue m_fFrameTime;      // Simulation time since the last Update()
+	CTimeValue m_fRealFrameTime;  // Real time since the last Update()
 
-	bool       m_bGameTimerPaused;     // Set if the game is paused. GetFrameTime() will return 0, ETIMER_GAME will not progress.
-	int64      m_lGameTimerPausedTime; // The UI time (in ticks) when the game timer was paused. On un-pause, offset will be adjusted to match.
+	bool       m_bGameTimerPaused;     // Set if the game is paused.
+	int64      m_lGameTimerPausedTime; // The UI time (in ticks) when the game timer was paused. On un-pause, offset time will be adjusted to match.
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Persistant state, kept by ResetTimer()
 	//////////////////////////////////////////////////////////////////////////
-	bool         m_bEnabled;		//!< Timer enabled/disabled
-	unsigned int m_nFrameCounter; //!< Frame counter, atm only used for TicksPerSec.
-	int64			 m_lTicksPerSec;  //!< CPU ticks per second, updated occassionally (approx. every 127 frames) in case of rate changes.
+	bool         m_bEnabled;		//!< Timer enabled/disabled ATM not used!
+	unsigned int m_nFrameCounter; //!< Frame counter, ATM only used for pre-Vista TicksPerSec updates.
+	int64			 m_lTicksPerSec;  //!< CPU ticks per second. pre-vista updated (approx. every 127 frames) in case of rate changes.
 
 	// Frame averaging
 	CTimeValue m_prevAvgFrameTime;			//!< The simulation frame-time averaged over a time period. (e.g. 0.25 seconds)
@@ -126,15 +126,18 @@ private:
 	// Console vars, always have default value on secondary CTimer instances
 	//////////////////////////////////////////////////////////////////////////
 	int   m_TimeSmoothing;			// Console Variable, 0=off, otherwise on
-	mpfloat m_cvar_time_scale;		// Slow down time cvar.
+	mpfloat m_cvar_time_scale;		// Simulation time scale, used for slow-mo time
 
-	CTimeValue m_fixed_time_step;	// If negative, real frame time has a minimum duration of fixed_time_step, enforced via sleep.
-	CTimeValue m_max_time_step;	// Simulation frame-time cap, clamped.
+	CTimeValue m_max_time_step;	// Simulation frame-time cap
 	CTimeValue average_interval;  // Frame-averaging time period.
 
 
 	/*------------== DEBUG ONLY ==------------*/
 	int   m_TimeDebug;			 // Console Variable, 0=off, 1=events, 2=verbose
+
+	// If positive, simulation frame time is overriden by this before smoothing/scaling/etc.
+	// If negative, also has FPS cap'd to this timestep via sleep.
+	CTimeValue m_fixed_time_step;
 
 	// Profile time smoothing (Persistent state)
 	mpfloat m_fProfileBlend;	 // Current blending amount for profile.

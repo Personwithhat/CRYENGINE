@@ -50,7 +50,7 @@ public: //** Lifecycle
 	//! \return true if successful, false otherwise.
 	virtual bool SetTimer(ETimer which, const CTimeValue& timeInSeconds) = 0;
 
-	//! Pauses simulation time
+	//! Pauses simulation time. GetFrameTime() will return 0, GetFrameStartTime(ETIMER_GAME) will not progress.
 	//! \return true if successfully paused/unpaused, false otherwise.
 	virtual bool PauseTimer(ETimer which, bool bPause) = 0;
 
@@ -58,7 +58,7 @@ public: //** Lifecycle
 	//! \return true if paused, false otherwise.
 	virtual bool IsTimerPaused(ETimer which) = 0;
 
-	//! Enables/disables timer.
+	//! Enables/disables timer. ATM not used anywhere.
 	virtual void EnableTimer(const bool bEnable) = 0;
 
 	//! \return True if timer is enabled
@@ -80,6 +80,9 @@ public: //** Time Getters
 	virtual CTimeValue GetRealFrameTime() const = 0;
 
 	//! Returns Real (UI) or Simulation (Game) time since last timer Reset().
+	//! UI time is monotonic, it always moves forward at a constant rate until the timer is Reset().
+	//! Game time can be affected by loading, pausing, time smoothing, time dilation and time clamping, as well as SetTimer(). 
+	//! PERSONAL CRYTEK: NOPE! See comments in timer.cpp on ACTUAL game-time, not just game-frame-time...
 	virtual const CTimeValue& GetFrameStartTime(ETimer which = ETIMER_GAME) const = 0;
 
 	//! Get the absolute real-time at the last UpdateOnFrameStart() call.
@@ -103,7 +106,7 @@ public: //** Time Getters
 
 public: //** Timescales
 
-	// PERSONAL TODO: As noted elsewhere, only affects simulation-frame-time!!!! and also replication time.... 
+	// PERSONAL CRYTEK: As noted elsewhere, only affects simulation-frame-time!!!! and also replication time.... 
 	// Have to review all timer comments AGAIN after that's fixed.
 	//! Returns the time scale applied on simulation time.
 	virtual mpfloat GetTimeScale() const = 0;

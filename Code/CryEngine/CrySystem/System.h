@@ -421,8 +421,6 @@ public:
 	IProcess*                            GetIProcess() override { return m_pProcess; }
 	//@}
 
-	void                    SleepIfNeeded();
-
 	virtual void            DisplayErrorMessage(const char* acMessage, const CTimeValue& fTime, const float* pfColor = 0, bool bHardError = true) override;
 
 	virtual void            FatalError(const char* format, ...) override PRINTF_PARAMS(2, 3);
@@ -525,8 +523,6 @@ private:
 
 	// Release all resources.
 	void ShutDown();
-
-	void SleepIfInactive();
 
 	//! @name Initialization routines
 	//@{
@@ -641,8 +637,8 @@ public:
 #endif
 
 	// Current system timer resolution, in units of 100nanoseconds. 5,000 = 0.5 milliseconds (ms)
-	ULONG curTimerRes;
-	const ULONG& GetTimeResolution() const { return curTimerRes; }
+	ULONG GetTimeResolution() const override;
+
 	// -------------------------------------------------------------
 
 	//! attaches the given variable to the given container;
@@ -655,8 +651,8 @@ public:
 
 	CVisRegTest*&     GetVisRegTestPtrRef()           { return m_pVisRegTest; }
 
-	const CTimeValue& GetLastTickTime(void) const     { return m_lastTickTime; }
-	const ICVar*      GetDedicatedMaxRate(void) const { return m_svDedicatedMaxRate; }
+	const CTimeValue& GetLastTickTime(void)     const { return m_lastTickTime; }
+	const ICVar*      GetDedicatedMaxRate(void) const override { return m_svDedicatedMaxRate; }
 
 private: // ------------------------------------------------------
 
