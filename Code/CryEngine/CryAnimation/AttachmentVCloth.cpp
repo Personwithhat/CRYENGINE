@@ -1398,14 +1398,14 @@ void CClothSimulator::NearestNeighborDistanceConstraintsSolve()
 			if (distanceClosest * moveMaxFactor > delta)
 			{
 				// move delta in that direction
-				m_particlesHot[i].pos += directionClosest * delta * m_particlesHot[i].factorAttached * m_dt;
-				if (movePosPrevFactor) m_particlesCold[i].prevPos += directionClosest * delta * movePosPrevFactor * m_particlesHot[i].factorAttached * m_dt;
+				m_particlesHot[i].pos += directionClosest * delta * m_particlesHot[i].factorAttached * m_dt.BADGetSeconds();
+				if (movePosPrevFactor) m_particlesCold[i].prevPos += directionClosest * delta * movePosPrevFactor * m_particlesHot[i].factorAttached * m_dt.BADGetSeconds();
 			}
 			else
 			{
 				// move maximal moveMaxFactor in that direction
-				m_particlesHot[i].pos += directionClosest * distanceClosest * moveMaxFactor * m_particlesHot[i].factorAttached * m_dt;
-				if (movePosPrevFactor) m_particlesCold[i].prevPos += directionClosest * distanceClosest * moveMaxFactor * movePosPrevFactor * m_particlesHot[i].factorAttached * m_dt;
+				m_particlesHot[i].pos += directionClosest * distanceClosest * moveMaxFactor * m_particlesHot[i].factorAttached * m_dt.BADGetSeconds();
+				if (movePosPrevFactor) m_particlesCold[i].prevPos += directionClosest * distanceClosest * moveMaxFactor * movePosPrevFactor * m_particlesHot[i].factorAttached * m_dt.BADGetSeconds();
 			}
 		}
 	}

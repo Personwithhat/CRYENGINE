@@ -436,7 +436,7 @@ void CParticleEmitter::Activate(bool activate)
 		InitSeed();
 		m_timeUpdated = m_time;
 		m_timeStable = m_time + timings.m_equilibriumTime;
-		m_timeDeath = m_time + timings.m_maxTotalLIfe;
+		m_timeDeath = m_time + timings.m_maxTotalLife;
 		m_bounds = m_realBounds = m_nextBounds = AABB::RESET;
 		m_alive = true;
 
