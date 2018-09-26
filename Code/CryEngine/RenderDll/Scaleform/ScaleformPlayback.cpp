@@ -945,7 +945,9 @@ int32 CScaleformPlayback::PushTempRenderTarget(const RectF& frameRect, uint32 ta
 	}
 
 	CTexture* pNewTempRT = m_pRenderer->SF_GetResources().GetColorSurface(m_pRenderer, RTWidth, RTHeight, eTF_R8G8B8A8, RTWidth, RTHeight);// TODO: allow larger RTs upto ST (needs viewport adjustment), pNewTempST->pTexture->GetWidth(), pNewTempST->pTexture->GetHeight());
-	CTexture* pNewTempST = wantStencil ? m_pRenderer->SF_GetResources().GetStencilSurface(m_pRenderer, pNewTempRT->GetWidth(), pNewTempRT->GetHeight(), eTF_D24S8) : nullptr;
+	CTexture* pNewTempST = wantStencil ?
+		m_pRenderer->SF_GetResources().GetStencilSurface(m_pRenderer, pNewTempRT->GetWidth(), pNewTempRT->GetHeight(), CRendererResources::s_hwTexFormatSupport.GetClosestFormatSupported(eTF_D24S8)) :
+		nullptr;
 
 	m_renderTargetStack.emplace_back();
 	SSF_GlobalDrawParams::OutputParams& sNewOutput = m_renderTargetStack.back();
@@ -1022,13 +1024,6 @@ void CScaleformPlayback::BeginDisplay(ColorF backgroundColor, const Viewport& vi
 			if (auto* pDC = m_pRenderer->GetBaseDisplayContext())
 				m_pRenderOutput = pDC->GetRenderOutput();
 		}
-	}
-
-	// Toggle current back-buffer if the output is connected to a swap-chain
-	CRY_ASSERT(m_pRenderOutput);
-	if (auto* pDC = m_pRenderOutput->GetDisplayContext())
-	{
-		pDC->PostPresent();
 	}
 
 	m_pRenderOutput->BeginRendering(nullptr, 0); // Override clear flag

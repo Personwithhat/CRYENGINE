@@ -88,7 +88,8 @@ public:
 		PhysicsAttachClothOnRender         = 1 << 16,
 		PhysicsDisableNetworkSerialization = 1 << 17,
 		PhysicsRemoved                     = 1 << 18,
-		LastPhysicsFlag                    = PhysicsRemoved
+		LastPhysicsFlag                    = PhysicsRemoved,
+		BlockEvents                        = 1 << 19
 	};
 
 	// Entity constructor.

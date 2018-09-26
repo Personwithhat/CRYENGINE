@@ -140,8 +140,9 @@ SDisplayContextKey CD3D9Renderer::CreateSwapChainBackedContext(const SDisplayCon
 
 	const int width = desc.screenResolution.x;
 	const int height = desc.screenResolution.y;
+	const std::string name = desc.type == IRenderer::eViewportType_Default ? "MainView-SwapChain" : "SecView-SwapChain";
 
-	auto pDC = std::make_shared<CSwapChainBackedRenderDisplayContext>(desc, m_uniqueDisplayContextId++);
+	auto pDC = std::make_shared<CSwapChainBackedRenderDisplayContext>(desc, name, m_uniqueDisplayContextId++);
 
 	pDC->m_bMainViewport = desc.type == IRenderer::eViewportType_Default;
 	pDC->m_desc.renderFlags |= pDC->m_bMainViewport ? FRT_OVERLAY_DEPTH | FRT_OVERLAY_STENCIL : 0;
@@ -1482,7 +1483,6 @@ WIN_HWND CD3D9Renderer::Init(int x, int y, int width, int height, unsigned int c
 #endif
 
 		iLog->Log(" Current Resolution: %dx%dx%d %s", CRendererResources::s_renderWidth, CRendererResources::s_renderHeight, CRenderer::m_cbpp, GetWindowStateName());
-		iLog->Log(" HDR Rendering: %s", m_nHDRType == 1 ? "FP16" : m_nHDRType == 2 ? "MRT" : "Disabled");
 		iLog->Log(" Occlusion queries: %s", (m_Features & RFT_OCCLUSIONTEST) ? "Supported" : "Not supported");
 		iLog->Log(" Geometry instancing: %s", (m_bDeviceSupportsInstancing) ? "Supported" : "Not supported");
 		iLog->Log(" NormalMaps compression : %s", CRendererResources::s_hwTexFormatSupport.m_FormatBC5U.IsValid() ? "Supported" : "Not supported");
@@ -2039,7 +2039,6 @@ bool CD3D9Renderer::CreateDevice()
 
 void CD3D9Renderer::GetVideoMemoryUsageStats(size_t& vidMemUsedThisFrame, size_t& vidMemUsedRecently, bool bGetPoolsSizes)
 {
-
 	if (bGetPoolsSizes)
 	{
 		vidMemUsedThisFrame = vidMemUsedRecently = (GetTexturesStreamPoolSize() + CV_r_rendertargetpoolsize) * 1024 * 1024;
@@ -2069,10 +2068,14 @@ void CD3D9Renderer::GetVideoMemoryUsageStats(size_t& vidMemUsedThisFrame, size_t
 #else
 		struct { SIZE_T CurrentUsage; } videoMemoryInfoA = {};
 		struct { SIZE_T CurrentUsage; } videoMemoryInfoB = {};
-#endif
+
+	#if CRY_RENDERER_GNM
+		gGnmDevice->GetMemoryUsageStats(videoMemoryInfoA.CurrentUsage, videoMemoryInfoB.CurrentUsage);
+	#endif
 
 		vidMemUsedThisFrame = size_t(videoMemoryInfoA.CurrentUsage);
 		vidMemUsedRecently = 0;
+#endif
 	}
 }
 
@@ -2228,8 +2231,6 @@ HRESULT CALLBACK CD3D9Renderer::OnD3D11CreateDevice(D3DDevice* pd3dDevice)
 	}
 
 	rd->m_Features |= RFT_HW_HDR;
-
-	rd->m_nHDRType = 1;
 
 	return S_OK;
 }

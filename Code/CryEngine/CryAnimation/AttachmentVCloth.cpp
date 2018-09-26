@@ -1364,73 +1364,48 @@ namespace VClothUtils
 	}
 }
 
-// Implemented according to the paper "Long Range Attachments", Mueller et al.
-// but with much better distance constraints by using path finding algorithm and closest neighbors
-void CClothSimulator::LongRangeAttachmentsSolve()
+// Solve Nearest Neighbor Distance Constraints
+// Use nearest neighbors along path to closest attached point and try to constraint the distance
+void CClothSimulator::NearestNeighborDistanceConstraintsSolve()
 {
 	CRY_PROFILE_FUNCTION(PROFILE_ANIMATION);
 
-	if (m_bUseDijkstraForLRA)
+	// Dijkstra / geodesic approach / distances along mesh
+	float allowedExtensionSqr = (1.0f + m_config.nndcAllowedExtension);
+	allowedExtensionSqr *= allowedExtensionSqr;
+	for (auto it = m_nndcNotAttachedOrderedIdx.begin(); it != m_nndcNotAttachedOrderedIdx.end(); ++it)
 	{
-		// Dijekstra / geodesic approach / distances along mesh
-		float allowedExtensionSqr = (1.0f + m_config.longRangeAttachmentsAllowedExtension);
-		allowedExtensionSqr *= allowedExtensionSqr;
-		for (auto it = m_lraNotAttachedOrderedIdx.begin(); it != m_lraNotAttachedOrderedIdx.end(); ++it)
+		// better would be to use real length along path for delta, not euclidean distance from initial pose...
+		const int i = *it;
+		const int& idx = m_particlesHot[i].nndcIdx;
+		if (idx < 0) continue; // no nndc found in initialization
+		// determine distance to NNDC
+		Vector4 nndcDistV = m_particlesHot[i].pos - m_particlesHot[idx].pos;
+		float nndcDistSqr = nndcDistV.dot(nndcDistV);
+
+		if (nndcDistSqr > m_particlesHot[i].nndcDist * m_particlesHot[i].nndcDist * allowedExtensionSqr)
 		{
-			// better would be to use real length along path for delta, not euklidean distance from initial pose...
-			const int i = *it;
-			const int& idx = m_particlesHot[i].lraIdx;
-			if (idx < 0) continue; // no lra found in initialization
-			// determine distance to LRA
-			Vector4 lraDistV = m_particlesHot[i].pos - m_particlesHot[idx].pos;
-			float lraDistSqr = lraDistV.dot(lraDistV);
+			// force NNDC constraint, by shifting particle in closest neighbor direction
+			float delta = sqrt(nndcDistSqr) - m_particlesHot[i].nndcDist;
+			int idxNextClosest = m_particlesHot[i].nndcNextParent;
+			Vector4 directionClosest = m_particlesHot[idxNextClosest].pos - m_particlesHot[i].pos;
+			float distanceClosest = directionClosest.GetLengthFast();
+			if (distanceClosest < 0.001f) continue;
+			directionClosest = (directionClosest / distanceClosest); //directionClosest.GetNormalizedFast();
 
-			if (lraDistSqr > m_particlesHot[i].lraDist * m_particlesHot[i].lraDist * allowedExtensionSqr)
+			const float moveMaxFactor = m_config.nndcMaximumShiftFactor;
+			const float movePosPrevFactor = m_config.nndcShiftCollisionFactor; //true; // no velocity change
+			if (distanceClosest * moveMaxFactor > delta)
 			{
-				// force LRA constraint, by shifting particle in closest neighbor direction
-				float delta = sqrt(lraDistSqr) - m_particlesHot[i].lraDist;
-				int idxNextClosest = m_particlesHot[i].lraNextParent;
-				Vector4 directionClosest = m_particlesHot[idxNextClosest].pos - m_particlesHot[i].pos;
-				float distanceClosest = directionClosest.GetLengthFast();
-				if (distanceClosest < 0.001f) continue;
-				directionClosest = (directionClosest / distanceClosest); //directionClosest.GetNormalizedFast();
-
-				const float moveMaxFactor = m_config.longRangeAttachmentsMaximumShiftFactor;
-				const float movePosPrevFactor = m_config.longRangeAttachmentsShiftCollisionFactor; //true; // no velocity change
-				if (distanceClosest * moveMaxFactor > delta)
-				{
-					// move delta in that direction
-					m_particlesHot[i].pos += directionClosest * delta * m_particlesHot[i].factorAttached * m_dt.BADGetSeconds();
-					if (movePosPrevFactor) m_particlesCold[i].prevPos += directionClosest * delta * movePosPrevFactor * m_particlesHot[i].factorAttached * m_dt.BADGetSeconds();
-				}
-				else
-				{
-					// move maximal moveMaxFactor in that direction
-					m_particlesHot[i].pos += directionClosest * distanceClosest * moveMaxFactor * m_particlesHot[i].factorAttached * m_dt.BADGetSeconds();
-					if (movePosPrevFactor) m_particlesCold[i].prevPos += directionClosest * distanceClosest * moveMaxFactor * movePosPrevFactor * m_particlesHot[i].factorAttached * m_dt.BADGetSeconds();
-				}
+				// move delta in that direction
+				m_particlesHot[i].pos += directionClosest * delta * m_particlesHot[i].factorAttached * m_dt;
+				if (movePosPrevFactor) m_particlesCold[i].prevPos += directionClosest * delta * movePosPrevFactor * m_particlesHot[i].factorAttached * m_dt;
 			}
-		}
-	}
-	else
-	{
-		// Euclidean distance in local space
-		for (int i = 0; i < m_nVtx; i++)
-		{
-			const int& idx = m_particlesHot[i].lraIdx;
-			if (idx < 0) continue; // no LRA for attached vtx
-
-			if (m_particlesCold[i].bAttached) continue; // no lra for attached particles
-
-			// determine distance to LRA
-			Vector4 d = m_particlesHot[i].pos - m_particlesHot[idx].pos;
-			float distSqr = d.dot(d);
-
-			if (distSqr > m_particlesHot[i].lraDist * m_particlesHot[i].lraDist)
+			else
 			{
-				// force LRA constraint
-				d = d.GetNormalizedFast();
-				m_particlesHot[i].pos = m_particlesHot[idx].pos + m_particlesHot[i].lraDist * d * m_dt.BADGetSeconds();
+				// move maximal moveMaxFactor in that direction
+				m_particlesHot[i].pos += directionClosest * distanceClosest * moveMaxFactor * m_particlesHot[i].factorAttached * m_dt;
+				if (movePosPrevFactor) m_particlesCold[i].prevPos += directionClosest * distanceClosest * moveMaxFactor * movePosPrevFactor * m_particlesHot[i].factorAttached * m_dt;
 			}
 		}
 	}
@@ -1711,12 +1686,17 @@ void CClothSimulator::PositionsProjectToProxySurface(const nTime& t01)
 void CClothSimulator::HandleCameraDistance()
 {
 	const f32 disableSimAtDist = m_config.disableSimulationAtDistance;
+	const f32 ssAxisSizePercThresh = m_config.enableSimulationSSaxisSizePerc;
 
-	if (CheckCameraDistanceLessThan(disableSimAtDist))
+	if (!m_isFramerateBelowFpsThresh && (CheckSSRatioLargerThan(ssAxisSizePercThresh) || CheckCameraDistanceLessThan(disableSimAtDist)))
 	{
 		if (!IsSimulationEnabled() || IsFadingOut())
 		{
-			if (!IsFadingOut()) { PositionsSetToSkinned(); /* m_doSkinningForNSteps = 3; */ } // only translate to constraints, if actually is not fading out, otherwise a position jump in cloth would occur in these cases
+			if (!IsFadingOut())
+			{
+				// only translate to constraints, if simulation is not fading out atm, otherwise a position jump in cloth would occur in these cases
+				PositionsSetToSkinned();
+			} 
 			EnableSimulation();
 			EnableFadeInPhysics();
 			SetGpuSkinning(false);
@@ -1724,7 +1704,6 @@ void CClothSimulator::HandleCameraDistance()
 	}
 	else
 	{
-		//m_clothPiece.GetSimulator().EnableSimulation(false); // is done in step now, while handling fading
 		if (IsSimulationEnabled() && !IsFadingOut())
 		{
 			EnableFadeOutPhysics();
@@ -1780,11 +1759,36 @@ bool CClothSimulator::CheckCameraDistanceLessThan(float dist) const
 	return distSqr < dist * dist;
 }
 
+bool CClothSimulator::CheckSSRatioLargerThan(float ssAxisSizePercThresh) const
+{
+	// abort, if SS-ratio-test is disabled.
+	if (ssAxisSizePercThresh == 0)
+	{
+		return false;
+	}
+
+	// determine screen ratio of characters bounding box in actual camera view
+	int screenBounds[4];
+	const auto aabb_MS = m_pAttachmentManager->m_pSkelInstance->GetAABB();
+	const auto& translation = m_pAttachmentManager->m_pSkelInstance->m_location.t;
+	const AABB aabb_WS(translation + aabb_MS.min, translation + aabb_MS.max);
+
+	const auto& camera = gEnv->p3DEngine->GetRenderingCamera();
+	const int w = camera.GetViewSurfaceX();
+	const int h = camera.GetViewSurfaceZ();
+	camera.CalcScreenBounds(screenBounds, &aabb_WS, w, h);
+
+	const float screenSizeRatioX = (float)(screenBounds[2] - screenBounds[0]) / (float)w;
+	const float screenSizeRatioY = (float)(screenBounds[3] - screenBounds[1]) / (float)h;
+
+	return screenSizeRatioX > ssAxisSizePercThresh || screenSizeRatioY > ssAxisSizePercThresh;
+}
+
 bool CClothSimulator::CheckForceSkinningByFpsThreshold()
 {
-	bool forceSkinning = false;
-	rTime fps = gEnv->pTimer->GetFrameRate();
-	forceSkinning = fps < m_config.forceSkinningFpsThreshold;
+	const rTime fps = gEnv->pTimer->GetFrameRate();
+	m_isFramerateBelowFpsThresh = fps < m_config.forceSkinningFpsThreshold;
+	bool forceSkinning = m_isFramerateBelowFpsThresh;
 
 	// force skinning only after n-th frame with framerate below threshold
 	if (forceSkinning && (m_forceSkinningAfterNFramesCounter < Console::GetInst().ca_ClothForceSkinningAfterNFrames))
@@ -2060,8 +2064,8 @@ int CClothSimulator::Step()
 		// constraint solver
 		for (int iter = 0; iter < m_config.numIterations; iter++)
 		{
-			// long range attachments
-			if (m_config.longRangeAttachments) LongRangeAttachmentsSolve();
+			// nearest neighbor distance constraints
+			if (m_config.useNearestNeighborDistanceConstraints) NearestNeighborDistanceConstraintsSolve();
 
 			// solve springs - stretching, bending & shearing
 			{
@@ -2218,8 +2222,8 @@ void CClothSimulator::DrawHelperInformation()
 		}
 	}
 
-	// debug draw long range attachments
-	switch (this->GetParams().debugDrawLRA)
+	// debug draw nearest neighbor distance constraints
+	switch (this->GetParams().debugDrawNndc)
 	{
 	default:
 	case 0: // draw nothing
@@ -2227,35 +2231,35 @@ void CClothSimulator::DrawHelperInformation()
 	case 1: // draw closest attachment
 		for (int i = 0; i < m_nVtx; i++)
 		{
-			const int lraIdx = m_particlesHot[i].lraIdx;
-			if (lraIdx >= 0)
-				pRendererAux->DrawLine(SseToVec3(m_particlesHot[i].pos) + offs, colorBlue, SseToVec3(m_particlesHot[lraIdx].pos) + offs, colorRed, 1.0f);
+			const int nndcIdx = m_particlesHot[i].nndcIdx;
+			if (nndcIdx >= 0)
+				pRendererAux->DrawLine(SseToVec3(m_particlesHot[i].pos) + offs, colorBlue, SseToVec3(m_particlesHot[nndcIdx].pos) + offs, colorRed, 1.0f);
 			else // draw
 				pRendererAux->DrawLine(SseToVec3(m_particlesHot[i].pos) + offs, colorRed, SseToVec3(m_particlesHot[i].pos + Vector4(5.0f, 0, 0) + offs), colorRed, 4.0f);
 		}
 		break;
 	case 2: // draw closest attachment ordered
-		for (int i = 0; i < m_lraNotAttachedOrderedIdx.size(); i++)
+		for (int i = 0; i < m_nndcNotAttachedOrderedIdx.size(); i++)
 		{
-			const int idx = m_lraNotAttachedOrderedIdx[i];
-			const int lraIdx = m_particlesHot[idx].lraIdx;
-			float t = (float)i / (float)m_lraNotAttachedOrderedIdx.size();
+			const int idx = m_nndcNotAttachedOrderedIdx[i];
+			const int nndcIdx = m_particlesHot[idx].nndcIdx;
+			float t = (float)i / (float)m_nndcNotAttachedOrderedIdx.size();
 			ColorF c = colorRed * t + colorBlue * (1.0f - t);
-			if (lraIdx >= 0)
-				pRendererAux->DrawLine(SseToVec3(m_particlesHot[idx].pos) + offs, c, SseToVec3(m_particlesHot[lraIdx].pos) + offs, c, 4.0f);
+			if (nndcIdx >= 0)
+				pRendererAux->DrawLine(SseToVec3(m_particlesHot[idx].pos) + offs, c, SseToVec3(m_particlesHot[nndcIdx].pos) + offs, c, 4.0f);
 			else // draw problem
 				pRendererAux->DrawLine(SseToVec3(m_particlesHot[idx].pos) + offs, colorRed, SseToVec3(m_particlesHot[idx].pos + Vector4(5.0f, 0, 0) + offs), colorRed, 4.0f);
 		}
 		break;
 	case 3: // draw neighbor which is closest to attachment
-		for (int i = 0; i < m_lraNotAttachedOrderedIdx.size(); i++)
+		for (int i = 0; i < m_nndcNotAttachedOrderedIdx.size(); i++)
 		{
-			const SParticleHot& prt = m_particlesHot[m_lraNotAttachedOrderedIdx[i]];
+			const SParticleHot& prt = m_particlesHot[m_nndcNotAttachedOrderedIdx[i]];
 			const Vector4 p0 = prt.pos + offs;
-			if (prt.lraNextParent >= 0)
+			if (prt.nndcNextParent >= 0)
 			{
-				const Vector4 p1 = m_particlesHot[prt.lraNextParent].pos + offs;
-				float t = (float)i / (float)m_lraNotAttachedOrderedIdx.size();
+				const Vector4 p1 = m_particlesHot[prt.nndcNextParent].pos + offs;
+				float t = (float)i / (float)m_nndcNotAttachedOrderedIdx.size();
 				ColorF c = colorRed * t + colorBlue * (1.0f - t);
 				pRendererAux->DrawLine(SseToVec3(p0), c, SseToVec3(p1), c, 4.0f);
 			}
@@ -2509,24 +2513,24 @@ public:
 
 bool CClothSimulator::GetMetaData(mesh_data* pMesh, CSkin* pSimSkin)
 {
-	// get loaded LRA data
+	// get loaded NNDC data
 	{
-		std::vector<AttachmentVClothPreProcessLra> const& loadedLra = pSimSkin->GetVClothData().m_lra;
-		std::vector<int> const& loadedLraNotAttachedOrderedIdx = pSimSkin->GetVClothData().m_lraNotAttachedOrderedIdx;
+		std::vector<AttachmentVClothPreProcessNndc> const& loadedNndc = pSimSkin->GetVClothData().m_nndc;
+		std::vector<int> const& loadedNndcNotAttachedOrderedIdx = pSimSkin->GetVClothData().m_nndcNotAttachedOrderedIdx;
 
-		if (loadedLra.size() != m_nVtx) return false;
+		if (loadedNndc.size() != m_nVtx) return false;
 		{
 			int i = 0;
-			for (auto it = loadedLra.begin(); it != loadedLra.end(); ++it, ++i)
+			for (auto it = loadedNndc.begin(); it != loadedNndc.end(); ++it, ++i)
 			{
-				m_particlesHot[i].lraDist = it->lraDist;
-				m_particlesHot[i].lraIdx = it->lraIdx;
-				m_particlesHot[i].lraNextParent = it->lraNextParent;
+				m_particlesHot[i].nndcDist = it->nndcDist;
+				m_particlesHot[i].nndcIdx = it->nndcIdx;
+				m_particlesHot[i].nndcNextParent = it->nndcNextParent;
 			}
 		}
 
-		m_lraNotAttachedOrderedIdx.resize(loadedLraNotAttachedOrderedIdx.size());
-		std::copy(loadedLraNotAttachedOrderedIdx.begin(), loadedLraNotAttachedOrderedIdx.end(), m_lraNotAttachedOrderedIdx.begin());
+		m_nndcNotAttachedOrderedIdx.resize(loadedNndcNotAttachedOrderedIdx.size());
+		std::copy(loadedNndcNotAttachedOrderedIdx.begin(), loadedNndcNotAttachedOrderedIdx.end(), m_nndcNotAttachedOrderedIdx.begin());
 	}
 
 	// get loaded bending information
@@ -2594,22 +2598,22 @@ void CClothSimulator::GenerateMetaData(mesh_data* pMesh, CSkin* pSimSkin, float*
 
 	// read back generated meta-data
 
-	// get generated LRA data
+	// get generated NNDC data
 	{
-		std::vector<AttachmentVClothPreProcessLra> const& preLra = pre.GetLra();
-		std::vector<int> const& preLraNotAttachedOrderedIdx = pre.GetLraNotAttachedOrderedIdx();
+		std::vector<AttachmentVClothPreProcessNndc> const& preNndc = pre.GetNndc();
+		std::vector<int> const& preNndcNotAttachedOrderedIdx = pre.GetNndcNotAttachedOrderedIdx();
 		{
 			int i = 0;
-			for (auto it = preLra.begin(); it != preLra.end(); ++it, ++i)
+			for (auto it = preNndc.begin(); it != preNndc.end(); ++it, ++i)
 			{
-				m_particlesHot[i].lraDist = it->lraDist;
-				m_particlesHot[i].lraIdx = it->lraIdx;
-				m_particlesHot[i].lraNextParent = it->lraNextParent;
+				m_particlesHot[i].nndcDist = it->nndcDist;
+				m_particlesHot[i].nndcIdx = it->nndcIdx;
+				m_particlesHot[i].nndcNextParent = it->nndcNextParent;
 			}
 		}
 
-		m_lraNotAttachedOrderedIdx.resize(preLraNotAttachedOrderedIdx.size());
-		std::copy(preLraNotAttachedOrderedIdx.begin(), preLraNotAttachedOrderedIdx.end(), m_lraNotAttachedOrderedIdx.begin());
+		m_nndcNotAttachedOrderedIdx.resize(preNndcNotAttachedOrderedIdx.size());
+		std::copy(preNndcNotAttachedOrderedIdx.begin(), preNndcNotAttachedOrderedIdx.end(), m_nndcNotAttachedOrderedIdx.begin());
 	}
 
 	// get loaded bending information
@@ -2744,9 +2748,9 @@ void CClothPiece::WaitForJob(bool bPrev)
 	int nList = nFrameID % 3;
 	if (m_pVClothAttachment->m_arrSkinningRendererData[nList].nFrameID == nFrameID && m_pVClothAttachment->m_arrSkinningRendererData[nList].pSkinningData)
 	{
-		if (m_pVClothAttachment->m_arrSkinningRendererData[nList].pSkinningData->pAsyncDataJobs)
+		if (m_pVClothAttachment->m_arrSkinningRendererData[nList].pSkinningData->pAsyncJobs)
 		{
-			gEnv->pJobManager->WaitForJob(*m_pVClothAttachment->m_arrSkinningRendererData[nList].pSkinningData->pAsyncDataJobs);
+			gEnv->pJobManager->WaitForJob(*m_pVClothAttachment->m_arrSkinningRendererData[nList].pSkinningData->pAsyncJobs);
 		}
 	}
 }

@@ -954,7 +954,7 @@ IShader* CRenderer::EF_LoadShader (const char* name, int flags, uint64 nMaskGen)
 
 void CRenderer::EF_SetShaderQuality(EShaderType eST, EShaderQuality eSQ)
 {
-	ExecuteRenderThreadCommand( [=]{ this->m_cEF.RT_SetShaderQuality(eST, eSQ); }, ERenderCommandFlags::None );
+	ExecuteRenderThreadCommand( [=]{ this->m_cEF.RT_SetShaderQuality(eST, eSQ); }, ERenderCommandFlags::FlushAndWait );
 
 	if (gEnv->p3DEngine)
 		gEnv->p3DEngine->GetMaterialManager()->RefreshMaterialRuntime();
@@ -1045,7 +1045,7 @@ bool CRenderer::EF_ReloadFile (const char* szFileName)
 	{
 		gRenDev->m_cEF.m_Bin.InvalidateCache();
 		// This is a temporary fix so that shaders would reload during hot update.
-		bool bRet = gRenDev->m_cEF.mfReloadAllShaders(FRO_SHADERS, 0);
+		bool bRet = gRenDev->m_cEF.mfReloadAllShaders(FRO_SHADERS, 0, gRenDev->GetMainFrameID());
 		if (gEnv && gEnv->p3DEngine)
 			gEnv->p3DEngine->UpdateShaderItems();
 		return bRet;
@@ -1937,7 +1937,7 @@ void CRenderer::EF_QueryImpl(ERenderQueryTypes eQuery, void* pInOut0, uint32 nIn
 
 	case EFQ_HDRModeEnabled:
 	{
-		WriteQueryResult(pInOut0, nInOutSize0, static_cast<bool>(IsHDRModeEnabled() ? 1 : 0));
+		WriteQueryResult(pInOut0, nInOutSize0, true);
 	}
 	break;
 
@@ -3804,7 +3804,7 @@ void CRenderer::UpdateRenderingModesInfo()
 		return;
 	}
 
-	m_nNightVisionMode = (pNightVision->IsActive() && (CV_r_NightVision == 2) || (CV_r_NightVision == 3)) && gRenDev->IsHDRModeEnabled();             // check only for HDR version
+	m_nNightVisionMode = (pNightVision->IsActive() && (CV_r_NightVision == 2)) || ((CV_r_NightVision == 3));
 
 	if (!m_nNightVisionMode && pThermalVision->GetTransitionEffectState())
 		m_nThermalVisionMode = 0;
@@ -4011,7 +4011,6 @@ SSkinningData* CRenderer::EF_CreateSkinningData(IRenderView* pRenderView, uint32
 
 	uint32 nNeededSize = Align(sizeof(SSkinningData), 16);
 	nNeededSize += Align(bNeedJobSyncVar ? sizeof(JobManager::SJobState) : 0, 16);
-	nNeededSize += Align(bNeedJobSyncVar ? sizeof(JobManager::SJobState) : 0, 16);
 	nNeededSize += Align(nNumBones * sizeof(DualQuat), 16);
 	nNeededSize += Align(nNumBones * sizeof(compute_skinning::SActiveMorphs), 16);
 
@@ -4023,13 +4022,9 @@ SSkinningData* CRenderer::EF_CreateSkinningData(IRenderView* pRenderView, uint32
 	pSkinningRenderData->pAsyncJobs = bNeedJobSyncVar ? alias_cast<JobManager::SJobState*>(pData) : NULL;
 	pData += Align(bNeedJobSyncVar ? sizeof(JobManager::SJobState) : 0, 16);
 
-	pSkinningRenderData->pAsyncDataJobs = bNeedJobSyncVar ? alias_cast<JobManager::SJobState*>(pData) : NULL;
-	pData += Align(bNeedJobSyncVar ? sizeof(JobManager::SJobState) : 0, 16);
-
-	if (bNeedJobSyncVar) // init job state if requiered
+	if (bNeedJobSyncVar)
 	{
 		new(pSkinningRenderData->pAsyncJobs) JobManager::SJobState();
-		new(pSkinningRenderData->pAsyncDataJobs) JobManager::SJobState();
 	}
 
 	pSkinningRenderData->pBoneQuatsS = alias_cast<DualQuat*>(pData);
@@ -4086,7 +4081,6 @@ SSkinningData* CRenderer::EF_CreateRemappedSkinningData(IRenderView* pRenderView
 	pSkinningRenderData->pBoneQuatsS    = pSourceSkinningData->pBoneQuatsS;
 	pSkinningRenderData->pActiveMorphs = pSourceSkinningData->pActiveMorphs;
 	pSkinningRenderData->pAsyncJobs     = pSourceSkinningData->pAsyncJobs;
-	pSkinningRenderData->pAsyncDataJobs = pSourceSkinningData->pAsyncDataJobs;
 	pSkinningRenderData->pRenderMesh = pSourceSkinningData->pRenderMesh;
 
 	pSkinningRenderData->pCharInstCB = pSourceSkinningData->pCharInstCB;

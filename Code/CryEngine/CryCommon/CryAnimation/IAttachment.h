@@ -67,16 +67,17 @@ struct SVClothParams
 	bool  forceSkinning;                   //!< If enabled, simulation is skipped and skinning is enforced.
 	rTime forceSkinningFpsThreshold;       //!< If the framerate drops under the provided FPS, simulation is skipped and skinning is enforced.
 	float forceSkinningTranslateThreshold; //!< If the translation is larger than this value, simulation is skipped and skinning is enforced.
-	bool  checkAnimationRewind;            //!< Check for Rewind in animation, if enabled, the cloth is re-initialized to collision-proxies in that case
-	float disableSimulationAtDistance;     //! Disable simulation / enable skinning in dependance of camera distance.
+	bool  checkAnimationRewind;            //!< Check for rewind in animation, if enabled, the cloth is re-initialized to collision-proxies in that case.
+	float disableSimulationAtDistance;     //!< Disable simulation / enable skinning in dependence of camera distance.
 	CTimeValue disableSimulationTimeRange; //!< Within this time range, the fading process (skinning vs. simulation) is done.
+	float enableSimulationSSaxisSizePerc;  //!< If size of characters bounding box exceeds provided percentage of viewport size, simulation is enabled.
 
 	// Simulation and Collision
 	CTimeValue timeStep;                //!< The (pseudo)fixed time step for the simulator.
-	int   timeStepsMax;                 //!< Number of maximum iterations for the time discretization in a single step
+	int   timeStepsMax;                 //!< Number of maximum iterations for the time discretization in a single step.
 	int   numIterations;                //!< Number of iterations for the positional stiffness & collision solver (contacts & edges).
-	int   collideEveryNthStep;          //!< for stiffness & collision solver: collide only every Nth step
-	float collisionMultipleShiftFactor; //!< for collision solver: if a particle collides with more than one collider at the same time, the particle is shifted by this factor in the average direction
+	int   collideEveryNthStep;          //!< For stiffness & collision solver: collide only every Nth step.
+	float collisionMultipleShiftFactor; //!< For collision solver: if a particle collides with more than one collider at the same time, the particle is shifted by this factor in the average direction.
 	float gravityFactor;
 
 	// Stiffness and Elasticity
@@ -91,13 +92,13 @@ struct SVClothParams
 	float rigidDamping;                 //!< Damping stiffness into rigid-body. 0.0 represents no damping, 1.0 represents rigid cloth.
 	float springDamping;                //!< Damping of springs.
 	bool  springDampingPerSubstep;      //!< Also damp springs in substeps.
-	float collisionDampingTangential;   //!< Tangential damping factor in case of collisions
+	float collisionDampingTangential;   //!< Tangential damping factor in case of collisions.
 
-	// Long Range Attachments
-	bool  longRangeAttachments;                     // Enables LRA.
-	float longRangeAttachmentsAllowedExtension;     // Allowed extension, e.g. 0.1 = 10%.
-	float longRangeAttachmentsMaximumShiftFactor;   // Scales maximum shift per iteration to closest neighbor, e.g. 0.5 -> half way to closest neighbor.
-	float longRangeAttachmentsShiftCollisionFactor; // Scales in case of shift the velocity.
+	// Nearest Neighbor Distance Constraints
+	bool  useNearestNeighborDistanceConstraints; //!< Enables nndc
+	float nndcAllowedExtension;			//!< Allowed extension, e.g. 0.1 = 10%.
+	float nndcMaximumShiftFactor;		//!< Scales maximum shift per iteration to closest neighbor, e.g. 0.5 -> half way to closest neighbor.
+	float nndcShiftCollisionFactor;		//!< Scales in case of shift the velocity.
 
 	// Test Reset Damping
 	int   resetDampingRange;            //!< No of frames, within resetDampingFactor is used within simulation for dampening the system.
@@ -120,7 +121,7 @@ struct SVClothParams
 	string materialLods[g_nMaxGeomLodLevels];
 	float  debugDrawVerticesRadius;
 	int    debugDrawCloth;
-	int    debugDrawLRA;       //!< Debug long range attachments (LRA).
+	int    debugDrawNndc;      //!< Debug Nearest Neighbor Distance Constraints (nndc).
 	int    debugPrint;
 
 	float* weights;            //!< Per vertex weights used for blending with animation.
@@ -132,13 +133,13 @@ public:
 	SVClothParams() :
 
 		// Animation Control
-		hide(false)
-		, forceSkinning(false)
+		forceSkinning(false)
 		, forceSkinningFpsThreshold(25)
 		, forceSkinningTranslateThreshold(1.0f)
 		, checkAnimationRewind(true)
 		, disableSimulationAtDistance(10.0)
 		, disableSimulationTimeRange("0.5")
+		, enableSimulationSSaxisSizePerc(0.25f)
 
 		// Simulation and Collision
 		, timeStep("0.007")
@@ -162,11 +163,11 @@ public:
 		, springDampingPerSubstep(true)
 		, collisionDampingTangential(0)
 
-		// Long Range Attachments
-		, longRangeAttachments(false)
-		, longRangeAttachmentsAllowedExtension(0.0)     // allowed extension, e.g. 0.1 = 10%
-		, longRangeAttachmentsMaximumShiftFactor(0.25)  // scales maximum shift per iteration to closest neighbor, e.g. 0.5 -> half way to closest neighbor
-		, longRangeAttachmentsShiftCollisionFactor(1.0) // scales in case of shift the velocity, 0.0=no shift, 1.0=no velocity change, -1=increase velocity by change
+		// Nearest Neighbor Distance Constraints
+		, useNearestNeighborDistanceConstraints(false)
+		, nndcAllowedExtension(0.0)     // allowed extension, e.g. 0.1 = 10%
+		, nndcMaximumShiftFactor(0.25)  // scales maximum shift per iteration to closest neighbor, e.g. 0.5 -> half way to closest neighbor
+		, nndcShiftCollisionFactor(1.0) // scales in case of shift the velocity, 0.0=no shift, 1.0=no velocity change, -1=increase velocity by change
 
 		// Test Reset Damping
 		, resetDampingRange(3)
@@ -188,10 +189,11 @@ public:
 		, material("")
 		, debugDrawVerticesRadius(0.01f)
 		, debugDrawCloth(1)
-		, debugDrawLRA(0) // long range attachments
+		, debugDrawNndc(0) // Nearest Neighbor Distance Constraints
 		, debugPrint(0)
 
 		, weights(nullptr)
+		, hide(false)
 		, disableSimulation(false)
 	{}
 };
@@ -201,9 +203,9 @@ struct SVClothAttachmentParams
 {
 	SVClothAttachmentParams(const char* attachmentName, const SVClothParams& vclothParams, int skinLoadingFlags, int flags)
 		: attachmentName(attachmentName)
-		, skinLoadingFlags(skinLoadingFlags)
-		, flags(flags)
 		, vclothParams(vclothParams)
+		, flags(flags)
+		, skinLoadingFlags(skinLoadingFlags)
 	{}
 
 	const string attachmentName;
@@ -729,10 +731,10 @@ inline IMaterial* CSKINAttachment::GetBaseMaterial(uint32 nLOD) const
 struct CEntityAttachment : public IAttachmentObject
 {
 public:
-	CEntityAttachment() : m_scale(1.0f, 1.0f, 1.0f), m_id(0){}
+	CEntityAttachment() : m_id(0), m_scale(1.0f, 1.0f, 1.0f) {}
 
-	virtual EType GetAttachmentType() override { return eAttachment_Entity; };
-	void          SetEntityId(EntityId id)     { m_id = id; };
+	virtual EType GetAttachmentType() override { return eAttachment_Entity; }
+	void          SetEntityId(EntityId id)     { m_id = id; }
 	EntityId      GetEntityId()                { return m_id; }
 
 	virtual void  ProcessAttachment(IAttachment* pIAttachment) override

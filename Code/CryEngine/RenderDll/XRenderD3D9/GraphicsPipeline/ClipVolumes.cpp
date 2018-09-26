@@ -522,7 +522,7 @@ void CClipVolumesStage::PrepareVolumetricFog()
 			const int32 w = scaledWidth;
 			const int32 h = scaledHeight;
 			const int32 d = depth;
-			ETEX_Format format = eTF_D24S8;
+			const ETEX_Format format = CRendererResources::s_hwTexFormatSupport.GetClosestFormatSupported(eTF_D24S8);
 			CTexture* pTex = CTexture::GetOrCreateTextureArray("$VolFogClipVolumeStencil", w, h, d, 1, eTT_2DArray, dsFlags, format);
 
 			if (pTex == nullptr
@@ -642,7 +642,7 @@ void CClipVolumesStage::PrepareVolumetricFog()
 				m_pClipVolumeStencilVolumeTexArray.resize(depth);
 
 				const uint32 dsFlags = commonFlags | FT_USAGE_DEPTHSTENCIL;
-				ETEX_Format depthFormat = eTF_D24S8;
+				const ETEX_Format depthFormat = CRendererResources::s_hwTexFormatSupport.GetClosestFormatSupported(eTF_D24S8);
 
 				for (uint32 i = 0; i < depth; ++i)
 				{
@@ -692,7 +692,7 @@ void CClipVolumesStage::ExecuteVolumetricFog()
 
 	if (rd->m_bVolumetricFogEnabled && bFogEnabled)
 	{
-		PROFILE_LABEL_SCOPE("CLIPVOLUMES FOR VOLUMETRIC FOG");
+		PROFILE_LABEL_SCOPE("CLIPVOLUMES_FOR_VOLUMETRIC_FOG");
 
 		const bool bReverseDepth = true;
 		const float nearDepth = bReverseDepth ? 1.0f : 0.0f;

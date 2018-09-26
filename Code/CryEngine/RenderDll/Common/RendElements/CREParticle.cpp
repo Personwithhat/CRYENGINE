@@ -213,6 +213,11 @@ void CREParticle::ResetPool()
 
 void CREParticle::Reset(IParticleVertexCreator* pVC, int nThreadId, uint allocId)
 {
+	if (m_pVertexCreator)
+	{
+		assert(m_pVertexCreator == pVC);
+		assert(m_nThreadId == nThreadId);
+	}
 	m_pVertexCreator = pVC;
 	m_pGpuRuntime = nullptr;
 	m_nThreadId = nThreadId;
@@ -334,7 +339,13 @@ void CRenderer::PrepareParticleRenderObjects(Array<const SAddParticlesToSceneJob
 	WaitForParticleBuffer(passInfo.GetFrameID());
 
 	// == now create the render elements and start processing those == //
-	const bool useComputeVerticesJob = passInfo.IsGeneralPass();
+	ICVar* pVar = gEnv->pConsole->GetCVar("e_ParticlesDebug");
+	const bool computeSync = pVar && (pVar->GetIVal() & AlphaBit('v'));
+	const bool useComputeVerticesJob = !computeSync && passInfo.IsGeneralPass();
+	if (useComputeVerticesJob)
+	{
+		m_ComputeVerticesJobState.SetRunning();
+	}
 
 	SCameraInfo camInfo(passInfo);
 	const bool bParticleTessellation = m_bDeviceSupportsTessellation && CV_r_ParticlesTessellation != 0;
@@ -363,8 +374,12 @@ void CRenderer::PrepareParticleRenderObjects(Array<const SAddParticlesToSceneJob
 		size_t ij = &job - aJobs.data();
 		CREParticle* pRE = static_cast<CREParticle*>(pRenderObject->m_pRE);
 
+		// Clamp AABB
+		auto aabb = job.aabb;
+		if (aabb.IsReset())
+			aabb = AABB{ .0f };
 		if (pRenderObject->m_pCompiledObject)
-			pRenderObject->m_pCompiledObject->m_aabb = AABB{ job.aabb.min, job.aabb.max };
+			pRenderObject->m_pCompiledObject->m_aabb = aabb;
 
 		// generate the RenderItem entries for this Particle Element
 		assert(pRenderObject->m_bPermanent);
@@ -374,7 +389,7 @@ void CRenderer::PrepareParticleRenderObjects(Array<const SAddParticlesToSceneJob
 		if (!pRE->AddedToView())
 		{
 			// Update particle AABB
-			pRE->SetBBox(job.aabb.min, job.aabb.max);
+			pRE->SetBBox(aabb.min, aabb.max);
 
 			passInfo.GetRenderView()->AddRenderItem(
 				pRE, pRenderObject, shaderItem, nList, nBatchFlags, 
@@ -420,6 +435,11 @@ void CRenderer::PrepareParticleRenderObjects(Array<const SAddParticlesToSceneJob
 		}
 
 		passInfo.GetRendItemSorter().IncreaseParticleCounter();
+	}
+
+	if (useComputeVerticesJob)
+	{
+		m_ComputeVerticesJobState.SetStopped();
 	}
 }
 

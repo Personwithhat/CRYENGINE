@@ -113,23 +113,8 @@ public:
 		memset(&m_singleton, 0xdf, sizeof(m_singleton));
 	}
 
-	void OnEndFrame()
-	{
-#if (CRY_RENDERER_DIRECT3D >= 110) && (CRY_RENDERER_DIRECT3D < 120)
-		m_pDX11Scheduler->EndOfFrame(false);
-
-	#if CRY_PLATFORM_DURANGO
-		m_texturePool.RT_Tick();
-	#endif
-#endif
-	}
-
-	void OnBeginFrame()
-	{
-#if CRY_RENDERER_VULKAN
-		UpdateDeferredUploads();
-#endif
-	}
+	void OnEndFrame(int frameID);
+	void OnBeginFrame(int frameID);
 
 	UINT64 QueryFormatSupport(D3DFormat Format);
 
@@ -180,9 +165,9 @@ public:
 	CDeviceGraphicsPSOPtr    CreateGraphicsPSO(const CDeviceGraphicsPSODesc& psoDesc);
 	CDeviceComputePSOPtr     CreateComputePSO(const CDeviceComputePSODesc& psoDesc);
 
-	void                     ReloadPipelineStates();
+	void                     ReloadPipelineStates(int currentFrameID);
 	void                     UpdatePipelineStates();
-	void                     TrimPipelineStates();
+	void                     TrimPipelineStates(int currentFrameID, int trimBeforeFrameID = std::numeric_limits<int>::max());
 
 	////////////////////////////////////////////////////////////////////////////
 	// Input dataset(s) API
@@ -415,6 +400,7 @@ private:
 
 	////////////////////////////////////////////////////////////////////////////
 	// PipelineState API
+	static const int UnusedPsoKeepAliveFrames = MAX_FRAMES_IN_FLIGHT;
 
 	CDeviceGraphicsPSOPtr    CreateGraphicsPSOImpl(const CDeviceGraphicsPSODesc& psoDesc) const;
 	CDeviceComputePSOPtr     CreateComputePSOImpl(const CDeviceComputePSODesc& psoDesc) const;

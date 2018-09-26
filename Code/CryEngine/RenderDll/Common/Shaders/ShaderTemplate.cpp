@@ -515,7 +515,7 @@ STexAnim* CShaderMan::mfReadTexSequence(const char* na, int Flags, bool bFindOnl
 
 	cry_strcpy(frm, "%s%.");
 	cry_strcat(frm, frd);
-	cry_strcat(frm, "d%s%s");
+	cry_strcat(frm, "d%s.%s");
 	STexAnim* ta = NULL;
 	for (i = 0; i < nums; i++)
 	{
@@ -822,10 +822,9 @@ void CShaderMan::mfRefreshResources(CShaderResources* Res, const IRenderer::SLoa
 
 					Tex->m_Sampler.m_pTarget->m_refSamplerID = i;
 					Tex->m_Sampler.m_pTarget->m_bTempDepth = true;
-					Tex->m_Sampler.m_pTarget->m_eOrder = eRO_PreProcess;
+					Tex->m_Sampler.m_pTarget->m_eOrder = eRO_Managed;
 					Tex->m_Sampler.m_pTarget->m_eTF = eTF_R8G8B8A8;
 					Tex->m_Sampler.m_pTarget->m_nIDInPool = -1;
-					Tex->m_Sampler.m_pTarget->m_nFlags |= FRT_RENDTYPE_RECURSIVECURSCENE | FRT_CAMERA_CURRENT;
 					Tex->m_Sampler.m_pTarget->m_nFlags |= FRT_CLEAR_DEPTH | FRT_CLEAR_STENCIL | FRT_CLEAR_COLOR;
 				}
 				else
@@ -849,7 +848,7 @@ void CShaderMan::mfRefreshResources(CShaderResources* Res, const IRenderer::SLoa
 
 						Tex->m_Sampler.m_pTarget->m_bTempDepth = true;
 						Tex->m_Sampler.m_pTarget->m_eOrder = eRO_PreProcess;
-						Tex->m_Sampler.m_pTarget->m_eTF = eTF_R8G8B8A8;
+						Tex->m_Sampler.m_pTarget->m_eTF = CRendererResources::GetHDRFormat(false, true);
 						Tex->m_Sampler.m_pTarget->m_nIDInPool = -1;
 						Tex->m_Sampler.m_pTarget->m_nFlags |= FRT_RENDTYPE_RECURSIVECURSCENE | FRT_CAMERA_CURRENT;
 						Tex->m_Sampler.m_pTarget->m_nFlags |= FRT_CLEAR_DEPTH | FRT_CLEAR_STENCIL | FRT_CLEAR_COLOR;
