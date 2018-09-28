@@ -50,7 +50,7 @@ struct ITestReporter
 	virtual void OnSingleTestStart(const STestInfo& testInfo) = 0;
 
 	//! Notify reporter one test finished, along with necessary results
-	virtual void OnSingleTestFinish(const STestInfo& testInfo, float fRunTimeInMs, bool bSuccess, const std::vector<SError>& failures) = 0;
+	virtual void OnSingleTestFinish(const STestInfo& testInfo, const CTimeValue& fRunTime, bool bSuccess, const std::vector<SError>& failures) = 0;
 
 	//! Save the test instance to prepare for possible time out or other unrecoverable errors
 	virtual void SaveTemporaryReport() = 0;

@@ -346,7 +346,7 @@ private:
 	// ~IEditorNotifyListener
 
 	// IGameFrameworkListener
-	virtual void OnPostUpdate(float fDeltaTime) override           {}
+	virtual void OnPostUpdate(const CTimeValue& fDeltaTime) override           {}
 	virtual void OnSaveGame(ISaveGame* pSaveGame) override         {}
 	virtual void OnLoadGame(ILoadGame* pLoadGame) override         {}
 	virtual void OnLevelEnd(const char* nextLevel) override        {}

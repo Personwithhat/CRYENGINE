@@ -157,8 +157,8 @@ NavigationSystem::NavigationSystem(const char* configName)
 	, m_isNavigationUpdatePaused(false)
 	, m_tileGeneratorExtensionsContainer()
 	, m_pNavMeshQueryManager(new MNM::CNavMeshQueryManager())
-	, m_frameStartTime(0.0f)
-	, m_frameDeltaTime(0.0f)
+	, m_frameStartTime(0)
+	, m_frameDeltaTime(0)
 {
 	SetupTasks();
 
@@ -1130,7 +1130,7 @@ void NavigationSystem::UpdateInternalSubsystems()
 	m_offMeshNavigationManager.ProcessQueuedRequests();
 }
 
-INavigationSystem::WorkingState NavigationSystem::Update(const CTimeValue frameStartTime, const float frameTime, bool blocking)
+INavigationSystem::WorkingState NavigationSystem::Update(const CTimeValue& frameStartTime, const CTimeValue& frameTime, bool blocking)
 {
 	m_frameStartTime = frameStartTime;
 	m_frameDeltaTime = frameTime;
@@ -1172,11 +1172,11 @@ uint32 NavigationSystem::GetWorkingQueueSize() const
 }
 
 #if NAV_MESH_REGENERATION_ENABLED
-void NavigationSystem::UpdateMeshes(const CTimeValue frameStartTime, const float frameTime, const bool blocking, const bool multiThreaded, const bool bBackground)
+void NavigationSystem::UpdateMeshes(const CTimeValue& frameStartTime, const CTimeValue& frameTime, const bool blocking, const bool multiThreaded, const bool bBackground)
 {
 	m_updatesManager.Update(frameStartTime, frameTime);
 	
-	if (m_isNavigationUpdatePaused || frameTime == .0f)
+	if (m_isNavigationUpdatePaused || frameTime == 0)
 		return;
 
 	m_debugDraw.UpdateWorkingProgress(frameTime, m_updatesManager.GetRequestQueueSize());
@@ -1250,8 +1250,8 @@ void NavigationSystem::UpdateMeshes(const CTimeValue frameStartTime, const float
 			}
 		}
 
-		m_throughput = completed / frameTime;
-		m_cacheHitRate = cacheHit / frameTime;
+		m_throughput   = completed / frameTime.BADGetSeconds();
+		m_cacheHitRate = cacheHit / frameTime.BADGetSeconds();
 
 		if (!m_updatesManager.HasUpdateRequests() && m_runningTasks.empty())
 		{
@@ -1352,8 +1352,8 @@ void NavigationSystem::UpdateMeshesFromEditor(const bool blocking, const bool mu
 {
 	// Uses hard-coded frameDuration because this function gets executed by (ProcessQueuedMeshUpdates and NavigationSystemBackgroundUpdate)
 	// which are blocking operations. This effectively means the engine isn't updated and therefore we cannot tell what is the frame duration
-	const float frameDuration = 0.0333f;
-	UpdateMeshes(gEnv->pTimer->GetFrameStartTime(), frameDuration, blocking, multiThreaded, bBackground);
+	const CTimeValue frameDuration = "0.0333";
+	UpdateMeshes(GetGTimer()->GetFrameStartTime(), frameDuration, blocking, multiThreaded, bBackground);
 }
 
 void NavigationSystem::SetupGenerator(
@@ -1943,7 +1943,7 @@ void NavigationSystem::RemoveAllTrianglesByFlags(const MNM::AreaAnnotation::valu
 	CRY_PROFILE_FUNCTION(PROFILE_AI);
 
 #if !defined(EXCLUDE_NORMAL_LOG)
-	const CTimeValue startTime = gEnv->pTimer->GetAsyncTime();
+	const CTimeValue startTime = GetGTimer()->GetAsyncTime();
 #endif
 
 	for (const AgentType& agentType : m_agentTypes)
@@ -2009,7 +2009,7 @@ void NavigationSystem::RemoveAllTrianglesByFlags(const MNM::AreaAnnotation::valu
 			}
 		}
 	}
-	CryLog("Time used by removing NavMesh triangles: %li ms", (gEnv->pTimer->GetAsyncTime() - startTime).GetMilliSecondsAsInt64());
+	CryLog("Time used by removing NavMesh triangles: %li ms", (int64)(GetGTimer()->GetAsyncTime() - startTime).GetMilliSeconds());
 }
 
 bool NavigationSystem::IsInUse() const
@@ -4540,7 +4540,7 @@ void NavigationSystemDebugDraw::DebugDraw(NavigationSystem& navigationSystem)
 	DebugDrawMemoryStats(navigationSystem);
 }
 
-void NavigationSystemDebugDraw::UpdateWorkingProgress(const float frameTime, const size_t queueSize)
+void NavigationSystemDebugDraw::UpdateWorkingProgress(const CTimeValue& frameTime, const size_t queueSize)
 {
 	m_progress.Update(frameTime, queueSize);
 }
@@ -4766,18 +4766,18 @@ MNM::TileID NavigationSystemDebugDraw::DebugDrawTileGeneration(NavigationSystem&
 	                "Total: %.1f - Voxelizer(%.2fK tris): %.1f - Filter: %.1f\n"
 	                "Contour(%d regs): %.1f - Simplify: %.1f\n"
 	                "Triangulate(%d vtx/%d tris): %.1f - BVTree(%d nodes): %.1f",
-	                profilerInfo.GetTotalElapsed().GetMilliSeconds(),
+	                (float)profilerInfo.GetTotalElapsed().GetMilliSeconds(),
 	                profilerInfo[MNM::CTileGenerator::VoxelizationTriCount] / 1000.0f,
-	                profilerInfo[MNM::CTileGenerator::Voxelization].elapsed.GetMilliSeconds(),
-	                profilerInfo[MNM::CTileGenerator::Filter].elapsed.GetMilliSeconds(),
+	                (float)profilerInfo[MNM::CTileGenerator::Voxelization].elapsed.GetMilliSeconds(),
+	                (float)profilerInfo[MNM::CTileGenerator::Filter].elapsed.GetMilliSeconds(),
 	                profilerInfo[MNM::CTileGenerator::RegionCount],
-	                profilerInfo[MNM::CTileGenerator::ContourExtraction].elapsed.GetMilliSeconds(),
-	                profilerInfo[MNM::CTileGenerator::Simplification].elapsed.GetMilliSeconds(),
+	                (float)profilerInfo[MNM::CTileGenerator::ContourExtraction].elapsed.GetMilliSeconds(),
+	                (float)profilerInfo[MNM::CTileGenerator::Simplification].elapsed.GetMilliSeconds(),
 	                profilerInfo[MNM::CTileGenerator::VertexCount],
 	                profilerInfo[MNM::CTileGenerator::TriangleCount],
-	                profilerInfo[MNM::CTileGenerator::Triangulation].elapsed.GetMilliSeconds(),
+	                (float)profilerInfo[MNM::CTileGenerator::Triangulation].elapsed.GetMilliSeconds(),
 	                profilerInfo[MNM::CTileGenerator::BVTreeNodeCount],
-	                profilerInfo[MNM::CTileGenerator::BVTreeConstruction].elapsed.GetMilliSeconds()
+	                (float)profilerInfo[MNM::CTileGenerator::BVTreeConstruction].elapsed.GetMilliSeconds()
 	                );
 
 	dc->Draw2dLabel(10.0f, 84.0f, 1.4f, Col_White, false,
@@ -5094,18 +5094,18 @@ void NavigationSystemDebugDraw::DebugDrawPathFinder(NavigationSystem& navigation
 		drawTriangle(renderAuxGeom, a, b, c, ColorB(Col_MidnightBlue));
 	}
 
-	CTimeValue timeTotal(0ll);
-	CTimeValue stringPullingTotalTime(0ll);
+	CTimeValue timeTotal(0);
+	CTimeValue stringPullingTotalTime(0);
 	float totalPathLength = 0;
 	if (closestTriangleStart.id.IsValid() && closestTriangleEnd.id.IsValid())
 	{
 		const MNM::vector3_t startToEnd = (fixedPointStartLoc - fixedPointEndLoc);
 		const MNM::real_t startToEndDist = startToEnd.lenNoOverflow();
 		MNM::SWayQueryWorkingSet workingSet;
-		workingSet.aStarNodesList.SetFrameTimeQuota(0.0f);
+		workingSet.aStarNodesList.SetFrameTimeQuota(0);
 		workingSet.aStarNodesList.SetUpForPathSolving(navMesh.GetTriangleCount(), closestTriangleStart.id, fixedPointStartLoc, startToEndDist);
 
-		CTimeValue timeStart = gEnv->pTimer->GetAsyncTime();
+		CTimeValue timeStart = GetGTimer()->GetAsyncTime();
 
 		MNM::DangerousAreasList dangersInfo;
 		MNM::DangerAreaConstPtr info;
@@ -5136,7 +5136,7 @@ void NavigationSystemDebugDraw::DebugDrawPathFinder(NavigationSystem& navigation
 
 		const bool hasPathfindingFinished = (navMesh.FindWay(inputParams, workingSet, result) == MNM::CNavMesh::eWQR_Done);
 
-		CTimeValue timeEnd = gEnv->pTimer->GetAsyncTime();
+		CTimeValue timeEnd = GetGTimer()->GetAsyncTime();
 		timeTotal = timeEnd - timeStart;
 
 		assert(hasPathfindingFinished);
@@ -5166,12 +5166,12 @@ void NavigationSystemDebugDraw::DebugDrawPathFinder(NavigationSystem& navigation
 				drawPath(renderAuxGeom, outputPath, Col_Gray, pathVerticalOffset);
 
 				const bool bBeautifyPath = (gAIEnv.CVars.BeautifyPath != 0);
-				CTimeValue stringPullingStartTime = gEnv->pTimer->GetAsyncTime();
+				CTimeValue stringPullingStartTime = GetGTimer()->GetAsyncTime();
 				if (bBeautifyPath)
 				{
 					outputPath.PullPathOnNavigationMesh(navMesh, gAIEnv.CVars.PathStringPullingIterations, nullptr);
 				}
-				stringPullingTotalTime = gEnv->pTimer->GetAsyncTime() - stringPullingStartTime;
+				stringPullingTotalTime = GetGTimer()->GetAsyncTime() - stringPullingStartTime;
 
 				if (bBeautifyPath)
 				{
@@ -5194,9 +5194,9 @@ void NavigationSystemDebugDraw::DebugDrawPathFinder(NavigationSystem& navigation
 	CDebugDrawContext dc;
 
 	dc->Draw2dLabel(10.0f, 172.0f, 1.3f, Col_White, false,
-		"Start: %08x  -  End: %08x - Total Pathfinding time: %.4fms -- Type of prediction for the point inside each triangle: %s", closestTriangleStart.id, closestTriangleEnd.id, timeTotal.GetMilliSeconds(), predictionName.c_str());
+		"Start: %08x  -  End: %08x - Total Pathfinding time: %.4fms -- Type of prediction for the point inside each triangle: %s", closestTriangleStart.id, closestTriangleEnd.id, (float)timeTotal.GetMilliSeconds(), predictionName.c_str());
 	dc->Draw2dLabel(10.0f, 184.0f, 1.3f, Col_White, false,
-		"String pulling operation - Iteration %d  -  Total time: %.4fms -- Total Length: %f", gAIEnv.CVars.PathStringPullingIterations, stringPullingTotalTime.GetMilliSeconds(), totalPathLength);
+		"String pulling operation - Iteration %d  -  Total time: %.4fms -- Total Length: %f", gAIEnv.CVars.PathStringPullingIterations, (float)stringPullingTotalTime.GetMilliSeconds(), totalPathLength);
 }
 
 static bool FindObjectToTestIslandConnectivity(const char* szName, Vec3& outPos, IEntity** ppOutEntityToTestOffGridLinks)
@@ -5703,18 +5703,18 @@ NavigationSystemDebugDraw::DebugDrawSettings NavigationSystemDebugDraw::GetDebug
 
 //////////////////////////////////////////////////////////////////////////
 
-void NavigationSystemDebugDraw::NavigationSystemWorkingProgress::Update(const float frameTime, const size_t queueSize)
+void NavigationSystemDebugDraw::NavigationSystemWorkingProgress::Update(const CTimeValue& frameTime, const size_t queueSize)
 {
 	m_currentQueueSize = queueSize;
 	m_initialQueueSize = (queueSize > 0) ? max(m_initialQueueSize, queueSize) : 0;
 
-	const float updateTime = (queueSize > 0) ? frameTime : -2.0f * frameTime;
-	m_timeUpdating = clamp_tpl(m_timeUpdating + updateTime, 0.0f, 1.0f);
+	const CTimeValue updateTime = (queueSize > 0) ? frameTime : -2 * frameTime;
+	m_timeUpdating = CLAMP(m_timeUpdating + updateTime, 0, 1);
 }
 
 void NavigationSystemDebugDraw::NavigationSystemWorkingProgress::Draw()
 {
-	const bool draw = (m_timeUpdating > 0.0f);
+	const bool draw = (m_timeUpdating > 0);
 
 	if (!draw)
 		return;
@@ -5727,15 +5727,15 @@ void NavigationSystemDebugDraw::NavigationSystemWorkingProgress::Draw()
 	const float width  = (float)rCamera.GetViewSurfaceX();
 	const float height = (float)rCamera.GetViewSurfaceZ();
 
-	const ColorB backGroundColor(0, 255, 0, CLAMP((int)(0.35f * m_timeUpdating * 255.0f), 0, 255));
-	const ColorB progressColor(0, 255, 0, CLAMP((int)(0.8f * m_timeUpdating * 255.0f), 0, 255));
+	const ColorB backGroundColor(0, 255, 0, CLAMP((int)(0.35f * m_timeUpdating.BADGetSeconds() * 255.0f), 0, 255));
+	const ColorB progressColor(0, 255, 0, CLAMP((int)(0.8f * m_timeUpdating.BADGetSeconds() * 255.0f), 0, 255));
 
 	const float progressFraction = (m_initialQueueSize > 0) ? clamp_tpl(1.0f - ((float)m_currentQueueSize / (float)m_initialQueueSize), 0.0f, 1.0f) : 1.0f;
 
 	Vec2 progressBarLocation(0.1f * width, 0.91f * height);
 	Vec2 progressBarSize(0.2f * width, 0.025f * height);
 
-	const float white[4] = { 1.0f, 1.0f, 1.0f, 0.85f * m_timeUpdating };
+	const float white[4] = { 1.0f, 1.0f, 1.0f, 0.85f * m_timeUpdating.BADGetSeconds() };
 
 	IRenderAuxText::Draw2dLabel(progressBarLocation.x, progressBarLocation.y - 18.0f, 1.4f, white, false, "Processing Navigation Meshes");
 
@@ -5816,19 +5816,17 @@ void NavigationSystemBackgroundUpdate::Thread::ThreadEntry()
 	{
 		if (m_navigationSystem.GetState() == INavigationSystem::Working)
 		{
-			const CTimeValue startedUpdate = gEnv->pTimer->GetAsyncTime();
+			const CTimeValue startedUpdate = GetGTimer()->GetAsyncTime();
 
 			m_navigationSystem.UpdateMeshesFromEditor(false, true, true);
 
-			const CTimeValue lastUpdateTime = gEnv->pTimer->GetAsyncTime() - startedUpdate;
-
-			const unsigned int sleepTime = max(10u, min(0u, 33u - (unsigned int)lastUpdateTime.GetMilliSeconds()));
-
-			CrySleep(sleepTime);
+			const CTimeValue elapsedTime = GetGTimer()->GetAsyncTime() - startedUpdate;
+			const mpfloat sleepMS = CLAMP(33 - elapsedTime.GetMilliSeconds(), 0, 10);
+			CryLowLatencySleep(CTimeValue().SetMilliSeconds(sleepMS));
 		}
 		else
 		{
-			CrySleep(50);
+			CryLowLatencySleep("0.05");
 		}
 	}
 }

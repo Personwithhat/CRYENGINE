@@ -273,9 +273,9 @@ public:
 	uint32 m_nModificationId; // used to detect the cases when dependent permanent render objects have to be updated
 
 #if !defined (_RELEASE) || defined(ENABLE_STATOSCOPE_RELEASE)
-	static float s_fStreamingTime;
+	static CTimeValue s_fStreamingTime;
 	static int s_nBandwidth;
-	float m_fStreamingStart;
+	CTimeValue m_fStreamingStart;
 #endif
 
 #ifdef OBJMAN_STREAM_STATS
@@ -480,7 +480,7 @@ public:
 	void AnalyzeFoliage(IRenderMesh * pRenderMesh, CContentCGF * pCGF);
 	void FreeFoliageData();
 	virtual void CopyFoliageData(IStatObj * pObjDst, bool bMove = false, IFoliage * pSrcFoliage = 0, int* pVtxMap = 0, primitives::box * pMoveBoxes = 0, int nMovedBoxes = -1) final;
-	virtual int PhysicalizeFoliage(IPhysicalEntity * pTrunk, const Matrix34 &mtxWorld, IFoliage * &pRes, float lifeTime = 0.0f, int iSource = 0) final;
+	virtual int PhysicalizeFoliage(IPhysicalEntity * pTrunk, const Matrix34 &mtxWorld, IFoliage * &pRes, const CTimeValue& lifeTime = 0, int iSource = 0) final;
 	int SerializeFoliage(TSerialize ser, IFoliage * pFoliage);
 
 	virtual IStatObj* UpdateVertices(strided_pointer<Vec3> pVtx, strided_pointer<Vec3> pNormals, int iVtx0, int nVtx, int* pVtxMap = 0, float rscale = 1.f) final;

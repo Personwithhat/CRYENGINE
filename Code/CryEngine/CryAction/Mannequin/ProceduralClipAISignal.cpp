@@ -37,7 +37,7 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SProceduralClipAISignalParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SProceduralClipAISignalParams& params)
 	{
 		// TODO: Temporary work-around: we need to be able to store 2 signal
 		// names because the params.dataCRC string is not available in
@@ -61,7 +61,7 @@ public:
 		}
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 		if (m_onExitSignalName.empty())
 		{
@@ -76,7 +76,7 @@ public:
 		aiActor->SetSignal(gEnv->pAISystem->GetSignalManager()->CreateSignal_DEPRECATED(AISIGNAL_DEFAULT, m_onExitSignalName));
 	}
 
-	virtual void Update(float timePassed) {}
+	virtual void Update(const CTimeValue& timePassed) {}
 
 private:
 

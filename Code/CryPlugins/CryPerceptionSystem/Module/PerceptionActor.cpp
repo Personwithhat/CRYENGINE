@@ -7,7 +7,7 @@
 #include <CryAISystem/IAIObject.h>
 #include <CryAISystem/IAIActor.h>
 
-static const float kCloseContactTimeOutValue = 1.5f;
+static const CTimeValue kCloseContactTimeOutValue = "1.5";
 
 CPerceptionActor::CPerceptionActor() :
 	CPerceptionActor(nullptr)
@@ -17,27 +17,27 @@ CPerceptionActor::CPerceptionActor() :
 //-----------------------------------------------------------------------------------------------------------
 CPerceptionActor::CPerceptionActor(IAIActor* pAIActor) :
 	m_pAIActor(pAIActor),
-	m_closeContactTimeOut(0.0f),
+	m_closeContactTimeOut(0),
 	m_meleeRange(2.0f),
 	m_perceptionDisabled(0)
 {}
 
 //-----------------------------------------------------------------------------------------------------------
-void CPerceptionActor::Update(float frameDelta)
+void CPerceptionActor::Update(const CTimeValue& frameDelta)
 {
 	if (!IsEnabled())
 		return;
 	
-	if (m_closeContactTimeOut > 0.0f)
+	if (m_closeContactTimeOut > 0)
 	{
-		m_closeContactTimeOut = fmax(0.0f, m_closeContactTimeOut - frameDelta);
+		m_closeContactTimeOut = max(CTimeValue(0), m_closeContactTimeOut - frameDelta);
 	}
 }
 
 //-----------------------------------------------------------------------------------------------------------
 void CPerceptionActor::Reset()
 {
-	m_closeContactTimeOut = 0.0f;
+	m_closeContactTimeOut.SetSeconds(0);
 	m_perceptionDisabled = 0;
 }
 

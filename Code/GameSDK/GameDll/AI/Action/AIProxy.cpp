@@ -66,7 +66,7 @@ CAIProxy::CAIProxy(IGameObject* pGameObject) :
 	m_currentWeaponFiremodeIndex(std::numeric_limits<int>::max()),
 	m_pIActor(0),
 	m_shotBulletCount(0),
-	m_lastShotTime(0.0f),
+	m_lastShotTime(0),
 	m_animActionGoalPipeId(0),
 	m_FmodCharacterTypeParam(0),
 	m_forcedExecute(0),
@@ -653,7 +653,7 @@ int CAIProxy::Update(SOBJECTSTATE& state, bool bFullUpdate)
 
 		// it is possible that we have a move target but zero speed, in which case we want to turn
 		// on the spot.
-		CTimeValue curTime = gEnv->pTimer->GetFrameStartTime();
+		CTimeValue curTime = GetGTimer()->GetFrameStartTime();
 		bool movementAllowed = !fireBlocking && !IsAnimationBlockingMovement() && !GetActorIsFallen();
 
 		bool wantsToMove = false;
@@ -750,8 +750,8 @@ int CAIProxy::Update(SOBJECTSTATE& state, bool bFullUpdate)
 						const float distToMoveTarget = toMoveTarget.GetLength();
 						const Vec2 dirToMoveTarget = (distToMoveTarget > 0.01f) ? toMoveTarget / distToMoveTarget : Vec2(ZERO);
 
-						const float frameTime = (float)gEnv->pTimer->GetFrameTime();
-						const QuatT movement(dirToMoveTarget * (mr.GetDesiredSpeed() * frameTime), Quat(IDENTITY));
+						const CTimeValue frameTime = GetGTimer()->GetFrameTime();
+						const QuatT movement(dirToMoveTarget * (mr.GetDesiredSpeed() * frameTime.BADGetSeconds()), Quat(IDENTITY));
 
 						if (state.vMoveTarget.IsZero())
 							pAnimChar->AddDebugVelocity(movement, frameTime, "AIProxy Output (MoveDir)", Col_Plum, false);
@@ -800,8 +800,8 @@ int CAIProxy::Update(SOBJECTSTATE& state, bool bFullUpdate)
 				{
 					if (pAnimChar->DebugVelocitiesEnabled())
 					{
-						float frameTime = (float)gEnv->pTimer->GetFrameTime();
-						QuatT movement(state.vForcedNavigation * state.fForcedNavigationSpeed * frameTime, Quat(IDENTITY));
+						CTimeValue frameTime = GetGTimer()->GetFrameTime();
+						QuatT movement(state.vForcedNavigation * state.fForcedNavigationSpeed * frameTime.BADGetSeconds(), Quat(IDENTITY));
 						pAnimChar->AddDebugVelocity(movement, frameTime, "AIProxy Forced Navigation", Col_Salmon, false);
 					}
 				}
@@ -1144,7 +1144,7 @@ void CAIProxy::UpdateCurrentWeapon()
 void CAIProxy::EnableWeaponListener(const EntityId weaponId, bool needsSignal)
 {
 	m_shotBulletCount = 0;
-	m_lastShotTime.SetSeconds(0.0f);
+	m_lastShotTime.SetSeconds(0);
 	m_NeedsShootSignal = needsSignal;
 
 	if (IWeapon* pWeapon = GetWeaponFromId(weaponId))
@@ -1172,7 +1172,7 @@ void CAIProxy::OnShoot(IWeapon* pWeapon, EntityId shooterId, EntityId ammoId, IE
 	}
 
 	m_shotBulletCount++;
-	m_lastShotTime = gEnv->pTimer->GetFrameStartTime();
+	m_lastShotTime = GetGTimer()->GetFrameStartTime();
 
 	m_WeaponShotIsDone = true;
 	IPuppet* pPuppet = CastToIPuppetSafe(pEntity->GetAI());
@@ -1329,7 +1329,7 @@ void CAIProxy::Reset(EObjectResetType type)
 	m_forcedExecute = 0;
 	EnableUpdate(type == AIOBJRESET_INIT);
 	m_shotBulletCount = 0;
-	m_lastShotTime.SetSeconds(0.0f);
+	m_lastShotTime.SetSeconds(0);
 
 	m_CurrentWeaponCanFire = true;
 	m_UseSecondaryVehicleWeapon = false;
@@ -1801,9 +1801,9 @@ const char* CAIProxy::GetCharacter()
 
 //
 //----------------------------------------------------------------------------------------------------------
-void CAIProxy::GetReadabilityBlockingParams(const char* text, float& time, int& id)
+void CAIProxy::GetReadabilityBlockingParams(const char* text, CTimeValue& time, int& id)
 {
-	time = 0;
+	time.SetSeconds(0);
 	id = 0;
 }
 

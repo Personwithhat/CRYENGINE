@@ -63,7 +63,7 @@ public:
 		return m_tagState;
 	}
 
-	float GetMaxTime() const
+	const CTimeValue& GetMaxTime() const
 	{
 		return m_realTimeRange.end;
 	}

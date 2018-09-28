@@ -28,11 +28,11 @@ CPersonalSignalTimer::CPersonalSignalTimer(CSignalTimer* pParent) :
 	m_bInit(false),
 	m_pParent(pParent),
 	m_EntityId(0),
-	m_fRateMin(4.0f),
-	m_fRateMax(6.0f),
-	m_fTimer(0.0f),
+	m_fRateMin(4),
+	m_fRateMax(6),
+	m_fTimer(0),
 	m_bEnabled(false),
-	m_fTimerSinceLastReset(0.0f),
+	m_fTimerSinceLastReset(0),
 	m_iSignalsSinceLastReset(0)
 {
 	CRY_ASSERT(pParent != NULL);
@@ -77,7 +77,7 @@ bool CPersonalSignalTimer::Init(EntityId Id, const char* sSignal)
 //
 // Return:
 //
-bool CPersonalSignalTimer::Update(float fElapsedTime, uint32 uDebugOrder)
+bool CPersonalSignalTimer::Update(const CTimeValue& fElapsedTime, uint32 uDebugOrder)
 {
 	CRY_ASSERT(m_bInit == true);
 
@@ -87,7 +87,7 @@ bool CPersonalSignalTimer::Update(float fElapsedTime, uint32 uDebugOrder)
 		m_fTimer -= fElapsedTime;
 		m_fTimerSinceLastReset += fElapsedTime;
 
-		if (m_fTimer < 0.0f)
+		if (m_fTimer < 0)
 		{
 			SendSignal();
 			Reset();
@@ -112,7 +112,7 @@ void CPersonalSignalTimer::ForceReset(bool bAlsoEnable)
 {
 	CRY_ASSERT(m_bInit == true);
 
-	m_fTimerSinceLastReset = 0.0f;
+	m_fTimerSinceLastReset.SetSeconds(0);
 	m_iSignalsSinceLastReset = 0;
 	Reset(bAlsoEnable);
 }
@@ -209,11 +209,11 @@ IEntity const* CPersonalSignalTimer::GetEntity() const
 //
 // Return:
 //
-void CPersonalSignalTimer::SetRate(float fNewRateMin, float fNewRateMax)
+void CPersonalSignalTimer::SetRate(const CTimeValue& fNewRateMin, const CTimeValue& fNewRateMax)
 {
 	CRY_ASSERT(m_bInit == true);
-	CRY_ASSERT(fNewRateMin > 0.0f);
-	CRY_ASSERT(fNewRateMax > 0.0f);
+	CRY_ASSERT(fNewRateMin > 0);
+	CRY_ASSERT(fNewRateMax > 0);
 
 	m_fRateMin = fNewRateMin;
 	m_fRateMax = max(fNewRateMin, fNewRateMax);
@@ -234,7 +234,7 @@ void CPersonalSignalTimer::SendSignal()
 	{
 		AISignals::IAISignalExtraData* pData = gEnv->pAISystem->CreateSignalExtraData();
 		pData->iValue = ++m_iSignalsSinceLastReset;
-		pData->fValue = m_fTimerSinceLastReset;
+		pData->fValue = m_fTimerSinceLastReset.BADGetSeconds();
 
 		const AISignals::SignalSharedPtr pSignal = gEnv->pAISystem->GetSignalManager()->CreateSignal_DEPRECATED(AISIGNAL_DEFAULT, m_sSignal, pEntity->GetAI()->GetAIObjectID(), pData);
 		gEnv->pAISystem->SendSignal(AISignals::ESignalFilter::SIGNALFILTER_SENDER, pSignal);
@@ -253,7 +253,7 @@ void CPersonalSignalTimer::SetEnabled(bool bEnabled)
 
 	if (bEnabled != m_bEnabled)
 	{
-		m_fTimerSinceLastReset = 0.0f;
+		m_fTimerSinceLastReset.SetSeconds(0);
 		m_iSignalsSinceLastReset = 0;
 		m_bEnabled = bEnabled;
 		if (m_pParent->GetDebug() == true)
@@ -292,7 +292,7 @@ void CPersonalSignalTimer::DebugDraw(uint32 uOrder) const
 		r = 8.0f;
 		g = b = 0.0f;
 	}
-	else if (m_fTimer < 0.5f)
+	else if (m_fTimer < "0.5")
 	{
 		r = g = 8.0f;
 		b = 0.0f;

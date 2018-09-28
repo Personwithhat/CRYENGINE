@@ -131,7 +131,7 @@ struct ObserverParams
 		, fovCos(-1.0f)
 		, eyePosition(ZERO)
 		, eyeDirection(ZERO)
-		, updatePeriod(0.3f)
+		, updatePeriod("0.3")
 		, entityId(0)
 		, raycastFlags(VISIONMAP_DEFAULT_RAYCAST_FLAGS)
 	{
@@ -259,7 +259,7 @@ public:
 	virtual const ObserverParams*   GetObserverParams(const ObserverID& observerID) const = 0;
 	virtual const ObservableParams* GetObservableParams(const ObservableID& observableID) const = 0;
 
-	virtual void                    Update(const CTimeValue frameStartTime, const float frameTime) = 0;
+	virtual void                    Update(const CTimeValue& frameStartTime, const CTimeValue& frameTime) = 0;
 	// </interfuscator:shuffle>
 };
 

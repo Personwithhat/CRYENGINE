@@ -131,10 +131,10 @@ struct ProcessingContext
 		: queryResult(maxWaySize)
 		, status(Invalid)
 		, constructedPathsCount(0)
-		, totalTimeConstructPath(0.0f)
-		, peakTimeConstructPath(0.0f)
-		, totalTimeBeautifyPath(0.0f)
-		, peakTimeBeautifyPath(0.0f)
+		, totalTimeConstructPath(0)
+		, peakTimeConstructPath(0)
+		, totalTimeBeautifyPath(0)
+		, peakTimeBeautifyPath(0)
 	{
 	}
 	
@@ -183,11 +183,11 @@ struct ProcessingContext
 
 	uint32                       constructedPathsCount;
 
-	float                        totalTimeConstructPath;
-	float                        peakTimeConstructPath;
+	CTimeValue                   totalTimeConstructPath;
+	CTimeValue                   peakTimeConstructPath;
 
-	float                        totalTimeBeautifyPath;
-	float                        peakTimeBeautifyPath;
+	CTimeValue                   totalTimeBeautifyPath;
+	CTimeValue                   peakTimeBeautifyPath;
 };
 
 struct IsProcessingRequestRelatedToQueuedPathId

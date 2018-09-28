@@ -29,7 +29,7 @@ CContextEstablisher::CContextEstablisher()
 	m_debuggedFrame = -1;
 	++g_objcnt.contextEstablisher;
 
-	m_begin = gEnv->pTimer->GetAsyncTime();
+	m_begin = GetGTimer()->GetAsyncTime();
 }
 
 CContextEstablisher::~CContextEstablisher()
@@ -82,13 +82,13 @@ bool CContextEstablisher::StepTo(SContextEstablishState& state)
 		{
 		case eCETR_Ok:
 #if LOG_CONTEXT_ESTABLISHMENT
-			m_tasks[m_offset].done = gEnv->pTimer->GetAsyncTime();
+			m_tasks[m_offset].done = GetGTimer()->GetAsyncTime();
 #endif
 #if LOG_CONTEXT_ESTABLISHMENT
-			m_tasks[m_offset].done = gEnv->pTimer->GetAsyncTime();
+			m_tasks[m_offset].done = GetGTimer()->GetAsyncTime();
 			if (CVARS.net_log_context_establishment > 0)
 				NetLogEstablishment(1, "Establishment: Did %s on %s in %.2fms, state %d:%s", m_tasks[m_offset].pTask->GetName(), state.pSender ? state.pSender->GetName() : "Context",
-					(m_tasks[m_offset].done - (m_offset ? m_tasks[m_offset - 1].done : m_begin)).GetMilliSeconds(), 
+					(float)(m_tasks[m_offset].done - (m_offset ? m_tasks[m_offset - 1].done : m_begin)).GetMilliSeconds(), 
 					m_tasks[m_offset].state, CContextView::GetStateName(m_tasks[m_offset].state));
 #endif
 			m_offset++;
@@ -161,14 +161,14 @@ void CContextEstablisher::DebugDraw()
 		{
 			if (!m_tasks[i].pTask->GetName()[0])
 				continue;
-			float tm = -1.0f;
+			mpfloat tm = -1;
 			if (m_tasks[i].done > 0.0f)
 			{
 				tm = (m_tasks[i].done - beg).GetMilliSeconds();
 				beg = m_tasks[i].done;
 			}
 			float clr[4] = { 1, 1, 1, (i >= m_offset) * 0.5f + 0.5f };
-			gEnv->pAuxGeomRenderer->Draw2dLabel(x, y, 1, clr, false, "%d: %s [%d @ %.2f]", m_tasks[i].state, m_tasks[i].pTask->GetName(), m_tasks[i].numRuns, tm);
+			gEnv->pAuxGeomRenderer->Draw2dLabel(x, y, 1, clr, false, "%d: %s [%d @ %.2f]", m_tasks[i].state, m_tasks[i].pTask->GetName(), m_tasks[i].numRuns, (float)tm);
 			y += 10;
 		}
 		x += 130;
@@ -186,13 +186,13 @@ void CContextEstablisher::OutputTiming(void)
 		{
 			if (!m_tasks[i].pTask->GetName()[0])
 				continue;
-			float tm = -1.0f;
-			if (m_tasks[i].done > 0.0f)
+			mpfloat tm = -1;
+			if (m_tasks[i].done > 0)
 			{
 				tm = (m_tasks[i].done - beg).GetMilliSeconds();
 				beg = m_tasks[i].done;
 			}
-			CryComment("%d: %s [%d @ %.2f] started at %." PRId64, m_tasks[i].state, m_tasks[i].pTask->GetName(), m_tasks[i].numRuns, tm, beg.GetValue());
+			CryComment("%d: %s [%d @ %.2f] started at %." PRId64, m_tasks[i].state, m_tasks[i].pTask->GetName(), m_tasks[i].numRuns, (float)tm, beg.GetSeconds());
 		}
 	}
 }

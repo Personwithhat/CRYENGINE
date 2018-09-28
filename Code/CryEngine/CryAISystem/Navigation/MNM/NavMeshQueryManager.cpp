@@ -122,13 +122,13 @@ namespace MNM
 				const INavMeshQueryDebug& queryDebug = activeQuery->GetQueryDebug();
 				const INavMeshQueryDebug::SQueryDebugData& debugData = queryDebug.GetDebugData();
 
-				IRenderAuxText::Draw2dLabel(screenPosition.x, screenPosition.y, textQuerySize, queryColor, false, "ID: %u \tBATCHES: %zu \tTRIANGLES: %zu \tDone: %d \tValid: %d \tTIME(RUNNING): %2.5f ms \tTIME(ALIVE): %2.5f ms \tCALLER: %s", activeQuery->GetId(), static_cast<size_t>(debugData.batchHistory.size()), debugData.trianglesCount, activeQuery->IsDone(), activeQuery->IsValid(), debugData.elapsedTimeRunningInMs, debugData.elapsedTimeTotalInMs, activeQuery->GetQueryConfig().szCallerName);
+				IRenderAuxText::Draw2dLabel(screenPosition.x, screenPosition.y, textQuerySize, queryColor, false, "ID: %u \tBATCHES: %zu \tTRIANGLES: %zu \tDone: %d \tValid: %d \tTIME(RUNNING): %2.5f ms \tTIME(ALIVE): %2.5f ms \tCALLER: %s", activeQuery->GetId(), static_cast<size_t>(debugData.batchHistory.size()), debugData.trianglesCount, activeQuery->IsDone(), activeQuery->IsValid(), (float)debugData.elapsedTimeRunning.GetMilliSeconds(), (float)debugData.elapsedTimeTotal.GetMilliSeconds(), activeQuery->GetQueryConfig().szCallerName);
 
 				// Draw queries batches
 				for (const INavMeshQueryDebug::SBatchData& batchData : debugData.batchHistory)
 				{
 					screenPosition.y += spacingBatch;
-					IRenderAuxText::Draw2dLabel(screenPosition.x, screenPosition.y, textBatchSize, batchColor, false, "\t- N: %u \tSIZE: %zu \tTRIANGLES: %zu \tTIME (RUNNING): %2.5f ms", batchData.batchNumber, batchData.batchSize, batchData.triangleDataArray.size(), batchData.elapsedTimeInMs);
+					IRenderAuxText::Draw2dLabel(screenPosition.x, screenPosition.y, textBatchSize, batchColor, false, "\t- N: %u \tSIZE: %zu \tTRIANGLES: %zu \tTIME (RUNNING): %2.5f ms", batchData.batchNumber, batchData.batchSize, batchData.triangleDataArray.size(), (float)batchData.elapsedTime.GetMilliSeconds());
 				}
 
 				// Draw invalidations

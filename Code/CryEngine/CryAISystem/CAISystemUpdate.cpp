@@ -174,12 +174,12 @@ void CAISystem::TryUpdateDebugFakeDamageIndicators()
 			else
 				++i;
 		}
-		m_DEBUG_screenFlash = max(0.0f, m_DEBUG_screenFlash - m_frameDeltaTime);
+		m_DEBUG_screenFlash = max(CTimeValue(0), m_DEBUG_screenFlash - m_frameDeltaTime);
 	}
 	else
 	{
 		m_DEBUG_fakeDamageInd.clear();
-		m_DEBUG_screenFlash = 0.0f;
+		m_DEBUG_screenFlash.SetSeconds(0);
 	}
 
 	#endif // #if CRY_PLATFORM_WINDOWS
@@ -259,7 +259,7 @@ void CAISystem::SubsystemUpdateCommunicationManager()
 	gAIEnv.pCommunicationManager->Update(m_frameDeltaTime);
 }
 
-void CAISystem::TrySubsystemUpdateVisionMap(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate)
+void CAISystem::TrySubsystemUpdateVisionMap(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
 	CRY_ASSERT(gAIEnv.pVisionMap);
@@ -269,7 +269,7 @@ void CAISystem::TrySubsystemUpdateVisionMap(const CTimeValue frameStartTime, con
 	gAIEnv.pVisionMap->Update(frameStartTime, frameDeltaTime);
 }
 
-void CAISystem::TrySubsystemUpdateAuditionMap(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate)
+void CAISystem::TrySubsystemUpdateAuditionMap(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
 	CRY_ASSERT(gAIEnv.pAuditionMap);
@@ -286,7 +286,7 @@ void CAISystem::SubsystemUpdateGroupManager()
 	gAIEnv.pGroupManager->Update(m_frameDeltaTime);
 }
 
-void CAISystem::TrySubsystemUpdateCoverSystem(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate)
+void CAISystem::TrySubsystemUpdateCoverSystem(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
 	CRY_ASSERT(gAIEnv.pCoverSystem);
@@ -296,7 +296,7 @@ void CAISystem::TrySubsystemUpdateCoverSystem(const CTimeValue frameStartTime, c
 	gAIEnv.pCoverSystem->Update(frameStartTime, frameDeltaTime);
 }
 
-void CAISystem::TrySubsystemUpdateNavigationSystem(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate)
+void CAISystem::TrySubsystemUpdateNavigationSystem(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
 	CRY_ASSERT(gAIEnv.pCoverSystem);
@@ -323,7 +323,7 @@ void CAISystem::SubsystemUpdatePlayers()
 void CAISystem::SubsystemUpdateGroups()
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
-	const int64 dt = (m_frameStartTime - m_lastGroupUpdateTime).GetMilliSecondsAsInt64();
+	const CTimeValue dt = m_frameStartTime - m_lastGroupUpdateTime;
 	if (dt > gAIEnv.CVars.AIUpdateInterval)
 	{
 		for (AIGroupMap::iterator it = m_mapAIGroups.begin(); it != m_mapAIGroups.end(); ++it)
@@ -333,7 +333,7 @@ void CAISystem::SubsystemUpdateGroups()
 	}
 }
 
-void CAISystem::TrySubsystemUpdateMovementSystem(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate)
+void CAISystem::TrySubsystemUpdateMovementSystem(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
 	CRY_ASSERT(gAIEnv.pMovementSystem);
@@ -347,12 +347,12 @@ void CAISystem::TrySubsystemUpdateMovementSystem(const CTimeValue frameStartTime
 void CAISystem::SubsystemUpdateLeaders()
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
-	const static float leaderUpdateRate(.2f);
-	static float leaderNoUpdatedTime(.0f);
+	const static CTimeValue leaderUpdateRate("0.2");
+	static CTimeValue leaderNoUpdatedTime(0);
 	leaderNoUpdatedTime += m_frameDeltaTime;
 	if (leaderNoUpdatedTime > leaderUpdateRate)
 	{
-		leaderNoUpdatedTime = 0.0f;
+		leaderNoUpdatedTime.SetSeconds(0);
 		AIObjectOwners::iterator aio = gAIEnv.pAIObjectManager->m_Objects.find(AIOBJECT_LEADER);
 
 		for (; aio != gAIEnv.pAIObjectManager->m_Objects.end(); ++aio)
@@ -377,7 +377,7 @@ void CAISystem::SubsystemUpdateSmartObjectManager()
 	}
 }
 
-void CAISystem::TrySubsystemUpdateGlobalRayCaster(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate)
+void CAISystem::TrySubsystemUpdateGlobalRayCaster(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
 	CRY_ASSERT(gAIEnv.pRayCaster);
@@ -388,7 +388,7 @@ void CAISystem::TrySubsystemUpdateGlobalRayCaster(const CTimeValue frameStartTim
 	gAIEnv.pRayCaster->Update(frameDeltaTime);
 }
 
-void CAISystem::TrySubsystemUpdateGlobalIntersectionTester(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate)
+void CAISystem::TrySubsystemUpdateGlobalIntersectionTester(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
 	CRY_ASSERT(gAIEnv.pIntersectionTester);
@@ -399,7 +399,7 @@ void CAISystem::TrySubsystemUpdateGlobalIntersectionTester(const CTimeValue fram
 	gAIEnv.pIntersectionTester->Update(frameDeltaTime);
 }
 
-void CAISystem::TrySubsystemUpdateClusterDetector(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate)
+void CAISystem::TrySubsystemUpdateClusterDetector(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
 	CRY_ASSERT(gAIEnv.pClusterDetector);
@@ -418,7 +418,7 @@ void CAISystem::SubsystemUpdateInterestManager()
 		pInterestManager->Update(m_frameDeltaTime);
 }
 
-void CAISystem::TrySubsystemUpdateBehaviorTreeManager(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate)
+void CAISystem::TrySubsystemUpdateBehaviorTreeManager(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI)
 	CRY_ASSERT(gAIEnv.pBehaviorTreeManager);
@@ -443,8 +443,8 @@ void CAISystem::SubsystemUpdateAmbientFire()
 	if (gAIEnv.CVars.AmbientFireEnable == 0)
 		return;
 
-	int64 dt((GetFrameStartTime() - m_lastAmbientFireUpdateTime).GetMilliSecondsAsInt64());
-	if (dt < (int)(gAIEnv.CVars.AmbientFireUpdateInterval * 1000.0f))
+	CTimeValue dt(GetFrameStartTime() - m_lastAmbientFireUpdateTime);
+	if (dt < gAIEnv.CVars.AmbientFireUpdateInterval)
 		return;
 
 	// Marcio: Update ambient fire towards all players.
@@ -613,9 +613,9 @@ void CAISystem::SubsystemUpdateExpensiveAccessoryQuota()
 	for (unsigned i = 0; i < m_delayedExpAccessoryUpdates.size(); )
 	{
 		SAIDelayedExpAccessoryUpdate& update = m_delayedExpAccessoryUpdates[i];
-		update.timeMs -= (int)(m_frameDeltaTime * 1000.0f);
+		update.time -= m_frameDeltaTime;
 
-		if (update.timeMs < 0)
+		if (update.time < 0)
 		{
 			update.pPuppet->SetAllowedToUseExpensiveAccessory(update.state);
 			m_delayedExpAccessoryUpdates[i] = m_delayedExpAccessoryUpdates.back();
@@ -625,11 +625,9 @@ void CAISystem::SubsystemUpdateExpensiveAccessoryQuota()
 			++i;
 	}
 
-	const int UpdateTimeMs = 3000;
-	const float fUpdateTimeMs = (float)UpdateTimeMs;
-
-	int64 dt((GetFrameStartTime() - m_lastExpensiveAccessoryUpdateTime).GetMilliSecondsAsInt64());
-	if (dt < UpdateTimeMs)
+	const CTimeValue UpdateTime = 3;
+	CTimeValue dt(GetFrameStartTime() - m_lastExpensiveAccessoryUpdateTime);
+	if (dt < UpdateTime)
 		return;
 
 	m_lastExpensiveAccessoryUpdateTime = GetFrameStartTime();
@@ -704,15 +702,15 @@ void CAISystem::SubsystemUpdateExpensiveAccessoryQuota()
 		{
 			//		puppets[i].first->SetAllowedToUseExpensiveAccessory(true);
 
-			int timeMs = (int)(fUpdateTimeMs * 0.5f + cry_random(0.0f, fUpdateTimeMs) * 0.4f);
-			m_delayedExpAccessoryUpdates.push_back(SAIDelayedExpAccessoryUpdate(puppets[i].first, timeMs, true));
+			CTimeValue time = UpdateTime * "0.5" + cry_random(CTimeValue(0), UpdateTime) * "0.4";
+			m_delayedExpAccessoryUpdates.push_back(SAIDelayedExpAccessoryUpdate(puppets[i].first, time, true));
 		}
 	}
 
 	for (unsigned i = 0, ni = stateRemoved.size(); i < ni; ++i)
 	{
-		int timeMs = (int)(cry_random(0.0f, fUpdateTimeMs) * 0.4f);
-		m_delayedExpAccessoryUpdates.push_back(SAIDelayedExpAccessoryUpdate(stateRemoved[i], timeMs, false));
+		CTimeValue time = cry_random(CTimeValue(0), UpdateTime) * "0.4";
+		m_delayedExpAccessoryUpdates.push_back(SAIDelayedExpAccessoryUpdate(stateRemoved[i], time, false));
 	}
 }
 
@@ -739,10 +737,10 @@ void CAISystem::SubsystemUpdateActorsAndTargetTrackAndORCA()
 	uint32 fullUpdateCount = 0;
 	if (activeAIActorCount > 0)
 	{
-		const float updateInterval = max(gAIEnv.CVars.AIUpdateInterval, 0.0001f);
-		const float updatesPerSecond = (activeAIActorCount / updateInterval) + m_enabledActorsUpdateError;
-		unsigned actorUpdateCount = (unsigned)floorf(updatesPerSecond * m_frameDeltaTime);
-		if (m_frameDeltaTime > 0.0f)
+		const CTimeValue updateInterval = max(gAIEnv.CVars.AIUpdateInterval, CTimeValue("0.0001")); // PERSONAL CRYTEK: Even mroe 'minimal' update intervals.
+		const rTime updatesPerSecond = (activeAIActorCount / updateInterval) + m_enabledActorsUpdateError;
+		unsigned actorUpdateCount = (unsigned)floor(updatesPerSecond * m_frameDeltaTime);
+		if (m_frameDeltaTime > 0)
 			m_enabledActorsUpdateError = updatesPerSecond - actorUpdateCount / m_frameDeltaTime;
 
 		uint32 skipped = 0;
@@ -904,10 +902,10 @@ void CAISystem::SubsystemUpdateActorsAndTargetTrackAndORCA()
 	if (!m_disabledAIActorsSet.empty())
 	{
 		uint32 inactiveAIActorCount = m_disabledAIActorsSet.size();
-		const float updateInterval = 0.3f;
-		const float updatesPerSecond = (inactiveAIActorCount / updateInterval) + m_disabledActorsUpdateError;
-		unsigned aiActorDisabledUpdateCount = (unsigned)floorf(updatesPerSecond * m_frameDeltaTime);
-		if (m_frameDeltaTime > 0.0f)
+		const CTimeValue updateInterval = "0.3";
+		const rTime updatesPerSecond = (inactiveAIActorCount / updateInterval) + m_disabledActorsUpdateError;
+		unsigned aiActorDisabledUpdateCount = (unsigned)floor(updatesPerSecond * m_frameDeltaTime);
+		if (m_frameDeltaTime > 0)
 			m_disabledActorsUpdateError = updatesPerSecond - aiActorDisabledUpdateCount / m_frameDeltaTime;
 
 		m_disabledActorsHead %= inactiveAIActorCount;

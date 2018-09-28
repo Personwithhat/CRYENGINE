@@ -612,7 +612,7 @@ void ReplayRecordThread::Flush()
 	while (m_nextCommand != CMD_Idle)
 	{
 		m_mtx.Unlock();
-		CrySleep(1);
+		CryLowLatencySleep("0.001");
 		m_mtx.Lock();
 	}
 
@@ -628,7 +628,7 @@ void ReplayRecordThread::Write(const uint8* data, size_t len)
 	while (m_nextCommand != CMD_Idle)
 	{
 		m_mtx.Unlock();
-		CrySleep(1);
+		CryLowLatencySleep("0.001");
 		m_mtx.Lock();
 	}
 
@@ -687,7 +687,7 @@ void ReplayRecordThread::SignalStopWork()
 	while (m_nextCommand != CMD_Idle)
 	{
 		m_mtx.Unlock();
-		CrySleep(1);
+		CryLowLatencySleep("0.001");
 		m_mtx.Lock();
 	}
 
@@ -697,7 +697,7 @@ void ReplayRecordThread::SignalStopWork()
 	while (m_nextCommand != CMD_Idle)
 	{
 		m_mtx.Unlock();
-		CrySleep(1);
+		CryLowLatencySleep("0.001");
 		m_mtx.Lock();
 	}
 

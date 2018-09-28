@@ -84,6 +84,8 @@ enum ScriptVarType
 	svtObject,
 	svtPointer,
 	svtUserData,
+	svtMPFloat,
+	svtTime
 };
 
 //! Any Script value.
@@ -99,6 +101,8 @@ enum class EScriptAnyType
 	Function,
 	UserData,
 	Vector,
+	MPFloat,
+	Time,
 };
 
 struct ScriptAnyValue
@@ -120,13 +124,15 @@ struct ScriptAnyValue
 	ScriptAnyValue(IScriptTable* value);            // Implemented at the end of header.
 	ScriptAnyValue(const SmartScriptTable& value);  // Implemented at the end of header.
 
+	MPOnly ScriptAnyValue(const T& value) : m_data(value.conv<mpfloat>()) {}
+	TVOnly ScriptAnyValue(const T& value) : m_data(value) {}
+
 	ScriptAnyValue(const ScriptAnyValue& value);  // Implemented at the end of header.
 	void            Swap(ScriptAnyValue& value);  // Implemented at the end of header.
 
 	ScriptAnyValue& operator=(const ScriptAnyValue& rhs)
 	{
-		ScriptAnyValue temp(rhs);
-		Swap(temp);
+		m_data = rhs.m_data;
 		return *this;
 	}
 
@@ -152,6 +158,11 @@ struct ScriptAnyValue
 	bool CopyFromTableTo(Vec3& value) const    { return CopyFromTableToXYZ(value.x, value.y, value.z); }
 	bool CopyFromTableTo(Ang3& value) const    { return CopyFromTableToXYZ(value.x, value.y, value.z); }
 
+	// PERSONAL IMPROVE: Create a 'variant-compatible' mpfloat etc. type that can work without excessive conversions (no .conv<>())
+	// So that ScriptAnyValue could handle rTime, nTime, etc. instead of just mpfloat. OR do a #include of mpfloat.types >.>
+	MPOnly bool CopyTo(T& value) const { if (GetType() == EScriptAnyType::MPFloat) { value = GetMP().conv<T>(); return true; } return false; }
+	TVOnly bool CopyTo(T& value) const { if (GetType() == EScriptAnyType::Time)	 { value = GetTime();			return true; } return false; }
+
 	//! Clears any variable to uninitialized state.
 	// Implemented at the end of header.
 	void Clear();
@@ -169,6 +180,9 @@ struct ScriptAnyValue
 	ScriptAnyValue(ScriptUserData, int) { m_data.emplace<ScriptUserData>(); }
 	ScriptAnyValue(IScriptTable* _table, int);
 	ScriptAnyValue(const SmartScriptTable& value, int);
+
+	MPOnly ScriptAnyValue(const T&, int) { m_data.emplace<mpfloat>(); }
+	TVOnly ScriptAnyValue(const T&, int) { m_data.emplace<CTimeValue>(); }
 
 	ScriptVarType GetVarType() const
 	{
@@ -194,6 +208,10 @@ struct ScriptAnyValue
 			return svtUserData;
 		case EScriptAnyType::Vector:
 			return svtObject;
+		case EScriptAnyType::MPFloat:
+			return svtMPFloat;
+		case EScriptAnyType::Time:
+			return svtTime;
 		default:
 			return svtNull;
 		}
@@ -245,6 +263,27 @@ struct ScriptAnyValue
 	{
 		m_data = value;
 	}
+
+	mpfloat GetMP() const
+	{
+		CRY_ASSERT(GetType() == EScriptAnyType::MPFloat && stl::holds_alternative<mpfloat>(m_data));
+		return stl::get<mpfloat>(m_data);
+	}
+	MPOnly void SetMP(const T& value)
+	{
+		m_data = value.conv<mpfloat>();
+	}
+
+	CTimeValue GetTime() const
+	{
+		CRY_ASSERT(GetType() == EScriptAnyType::Time && stl::holds_alternative<CTimeValue>(m_data));
+		return stl::get<CTimeValue>(m_data);
+	}
+	TVOnly void SetTime(const T& value)
+	{
+		m_data = value;
+	}
+
 
 	const char* GetString() const
 	{
@@ -315,7 +354,9 @@ struct ScriptAnyValue
 			IScriptTable*,
 			HSCRIPTFUNCTION,
 			ScriptUserData,
-			Vec3
+			Vec3,
+			mpfloat,
+			CTimeValue
 		> TScriptVariant;
 
 		static_assert(std::is_same<stl::variant_alternative<static_cast<size_t>(EScriptAnyType::Any), TScriptVariant>::type, void*>::value, "Enum value and variant index do not match!");
@@ -327,6 +368,8 @@ struct ScriptAnyValue
 		static_assert(std::is_same<stl::variant_alternative<static_cast<size_t>(EScriptAnyType::Function), TScriptVariant>::type, HSCRIPTFUNCTION>::value, "Enum value and variant index do not match!");
 		static_assert(std::is_same<stl::variant_alternative<static_cast<size_t>(EScriptAnyType::UserData), TScriptVariant>::type, ScriptUserData>::value, "Enum value and variant index do not match!");
 		static_assert(std::is_same<stl::variant_alternative<static_cast<size_t>(EScriptAnyType::Vector), TScriptVariant>::type, Vec3>::value, "Enum value and variant index do not match!");
+		static_assert(std::is_same<stl::variant_alternative<static_cast<size_t>(EScriptAnyType::MPFloat), TScriptVariant>::type, mpfloat>::value, "Enum value and variant index do not match!");
+		static_assert(std::is_same<stl::variant_alternative<static_cast<size_t>(EScriptAnyType::Time), TScriptVariant>::type, CTimeValue>::value, "Enum value and variant index do not match!");
 
 		TScriptVariant m_data;
 };
@@ -349,7 +392,7 @@ struct IScriptSystem
 
 	//! Sets the rate of Garbage Collection for script system.
 	//! \param fRate Rate in seconds.
-	virtual void SetGCFrequency(const float fRate) = 0;
+	virtual void SetGCFrequency(const CTimeValue& fRate) = 0;
 
 	//! Sets the environment of the given function.
 	//! \param scriptFunction Function to receive the environment.
@@ -1886,6 +1929,12 @@ inline ScriptAnyValue::ScriptAnyValue(EScriptAnyType type)
 	case EScriptAnyType::Vector:
 		m_data.emplace<Vec3>();
 		break;
+	case EScriptAnyType::MPFloat:
+		m_data.emplace<mpfloat>();
+		break;
+	case EScriptAnyType::Time:
+		m_data.emplace<CTimeValue>();
+		break;
 	default:
 		CRY_ASSERT(false);
 		break;
@@ -2020,14 +2069,19 @@ inline ScriptAnyValue::ScriptAnyValue(const ScriptAnyValue& rhs)
 	case EScriptAnyType::Vector:
 		SetVector(rhs.GetVector());
 		break;
+	case EScriptAnyType::MPFloat:
+		SetMP(rhs.GetMP());
+		break;
+	case EScriptAnyType::Time:
+		SetTime(rhs.GetTime());
+		break;
 	}
 }
 inline void ScriptAnyValue::Swap(ScriptAnyValue& value)
 {
-	char temp[sizeof(ScriptAnyValue)];
-	memcpy(temp, this, sizeof(ScriptAnyValue));
-	memcpy(this, &value, sizeof(ScriptAnyValue));
-	memcpy(&value, temp, sizeof(ScriptAnyValue));
+	ScriptAnyValue tmp = value; // PERSONAL NOTE: mpfloat != POD type -> can't memcpy it around.
+	value = this;
+	*this = tmp;
 }
 
 inline ScriptAnyValue::ScriptAnyValue(HSCRIPTFUNCTION value)
@@ -2058,12 +2112,13 @@ inline bool ScriptAnyValue::operator==(const ScriptAnyValue& rhs) const
 		case EScriptAnyType::Number:
 		case EScriptAnyType::String:
 		case EScriptAnyType::Vector:
+		case EScriptAnyType::MPFloat:
+		case EScriptAnyType::Time:
 		case EScriptAnyType::Handle:
 		case EScriptAnyType::Table:
 		case EScriptAnyType::UserData:
 			result = (m_data == rhs.m_data);
 			break;
-
 		case EScriptAnyType::Function:
 			result = gEnv->pScriptSystem->CompareFuncRef(GetScriptFunction(), rhs.GetScriptFunction());
 			break;

@@ -121,7 +121,7 @@ private:
 	void CurrentTimeEdited(); // called when user enters new value in m_currentTimeEdit
 	void OnSplineEditing();
 	void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
-	void SetTODTime(const float fTime);
+	void SetTODTime(const CTimeValue& fTime);
 
 	void UndoConstantProperties();
 	void OnEndActionUndoConstantProperties(bool acceptUndo);
@@ -155,7 +155,7 @@ private:
 	int                         m_selectedParamId;
 	CContentChangedUndoCommand* m_pUndoCommand;
 
-	float                       m_fAnimTimeSecondsIn24h;
+	int                         m_fAnimTimeSecondsIn24h;
 
 	QSplitter*                  m_splitterBetweenTrees;
 	QPropertyTree*              m_propertyTreeConst;

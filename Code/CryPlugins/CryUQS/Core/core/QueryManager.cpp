@@ -76,8 +76,8 @@ namespace UQS
 		//
 		//===================================================================================
 
-		const CTimeValue CQueryManager::s_delayBeforeFadeOut(2.5f);
-		const CTimeValue CQueryManager::s_fadeOutDuration(0.5f);
+		const CTimeValue CQueryManager::s_delayBeforeFadeOut("2.5");
+		const CTimeValue CQueryManager::s_fadeOutDuration("0.5");
 		const CTimeValue CQueryManager::s_totalDebugDrawDuration = CQueryManager::s_delayBeforeFadeOut + CQueryManager::s_fadeOutDuration;
 
 		CQueryManager::CQueryManager(CQueryHistoryManager& queryHistoryManager)
@@ -206,7 +206,7 @@ namespace UQS
 					nullptr,
 					id,
 					parentQueryID,
-					gEnv->pTimer->GetAsyncTime(),
+					GetGTimer()->GetAsyncTime(),
 					false,
 					error.c_str());
 				NotifyCallbacksOfFinishedQuery(finishedQueryInfo);
@@ -241,7 +241,7 @@ namespace UQS
 
 		void CQueryManager::DebugDrawRunningQueriesStatistics2D() const
 		{
-			const CTimeValue now = gEnv->pTimer->GetAsyncTime();
+			const CTimeValue now = GetGTimer()->GetAsyncTime();
 			int row = 1;
 
 			//
@@ -258,7 +258,7 @@ namespace UQS
 			for (const SHistoryQueryInfo2D& historyEntry : m_debugDrawHistory2D)
 			{
 				const CTimeValue age = (now - historyEntry.finishedTimestamp);
-				const float alpha = (age < s_delayBeforeFadeOut) ? 1.0f : clamp_tpl(1.0f - (age - s_delayBeforeFadeOut).GetSeconds() / s_fadeOutDuration.GetSeconds(), 0.0f, 1.0f);
+				const float alpha = (age < s_delayBeforeFadeOut) ? 1.0f : BADF CLAMP(1 - (age - s_delayBeforeFadeOut).GetSeconds() / s_fadeOutDuration.GetSeconds(), 0, 1);
 				const ColorF color = historyEntry.bQueryFinishedWithSuccess ? ColorF(0.0f, 1.0f, 0.0f, alpha) : ColorF(1.0f, 0.0f, 0.0f, alpha);
 				row = DebugDrawQueryStatistics(historyEntry.statistics, historyEntry.queryID, row, color);
 				++row;
@@ -287,9 +287,9 @@ namespace UQS
 			//
 
 			Shared::CUqsString error;
-			const CTimeValue timestampBeforeQueryUpdate = gEnv->pTimer->GetAsyncTime();
+			const CTimeValue timestampBeforeQueryUpdate = GetGTimer()->GetAsyncTime();
 			const CQueryBase::EUpdateState queryState = queryToUpdate.pQuery->Update(timeBudgetForThisQuery, error);
-			const CTimeValue timestampAfterQueryUpdate = gEnv->pTimer->GetAsyncTime();
+			const CTimeValue timestampAfterQueryUpdate = GetGTimer()->GetAsyncTime();
 
 			//
 			// deal with the query's update status
@@ -392,7 +392,7 @@ namespace UQS
 			{
 				if (!runningQueryInfo.pQuery->RequiresSomeTimeBudgetForExecution())
 				{
-					const CTimeValue dummyTimeBudget(0.0f);
+					const CTimeValue dummyTimeBudget(0);
 					HelpUpdateSingleQuery(runningQueryInfo, dummyTimeBudget, outFinishedQueries);
 				}
 			}
@@ -442,7 +442,7 @@ namespace UQS
 			CRY_PROFILE_FUNCTION(UQS_PROFILED_SUBSYSTEM_TO_USE);
 
 			const CTimeValue totalTimeBudget(SCvars::timeBudgetInSeconds);
-			const CTimeValue extraTimeBufferBeforeWarning(SCvars::timeBudgetExcessThresholdInPercent * 0.01f * SCvars::timeBudgetInSeconds);
+			const CTimeValue extraTimeBufferBeforeWarning(SCvars::timeBudgetExcessThresholdInPercent * "0.01" * SCvars::timeBudgetInSeconds);
 
 			CTimeValue remainingOverallTimeBudget(SCvars::timeBudgetInSeconds);
 			CTimeValue totalTimeUsedSoFar;
@@ -450,8 +450,8 @@ namespace UQS
 			for (auto it = roundRobinQueries.cbegin(); it != roundRobinQueries.cend(); ++it)
 			{
 				const size_t numRemainingQueries = roundRobinQueries.cend() - it;
-				const CTimeValue timeBudgetForThisQuery(remainingOverallTimeBudget.GetSeconds() / (float)numRemainingQueries);
-				const CTimeValue timeUsedByThisQuery = HelpUpdateSingleQuery(*(*it), timeBudgetForThisQuery, outFinishedQueries);
+				const CTimeValue timeBudgetForThisQuery = remainingOverallTimeBudget / numRemainingQueries;
+				const CTimeValue timeUsedByThisQuery    = HelpUpdateSingleQuery(*(*it), timeBudgetForThisQuery, outFinishedQueries);
 
 				totalTimeUsedSoFar += timeUsedByThisQuery;
 
@@ -476,9 +476,9 @@ namespace UQS
 					{
 						NotifyOfQueryPerformanceWarning(*(*it), "system frame #%i: query has just consumed %.1f%% of its granted time: %fms vs %fms",
 							(int)gEnv->nMainFrameID,
-							(timeUsedByThisQuery.GetMilliSeconds() / timeBudgetForThisQuery.GetMilliSeconds()) * 100.0f,
-							timeUsedByThisQuery.GetMilliSeconds(),
-							timeBudgetForThisQuery.GetMilliSeconds());
+							(float)(timeUsedByThisQuery / timeBudgetForThisQuery) * 100,
+							(float)timeUsedByThisQuery.GetMilliSeconds(),
+							(float)timeBudgetForThisQuery.GetMilliSeconds());
 					}
 				}
 			}
@@ -529,7 +529,7 @@ namespace UQS
 				{
 					CQueryBase::SStatistics stats;
 					entry.pQuery->GetStatistics(stats);
-					SHistoryQueryInfo2D newHistoryEntry(entry.queryID, stats, entry.bQueryFinishedWithSuccess, gEnv->pTimer->GetAsyncTime());
+					SHistoryQueryInfo2D newHistoryEntry(entry.queryID, stats, entry.bQueryFinishedWithSuccess, GetGTimer()->GetAsyncTime());
 					m_debugDrawHistory2D.push_back(std::move(newHistoryEntry));
 				}
 			}
@@ -664,7 +664,7 @@ namespace UQS
 		{
 			CRY_PROFILE_FUNCTION(UQS_PROFILED_SUBSYSTEM_TO_USE);
 
-			const CTimeValue now = gEnv->pTimer->GetAsyncTime();
+			const CTimeValue now = GetGTimer()->GetAsyncTime();
 
 			while (!m_debugDrawHistory2D.empty() && m_debugDrawHistory2D.front().finishedTimestamp + s_totalDebugDrawDuration < now)
 			{
@@ -722,7 +722,7 @@ namespace UQS
 			CLoggerIndentation _indent;
 
 			logger.Printf("consumed frames:            %i", (int)stats.totalConsumedFrames);
-			logger.Printf("consumed seconds:           %f (%.2f millisecs)", stats.totalConsumedTime.GetSeconds(), stats.totalConsumedTime.GetSeconds() * 1000.0f);
+			logger.Printf("consumed seconds:           %f (%.2f millisecs)", (float)stats.totalConsumedTime.GetSeconds(), (float)stats.totalConsumedTime.GetMilliSeconds());
 			logger.Printf("generated items:            %i", (int)stats.numGeneratedItems);
 			logger.Printf("remaining items to inspect: %i", (int)stats.numRemainingItemsToInspect);
 			logger.Printf("final items:                %i", (int)stats.numItemsInFinalResultSet);
@@ -757,10 +757,10 @@ namespace UQS
 					logger.Printf("Phase '%i'  = %i frames, %f seconds (%.2f millisecs) [longest call = %f seconds (%.2f millisecs)]",
 						(int)i + 1,
 						(int)stats.elapsedFramesPerPhase[i],
-						stats.elapsedTimePerPhase[i].GetSeconds(),
-						stats.elapsedTimePerPhase[i].GetSeconds() * 1000.0f,
-						stats.peakElapsedTimePerPhaseUpdate[i].GetSeconds(),
-						stats.peakElapsedTimePerPhaseUpdate[i].GetSeconds() * 1000.0f);
+						(float)stats.elapsedTimePerPhase[i].GetSeconds(),
+						(float)stats.elapsedTimePerPhase[i].GetMilliSeconds(),
+						(float)stats.peakElapsedTimePerPhaseUpdate[i].GetSeconds(),
+						(float)stats.peakElapsedTimePerPhaseUpdate[i].GetMilliSeconds());
 				}
 			}
 		}

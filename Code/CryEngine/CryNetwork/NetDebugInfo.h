@@ -34,7 +34,7 @@ protected:
 			m_count(0),
 			m_head(0),
 			m_nextAccept(g_time),
-			m_nextAcceptIncrement(period.GetSeconds() / SIZE)
+			m_nextAcceptIncrement(period / SIZE)
 		{
 			memset(m_buffer, 0, sizeof m_buffer);
 		}

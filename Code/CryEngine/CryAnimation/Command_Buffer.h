@@ -26,7 +26,7 @@ public:
 		, m_pFallbackPoseData(nullptr)
 		, m_pPoseData(nullptr)
 		, m_jointCount(0)
-		, m_originalTimeDelta(0.0f)
+		, m_originalTimeDelta(0)
 		, m_pJointMask(nullptr)
 		, m_pInstance(nullptr)
 	{
@@ -68,7 +68,7 @@ public:
 
 	uint32                     m_lod;
 
-	f32                        m_originalTimeDelta;
+	CTimeValue                 m_originalTimeDelta;
 
 	const uint32*              m_pJointMask;
 	uint32                     m_jointMaskCount;

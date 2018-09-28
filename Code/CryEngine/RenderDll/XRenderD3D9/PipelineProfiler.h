@@ -41,10 +41,10 @@ protected:
 	struct SProfilerSection
 	{
 		char            name[31]; 
-		float           gpuTime;
-		float           gpuTimeSmoothed;
-		float           cpuTime;
-		float           cpuTimeSmoothed;
+		CTimeValue      gpuTime;
+		CTimeValue      gpuTimeSmoothed;
+		CTimeValue      cpuTime;
+		CTimeValue      cpuTimeSmoothed;
 		CTimeValue      startTimeCPU, endTimeCPU;
 		uint32          startTimestamp, endTimestamp;
 		CCryNameTSCRC   path;
@@ -116,7 +116,7 @@ protected:
 	uint32                            m_frameDataIndex;
 	SFrameData*                       m_frameDataRT;
 	SFrameData*                       m_frameDataLRU;
-	float                             m_avgFrameTime;
+	CTimeValue                        m_avgFrameTime;
 	bool                              m_enabled;
 	bool                              m_paused;
 	bool                              m_recordData;

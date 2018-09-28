@@ -3443,7 +3443,7 @@ foundtri:
 #endif
 }
 
-int CStatObj::PhysicalizeFoliage(IPhysicalEntity* pTrunk, const Matrix34& mtxWorld, IFoliage*& pIRes, float lifeTime, int iSource)
+int CStatObj::PhysicalizeFoliage(IPhysicalEntity* pTrunk, const Matrix34& mtxWorld, IFoliage*& pIRes, const CTimeValue& lifeTime, int iSource)
 {
 	if (gEnv->IsDedicated() || !m_pSpines || GetCVars()->e_PhysFoliage < 1 + (pTrunk && pTrunk->GetType() == PE_STATIC))
 		return 0;
@@ -3454,7 +3454,7 @@ int CStatObj::PhysicalizeFoliage(IPhysicalEntity* pTrunk, const Matrix34& mtxWor
 
 	if (pIRes)
 	{
-		pRes->m_timeIdle = 0;
+		pRes->m_timeIdle.SetSeconds(0);
 		if (iSource & 4)
 		{
 			pf.flagsAND = ~pef_ignore_areas;
@@ -3494,8 +3494,8 @@ int CStatObj::PhysicalizeFoliage(IPhysicalEntity* pTrunk, const Matrix34& mtxWor
 	pRes->m_pTrunk = pTrunk;
 	pRes->m_pRopes = new IPhysicalEntity*[m_nSpines];
 	memset(pRes->m_pRopes, 0, m_nSpines * sizeof(pRes->m_pRopes[0]));
-	for (i = 0, pRes->m_pRopesActiveTime = new float[m_nSpines]; i < m_nSpines; i++)
-		pRes->m_pRopesActiveTime[i] = -1.0f;
+	for (i = 0, pRes->m_pRopesActiveTime = new CTimeValue[m_nSpines]; i < m_nSpines; i++)
+		pRes->m_pRopesActiveTime[i].SetSeconds(-1);
 	pRes->m_nRopes = m_nSpines;
 
 	pe_params_pos pp;
@@ -3528,13 +3528,13 @@ int CStatObj::PhysicalizeFoliage(IPhysicalEntity* pTrunk, const Matrix34& mtxWor
 	pf.flagsOR = rope_collides & j | rope_target_vtx_rel0 | rope_ignore_attachments | pef_traceable;
 	if (pTrunk && pTrunk->GetType() != PE_STATIC)
 	{
-		sp.maxTimeStep = 0.05f; // 0.02f
+		sp.maxTimeStep.SetSeconds("0.05"); // 0.02f
 		pf.flagsOR |= rope_collides_with_terrain & j;
 		pr.dampingAnim = GetFloatCVar(e_FoliageBrokenBranchesDamping);
 	}
 	else
 	{
-		sp.maxTimeStep = 0.05f;
+		sp.maxTimeStep.SetSeconds("0.05");
 		if (GetCVars()->e_PhysFoliage < 3)
 			pf.flagsOR |= pef_ignore_areas, sp.gravity.zero();
 		pr.dampingAnim = GetFloatCVar(e_FoliageBranchesDamping);
@@ -3546,7 +3546,7 @@ int CStatObj::PhysicalizeFoliage(IPhysicalEntity* pTrunk, const Matrix34& mtxWor
 	pfd.pForeignData = pRes;
 	pto.maxTimeIdle = GetCVars()->e_FoliageBranchesTimeout;
 	if (const char* timeout = strstr(m_szProperties, "timeout"))
-		pto.maxTimeIdle = atof(timeout + 7);
+		pto.maxTimeIdle.SetSeconds(mpfloat(timeout) + 7);
 	AABB bbox(AABB::RESET);
 	for (i = 0; i < m_nSpines; i++)
 		if (m_pSpines[i].bActive)

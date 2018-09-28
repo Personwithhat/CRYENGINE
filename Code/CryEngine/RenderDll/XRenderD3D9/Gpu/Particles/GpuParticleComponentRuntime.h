@@ -79,10 +79,10 @@ public:
 
 	void                SetManagerSlot(int i) { m_parameters->managerSlot = i; }
 
-	void                SetLifeTime(float lifeTime) { m_parameters->lifeTime = lifeTime; }
+	void                SetLifeTime(const CTimeValue& lifeTime) { m_parameters->lifeTime = lifeTime; }
 
 	int                 GetNumParticles() const { return m_parameters->numParticles; };
-	float               GetDeltaTime() const { return m_parameters->deltaTime; }
+	CTimeValue          GetDeltaTime()	  const { return m_parameters->deltaTime; }
 
 	// this is from the render thread
 	void AddRemoveParticles(SUpdateContext& context, CDeviceCommandListRef RESTRICT_REFERENCE commandList);

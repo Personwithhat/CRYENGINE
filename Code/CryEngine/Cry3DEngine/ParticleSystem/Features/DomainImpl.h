@@ -126,7 +126,7 @@ struct LevelTime
 			, deltaTime(ToFloatv(runtime.DeltaTime()))
 			, ages(Source::Container(runtime).GetIFStream(EPDT_NormalAge))
 			, lifeTimes(Source::Container(runtime).GetIFStream(EPDT_LifeTime))
-			, levelTime(ToFloatv(runtime.GetEmitter()->GetTime()))
+			, levelTime(ToFloatv(runtime.GetEmitter()->GetTime().BADGetSeconds()))
 		{}
 		ILINE floatv Sample(TParticleGroupId particleId) const
 		{

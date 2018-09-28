@@ -96,9 +96,9 @@ void ExecutionStackFileLogger::LogDebugTree(const DebugTree& debugTree, const Up
 			stack_string textLine;
 
 			// current time
-			int hours, minutes, seconds, milliseconds;
-			gEnv->pTimer->GetAsyncTime().Split(&hours, &minutes, &seconds, &milliseconds);
-			textLine.Format("time = %i:%02i:%02i:%03i, system frame = %i\n", hours, minutes, seconds, milliseconds, (int)gEnv->nMainFrameID);
+			mpfloat hours, minutes, seconds, milliseconds;
+			GetGTimer()->GetAsyncTime().Split(&hours, &minutes, &seconds, &milliseconds);
+			textLine.Format("time = %i:%02i:%02i:%03i, system frame = %i\n", (int)hours, (int)minutes, (int)seconds, (int)milliseconds, (int)gEnv->nMainFrameID);
 			m_logFile.Write(textLine.c_str(), textLine.length());
 
 			LogNodeRecursively(*pRoot, 0);

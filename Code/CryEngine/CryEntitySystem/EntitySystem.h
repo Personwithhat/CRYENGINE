@@ -62,7 +62,7 @@ struct SEntityTimerEvent
 	EntityId entityId;
 	CryGUID componentInstanceGUID;
 	uint8    nTimerId;
-	int      nMilliSeconds;
+	CTimeValue nTime;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -255,7 +255,7 @@ public:
 	void                                      OnEntityReused(IEntity* pEntity, SEntitySpawnParams& params);
 
 	// Sets new entity timer event.
-	void AddTimerEvent(SEntityTimerEvent& event, CTimeValue startTime = gEnv->pTimer->GetFrameStartTime());
+	void AddTimerEvent(SEntityTimerEvent& event, CTimeValue startTime = GetGTimer()->GetFrameStartTime());
 	void RemoveAllTimerEvents(ISimpleEntityEventListener* pListener);
 	void RemoveAllTimerEvents(EntityId id);
 	void RemoveTimerEvent(ISimpleEntityEventListener* pListener, int nTimerId);
@@ -331,7 +331,7 @@ public:
 private:
 	bool ValidateSpawnParameters(SEntitySpawnParams& params);
 
-	void UpdateEntityComponents(float fFrameTime);
+	void UpdateEntityComponents(const CTimeValue& fFrameTime);
 
 	void DeleteEntity(CEntity* pEntity);
 	void UpdateTimers();
@@ -443,8 +443,8 @@ public:
 public:
 	struct SLayerProfile
 	{
-		float         fTimeMS;
-		float         fTimeOn;
+		CTimeValue    fTime;
+		CTimeValue    fTimeOn;
 		bool          isEnable;
 		CEntityLayer* pLayer;
 	};
@@ -454,7 +454,7 @@ public:
 	struct SProfiledEntityEvent
 	{
 		int numEvents = 0;
-		float totalCostMs = 0.f;
+		CTimeValue totalCost = 0;
 		int numListenerAdditions = 0;
 		int numListenerRemovals = 0;
 
@@ -470,7 +470,7 @@ public:
 		};
 
 		SEntityInfo mostExpensiveEntity;
-		float mostExpensiveEntityCostMs = 0.f;
+		CTimeValue mostExpensiveEntityCost = 0; // Time
 	};
 
 	std::array<SProfiledEntityEvent, static_cast<size_t>(Cry::Entity::EEvent::Count)> m_profiledEvents;

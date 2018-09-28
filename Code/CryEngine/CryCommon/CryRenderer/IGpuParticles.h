@@ -81,13 +81,13 @@ struct SParticleParameters
 	Matrix44  viewProjection;
 	Quat      emitterOrientation;
 	Vec3      emitterPosition;
-	f32       deltaTime;
+	CTimeValue deltaTime;
 	Vec3      physAccel;
-	f32       currentTime;
+	CTimeValue currentTime;
 	Vec3      physWind;
 	float     farToNearDistance;
 	Vec3      cameraPosition;
-	float     lifeTime;
+	CTimeValue lifeTime;
 	int32     numParticles;
 	int32     numNewBorns;
 	int32     numKilled;
@@ -128,8 +128,8 @@ enum EFeatureUpdateFlags
 // Includes InitializationParams, a subset of ParticleParams, and UpdateFlags
 struct SUpdateParams : SParticleInitializationParameters
 {
-	float  deltaTime;
-	float  lifeTime;
+	CTimeValue deltaTime;
+	CTimeValue lifeTime;
 	Quat   emitterOrientation;
 	Vec3   emitterPosition;
 	Vec3   physAccel;

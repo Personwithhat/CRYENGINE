@@ -271,7 +271,7 @@ public:
 	virtual uint32              NumCharacters() const            { return m_nActiveCharactersLastFrame; }
 
 	void                        UpdateDatabaseUnloadTimeStamp();
-	uint32                      GetDatabaseUnloadTimeDelta() const;
+	CTimeValue                  GetDatabaseUnloadTimeDelta() const;
 
 	ICharacterInstance*         LoadCharacterDefinition(const string pathname, uint32 nLoadingFlags = 0);
 	int32                       LoadCDF(const char* pathname);
@@ -293,7 +293,6 @@ private:
 	uint32 m_InitializedByIMG;
 
 	void DumpAssetStatistics();
-	f32  GetAverageFrameTime(f32 sec, f32 FrameTime, f32 TimeScale, f32 LastAverageFrameTime);
 
 	//methods to manage instances
 	virtual ICharacterInstance* CreateInstance(const char* szFilePath, uint32 nLoadingFlags = 0);
@@ -388,8 +387,6 @@ private:
 
 	CChrParamLoader                               m_ParamLoader;
 
-	std::vector<f32>                           m_arrFrameTimes;
-
 	std::vector<CharacterDefinition>           m_arrCacheForCDF;
 
 	CharacterInstanceProcessing::CContextQueue m_ContextSyncQueue;  // queue to remember all animations which were started and need a sync
@@ -400,7 +397,7 @@ private:
 
 	uint32 m_nStreamUpdateRoundId[MAX_STREAM_PREDICTION_ZONES];
 
-	uint32 m_lastDatabaseUnloadTimeStamp;
+	CTimeValue m_lastDatabaseUnloadTimeStamp;
 
 	// geometry data cache for VCloth
 	SClothGeometry* LoadVClothGeometry(const CAttachmentVCLOTH& pRendAtt, _smart_ptr<IRenderMesh> pRenderMeshes[]);

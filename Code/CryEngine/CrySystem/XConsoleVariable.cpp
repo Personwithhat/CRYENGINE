@@ -352,6 +352,22 @@ bool CXConsoleVariableCVarGroup::_TestCVars(const SCVarGroup& group, const ICVar
 				}
 				break;
 
+			case ECVarType::MPFloat:
+				if (mpfloat(value.c_str()) != pVar->GetMPVal())
+				{
+					isOk = false;
+					break;
+				}
+				break;
+
+			case ECVarType::TimeVal:
+				if (CTimeValue(value.c_str()) != pVar->GetTime())
+				{
+					isOk = false;
+					break;
+				}
+				break;
+
 			default:
 				CRY_ASSERT(false);
 			}

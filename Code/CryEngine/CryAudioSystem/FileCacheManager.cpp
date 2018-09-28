@@ -334,7 +334,7 @@ void CFileCacheManager::DrawDebugInfo(IRenderAuxGeom& auxGeom, float const posX,
 
 	if (!m_fileEntries.empty())
 	{
-		CTimeValue const frameTime = gEnv->pTimer->GetAsyncTime();
+		CTimeValue const frameTime = GetGTimer()->GetAsyncTime();
 
 		CryFixedStringT<MaxControlNameLength> lowerCaseSearchString(g_cvars.m_pDebugFilter->GetString());
 		lowerCaseSearchString.MakeLower();
@@ -405,7 +405,7 @@ void CFileCacheManager::DrawDebugInfo(IRenderAuxGeom& auxGeom, float const posX,
 								color = Debug::s_afcmColorFileNotFound;
 							}
 
-							float const ratio = (frameTime - pFileEntry->m_timeCached).GetSeconds() / 2.0f;
+							float const ratio = (frameTime - pFileEntry->m_timeCached).BADGetSeconds() / 2.0f;
 
 							if (ratio <= 1.0f)
 							{
@@ -514,7 +514,7 @@ bool CFileCacheManager::FinishStreamInternal(IReadStreamPtr const pStream, int u
 			pFileEntry->m_flags = (pFileEntry->m_flags | EFileFlags::Cached) & ~(EFileFlags::Loading | EFileFlags::NotCached);
 
 #if defined(CRY_AUDIO_USE_PRODUCTION_CODE)
-			pFileEntry->m_timeCached = gEnv->pTimer->GetAsyncTime();
+			pFileEntry->m_timeCached = GetGTimer()->GetAsyncTime();
 #endif  // CRY_AUDIO_USE_PRODUCTION_CODE
 
 			Impl::SFileInfo fileEntryInfo;
@@ -610,7 +610,7 @@ void CFileCacheManager::UncacheFile(CFileEntry* const pFileEntry)
 	pFileEntry->m_useCount = 0;
 
 #if defined(CRY_AUDIO_USE_PRODUCTION_CODE)
-	pFileEntry->m_timeCached.SetValue(0);
+	pFileEntry->m_timeCached.SetSeconds(0);
 #endif // CRY_AUDIO_USE_PRODUCTION_CODE
 }
 
@@ -672,8 +672,8 @@ bool CFileCacheManager::TryCacheFileCacheEntryInternal(
 			streamReadParams.nOffset = 0;
 			streamReadParams.nFlags = IStreamEngine::FLAGS_NO_SYNC_CALLBACK;
 			streamReadParams.dwUserData = static_cast<DWORD_PTR>(id);
-			streamReadParams.nLoadTime = 0;
-			streamReadParams.nMaxLoadTime = 0;
+			streamReadParams.nLoadTime.SetSeconds(0);
+			streamReadParams.nMaxLoadTime.SetSeconds(0);
 			streamReadParams.ePriority = estpUrgent;
 			streamReadParams.pBuffer = pFileEntry->m_pMemoryBlock->GetData();
 			streamReadParams.nSize = static_cast<int unsigned>(pFileEntry->m_size);

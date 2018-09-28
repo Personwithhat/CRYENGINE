@@ -1077,6 +1077,20 @@ void CEditorImpl::SetConsoleVar(const char* var, const float value)
 		ivar->Set(value);
 }
 
+void CEditorImpl::SetConsoleMP(const char* var, const mpfloat& value)
+{
+	ICVar* ivar = GetSystem()->GetIConsole()->GetCVar(var);
+	if (ivar)
+		ivar->Set(value);
+}
+
+void CEditorImpl::SetConsoleTime(const char* var, const CTimeValue& value)
+{
+	ICVar* ivar = GetSystem()->GetIConsole()->GetCVar(var);
+	if (ivar)
+		ivar->Set(value);
+}
+
 void CEditorImpl::SetConsoleStringVar(const char* var, const char* value)
 {
 	ICVar* ivar = GetSystem()->GetIConsole()->GetCVar(var);
@@ -1090,6 +1104,26 @@ float CEditorImpl::GetConsoleVar(const char* var)
 	if (ivar)
 	{
 		return ivar->GetFVal();
+	}
+	return 0;
+}
+
+CTimeValue CEditorImpl::GetConsoleTime(const char* var)
+{
+	ICVar* ivar = GetSystem()->GetIConsole()->GetCVar(var);
+	if (ivar)
+	{
+		return ivar->GetTime();
+	}
+	return 0;
+}
+
+mpfloat CEditorImpl::GetConsoleMP(const char* var)
+{
+	ICVar* ivar = GetSystem()->GetIConsole()->GetCVar(var);
+	if (ivar)
+	{
+		return ivar->GetMPVal();
 	}
 	return 0;
 }
@@ -1348,17 +1382,17 @@ void CEditorImpl::RegisterObjectContextMenuExtension(TContextMenuExtensionFunc f
 	m_objectContextMenuExtensions.push_back(func);
 }
 
-void CEditorImpl::SetCurrentMissionTime(float time)
+void CEditorImpl::SetCurrentMissionTime(const CTimeValue& time)
 {
 	if (CMission* pMission = GetIEditorImpl()->GetDocument()->GetCurrentMission())
 		pMission->SetTime(time);
 }
 
-float CEditorImpl::GetCurrentMissionTime()
+CTimeValue CEditorImpl::GetCurrentMissionTime()
 {
 	if (CMission* pMission = GetIEditorImpl()->GetDocument()->GetCurrentMission())
 		return pMission->GetTime();
-	return 12.0f; // return default value noon as 12 hours
+	return 12; // return default value noon as 12 hours
 }
 
 void CEditorImpl::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam)

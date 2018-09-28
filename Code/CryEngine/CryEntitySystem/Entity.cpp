@@ -132,7 +132,7 @@ bool CEntity::SendEventInternal(const SEntityEvent& event)
 	CTimeValue timeBeforeEventSend;
 	if (CVar::es_profileComponentUpdates != 0)
 	{
-		timeBeforeEventSend = gEnv->pTimer->GetAsyncTime();
+		timeBeforeEventSend = GetGTimer()->GetAsyncTime();
 
 		g_pIEntitySystem->m_profiledEvents[GetEntityEventIndex(event.event)].numEvents++;
 	}
@@ -162,15 +162,15 @@ bool CEntity::SendEventInternal(const SEntityEvent& event)
 		}
 
 #ifdef ENABLE_PROFILING_CODE
-		const CTimeValue timeAfterEventSent = gEnv->pTimer->GetAsyncTime();
-		const float eventCostMs = (timeAfterEventSent - timeBeforeEventSend).GetMilliSeconds();
+		const CTimeValue timeAfterEventSent = GetGTimer()->GetAsyncTime();
+		const CTimeValue eventCost = timeAfterEventSent - timeBeforeEventSend;
 		const uint8 eventIndex = GetEntityEventIndex(event.event);
 
-		g_pIEntitySystem->m_profiledEvents[eventIndex].totalCostMs += eventCostMs;
+		g_pIEntitySystem->m_profiledEvents[eventIndex].totalCost += eventCost;
 
-		if (eventCostMs > g_pIEntitySystem->m_profiledEvents[eventIndex].mostExpensiveEntityCostMs)
+		if (eventCost > g_pIEntitySystem->m_profiledEvents[eventIndex].mostExpensiveEntityCost)
 		{
-			g_pIEntitySystem->m_profiledEvents[eventIndex].mostExpensiveEntityCostMs = eventCostMs;
+			g_pIEntitySystem->m_profiledEvents[eventIndex].mostExpensiveEntityCost = eventCost;
 			g_pIEntitySystem->m_profiledEvents[eventIndex].mostExpensiveEntity = CEntitySystem::SProfiledEntityEvent::SEntityInfo(*this);
 		}
 #endif
@@ -1097,7 +1097,7 @@ void CEntity::UpdateComponentEventListeners(const SEntityComponentRecord& compon
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CEntity::SetTimer(ISimpleEntityEventListener* pListener, EntityId id, const CryGUID& componentInstanceGUID, uint8 timerId, int timeInMilliseconds)
+void CEntity::SetTimer(ISimpleEntityEventListener* pListener, EntityId id, const CryGUID& componentInstanceGUID, uint8 timerId, const CTimeValue& inTime)
 {
 	KillTimer(pListener, timerId);
 	SEntityTimerEvent timeEvent;
@@ -1105,7 +1105,7 @@ void CEntity::SetTimer(ISimpleEntityEventListener* pListener, EntityId id, const
 	timeEvent.entityId = id;
 	timeEvent.componentInstanceGUID = componentInstanceGUID;
 	timeEvent.nTimerId = timerId;
-	timeEvent.nMilliSeconds = timeInMilliseconds;
+	timeEvent.nTime = inTime;
 	g_pIEntitySystem->AddTimerEvent(timeEvent);
 }
 
@@ -2856,7 +2856,7 @@ int CEntity::LoadFogVolume(int nSlot, const SFogVolumeProperties& properties)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CEntity::FadeGlobalDensity(int nSlot, float fadeTime, float newGlobalDensity)
+int CEntity::FadeGlobalDensity(int nSlot, const CTimeValue& fadeTime, float newGlobalDensity)
 {
 	return m_render.FadeGlobalDensity(nSlot, fadeTime, newGlobalDensity);
 }
@@ -3228,7 +3228,7 @@ void CEntity::OnRenderNodeVisibilityChange(bool bBecomeVisible)
 }
 
 //////////////////////////////////////////////////////////////////////////
-float CEntity::GetLastSeenTime() const
+const CTimeValue& CEntity::GetLastSeenTime() const
 {
 	return m_render.GetLastSeenTime();
 }

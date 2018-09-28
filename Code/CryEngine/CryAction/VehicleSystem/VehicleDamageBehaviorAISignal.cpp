@@ -13,7 +13,7 @@ CVehicleDamageBehaviorAISignal::CVehicleDamageBehaviorAISignal()
 	, m_isActive(false)
 	, m_signalId(0)
 	, m_freeSignalRadius(15.0f)
-	, m_timeCounter(0.0f)
+	, m_timeCounter(0)
 {}
 
 //------------------------------------------------------------------------
@@ -47,7 +47,7 @@ void CVehicleDamageBehaviorAISignal::ActivateUpdate(bool activate)
 {
 	if (activate && !m_isActive)
 	{
-		m_timeCounter = 1.0f;
+		m_timeCounter.SetSeconds(1);
 		m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_AlwaysUpdate);
 	}
 	else if (!activate && m_isActive)
@@ -96,7 +96,7 @@ void CVehicleDamageBehaviorAISignal::OnDamageEvent(EVehicleDamageBehaviorEvent e
 	pAISystem->SendSignal(AISignals::ESignalFilter::SIGNALFILTER_SENDER, gEnv->pAISystem->GetSignalManager()->CreateSignal_DEPRECATED(m_signalId, m_freeSignalText, pEntity->GetAI()->GetAIObjectID(), pExtraData));
 }
 
-void CVehicleDamageBehaviorAISignal::Update(const float deltaTime)
+void CVehicleDamageBehaviorAISignal::Update(const CTimeValue& deltaTime)
 {
 	if (m_pVehicle->IsDestroyed())
 	{
@@ -105,7 +105,7 @@ void CVehicleDamageBehaviorAISignal::Update(const float deltaTime)
 	}
 
 	m_timeCounter -= deltaTime;
-	if (m_timeCounter < 0.0f)
+	if (m_timeCounter < 0)
 	{
 		IEntity* pEntity = m_pVehicle->GetEntity();
 		CRY_ASSERT(pEntity);
@@ -119,7 +119,7 @@ void CVehicleDamageBehaviorAISignal::Update(const float deltaTime)
 
 		pAISystem->SendAnonymousSignal(gEnv->pAISystem->GetSignalManager()->CreateSignal_DEPRECATED(m_signalId, m_freeSignalText, 0, pData), entityPosition, m_freeSignalRadius);
 
-		m_timeCounter = 1.0f;
+		m_timeCounter.SetSeconds(1);
 	}
 }
 

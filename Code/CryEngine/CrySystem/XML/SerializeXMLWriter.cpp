@@ -13,7 +13,7 @@ static const size_t MAX_NODE_STACK_DEPTH = 40;
 
 CSerializeXMLWriterImpl::CSerializeXMLWriterImpl(const XmlNodeRef& nodeRef)
 {
-	m_curTime = gEnv->pTimer->GetFrameStartTime();
+	m_curTime = GetGTimer()->GetFrameStartTime();
 	//	m_bCheckEntityOnScript = false;
 	assert(!!nodeRef);
 	m_nodeStack.push_back(nodeRef);
@@ -34,10 +34,10 @@ CSerializeXMLWriterImpl::~CSerializeXMLWriterImpl()
 //////////////////////////////////////////////////////////////////////////
 bool CSerializeXMLWriterImpl::Value(const char* name, CTimeValue value)
 {
-	if (value == CTimeValue(0.0f))
+	if (value == CTimeValue(0))
 		AddValue(name, "zero");
 	else
-		AddValue(name, (value - m_curTime).GetSeconds());
+		AddValue(name, (value - m_curTime));
 	return true;
 }
 

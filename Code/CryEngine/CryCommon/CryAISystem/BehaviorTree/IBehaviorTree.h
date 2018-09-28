@@ -568,8 +568,8 @@ struct UpdateContext
 		, BehaviorVariablesContext& _variables
 		, TimestampCollection& _timestamps
 		, Blackboard& _blackboard
-		, CTimeValue _frameStartTime
-		, float _frameDeltaTime
+		, const CTimeValue& _frameStartTime
+		, const CTimeValue& _frameDeltaTime
 #ifdef DEBUG_MODULAR_BEHAVIOR_TREE
 		, MessageQueue& _behaviorLog
 		, DebugTree* _debugTree = NULL
@@ -598,7 +598,7 @@ struct UpdateContext
 	Blackboard&               blackboard;
 
 	CTimeValue                frameStartTime;
-	float                     frameDeltaTime;
+	CTimeValue                frameDeltaTime;
 
 #ifdef DEBUG_MODULAR_BEHAVIOR_TREE
 	MessageQueue& behaviorLog;
@@ -723,7 +723,7 @@ struct IBehaviorTreeManager
 {
 	virtual ~IBehaviorTreeManager() {}
 
-	virtual void                           Update(const CTimeValue frameStartTime, const float frameDeltaTime) = 0;
+	virtual void                           Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime) = 0;
 
 	virtual struct IMetaExtensionFactory&  GetMetaExtensionFactory() = 0;
 	virtual struct INodeFactory&           GetNodeFactory() = 0;

@@ -45,7 +45,7 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SProceduralClipLayerWeightParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SProceduralClipLayerWeightParams& params)
 	{
 		m_dataStringCRC = CCrc32::ComputeLowercase(params.paramName.c_str());
 		m_invert = params.invert;
@@ -58,12 +58,12 @@ public:
 		UpdateLayerWeight();
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 		m_charInstance->GetISkeletonAnim()->SetLayerBlendWeight(m_animLayer, 1.f);
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		UpdateLayerWeight();
 	}
@@ -123,7 +123,7 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SProceduralClipIKControlledLayerWeightParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SProceduralClipIKControlledLayerWeightParams& params)
 	{
 		IDefaultSkeleton& defaultSkeleton = m_charInstance->GetIDefaultSkeleton();
 		m_jointID = defaultSkeleton.GetJointIDByName(params.jointName.c_str());
@@ -138,12 +138,12 @@ public:
 		UpdateLayerWeight();
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 		m_charInstance->GetISkeletonAnim()->SetLayerBlendWeight(m_animLayer, 1.f);
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		UpdateLayerWeight();
 	}
@@ -211,7 +211,7 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SProceduralClipLayerManualUpdateParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SProceduralClipLayerManualUpdateParams& params)
 	{
 		m_dataStringCRC = CCrc32::ComputeLowercase(params.paramName.c_str());
 
@@ -224,16 +224,15 @@ public:
 		{
 			pAnimation->SetStaticFlag(CA_MANUAL_UPDATE);
 
-			float paramValue = 0.f;
-
-			if (GetParam(m_dataStringCRC, paramValue))
+			float paramValue = 0;
+			if (GetParam(m_dataStringCRC, paramValue)) // PERSONAL IMPROVE: QuatT size is smaller than mpfloat. Can't alias cast that! >.>
 			{
-				pSkeletonAnim->SetAnimationNormalizedTime(pAnimation, paramValue);
+				pSkeletonAnim->SetAnimationNormalizedTime(pAnimation, BADnT(paramValue));
 			}
 		}
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 		CAnimation* pAnimation = NULL;
 		ISkeletonAnim* pSkeletonAnim = NULL;
@@ -244,10 +243,9 @@ public:
 		}
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
-		float paramValue = 0.f;
-
+		float paramValue = 0;
 		if (GetParam(m_dataStringCRC, paramValue))
 		{
 			CAnimation* pAnimation = NULL;
@@ -255,7 +253,7 @@ public:
 
 			if (GetSkeletonAndAnimation(pSkeletonAnim, pAnimation))
 			{
-				pSkeletonAnim->SetAnimationNormalizedTime(pAnimation, paramValue);
+				pSkeletonAnim->SetAnimationNormalizedTime(pAnimation, BADnT(paramValue));
 			}
 		}
 	}
@@ -308,17 +306,17 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SProceduralClipWeightedListParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SProceduralClipWeightedListParams& params)
 	{
 		m_baseLayer = params.layer;
 		UpdateLayerWeight();
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		UpdateLayerWeight();
 	}
@@ -375,17 +373,17 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SProceduralClipManualUpdateListParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SProceduralClipManualUpdateListParams& params)
 	{
 		m_baseLayer = params.layer;
 		UpdateLayerTimes();
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		UpdateLayerTimes();
 	}
@@ -417,7 +415,7 @@ private:
 				{
 					CAnimation& animation = skeletonAnimation.GetAnimFromFIFO(layer, numAnims - 1);
 					animation.SetStaticFlag(CA_MANUAL_UPDATE);
-					animation.SetCurrentSegmentNormalizedTime(max(0.0f, factor));
+					animation.SetCurrentSegmentNormalizedTime(BADnT(max(0.0f, factor)));
 				}
 			}
 		}
@@ -465,7 +463,7 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SJointAdjustParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SJointAdjustParams& params)
 	{
 		m_layer = params.layer;
 		m_position = params.position;
@@ -493,11 +491,11 @@ public:
 		}
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		if (m_jointID >= 0)
 		{
@@ -557,7 +555,7 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SProceduralClipLayerAnimSpeedParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SProceduralClipLayerAnimSpeedParams& params)
 	{
 		m_dataStringCRC = params.paramName.crc;
 		m_invert = params.invert;
@@ -569,12 +567,12 @@ public:
 		UpdateLayerAnimSpeed();
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
-		m_charInstance->GetISkeletonAnim()->SetLayerPlaybackScale(m_animLayer, 1.0f);
+		m_charInstance->GetISkeletonAnim()->SetLayerPlaybackScale(m_animLayer, 1);
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		UpdateLayerAnimSpeed();
 	}
@@ -583,12 +581,11 @@ private:
 
 	void UpdateLayerAnimSpeed()
 	{
-		float paramValue = 0.f;
-
+		float paramValue = 0;
 		if (GetParam(m_dataStringCRC, paramValue))
 		{
-			paramValue = m_invert ? 1.0f - paramValue : paramValue;
-			m_charInstance->GetISkeletonAnim()->SetLayerPlaybackScale(m_animLayer, paramValue);
+			paramValue = m_invert ? 1 - paramValue : paramValue;
+			m_charInstance->GetISkeletonAnim()->SetLayerPlaybackScale(m_animLayer, BADMP(paramValue));
 		}
 	}
 

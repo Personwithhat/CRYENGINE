@@ -84,7 +84,7 @@ protected:
 class CPeriod final
 {
 public:
-	CPeriod(float seconds)
+	CPeriod(const CTimeValue& seconds)
 		: m_endTime(GetISystem()->GetITimer()->GetAsyncCurTime() + seconds)
 	{
 	}
@@ -94,7 +94,7 @@ public:
 		return m_endTime < GetISystem()->GetITimer()->GetAsyncCurTime();
 	}
 private:
-	const float m_endTime;
+	const CTimeValue m_endTime;
 };
 
 }
@@ -184,7 +184,7 @@ void CAsyncNodeGraphView::ReloadItems()
 	}
 
 	// The amount of time after which the function has to yield the control back to the caller.
-	CPeriod timeFrame(0.1f);
+	CPeriod timeFrame("0.1");
 
 	CAutoFunction onReturn([this, totalItemsCount, &getItemsCount]()
 	{

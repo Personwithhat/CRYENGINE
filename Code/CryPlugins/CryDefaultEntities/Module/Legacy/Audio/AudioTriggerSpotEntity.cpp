@@ -64,7 +64,7 @@ void CAudioTriggerSpotEntity::ProcessEvent(const SEntityEvent& event)
 
 				if (m_behavior == ePlayBehavior_TriggerRate)
 				{
-					SetTimer(DELAY_TIMER_ID, static_cast<int>(cry_random(m_minDelay, m_maxDelay)));
+					SetTimer(DELAY_TIMER_ID, cry_random(m_minDelay, m_maxDelay));
 				}
 			}
 
@@ -85,7 +85,7 @@ void CAudioTriggerSpotEntity::TriggerFinished(const CryAudio::ControlId trigger)
 	// playing, that instance we need to ignore.
 	if (m_bEnabled && trigger == m_playTriggerId && m_behavior == ePlayBehavior_Delay)
 	{
-		SetTimer(DELAY_TIMER_ID, static_cast<int>(cry_random(m_minDelay, m_maxDelay)));
+		SetTimer(DELAY_TIMER_ID, cry_random(m_minDelay, m_maxDelay));
 	}
 }
 
@@ -157,7 +157,7 @@ void CAudioTriggerSpotEntity::StartPlayingBehaviour()
 
 	if (m_behavior == ePlayBehavior_TriggerRate)
 	{
-		SetTimer(DELAY_TIMER_ID, static_cast<int>(cry_random(m_minDelay, m_maxDelay)));
+		SetTimer(DELAY_TIMER_ID, cry_random(m_minDelay, m_maxDelay));
 	}
 }
 

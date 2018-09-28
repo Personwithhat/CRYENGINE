@@ -1497,8 +1497,8 @@ void CImpl::GetFileData(char const* const szName, SFileData& fileData) const
 	if (pSound != nullptr)
 	{
 		unsigned int length = 0;
-		pSound->getLength(&length, FMOD_TIMEUNIT_MS);
-		fileData.duration = length / 1000.0f; // convert to seconds
+		pSound->getLength(&length, FMOD_TIMEUNIT_MS); // PERSONAL IMPROVE: Perhaps improve accuracy sub-millisecond.
+		fileData.duration.SetMilliSeconds(length);
 	}
 }
 

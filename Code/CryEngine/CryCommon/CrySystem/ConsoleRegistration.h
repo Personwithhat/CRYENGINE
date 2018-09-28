@@ -83,6 +83,34 @@ struct ConsoleRegistrationHelper
 		}
 	}
 
+	MPOnly static ICVar* RegisterMPFloat(const char* szName, const T& value, int flags, const char* szHelp = "", ConsoleVarFunc pChangeFunc = nullptr)
+	{
+		CRY_ASSERT(gEnv && gEnv->pConsole);
+		if (gEnv && gEnv->pConsole)
+		{
+			MODULE_REGISTER_CVAR(szName);
+			return gEnv->pConsole->RegisterMPFloat(szName, value, flags, szHelp, pChangeFunc);
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+
+	TVOnly static ICVar* RegisterTime(const char* szName, const T& value, int flags, const char* szHelp = "", ConsoleVarFunc pChangeFunc = nullptr)
+	{
+		CRY_ASSERT(gEnv && gEnv->pConsole);
+		if (gEnv && gEnv->pConsole)
+		{
+			MODULE_REGISTER_CVAR(szName);
+			return gEnv->pConsole->RegisterTime(szName, value, flags, szHelp, pChangeFunc);
+		}
+		else
+		{
+			return nullptr;
+		}
+	}
+
 	template<class T, class U>
 	static ICVar* Register(const char* szName, T* pSrc, U defaultValue, int flags = 0, const char* szHelp = "", ConsoleVarFunc pChangeFunc = nullptr, bool bAllowModify = true)
 	{
@@ -121,7 +149,15 @@ private:
 	template<class T, class U>
 	static ICVar* RegisterImpl(non_enum_tag, const char* szName, T* pSrc, U defaultValue, int flags = 0, const char* szHelp = "", ConsoleVarFunc pChangeFunc = nullptr, bool bAllowModify = true)
 	{
-		static_assert(std::is_same<T, int>::value || std::is_same<T, float>::value || std::is_same<T, const char*>::value, "Invalid template type!");
+		#define MP_FUNCTION(X) std::is_same<T, X>::value ||
+		static_assert(std::is_same<T, int>::value ||
+			std::is_same<T, float>::value ||
+			#include "mpfloat.types"
+			std::is_same<T, CTimeValue>::value ||
+			std::is_same<T, const char*>::value,
+			"Invalid template type!"
+			);
+		#undef MP_FUNCTION
 		static_assert(std::is_convertible<U, T>::value, "Invalid default value type!");
 		CRY_ASSERT(gEnv && gEnv->pConsole);
 		if (gEnv && gEnv->pConsole)
@@ -307,6 +343,15 @@ struct SDummyCVar : ICVar
 
 //! Preferred way to register a float CVar
 #define REGISTER_FLOAT(_name, _def_val, _flags, _comment) ConsoleRegistrationHelper::RegisterFloat(_name, (_def_val), (_flags), CVARHELP(_comment))
+
+//! Preferred way to register a mpfloat CVar
+#define REGISTER_MPFLOAT(_name, _def_val, _flags, _comment) ConsoleRegistrationHelper::RegisterMPFloat(_name, (_def_val), (_flags), CVARHELP(_comment))
+
+//! Preferred way to register a time CVar
+#define REGISTER_TIME(_name, _def_val, _flags, _comment) ConsoleRegistrationHelper::RegisterTime(_name, (_def_val), (_flags), CVARHELP(_comment))
+
+//! Preferred way to register an time CVar with a callback
+#define REGISTER_TIME_CB(_name, _def_val, _flags, _comment, _onchangefunction) ConsoleRegistrationHelper::RegisterTime(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction)
 
 //! Offers more flexibility but more code is required
 #define REGISTER_CVAR2(_name, _var, _def_val, _flags, _comment) ConsoleRegistrationHelper::Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment))
