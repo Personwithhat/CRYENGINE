@@ -77,8 +77,8 @@ namespace UQS
 		//
 		//===================================================================================
 
-		const CTimeValue CQueryManager::s_delayBeforeFadeOut(2.5f);
-		const CTimeValue CQueryManager::s_fadeOutDuration(0.5f);
+		const CTimeValue CQueryManager::s_delayBeforeFadeOut("2.5");
+		const CTimeValue CQueryManager::s_fadeOutDuration("0.5");
 		const CTimeValue CQueryManager::s_totalDebugDrawDuration = CQueryManager::s_delayBeforeFadeOut + CQueryManager::s_fadeOutDuration;
 
 		CQueryManager::CQueryManager(CQueryHistoryManager& queryHistoryManager)
@@ -238,7 +238,7 @@ namespace UQS
 
 		void CQueryManager::DebugDrawRunningQueriesStatistics2D() const
 		{
-			const CTimeValue now = gEnv->pTimer->GetAsyncTime();
+			const CTimeValue now = GetGTimer()->GetAsyncTime();
 			int row = 1;
 
 			//
@@ -255,7 +255,7 @@ namespace UQS
 			for (const SHistoryQueryInfo2D& historyEntry : m_debugDrawHistory2D)
 			{
 				const CTimeValue age = (now - historyEntry.finishedTimestamp);
-				const float alpha = (age < s_delayBeforeFadeOut) ? 1.0f : clamp_tpl(1.0f - (age - s_delayBeforeFadeOut).GetSeconds() / s_fadeOutDuration.GetSeconds(), 0.0f, 1.0f);
+				const float alpha = (age < s_delayBeforeFadeOut) ? 1.0f : BADF CLAMP(1 - (age - s_delayBeforeFadeOut).GetSeconds() / s_fadeOutDuration.GetSeconds(), 0, 1);
 				const ColorF color = historyEntry.bQueryFinishedWithSuccess ? ColorF(0.0f, 1.0f, 0.0f, alpha) : ColorF(1.0f, 0.0f, 0.0f, alpha);
 				row = DebugDrawQueryStatistics(historyEntry.statistics, historyEntry.queryID, row, color);
 				++row;
@@ -364,7 +364,7 @@ namespace UQS
 							}
 						}
 
-						timeBudgetForThisQuery = totalRemainingTimeBudget.GetSeconds() / (float)numRemainingQueriesThatRequireSomeTimeBudget;
+						timeBudgetForThisQuery = totalRemainingTimeBudget / numRemainingQueriesThatRequireSomeTimeBudget;
 					}
 
 					totalRemainingTimeBudget -= timeBudgetForThisQuery;
@@ -375,9 +375,9 @@ namespace UQS
 					//
 
 					Shared::CUqsString error;
-					const CTimeValue timestampBeforeQueryUpdate = gEnv->pTimer->GetAsyncTime();
+					const CTimeValue timestampBeforeQueryUpdate = GetGTimer()->GetAsyncTime();
 					const CQueryBase::EUpdateState queryState = pQuery->Update(timeBudgetForThisQuery, error);
-					const CTimeValue timestampAfterQueryUpdate = gEnv->pTimer->GetAsyncTime();
+					const CTimeValue timestampAfterQueryUpdate = GetGTimer()->GetAsyncTime();
 
 					//
 					// deal with the query's update status
@@ -460,9 +460,9 @@ namespace UQS
 							// it will get skipped in subsequent updates until all its preceding queries are finished
 							//
 
-							const float overallFractionUsedSoFar = (totalTimeBudget.GetValue() > 0) ? (totalTimeUsedSoFar.GetMilliSeconds() / totalTimeBudget.GetMilliSeconds()) : 1.0f;
+							const mpfloat overallFractionUsedSoFar = (totalTimeBudget > 0) ? (totalTimeUsedSoFar / totalTimeBudget).conv<mpfloat>() : 1;
 
-							if (overallFractionUsedSoFar > 1.0f + SCvars::timeBudgetExcessThresholdInPercent * 0.01f)
+							if (overallFractionUsedSoFar > 1 + SCvars::timeBudgetExcessThresholdInPercent * "0.01")
 							{
 								CRY_ASSERT(worstPerformingQuery.itInQueries != m_queries.end());
 								CRY_ASSERT(worstPerformingQuery.itInQueries->performanceOffenderMercyCountdown >= 0);
@@ -522,7 +522,7 @@ namespace UQS
 						{
 							CQueryBase::SStatistics stats;
 							entry.pQuery->GetStatistics(stats);
-							SHistoryQueryInfo2D newHistoryEntry(entry.queryID, stats, entry.bQueryFinishedWithSuccess, gEnv->pTimer->GetAsyncTime());
+							SHistoryQueryInfo2D newHistoryEntry(entry.queryID, stats, entry.bQueryFinishedWithSuccess, GetGTimer()->GetAsyncTime());
 							m_debugDrawHistory2D.push_back(std::move(newHistoryEntry));
 						}
 					}
@@ -652,7 +652,7 @@ namespace UQS
 		{
 			CRY_PROFILE_FUNCTION(UQS_PROFILED_SUBSYSTEM_TO_USE);
 
-			const CTimeValue now = gEnv->pTimer->GetAsyncTime();
+			const CTimeValue now = GetGTimer()->GetAsyncTime();
 
 			while (!m_debugDrawHistory2D.empty() && m_debugDrawHistory2D.front().finishedTimestamp + s_totalDebugDrawDuration < now)
 			{
@@ -709,7 +709,7 @@ namespace UQS
 			CLoggerIndentation _indent;
 
 			logger.Printf("consumed frames:            %i", (int)stats.totalConsumedFrames);
-			logger.Printf("consumed seconds:           %f (%.2f millisecs)", stats.totalConsumedTime.GetSeconds(), stats.totalConsumedTime.GetSeconds() * 1000.0f);
+			logger.Printf("consumed seconds:           %f (%.2f millisecs)", (float)stats.totalConsumedTime.GetSeconds(), stats.totalConsumedTime.GetMilliSeconds());
 			logger.Printf("generated items:            %i", (int)stats.numGeneratedItems);
 			logger.Printf("remaining items to inspect: %i", (int)stats.numRemainingItemsToInspect);
 			logger.Printf("final items:                %i", (int)stats.numItemsInFinalResultSet);
@@ -745,9 +745,9 @@ namespace UQS
 						(int)i + 1,
 						(int)stats.elapsedFramesPerPhase[i],
 						stats.elapsedTimePerPhase[i].GetSeconds(),
-						stats.elapsedTimePerPhase[i].GetSeconds() * 1000.0f,
+						stats.elapsedTimePerPhase[i].GetMilliSeconds(),
 						stats.peakElapsedTimePerPhaseUpdate[i].GetSeconds(),
-						stats.peakElapsedTimePerPhaseUpdate[i].GetSeconds() * 1000.0f);
+						stats.peakElapsedTimePerPhaseUpdate[i].GetMilliSeconds());
 				}
 			}
 		}

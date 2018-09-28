@@ -155,9 +155,9 @@ struct SEntitySpawnParams
 struct SEntityUpdateContext
 {
 	//! Delta time for this frame
-	float  fFrameTime;
-	//! Current time at the start of the entity update - see ITimer::GetCurTime
-	float  fCurrTime;
+	CTimeValue  fFrameTime;
+	//! Current game simulation time at the start of the entity update - see ITimer::GetFrameStartTime()
+	CTimeValue  fCurrTime; // PERSONAL IMPROVE: Should probably be renamed to startTime or something? Maybe with some other variables/functions for clarity.
 	//! The current frame identifier, see gEnv->nMainFrameID
 	uint32 frameID;
 };
@@ -685,7 +685,7 @@ public:
 	//! \param componentInstanceGUID Optional instance GUID of the component to which this timer is added. If set, the timer will be serialized to disk and restored with save games.
 	//! \param timerId Timer ID, multiple timers with different IDs are possible.
 	//! \param timeInMilliseconds Timer timeout time in milliseconds.
-	virtual void SetTimer(ISimpleEntityEventListener* pListener, EntityId id, const CryGUID& componentInstanceGUID, uint8 timerId, int timeInMilliseconds) = 0;
+	virtual void SetTimer(ISimpleEntityEventListener* pListener, EntityId id, const CryGUID& componentInstanceGUID, uint8 timerId, const CTimeValue& inTime) = 0;
 
 	//! Stops already started entity timer with this id for the specified listener / component
 	//! \param timerId Timer ID of the timer started for this entity.
@@ -1287,7 +1287,7 @@ public:
 	virtual void OnRenderNodeVisibilityChange(bool bBecomeVisible) = 0;
 
 	//! \return the last time (as set by the system timer) when the entity was last seen.
-	virtual float GetLastSeenTime() const = 0;
+	virtual const CTimeValue& GetLastSeenTime() const = 0;
 
 	//! ObjectID that corresponds to editor base objects. This is used for selection and highlighting
 	//! so it should be set by editor and have a 1-1 correspondence with a baseobject. This is intended as a

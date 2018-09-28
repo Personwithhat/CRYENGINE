@@ -109,13 +109,13 @@ template<class Value> void SerializeWeakRefMap(TSerialize& ser, const char* sNam
 
 SSoundPerceptionDescriptor CPuppet::s_DefaultSoundPerceptionDescriptor[AISOUND_LAST] =
 {
-	SSoundPerceptionDescriptor(0.0f, 1.0f, 2.0f, PERCEPTION_INTERESTING_THR, 1.0f, 0.25f),
-	SSoundPerceptionDescriptor(0.0f, 1.0f, 4.0f, PERCEPTION_INTERESTING_THR, 1.0f, 0.5f),
-	SSoundPerceptionDescriptor(0.0f, 1.0f, 4.0f, PERCEPTION_THREATENING_THR, 1.0f, 0.5f),
-	SSoundPerceptionDescriptor(0.0f, 1.0f, 2.0f, PERCEPTION_INTERESTING_THR, 1.0f, 0.5f),
-	SSoundPerceptionDescriptor(0.0f, 1.0f, 4.0f, PERCEPTION_THREATENING_THR, 1.0f, 0.5f),
-	SSoundPerceptionDescriptor(0.0f, 1.0f, 4.0f, PERCEPTION_AGGRESSIVE_THR,  1.0f, 0.25f),
-	SSoundPerceptionDescriptor(0.0f, 1.0f, 6.0f, PERCEPTION_AGGRESSIVE_THR,  1.0f, 0.75f)
+	SSoundPerceptionDescriptor(0.0f, 1.0f, 2, PERCEPTION_INTERESTING_THR, 1.0f, 0.25f),
+	SSoundPerceptionDescriptor(0.0f, 1.0f, 4, PERCEPTION_INTERESTING_THR, 1.0f, 0.5f),
+	SSoundPerceptionDescriptor(0.0f, 1.0f, 4, PERCEPTION_THREATENING_THR, 1.0f, 0.5f),
+	SSoundPerceptionDescriptor(0.0f, 1.0f, 2, PERCEPTION_INTERESTING_THR, 1.0f, 0.5f),
+	SSoundPerceptionDescriptor(0.0f, 1.0f, 4, PERCEPTION_THREATENING_THR, 1.0f, 0.5f),
+	SSoundPerceptionDescriptor(0.0f, 1.0f, 4, PERCEPTION_AGGRESSIVE_THR,  1.0f, 0.25f),
+	SSoundPerceptionDescriptor(0.0f, 1.0f, 6, PERCEPTION_AGGRESSIVE_THR,  1.0f, 0.75f)
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ SSoundPerceptionDescriptor CPuppet::s_DefaultSoundPerceptionDescriptor[AISOUND_L
 //////////////////////////////////////////////////////////////////////
 
 CPuppet::CPuppet()
-	: m_fLastUpdateTime(0.0f)
+	: m_fLastUpdateTime(0)
 	, m_bWarningTargetDistance(false)
 	, m_Alertness(-1)
 	, m_pPerceptionHandler(NULL)
@@ -151,7 +151,7 @@ CPuppet::CPuppet()
 	, m_allowedToHitTarget(false)
 	, m_allowedToUseExpensiveAccessory(false)
 	, m_firingReactionTimePassed(false)
-	, m_firingReactionTime(0.0f)
+	, m_firingReactionTime(0)
 	, m_targetApproach(0.0f)
 	, m_targetFlee(0.0f)
 	, m_targetApproaching(false)
@@ -163,7 +163,7 @@ CPuppet::CPuppet()
 	, m_chaseSpeedRate(0.0f)
 	, m_lastChaseUrgencyDist(-1)
 	, m_lastChaseUrgencySpeed(-1)
-	, m_vehicleAvoidingTime(0.0f)
+	, m_vehicleAvoidingTime(0)
 	, m_targetLastMissPoint(ZERO)
 	, m_targetFocus(0.0f)
 	, m_targetZone(AIZONE_OUT)
@@ -175,15 +175,15 @@ CPuppet::CPuppet()
 	, m_targetDamageHealthThrHistory(0)
 	, m_targetSeenTime(0)
 	, m_targetLostTime(0)
-	, m_burstEffectTime(0.0f)
+	, m_burstEffectTime(0)
 	, m_burstEffectState(0)
-	, m_targetDazzlingTime(0.0f)
+	, m_targetDazzlingTime(0)
 	, m_bCoverFireEnabled(false)
-	, m_lastSteerTime(0.0f)
-	, m_lastTimeUpdatedBestTarget(0.0f)
+	, m_lastSteerTime(0)
+	, m_lastTimeUpdatedBestTarget(0)
 	, m_delayedStance(STANCE_NULL)
 	, m_delayedStanceMovementCounter(0)
-	, m_outOfAmmoTimeOut(0.0f)
+	, m_outOfAmmoTimeOut(0)
 	, m_lastAimObstructionResult(true)
 	, m_updatePriority(AIPUP_LOW)
 	, m_vForcedNavigation(ZERO)
@@ -195,7 +195,7 @@ CPuppet::CPuppet()
 	, m_steeringOccupancyBias(0)
 	, m_steeringAdjustTime(0)
 	, m_steeringEnabled(false)
-	, m_alarmedTime(0.0f)
+	, m_alarmedTime(0)
 	, m_alarmedLevel(0.0f)
 	, m_fireDisabled(0)
 	, m_closeRangeStrafing(false)
@@ -477,9 +477,7 @@ void CPuppet::Update(EUpdateType type)
 	if (!m_bDryUpdate)
 	{
 		CTimeValue fCurrentTime = GetAISystem()->GetFrameStartTime();
-		m_fTimePassed = (m_fLastUpdateTime.GetMilliSecondsAsInt64() > 0)
-		                ? min(0.5f, (fCurrentTime - m_fLastUpdateTime).GetSeconds())
-		                : 0;
+		m_fTimePassed = (m_fLastUpdateTime > 0) ? min(CTimeValue("0.5"), fCurrentTime - m_fLastUpdateTime) : 0;
 		m_fLastUpdateTime = fCurrentTime;
 
 		// Dario: From Crysis 3 on we don't need to clear the movement direction every frame (04.09.2014)
@@ -524,11 +522,11 @@ void CPuppet::Update(EUpdateType type)
 		if (pAttentionTarget && (pAttentionTarget->IsAgent() || (pAttentionTarget->GetType() == AIOBJECT_TARGET)))
 		{
 			m_lastLiveTargetPos = pAttentionTarget->GetPos();
-			m_timeSinceLastLiveTarget = 0.0f;
+			m_timeSinceLastLiveTarget.SetSeconds(0);
 		}
 		else
 		{
-			if (m_timeSinceLastLiveTarget >= 0.0f)
+			if (m_timeSinceLastLiveTarget >= 0)
 				m_timeSinceLastLiveTarget += m_fTimePassed;
 		}
 
@@ -596,21 +594,21 @@ void CPuppet::Update(EUpdateType type)
 		m_State.eTargetType = AITARGET_NONE;
 	}
 
-	const float dt = GetAISystem()->GetFrameDeltaTime();
+	const CTimeValue dt = GetAISystem()->GetFrameDeltaTime();
 
-	m_targetDazzlingTime = max(0.0f, m_targetDazzlingTime - dt);
+	m_targetDazzlingTime = max(CTimeValue(0), m_targetDazzlingTime - dt);
 	if (GetAttentionTargetType() == AITARGET_VISUAL && GetAttentionTargetThreat() == AITHREAT_AGGRESSIVE)
 	{
-		m_targetLostTime = 0.0f;
-		m_targetSeenTime = min(m_targetSeenTime + dt, 10.0f);
+		m_targetLostTime.SetSeconds(0);
+		m_targetSeenTime = min(m_targetSeenTime + dt, CTimeValue(10));
 	}
 	else
 	{
 		m_targetLostTime += dt;
-		m_targetSeenTime = max(0.0f, m_targetSeenTime - dt);
+		m_targetSeenTime = max(CTimeValue(0), m_targetSeenTime - dt);
 	}
 
-	FireCommand(gEnv->pTimer->GetFrameTime());
+	FireCommand(GetGTimer()->GetFrameTime());
 
 	if (m_Parameters.m_fAwarenessOfPlayer > 0)
 		CheckAwarenessPlayer();
@@ -619,7 +617,7 @@ void CPuppet::Update(EUpdateType type)
 	for (TimeOutVec3List::iterator it = m_recentUnreachableHideObjects.begin(); it != m_recentUnreachableHideObjects.end(); )
 	{
 		it->first -= GetAISystem()->GetFrameDeltaTime();
-		if (it->first < 0.0f)
+		if (it->first < 0)
 			it = m_recentUnreachableHideObjects.erase(it);
 		else
 			++it;
@@ -747,10 +745,10 @@ void CPuppet::UpdateProxy(EUpdateType type)
 //===================================================================
 void CPuppet::UpdateTargetMovementState()
 {
-	const float dt = m_fTimePassed;
+	const CTimeValue dt = m_fTimePassed;
 	CAIObject* pAttentionTarget = m_refAttentionTarget.GetAIObject();
 
-	if (!pAttentionTarget || dt < 0.00001f)
+	if (!pAttentionTarget || dt < "0.00001") // MP_EPSILON
 	{
 		m_lastTargetValid = false;
 		m_targetApproaching = false;
@@ -807,12 +805,12 @@ void CPuppet::UpdateTargetMovementState()
 		if (curDist < approachMax && movingTowards)
 			m_targetApproach += targetSpeed * sqr(dot) * 0.25f;
 		else
-			m_targetApproach -= dt * 2.0f;
+			m_targetApproach -= dt.BADGetSeconds() * 2;
 
 		if (curDist > fleeMin && movingAway)
 			m_targetFlee += targetSpeed * sqr(1.0f - dot) * 0.1f;
 		else
-			m_targetFlee -= dt * 2.0f;
+			m_targetFlee -= dt.BADGetSeconds() * 2;
 
 		m_lastTargetPos = targetPos;
 	}
@@ -1000,15 +998,15 @@ void CPuppet::UpdatePuppetInternalState()
 	assert(!m_bDryUpdate);
 	// Update alarmed state
 	m_alarmedTime -= m_fTimePassed;
-	if (m_alarmedTime < 0.0f)
-		m_alarmedTime = 0.0f;
+	if (m_alarmedTime < 0)
+		m_alarmedTime.SetSeconds(0);
 
 	// Sight range threshold.
 	// The sight attenuation range envelope changes based on the alarmed state.
 	// The threshold is changed smoothly.
-	const float alarmLevelChangeTime = 3.0f;
+	const CTimeValue alarmLevelChangeTime = 3;
 	const float alarmLevelGoal = IsAlarmed() ? 1.0f : 0.0f;
-	m_alarmedLevel += (alarmLevelGoal - m_alarmedLevel) * (m_fTimePassed / alarmLevelChangeTime);
+	m_alarmedLevel += (alarmLevelGoal - m_alarmedLevel) * BADF (m_fTimePassed / alarmLevelChangeTime);
 	Limit(m_alarmedLevel, 0.0f, 1.0f);
 
 	STargetSelectionInfo targetSelectionInfo;
@@ -1069,7 +1067,7 @@ void CPuppet::UpdatePuppetInternalState()
 			// Keep track of peak threat level and type here
 			CTimeValue curTime = GetAISystem()->GetFrameStartTime();
 
-			if ((targetSelectionInfo.targetThreat > m_State.ePeakTargetThreat) || (curTime - m_lastTimeUpdatedBestTarget).GetSeconds() > 30.0f)
+			if ((targetSelectionInfo.targetThreat > m_State.ePeakTargetThreat) || (curTime - m_lastTimeUpdatedBestTarget).GetSeconds() > 30)
 			{
 				// Save the previous peak now
 				m_State.ePreviousPeakTargetThreat = m_State.ePeakTargetThreat;
@@ -1740,7 +1738,7 @@ Vec3 CPuppet::InterpolateLookOrAimTargetPos(const Vec3& current, const Vec3& tar
 		float cosAngle = curDir.Dot(reqDir);
 
 		const float eps = 1e-6f;
-		const float maxRate = maxRatePerSec * GetAISystem()->GetFrameDeltaTime();
+		const float maxRate = maxRatePerSec * GetAISystem()->GetFrameDeltaTime().BADGetSeconds();
 		const float thr = cosf(maxRate);
 
 		if (cosAngle > thr || maxRate < eps || dist < eps)
@@ -1854,7 +1852,7 @@ void CPuppet::HandlePathDecision(MNMPathRequestResult& result)
 //===================================================================
 // Devalue
 //===================================================================
-void CPuppet::Devalue(IAIObject* pObject, bool bDevaluePuppets, float fAmount)
+void CPuppet::Devalue(IAIObject* pObject, bool bDevaluePuppets, const CTimeValue& fAmount)
 {
 	DevaluedMap::iterator di;
 
@@ -2076,8 +2074,8 @@ bool CPuppet::NavigateAroundObjects(const Vec3& targetPos, bool fullUpdate)
 
 	CTimeValue curTime = GetAISystem()->GetFrameStartTime();
 
-	int64 deltaTime = (curTime - m_lastSteerTime).GetMilliSecondsAsInt64();
-	const int64 timeForUpdate = 500;
+	CTimeValue deltaTime = curTime - m_lastSteerTime;
+	const CTimeValue timeForUpdate = "0.5";
 
 	if (steeringEnabled && (deltaTime > timeForUpdate || !lastSteeringEnabled))
 	{
@@ -2138,7 +2136,7 @@ bool CPuppet::NavigateAroundObjects(const Vec3& targetPos, bool fullUpdate)
 				selfBounds.max.z += 0.25f;
 
 				// Build occupancy map
-				const float radScale = 1.0f - clamp_tpl(m_steeringAdjustTime - 1.0f, 0.0f, 1.0f);
+				const float radScale = 1.0f - clamp_tpl(m_steeringAdjustTime.BADGetSeconds() - 1.0f, 0.0f, 1.0f);
 				const float selfRad = m_movementAbility.pathRadius * radScale;
 				m_steeringOccupancy.Reset(GetPhysicsPos(), GetEntityDir(), m_movementAbility.avoidanceRadius * 2.0f);
 
@@ -2283,7 +2281,7 @@ bool CPuppet::NavigateAroundObjects(const Vec3& targetPos, bool fullUpdate)
 				m_steeringAdjustTime -= m_fTimePassed;
 			}
 
-			Limit(m_steeringAdjustTime, 0.0f, 3.0f);
+			m_steeringAdjustTime = CLAMP(m_steeringAdjustTime, 0, 3);
 		}
 		else
 		{
@@ -2551,14 +2549,14 @@ void CPuppet::Reset(EObjectResetType type)
 
 	m_steeringOccupancy.Reset(Vec3Constants<float>::fVec3_Zero, Vec3Constants<float>::fVec3_OneY, 1.0f);
 	m_steeringOccupancyBias = 0;
-	m_steeringAdjustTime = 0;
+	m_steeringAdjustTime.SetSeconds(0);
 
 	m_mapDevaluedPoints.clear();
 
 	m_steeringObjects.clear();
 
 	ClearPotentialTargets();
-	m_fLastUpdateTime = 0.0f;
+	m_fLastUpdateTime.SetSeconds(0);
 
 	m_bDryUpdate = false;
 
@@ -2594,8 +2592,8 @@ void CPuppet::Reset(EObjectResetType type)
 	m_delayedStance = STANCE_NULL;
 	m_delayedStanceMovementCounter = 0;
 
-	m_timeSinceTriggerPressed = 0.0f;
-	m_friendOnWayElapsedTime = 0.0f;
+	m_timeSinceTriggerPressed.SetSeconds(0);;
+	m_friendOnWayElapsedTime.SetSeconds(0);
 
 	if (m_pFireCmdHandler)
 		m_pFireCmdHandler->Reset();
@@ -2615,8 +2613,8 @@ void CPuppet::Reset(EObjectResetType type)
 
 	m_allowedToUseExpensiveAccessory = false;
 	m_firingReactionTimePassed = false;
-	m_firingReactionTime = 0.0f;
-	m_outOfAmmoTimeOut = 0.0f;
+	m_firingReactionTime.SetSeconds(0);
+	m_outOfAmmoTimeOut.SetSeconds(0);
 
 	m_currentNavSOStates.Clear();
 	m_pendingNavSOStates.Clear();
@@ -2629,16 +2627,16 @@ void CPuppet::Reset(EObjectResetType type)
 	m_targetDistanceToSilhouette = FLT_MAX;
 	m_targetBiasDirection.Set(0, 0, -1);
 	m_targetEscapeLastMiss = 0.0f;
-	m_targetSeenTime = 0;
-	m_targetLostTime = 0;
+	m_targetSeenTime.SetSeconds(0);
+	m_targetLostTime.SetSeconds(0);
 
-	m_alarmedTime = 0.0f;
+	m_alarmedTime.SetSeconds(0);
 	m_alarmedLevel = 0.0f;
 
 	m_targetDamageHealthThr = -1.0f;
-	m_burstEffectTime = 0.0f;
+	m_burstEffectTime.SetSeconds(0);
 	m_burstEffectState = 0;
-	m_targetDazzlingTime = 0.0f;
+	m_targetDazzlingTime.SetSeconds(0);
 
 	if (m_targetDamageHealthThrHistory)
 		m_targetDamageHealthThrHistory->Reset();
@@ -2926,7 +2924,7 @@ void CPuppet::RequestThrowGrenade(ERequestedGrenadeType eGrenadeType, int iRegTy
 //====================================================================
 // FireCommand
 //====================================================================
-void CPuppet::FireCommand(float updateTime)
+void CPuppet::FireCommand(const CTimeValue& updateTime)
 {
 	CCCPOINT(CPuppet_FireCommand);
 	CRY_PROFILE_FUNCTION(PROFILE_AI);
@@ -2943,12 +2941,12 @@ void CPuppet::FireCommand(float updateTime)
 		m_State.fireMelee = eAIFS_Off;
 
 		m_aimState = AI_AIM_NONE;
-		m_friendOnWayElapsedTime = 0.0f;
+		m_friendOnWayElapsedTime.SetSeconds(0);
 
 		ResetTargetTracking();
 
 		m_targetBiasDirection *= 0.5f;
-		m_burstEffectTime = 0.0f;
+		m_burstEffectTime.SetSeconds(0);
 		m_burstEffectState = 0;
 
 		return;
@@ -3182,7 +3180,7 @@ void CPuppet::FireCommand(float updateTime)
 		ResetTargetTracking();
 
 		m_targetBiasDirection *= 0.5f;
-		m_burstEffectTime = 0.0f;
+		m_burstEffectTime.SetSeconds(0);
 		m_burstEffectState = 0;
 
 		// (Kevin) Warface still needs target tracking to be updated when the AI cannot fire their weapon
@@ -3246,8 +3244,8 @@ void CPuppet::FireCommand(float updateTime)
 			SetSignal(GetAISystem()->GetSignalManager()->CreateSignal(AISIGNAL_DEFAULT, GetAISystem()->GetSignalManager()->GetBuiltInSignalDescriptions().GetOnOutOfAmmo(), GetAIObjectID()));
 
 			m_outOfAmmoSent = true;
-			m_outOfAmmoTimeOut = 0.0f;
-			m_burstEffectTime = 0.0f;
+			m_outOfAmmoTimeOut.SetSeconds(0);
+			m_burstEffectTime.SetSeconds(0);
 			m_burstEffectState = 0;
 
 			if (m_pFireCmdHandler)
@@ -3261,7 +3259,7 @@ void CPuppet::FireCommand(float updateTime)
 		else if ((gAIEnv.configuration.eCompatibilityMode != ECCM_WARFACE) && !weaponInfo.isReloading)
 		{
 			m_outOfAmmoTimeOut += updateTime;
-			if (m_outOfAmmoTimeOut > 3.0f)
+			if (m_outOfAmmoTimeOut > 3)
 				m_outOfAmmoSent = false;
 		}
 	}
@@ -3309,7 +3307,7 @@ void CPuppet::FireCommand(float updateTime)
 
 	if (eAIFS_On == m_State.fire)
 	{
-		m_timeSinceTriggerPressed = 0.0f;
+		m_timeSinceTriggerPressed.SetSeconds(0);
 		m_State.vShootTargetPos = m_State.vAimTargetPos;
 
 		m_State.projectileInfo.Reset();
@@ -3347,7 +3345,7 @@ void CPuppet::FireCommand(float updateTime)
 //===================================================================
 void CPuppet::HandleWeaponEffectBurstDrawFire(CAIObject* pTarget, Vec3& aimTarget, bool& canFire)
 {
-	float drawFireTime = m_CurrentWeaponDescriptor.drawTime;
+	CTimeValue drawFireTime = m_CurrentWeaponDescriptor.drawTime;
 	if (m_CurrentWeaponDescriptor.fChargeTime > 0)
 		drawFireTime += m_CurrentWeaponDescriptor.fChargeTime;
 
@@ -3390,19 +3388,19 @@ void CPuppet::HandleWeaponEffectBurstDrawFire(CAIObject* pTarget, Vec3& aimTarge
 			float endHeight = targetGroundPos.z;
 			float startHeight = floorHeight - (firePos.z - floorHeight);
 
-			float t;
+			nTime t;
 			if (m_CurrentWeaponDescriptor.fChargeTime > 0)
-				t = clamp_tpl((m_burstEffectTime - m_CurrentWeaponDescriptor.fChargeTime) / (drawFireTime - m_CurrentWeaponDescriptor.fChargeTime), 0.0f, 1.0f);
+				t = CLAMP((m_burstEffectTime - m_CurrentWeaponDescriptor.fChargeTime) / (drawFireTime - m_CurrentWeaponDescriptor.fChargeTime), 0, 1);
 			else
-				t = clamp_tpl(m_burstEffectTime / drawFireTime, 0.0f, 1.0f);
+				t = CLAMP(m_burstEffectTime / drawFireTime, 0, 1);
 
 			CPNoise3* pNoise = gEnv->pSystem->GetNoiseGen();
-			float noiseScale = clamp_tpl((m_burstEffectTime - 0.5f), 0.0f, 1.0f);
-			float noise = noiseScale * pNoise->Noise1D(m_spreadFireTime + m_burstEffectTime * m_CurrentWeaponDescriptor.sweepFrequency);
+			float noiseScale = BADF CLAMP((m_burstEffectTime.GetSeconds() - "0.5"), 0, 1);
+			float noise = noiseScale * pNoise->Noise1D((m_spreadFireTime + m_burstEffectTime * m_CurrentWeaponDescriptor.sweepFrequency).BADGetSeconds());
 			Vec3 right(dirTargetToShooter.y, -dirTargetToShooter.x, 0);
 
 			aimTarget = targetGroundPos + right * (noise * m_CurrentWeaponDescriptor.sweepWidth);
-			aimTarget.z = startHeight + (endHeight - startHeight) * (1 - sqr(1 - t));
+			aimTarget.z = startHeight + (endHeight - startHeight) * BADF (1 - sqr(1 - t));
 
 			// Clamp to bottom plane.
 			if (aimTarget.z < floorHeight && fabsf(aimTarget.z - firePos.z) > 0.01f)
@@ -3419,7 +3417,7 @@ void CPuppet::HandleWeaponEffectBurstDrawFire(CAIObject* pTarget, Vec3& aimTarge
 		}
 		else if (m_targetLostTime > m_CurrentWeaponDescriptor.drawTime)
 		{
-			float amount = clamp_tpl((m_targetLostTime - m_CurrentWeaponDescriptor.drawTime) / m_CurrentWeaponDescriptor.drawTime, 0.0f, 1.0f);
+			nTime amount = CLAMP((m_targetLostTime - m_CurrentWeaponDescriptor.drawTime) / m_CurrentWeaponDescriptor.drawTime, 0, 1);
 
 			Vec3 forw = GetEntityDir();
 			Vec3 right(forw.y, -forw.x, 0);
@@ -3427,8 +3425,8 @@ void CPuppet::HandleWeaponEffectBurstDrawFire(CAIObject* pTarget, Vec3& aimTarge
 			right.NormalizeSafe();
 			float distToTarget = Distance::Point_Point(aimTarget, GetPos());
 
-			float t = m_spreadFireTime + m_burstEffectTime * m_CurrentWeaponDescriptor.sweepFrequency;
-			float mag = amount * m_CurrentWeaponDescriptor.sweepWidth / 2;
+			float t = (m_spreadFireTime + m_burstEffectTime * m_CurrentWeaponDescriptor.sweepFrequency).BADGetSeconds();
+			float mag = BADF amount * m_CurrentWeaponDescriptor.sweepWidth / 2;
 
 			CPNoise3* pNoise = gEnv->pSystem->GetNoiseGen();
 
@@ -3438,7 +3436,7 @@ void CPuppet::HandleWeaponEffectBurstDrawFire(CAIObject* pTarget, Vec3& aimTarge
 			aimTarget += ox * right + oy * up;
 		}
 
-		if (m_burstEffectTime < 0.2f)
+		if (m_burstEffectTime < "0.2")
 		{
 			if (!m_State.vAimTargetPos.IsZero())
 			{
@@ -3473,7 +3471,7 @@ void CPuppet::HandleWeaponEffectBurstSnipe(CAIObject* pTarget, Vec3& aimTarget, 
 {
 	CCCPOINT(CPuppet_HandleWeaponEffectBurstSnipe);
 
-	float drawFireTime = m_CurrentWeaponDescriptor.drawTime;
+	CTimeValue drawFireTime = m_CurrentWeaponDescriptor.drawTime;
 	if (m_CurrentWeaponDescriptor.fChargeTime > 0)
 		drawFireTime += m_CurrentWeaponDescriptor.fChargeTime;
 
@@ -3507,7 +3505,7 @@ void CPuppet::HandleWeaponEffectBurstSnipe(CAIObject* pTarget, Vec3& aimTarget, 
 	float dist = dirTargetToShooter.NormalizeSafe();
 	Vec3 right(dirTargetToShooter.y, -dirTargetToShooter.x, 0);
 	Vec3 up(0, 0, 1);
-	float noiseScale = 1.0f;
+	nTime noiseScale = 1;
 
 	if (m_burstEffectState == 0)
 	{
@@ -3531,17 +3529,17 @@ void CPuppet::HandleWeaponEffectBurstSnipe(CAIObject* pTarget, Vec3& aimTarget, 
 			float endHeight = aimTarget.z;          //targetGroundPos.z;
 			float startHeight = aimTarget.z - 0.5f; //floorHeight - (firePos.z - floorHeight);
 
-			float t;
+			nTime t;
 			if (m_CurrentWeaponDescriptor.fChargeTime > 0)
-				t = clamp_tpl((m_burstEffectTime - m_CurrentWeaponDescriptor.fChargeTime) / (drawFireTime - m_CurrentWeaponDescriptor.fChargeTime), 0.0f, 1.0f);
+				t = CLAMP((m_burstEffectTime - m_CurrentWeaponDescriptor.fChargeTime) / (drawFireTime - m_CurrentWeaponDescriptor.fChargeTime), 0, 1);
 			else
-				t = clamp_tpl(m_burstEffectTime / drawFireTime, 0.0f, 1.0f);
+				t = CLAMP(m_burstEffectTime / drawFireTime, 0, 1);
 
 			noiseScale = t;
 
 			//					aimTarget = targetGroundPos + right * (noise * m_CurrentWeaponDescriptor.sweepWidth);
 			//			aimTarget = aimTarget + ox*right + oy*up;
-			aimTarget.z = startHeight + (endHeight - startHeight) * t;
+			aimTarget.z = startHeight + (endHeight - startHeight) * BADF t;
 
 			// Clamp to bottom plane.
 			//					if (aimTarget.z < floorHeight && fabsf(aimTarget.z - firePos.z) > 0.01f)
@@ -3558,7 +3556,7 @@ void CPuppet::HandleWeaponEffectBurstSnipe(CAIObject* pTarget, Vec3& aimTarget, 
 		else
 		{
 			m_burstEffectState = 1;
-			m_burstEffectTime = -1;
+			m_burstEffectTime.SetSeconds(-1);
 		}
 	}
 	else if (m_burstEffectState == 1)
@@ -3566,13 +3564,13 @@ void CPuppet::HandleWeaponEffectBurstSnipe(CAIObject* pTarget, Vec3& aimTarget, 
 		if (m_targetLostTime > m_CurrentWeaponDescriptor.drawTime)
 		{
 			if (m_burstEffectTime < 0)
-				m_burstEffectTime = 0;
+				m_burstEffectTime.SetSeconds(0);
 
 			if (canFire && m_aimState != AI_AIM_OBSTRUCTED)
 				m_burstEffectTime += m_fTimePassed;
 
 			// Target getting lost, aim above the head.
-			float amount = clamp_tpl((m_targetLostTime - m_CurrentWeaponDescriptor.drawTime) / m_CurrentWeaponDescriptor.drawTime, 0.0f, 1.0f);
+			nTime amount = CLAMP((m_targetLostTime - m_CurrentWeaponDescriptor.drawTime) / m_CurrentWeaponDescriptor.drawTime, 0, 1);
 
 			Vec3 forw = GetEntityDir();
 			Vec3 rightVector(forw.y, -forw.x, 0);
@@ -3581,27 +3579,27 @@ void CPuppet::HandleWeaponEffectBurstSnipe(CAIObject* pTarget, Vec3& aimTarget, 
 			float distToTarget = Distance::Point_Point(aimTarget, GetFirePos());
 
 			//			float t = m_spreadFireTime + m_burstEffectTime*m_CurrentWeaponDescriptor.sweepFrequency;
-			float mag = amount * m_CurrentWeaponDescriptor.sweepWidth / 2 * clamp_tpl((distToTarget - 1.0f) / 5.0f, 0.0f, 1.0f);
+			float mag = BADF amount * m_CurrentWeaponDescriptor.sweepWidth / 2 * clamp_tpl((distToTarget - 1.0f) / 5.0f, 0.0f, 1.0f);
 
 			CPNoise3* pNoise = gEnv->pSystem->GetNoiseGen();
 
-			float tsweep = m_burstEffectTime * m_CurrentWeaponDescriptor.sweepFrequency;
+			CTimeValue tsweep = m_burstEffectTime * m_CurrentWeaponDescriptor.sweepFrequency;
 
-			float ox = sinf(tsweep) * mag; // + pNoise->Noise1D(t) * mag;
+			float ox = sinf(tsweep.BADGetSeconds()) * mag; // + pNoise->Noise1D(t) * mag;
 			float oy = 0;                  //pNoise->Noise1D(t + 33.0f)/4 * mag;
 
-			aimTarget.z = aimTarget.z + (headHeight - aimTarget.z) * clamp_tpl(m_burstEffectTime, 0.0f, 1.0f);
+			aimTarget.z = aimTarget.z + (headHeight - aimTarget.z) * CLAMP(m_burstEffectTime.BADGetSeconds(), 0.0f, 1.0f);
 			aimTarget += ox * rightVector + oy * upVector;
 		}
 	}
 
-	float noiseTime = m_spreadFireTime;
+	CTimeValue noiseTime = m_spreadFireTime;
 	m_spreadFireTime += m_fTimePassed;
 
 	noiseTime *= m_CurrentWeaponDescriptor.sweepFrequency * 2;
 	CPNoise3* pNoise = gEnv->pSystem->GetNoiseGen();
-	float nx = pNoise->Noise1D(noiseTime) * noiseScale * 0.1f;
-	float ny = pNoise->Noise1D(noiseTime + 33.0f) * noiseScale * 0.1f;
+	float nx = pNoise->Noise1D(noiseTime.BADGetSeconds()) * BADF noiseScale * 0.1f;
+	float ny = pNoise->Noise1D(noiseTime.BADGetSeconds() + 33) * BADF noiseScale * 0.1f;
 	aimTarget += right * nx + up * ny;
 
 	//	GetAISystem()->AddDebugLine(aimTarget, firePos, 255,0,0, 10.0f);
@@ -3613,7 +3611,7 @@ void CPuppet::HandleWeaponEffectBurstSnipe(CAIObject* pTarget, Vec3& aimTarget, 
 //===================================================================
 void CPuppet::HandleWeaponEffectAimSweep(CAIObject* pTarget, Vec3& aimTarget, bool& canFire)
 {
-	float drawFireTime = m_CurrentWeaponDescriptor.drawTime;
+	CTimeValue drawFireTime = m_CurrentWeaponDescriptor.drawTime;
 	if (m_CurrentWeaponDescriptor.fChargeTime > 0)
 		drawFireTime += m_CurrentWeaponDescriptor.fChargeTime;
 
@@ -3639,7 +3637,7 @@ void CPuppet::HandleWeaponEffectAimSweep(CAIObject* pTarget, Vec3& aimTarget, bo
 	}
 
 	if (m_burstEffectTime < 0)
-		m_burstEffectTime = 0;
+		m_burstEffectTime.SetSeconds(0);
 
 	if (m_aimState != AI_AIM_OBSTRUCTED)
 		m_burstEffectTime += m_fTimePassed;
@@ -3659,22 +3657,22 @@ void CPuppet::HandleWeaponEffectAimSweep(CAIObject* pTarget, Vec3& aimTarget, bo
 	float distToTarget = Distance::Point_Point(aimTarget, GetFirePos());
 	float dscale = clamp_tpl((distToTarget - 1.0f) / 5.0f, 0.0f, 1.0f);
 
-	float tsweep = m_burstEffectTime * m_CurrentWeaponDescriptor.sweepFrequency;
+	CTimeValue tsweep = m_burstEffectTime * m_CurrentWeaponDescriptor.sweepFrequency;
 
-	float ox = sinf(tsweep) * mag * dscale; // + pNoise->Noise1D(t) * mag;
+	float ox = sinf(tsweep.BADGetSeconds()) * mag * dscale; // + pNoise->Noise1D(t) * mag;
 	float oy = 0;                           //pNoise->Noise1D(t + 33.0f)/4 * mag;
 
-	aimTarget.z = aimTarget.z + (headHeight - aimTarget.z) * clamp_tpl(m_burstEffectTime / 2, 0.0f, 1.0f);
+	aimTarget.z = aimTarget.z + (headHeight - aimTarget.z) * CLAMP(m_burstEffectTime / 2, 0, 1).BADGetSeconds();
 	aimTarget += ox * right + oy * up;
 
-	float noiseTime = m_spreadFireTime;
+	CTimeValue noiseTime = m_spreadFireTime;
 	m_spreadFireTime += m_fTimePassed;
 
-	float noiseScale = clamp_tpl(m_burstEffectTime, 0.0f, 1.0f) * dscale;
+	float noiseScale = clamp_tpl(m_burstEffectTime.BADGetSeconds(), 0.0f, 1.0f) * dscale;
 
 	noiseTime *= m_CurrentWeaponDescriptor.sweepFrequency * 2;
-	float nx = pNoise->Noise1D(noiseTime) * noiseScale * 0.1f;
-	float ny = pNoise->Noise1D(noiseTime + 33.0f) * noiseScale * 0.1f;
+	float nx = pNoise->Noise1D(noiseTime.BADGetSeconds()) * noiseScale * 0.1f;
+	float ny = pNoise->Noise1D(noiseTime.BADGetSeconds() + 33) * noiseScale * 0.1f;
 	aimTarget += right * nx + up * ny;
 }
 
@@ -3691,7 +3689,7 @@ void CPuppet::HandleWeaponEffectPanicSpread(CAIObject* pTarget, Vec3& aimTarget,
 	}
 
 	// Calculate aside-to-side wiggly motion when requesting the spread fire.
-	float t = m_spreadFireTime;
+	CTimeValue t = m_spreadFireTime;
 
 	Vec3 forw = GetEntityDir();
 	Vec3 right(forw.y, -forw.x, 0);
@@ -3699,17 +3697,17 @@ void CPuppet::HandleWeaponEffectPanicSpread(CAIObject* pTarget, Vec3& aimTarget,
 	right.NormalizeSafe();
 	float distToTarget = Distance::Point_Point(aimTarget, GetPos());
 
-	float speed = 1.7f;
+	mpfloat speed = "1.7";
 	float spread = DEG2RAD(40.0f);
 
 	t *= speed;
 	float mag = distToTarget * tanf(spread / 2);
-	mag *= 0.25f + min(m_burstEffectTime / 0.5f, 1.0f) * 0.75f; // Scale the effect down when starting.
+	mag *= 0.25f + (min(m_burstEffectTime / "0.5", CTimeValue(1)) * "0.75").BADGetSeconds(); // Scale the effect down when starting.
 
 	CPNoise3* pNoise = gEnv->pSystem->GetNoiseGen();
 
-	float ox = sinf(t * 1.7f) * mag + pNoise->Noise1D(t) * mag;
-	float oy = pNoise->Noise1D(t * 0.98432f + 33.0f) * mag;
+	float ox = sinf(t.BADGetSeconds() * 1.7f) * mag + pNoise->Noise1D(t.BADGetSeconds()) * mag;
+	float oy = pNoise->Noise1D(t.BADGetSeconds() * 0.98432f + 33.0f) * mag;
 
 	aimTarget += ox * right + oy * up;
 }
@@ -3883,7 +3881,7 @@ void CPuppet::CheckAwarenessPlayer()
 				return;
 			}
 		}
-		float fCurrentTime = GetAISystem()->GetFrameStartTimeSeconds();
+		CTimeValue fCurrentTime = GetAISystem()->GetFrameStartTime();
 		if (m_fLastTimeAwareOfPlayer == 0)
 			m_fLastTimeAwareOfPlayer = fCurrentTime;
 		else if (fCurrentTime - m_fLastTimeAwareOfPlayer >= GetParameters().m_fAwarenessOfPlayer)
@@ -3928,7 +3926,7 @@ void CPuppet::CheckAwarenessPlayer()
 			SetSignal(pSignal);
 			gAIEnv.pSmartObjectManager->SmartObjectEvent(pSignal->GetSignalDescription().GetName(), pUserEntity, pObjectEntity);
 		}
-		m_fLastTimeAwareOfPlayer = 0;
+		m_fLastTimeAwareOfPlayer.SetSeconds(0);
 		m_playerAwarenessType = PA_NONE;
 	}
 }
@@ -4044,7 +4042,7 @@ void CPuppet::Serialize(TSerialize ser)
 				m_targetDistanceToSilhouette = FLT_MAX;
 				m_targetBiasDirection.Set(0, 0, -1);
 				m_targetEscapeLastMiss = 0.0f;
-				m_burstEffectTime = 0.0f;
+				m_burstEffectTime.SetSeconds(0);
 				m_burstEffectState = 0;
 			}
 
@@ -4063,7 +4061,7 @@ void CPuppet::Serialize(TSerialize ser)
 		GetAISystem()->NotifyEnableState(this, m_bEnabled);
 		m_steeringOccupancy.Reset(Vec3(0, 0, 0), Vec3(0, 1, 0), 1.0f);
 		m_steeringOccupancyBias = 0;
-		m_steeringAdjustTime = 0;
+		m_steeringAdjustTime.SetSeconds(0);
 
 		m_currentWeaponId = 0;
 		m_CurrentWeaponDescriptor = AIWeaponDescriptor();
@@ -4178,7 +4176,7 @@ void CPuppet::AdjustSpeed(CAIObject* pNavTarget, float distance)
 
 	// puppet speed control
 	CTimeValue fCurrentTime = GetAISystem()->GetFrameStartTime();
-	float timeStep = (fCurrentTime - m_SpeedControl.fLastTime).GetSeconds();
+	CTimeValue timeStep = fCurrentTime - m_SpeedControl.fLastTime;
 
 	// evaluate the potential target speed
 	float targetSpeed = 0.0f;
@@ -4204,7 +4202,7 @@ void CPuppet::AdjustSpeed(CAIObject* pNavTarget, float distance)
 	}
 	else if (fCurrentTime > m_SpeedControl.fLastTime)
 	{
-		targetVel = (m_SpeedControl.vLastPos - GetPos()) / timeStep;
+		targetVel = (m_SpeedControl.vLastPos - GetPos()) / timeStep.BADGetSeconds();
 	}
 
 	targetSpeed = targetVel.GetLength();
@@ -4360,7 +4358,7 @@ void CPuppet::AdjustSpeed(CAIObject* pNavTarget, float distance)
 	else
 		chaseSpeed = maxSpeed * (frac - 1.0f);
 
-	static float chaseSpeedSmoothTime = 1.0f;
+	static CTimeValue chaseSpeedSmoothTime = 1;
 	SmoothCD(m_chaseSpeed, m_chaseSpeedRate, timeStep, chaseSpeed, chaseSpeedSmoothTime);
 
 	if (m_State.fDesiredSpeed > m_chaseSpeed)
@@ -4601,7 +4599,7 @@ bool CPuppet::CheckFriendsInLineOfFire(const Vec3& fireDirection, bool cheapTest
 	if (friendOnWay)
 		m_friendOnWayElapsedTime += GetAISystem()->GetUpdateInterval();
 	else
-		m_friendOnWayElapsedTime = 0.0f;
+		m_friendOnWayElapsedTime.BADGetSeconds();
 
 	return friendOnWay;
 }
@@ -4648,7 +4646,7 @@ void CPuppet::GetShootingStatus(SShootingStatus& ss)
 	ss.fireMode = m_fireMode;
 	ss.timeSinceTriggerPressed = m_timeSinceTriggerPressed;
 	ss.triggerPressed = (m_State.fire == eAIFS_On);
-	ss.friendOnWay = m_friendOnWayElapsedTime > 0.001f;
+	ss.friendOnWay = m_friendOnWayElapsedTime > "0.001";
 	ss.friendOnWayElapsedTime = m_friendOnWayElapsedTime;
 }
 
@@ -4926,7 +4924,7 @@ bool CPuppet::CanMemoryFire() const
 {
 	bool bResult = true;
 
-	if (m_targetLostTime > FLT_EPSILON)
+	if (m_targetLostTime > TV_EPSILON)
 	{
 		switch (m_eMemoryFireType)
 		{
@@ -4936,7 +4934,7 @@ bool CPuppet::CanMemoryFire() const
 
 		case eMFT_UseCoverFireTime:
 			{
-				const float fCoverTime = GetCoverFireTime();
+				const CTimeValue fCoverTime = GetCoverFireTime();
 				bResult = (m_targetLostTime <= fCoverTime);
 			}
 			break;
@@ -5167,10 +5165,10 @@ void CPuppet::DebugDrawPerceptionHandlerModifiers()
 	}
 }
 
-float CPuppet::GetTimeToNextShot() const
+CTimeValue CPuppet::GetTimeToNextShot() const
 {
 	if (m_pFireCmdHandler)
 		return m_pFireCmdHandler->GetTimeToNextShot();
 
-	return 0.0f;
+	return 0;
 }

@@ -53,7 +53,7 @@ public:
 
 	DEFINE_ACTION("ExactPositioning");
 
-	CAnimActionExactPositioning(FragmentID fragmentID, IAnimatedCharacter& animChar, bool isOneShot, float maxMiddleDuration, bool isNavSO, const QuatT& targetLocation, IAnimActionTriStateListener* pListener);
+	CAnimActionExactPositioning(FragmentID fragmentID, IAnimatedCharacter& animChar, bool isOneShot, const CTimeValue& maxMiddleDuration, bool isNavSO, const QuatT& targetLocation, IAnimActionTriStateListener* pListener);
 
 public:
 	inline static bool IsExactPositioningAction(const CAnimActionTriState* pAnimActionTriState)
@@ -75,7 +75,7 @@ private:
 // ============================================================================
 
 // ----------------------------------------------------------------------------
-CAnimActionExactPositioning::CAnimActionExactPositioning(FragmentID fragmentID, IAnimatedCharacter& animChar, bool isOneShot, float maxMiddleDuration, bool isNavSO, const QuatT& targetLocation, IAnimActionTriStateListener* pListener)
+CAnimActionExactPositioning::CAnimActionExactPositioning(FragmentID fragmentID, IAnimatedCharacter& animChar, bool isOneShot, const CTimeValue& maxMiddleDuration, bool isNavSO, const QuatT& targetLocation, IAnimActionTriStateListener* pListener)
 	:
 	TBase(
 	  isNavSO ? MANNEQUIN_NAVSO_EXACTPOS_PRIORITY : MANNEQUIN_EXACTPOS_PRIORITY,
@@ -142,7 +142,7 @@ CAIHandler::CAIHandler(IGameObject* pGameObject)
 	m_vAnimationTargetPosition(ZERO),
 	m_lastTargetType(AITARGET_NONE),
 	m_lastTargetThreat(AITHREAT_NONE),
-	m_timeSinceEvent(0.0f),
+	m_timeSinceEvent(0),
 	m_lastTargetID(0),
 	m_lastTargetPos(ZERO),
 	m_pScriptObject(NULL),
@@ -443,7 +443,7 @@ void CAIHandler::Reset(EObjectResetType type)
 	m_sPrevCharacterName.clear();
 #endif
 
-	m_timeSinceEvent = 0.0f;
+	m_timeSinceEvent.SetSeconds(0);
 }
 
 //
@@ -484,22 +484,22 @@ void CAIHandler::AIMind(SOBJECTSTATE& state)
 		{
 			if (!(state.eTargetType > m_lastTargetType || state.eTargetThreat > m_lastTargetThreat))
 			{
-				m_timeSinceEvent += gEnv->pTimer->GetFrameTime();
+				m_timeSinceEvent += GetGTimer()->GetFrameTime();
 
-				if (m_timeSinceEvent < 2.0f || distSq < 0.2f)
+				if (m_timeSinceEvent.GetSeconds() < 2 || distSq < 0.2f)
 					return;
 			}
 		}
 		//Otherwise use old system, and assume the same target with the same threat/type should not signal.
 		else if ((m_lastTargetType == state.eTargetType) && (m_lastTargetThreat == state.eTargetThreat))
 		{
-			m_timeSinceEvent += gEnv->pTimer->GetFrameTime();
+			m_timeSinceEvent += GetGTimer()->GetFrameTime();
 
 			return;
 		}
 	}
 
-	m_timeSinceEvent = 0.0f;
+	m_timeSinceEvent.SetSeconds(0);
 
 	EAITargetType prevType = m_lastTargetType;
 
@@ -1284,8 +1284,8 @@ bool CAIHandler::CallScript(IScriptTable* scriptTable, const char* funcName, flo
 				scriptTable->GetValue("Name", behaviour);
 				params.entity = m_pEntity->GetId();
 				params.text.Format("%s::%s", behaviour, funcName);
-				params.fadeTime = 10.0f;
-				params.visibleTime = 5.0f;
+				params.fadeTime.SetSeconds(10);
+				params.visibleTime.SetSeconds(5);
 				pPD->AddEntityTag(params);
 			}
 #endif
@@ -1308,11 +1308,11 @@ bool CAIHandler::CallScript(IScriptTable* scriptTable, const char* funcName, flo
 			{
 				if (!pCVarAILogging)
 					pCVarAILogging = gEnv->pConsole->GetCVar("ai_enablewarningserrors");
-				//float start = pCVarAILogging && pCVarAILogging->GetIVal() ? gEnv->pTimer->GetAsyncCurTime() : 0;
+				//float start = pCVarAILogging && pCVarAILogging->GetIVal() ? GetGTimer()->GetAsyncCurTime() : 0;
 
 				if (pCVarAILogging && pCVarAILogging->GetIVal())
 				{
-					start = gEnv->pTimer->GetAsyncTime();
+					start = GetGTimer()->GetAsyncTime();
 					IMemoryManager::SProcessMemInfo memCounters;
 					gEnv->pSystem->GetIMemoryManager()->GetProcessMemInfo(memCounters);
 					pagefaults = memCounters.PageFaultCount;
@@ -1373,7 +1373,7 @@ bool CAIHandler::CallScript(IScriptTable* scriptTable, const char* funcName, flo
 			{
 				if (pCVarAILogging && pCVarAILogging->GetIVal())
 				{
-					start = gEnv->pTimer->GetAsyncTime() - start;
+					start = GetGTimer()->GetAsyncTime() - start;
 					IMemoryManager::SProcessMemInfo memCounters;
 					gEnv->pSystem->GetIMemoryManager()->GetProcessMemInfo(memCounters);
 					pagefaults = memCounters.PageFaultCount - pagefaults;
@@ -1691,7 +1691,7 @@ void CAIHandler::HandleMannequinRequest(SOBJECTSTATE& state, CMovementRequest& m
 }
 
 // ----------------------------------------------------------------------------
-CAnimActionExactPositioning* CAIHandler::CreateExactPositioningAction(bool isOneShot, const float loopDuration, const char* szFragmentID, bool isNavigationalSO, const QuatT& exactStartLocation)
+CAnimActionExactPositioning* CAIHandler::CreateExactPositioningAction(bool isOneShot, const CTimeValue& loopDuration, const char* szFragmentID, bool isNavigationalSO, const QuatT& exactStartLocation)
 {
 	IActor* pActor = GetActor();
 	if (!pActor)
@@ -2311,7 +2311,7 @@ void CAIHandler::MakeFace(CAIFaceManager::e_ExpressionEvent expression)
 
 //
 //------------------------------------------------------------------------------
-void CAIHandler::DoReadibilityPackForAIObjectsOfType(unsigned short int nType, const char* szText, float fResponseDelay)
+void CAIHandler::DoReadibilityPackForAIObjectsOfType(unsigned short int nType, const char* szText, const CTimeValue& fResponseDelay)
 {
 	IAIObject* pAI = m_pEntity->GetAI();
 	if (!pAI || !pAI->IsEnabled())
@@ -2344,9 +2344,11 @@ void CAIHandler::DoReadibilityPackForAIObjectsOfType(unsigned short int nType, c
 	// Send response request.
 	if (nearestInGroup)
 	{
+		// PERSONAL DEBUG: How to update and trace AI signals better?? More'n likely missed Signal time creation & reading....
+		// Hard to grep/trace down.....SignalCRC's don't help much.		
 		AISignals::IAISignalExtraData* pData = pAISystem->CreateSignalExtraData();
 		pData->iValue = 0;                                                              // Default Priority.
-		pData->fValue = fResponseDelay > 0.0f ? fResponseDelay : cry_random(2.5f, 4.f); // Delay
+		pData->tVal = fResponseDelay > 0 ? fResponseDelay : cry_random<CTimeValue>("2.5", 4); // Delay
 		const AISignals::SignalSharedPtr pSignal = gEnv->pAISystem->GetSignalManager()->CreateSignal_DEPRECATED(AISIGNAL_DEFAULT, szText, nearestInGroup->GetAIObjectID(), pData);
 		pAISystem->SendSignal(AISignals::ESignalFilter::SIGNALFILTER_READABILITYRESPONSE, pSignal);
 	}

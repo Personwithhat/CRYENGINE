@@ -38,8 +38,8 @@ public:
 	virtual void        ResetVariables() override;
 
 	// Time of day is specified in hours.
-	virtual void                   SetTime(float fHour, bool bForceUpdate = false) override;
-	virtual float                  GetTime() override              { return m_fTime; }
+	virtual void                   SetTime(const CTimeValue& fHour, bool bForceUpdate = false) override;
+	virtual const CTimeValue&      GetTime() override              { return m_fTime; }
 
 	virtual void                   SetPaused(bool paused) override { m_bPaused = paused; }
 
@@ -60,8 +60,6 @@ public:
 
 	virtual void                   Serialize(XmlNodeRef& node, bool bLoading) override;
 	virtual void                   Serialize(TSerialize ser) override;
-
-	virtual void                   SetTimer(ITimer* pTimer) override;
 
 	virtual void                   NetSerialize(TSerialize ser, float lag, uint32 flags) override;
 
@@ -102,13 +100,12 @@ private:
 	SVariableInfo       m_vars[ITimeOfDay::PARAM_TOTAL];
 	CTimeOfDayConstants m_consts; //Working copy
 
-	float               m_fTime;
+	CTimeValue          m_fTime;
 
 	bool                m_bEditMode;
 	bool                m_bPaused;
 
 	SAdvancedInfo       m_advancedInfo;
-	ITimer*             m_pTimer;
 	float               m_fHDRMultiplier;
 	ICVar*              m_pTimeOfDaySpeedCVar;
 	CryAudio::ControlId m_timeOfDayRtpcId;

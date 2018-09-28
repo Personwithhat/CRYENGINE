@@ -1185,7 +1185,7 @@ void CFlowNode_AILookAt::GetConfiguration(SFlowNodeConfig& config)
 		InputPortConfig<Vec3>("pos",          _HELP("point to look at"),                  _HELP("Point")),
 		InputPortConfig<Vec3>("Direction",    _HELP("direction to look at")),
 		InputPortConfig<EntityId>("objectId", _HELP("ID of the object to look at")),
-		InputPortConfig<float>("Duration",    _HELP("how long to look at [in seconds]")),
+		InputPortConfig<CTimeValue>("Duration",    _HELP("how long to look at [in seconds]")),
 		InputPortConfig<int>("Force",         0,                                          _HELP("ForceExecution method"),_HELP("Force"),_UICONFIG(FORCE_UICONFIG)),
 		{ 0 }
 	};
@@ -1238,7 +1238,7 @@ void CFlowNode_AILookAt::DoProcessEvent(EFlowEvent event, SActivationInfo* pActI
 	if (!pos.IsZero(0.001f) || !dir.IsZero(0.001f) || (objectEntityId != 0))
 	{
 		// activate look at
-		m_startTime = 0.f;
+		m_startTime.SetSeconds(0);
 		m_bExecuted = true;
 		ClearLookTarget();
 		pActInfo->pGraph->SetRegularlyUpdated(pActInfo->myID, true);
@@ -1299,7 +1299,7 @@ bool CFlowNode_AILookAt::OnUpdate(SActivationInfo* pActInfo)
 	}
 
 	Vec3 dir = GetPortVec3(pActInfo, 3);
-	float duration = GetPortFloat(pActInfo, 5);
+	CTimeValue duration = GetPortTime(pActInfo, 5);
 
 	// this is to enable canceling
 	m_GoalPipeId = -1;
@@ -1307,7 +1307,7 @@ bool CFlowNode_AILookAt::OnUpdate(SActivationInfo* pActInfo)
 	if (!pos.IsZero(0.001f))
 	{
 		// look at point
-		if (!m_startTime.GetValue())
+		if (m_startTime == 0)
 		{
 			SetLookTarget(pAI, pos);
 
@@ -1315,7 +1315,7 @@ bool CFlowNode_AILookAt::OnUpdate(SActivationInfo* pActInfo)
 			{
 				if (duration > 0)
 				{
-					m_startTime = gEnv->pTimer->GetFrameStartTime() + duration;
+					m_startTime = GetGTimer()->GetFrameStartTime() + duration;
 				}
 				else
 				{
@@ -1327,7 +1327,7 @@ bool CFlowNode_AILookAt::OnUpdate(SActivationInfo* pActInfo)
 		}
 		else
 		{
-			if (gEnv->pTimer->GetFrameStartTime() >= m_startTime)
+			if (GetGTimer()->GetFrameStartTime() >= m_startTime)
 			{
 				m_bExecuted = false;
 				pActInfo->pGraph->SetRegularlyUpdated(pActInfo->myID, false);
@@ -1344,13 +1344,13 @@ bool CFlowNode_AILookAt::OnUpdate(SActivationInfo* pActInfo)
 	else if (!dir.IsZero(0.001f))
 	{
 		// look at direction
-		if (!m_startTime.GetValue())
+		if (m_startTime == 0)
 		{
 			if (pAIActor->SetLookAtDir(dir, true))
 			{
 				if (duration > 0)
 				{
-					m_startTime = gEnv->pTimer->GetFrameStartTime() + duration;
+					m_startTime = GetGTimer()->GetFrameStartTime() + duration;
 				}
 				else
 				{
@@ -1362,7 +1362,7 @@ bool CFlowNode_AILookAt::OnUpdate(SActivationInfo* pActInfo)
 		}
 		else
 		{
-			if (gEnv->pTimer->GetFrameStartTime() >= m_startTime)
+			if (GetGTimer()->GetFrameStartTime() >= m_startTime)
 			{
 				m_bExecuted = false;
 				pActInfo->pGraph->SetRegularlyUpdated(pActInfo->myID, false);

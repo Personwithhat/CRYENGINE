@@ -99,6 +99,14 @@ enum class EEvent : uint64
 	//! This is useful since the TransformChanged event will be continuously fired as the user is dragging the entity around.
 	TransformChangeFinishedInEditor = BIT64(1),
 
+	//! Sent when the specified entity timer (added via IEntity::SetTimer) expired
+	//! Entity timers are processed once a frame and expired timers are notified in the order of registration
+	//! The timer is automatically removed from the timer map before this event is sent.
+	//! nParam[0] = TimerId
+	//! nParam[1] = Initial duration in milliseconds
+	//! nParam[2] = EntityId
+	TimerExpired,
+
 	//! Sent at the very end of CEntity::Init, called by IEntitySystem::InitEntity
 	//! This indicates that the entity has finished initializing, and that custom logic can start
 	//! Note that this only applies for components that are part of the entity before initialization occurs.
@@ -432,8 +440,9 @@ struct SEntityEvent
 	  const float f0,
 	  const float f1,
 	  const float f2,
-	  Vec3 const& _vec)
-		: vec(_vec)
+	  Vec3 const& _vec,
+	  CTimeValue const& t)
+		: vec(_vec), tVal(t)
 	{
 		nParam[0] = n0;
 		nParam[1] = n1;
@@ -464,6 +473,7 @@ struct SEntityEvent
 	intptr_t     nParam[4]; //!< Event parameters.
 	float        fParam[3];
 	Vec3         vec;
+	CTimeValue   tVal; // PERSONAL IMPROVE: There's gotta be some neater way of passing a time-value, what if someone wants to pass more? Etc.
 };
 
 enum EEntityXFormFlags : uint32

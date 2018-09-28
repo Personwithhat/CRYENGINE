@@ -61,7 +61,7 @@ public:
 	// IFlashUI
 	virtual void                      Init() override;
 	virtual bool                      PostInit() override;
-	virtual void                      Update(float fDeltatime) override;
+	virtual void                      Update(const CTimeValue& fDeltatime) override;
 	virtual void                      Reload() override;
 	virtual void                      ClearUIActions() override { ClearActions(); }
 	virtual void                      Shutdown() override;
@@ -136,7 +136,7 @@ public:
 	// ~ISystemEventListener
 
 	// IGameFrameworkListener
-	virtual void OnPostUpdate(float fDeltaTime) override    {}
+	virtual void OnPostUpdate(const CTimeValue& fDeltaTime) override    {}
 	virtual void OnSaveGame(ISaveGame* pSaveGame) override  {}
 	virtual void OnLoadGame(ILoadGame* pLoadGame) override  {}
 	virtual void OnLevelEnd(const char* nextLevel) override {}
@@ -154,7 +154,7 @@ public:
 	// ~ILevelSystemListener
 
 	// ILoadtimeCallback
-	virtual void LoadtimeUpdate(float fDeltaTime) override;
+	virtual void LoadtimeUpdate(const CTimeValue& fDeltaTime) override;
 	virtual void LoadtimeRender() override;
 	// ~ILoadtimeCallback
 
@@ -171,8 +171,8 @@ public:
 	DeclareStaticConstIntCVar(CV_gfx_uievents_editorenabled, 1);
 	DeclareStaticConstIntCVar(CV_gfx_ampserver, 0);
 	static int    CV_gfx_enabled;
-	static float  CV_gfx_inputevents_triggerstart;
-	static float  CV_gfx_inputevents_triggerrepeat;
+	static CTimeValue  CV_gfx_inputevents_triggerstart;
+	static CTimeValue  CV_gfx_inputevents_triggerrepeat;
 	static ICVar* CV_gfx_uiaction_log_filter;
 	static ICVar* CV_gfx_uiaction_folder;
 
@@ -281,8 +281,8 @@ private:
 	};
 
 	ESystemState m_systemState;
-	float        m_fLastAdvance;
-	float        m_lastTimeTriggered;
+	CTimeValue   m_fLastAdvance;
+	CTimeValue   m_lastTimeTriggered;
 	bool         m_bHudVisible;
 };
 

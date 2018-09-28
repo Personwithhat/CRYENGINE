@@ -827,7 +827,7 @@ struct SEnvTexture
 	int          m_TexSize;
 	// Result Cube-Map or 2D RT texture
 	SDynTexture* m_pTex;
-	float        m_TimeLastUpdated;
+	CTimeValue   m_TimeLastUpdated;
 	Vec3         m_CamPos;
 	Vec3         m_ObjPos;
 	Ang3         m_Angle;
@@ -851,7 +851,7 @@ struct SEnvTexture
 		m_Id = 0;
 		m_TexSize = 0;
 		m_pTex = NULL;
-		m_TimeLastUpdated = 0.0f;
+		m_TimeLastUpdated.SetSeconds(0);
 		m_nFrameReset = -1;
 		m_CamPos.Set(0.0f, 0.0f, 0.0f);
 		m_ObjPos.Set(0.0f, 0.0f, 0.0f);
@@ -1359,7 +1359,7 @@ public:
 	static int             s_nStreamingUpdateMode;
 
 	static size_t          s_nStreamingThroughput; // in bytes
-	static float           s_nStreamingTotalTime;  // in secs
+	static CTimeValue      s_nStreamingTotalTime;  // in secs
 
 #ifndef _RELEASE
 	static size_t          s_nTexturesDataBytesLoaded;
@@ -1425,11 +1425,11 @@ public:
 
 #if !defined (_RELEASE) || defined(ENABLE_STATOSCOPE_RELEASE)
 	static int   s_TextureUpdates;
-	static float s_TextureUpdatesTime;
+	static CTimeValue s_TextureUpdatesTime;
 	static int   s_TextureUpdatedRendered;
-	static float s_TextureUpdatedRenderedTime;
+	static CTimeValue s_TextureUpdatedRenderedTime;
 	static int   s_StreamingRequestsCount;
-	static float s_StreamingRequestsTime;
+	static CTimeValue s_StreamingRequestsTime;
 #endif
 
 #ifdef ENABLE_TEXTURE_STREAM_LISTENER
@@ -1738,7 +1738,7 @@ public:
 public:
 	CFlashTextureSourceBase(const char* pFlashFileName, const IRenderer::SLoadShaderItemArgs* pArgs);
 
-	void AutoUpdate(const CTimeValue& curTime, const float delta, const bool isEditing, const bool isPaused);
+	void AutoUpdate(const CTimeValue& curTime, const CTimeValue& delta, const bool isEditing, const bool isPaused);
 	void AutoUpdateRT(const int frameID);
 
 	struct IFlashPlayerInstanceWrapper
@@ -1759,7 +1759,7 @@ public:
 		virtual const char*   GetSourceFilePath() const = 0;
 
 		virtual void          UpdatePlayer(CFlashTextureSourceBase* pSrc) = 0;
-		virtual void          Advance(float delta) = 0;
+		virtual void          Advance(const CTimeValue& delta) = 0;
 
 		virtual int           GetWidth() const = 0;
 		virtual int           GetHeight() const = 0;
@@ -1782,7 +1782,7 @@ public:
 		const char*                             GetSourceFilePath() const                              { return "NULLWRAPPER"; }
 
 		void                                    UpdatePlayer(CFlashTextureSourceBase* pSrc)            {}
-		void                                    Advance(float delta)                                   {};
+		void                                    Advance(const CTimeValue& delta)                       {};
 
 		int                                     GetWidth() const                                       { return 16; }
 		int                                     GetHeight() const                                      { return 16; }
@@ -1827,7 +1827,7 @@ public:
 		void          CreateInstance(CFlashTextureSourceBase* pSrc);
 
 		void          UpdatePlayer(CFlashTextureSourceBase* pSrc) {}
-		void          Advance(float delta);
+		void          Advance(const CTimeValue& delta);
 
 		int           GetWidth() const  { return m_width; }
 		int           GetHeight() const { return m_height; }
@@ -1862,7 +1862,7 @@ public:
 		const char*   GetSourceFilePath() const;
 
 		void          UpdatePlayer(CFlashTextureSourceBase* pSrc);
-		void          Advance(float delta) {};
+		void          Advance(const CTimeValue& delta) {};
 
 		int           GetWidth() const     { return m_width; }
 		int           GetHeight() const    { return m_height; }
@@ -1902,7 +1902,7 @@ public:
 		void          CreateInstance(CFlashTextureSourceBase* pSrc, const char* layoutName);
 
 		void          UpdatePlayer(CFlashTextureSourceBase* pSrc) {}
-		void          Advance(float delta);
+		void          Advance(const CTimeValue& delta);
 
 		int           GetWidth() const  { return m_width; }
 		int           GetHeight() const { return m_height; }
@@ -1936,7 +1936,7 @@ protected:
 	static int                   Align8(int dim)                       { return (dim + 7) & ~7; }
 
 private:
-	void Advance(const float delta, bool isPaused);
+	void Advance(const CTimeValue& delta, bool isPaused);
 
 	struct CachedTexStateID
 	{

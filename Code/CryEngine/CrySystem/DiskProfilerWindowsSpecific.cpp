@@ -72,9 +72,9 @@ CDiskProfilerWindowsSpecific::~CDiskProfilerWindowsSpecific()
 	}
 }
 
-void CDiskProfilerWindowsSpecific::Update(float timeNow, bool writeToLog)
+void CDiskProfilerWindowsSpecific::Update(const CTimeValue& timeNow, bool writeToLog)
 {
-	if (m_lastUpdateTime + 1.0f < timeNow || m_lastUpdateTime == 0.0f)
+	if (m_lastUpdateTime + 1 < timeNow || m_lastUpdateTime == 0)
 	{
 		DWORD numBytesReturned = 0;
 		LPOVERLAPPED overlapped = nullptr;

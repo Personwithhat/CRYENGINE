@@ -76,7 +76,7 @@ private:
 		void Serialize(Serialization::IArchive& archive);
 
 		string name;
-		float  value;
+		CTimeValue  value;
 		bool   bIsValid;
 	};
 	typedef std::vector<TimeStamp> TimeStamps;

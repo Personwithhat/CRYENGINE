@@ -86,9 +86,6 @@ void CParticleBatchDataManager::SyncAllUpdateParticlesJobs()
 }
 
 //////////////////////////////////////////////////////////////////////////
-ITimer* g_pParticleTimer = NULL;
-
-//////////////////////////////////////////////////////////////////////////
 CParticleManager::CParticleManager(bool bEnable)
 	: m_pParticleSystem(pfx2::GetIParticleSystem())
 {
@@ -99,7 +96,7 @@ CParticleManager::CParticleManager(bool bEnable)
 	m_timeThreshold = 0.f;
 #endif
 	m_pWidget = NULL;
-	g_pParticleTimer = gEnv->pTimer;
+	SetGTimer(GetGTimer(), GTimers::particle);
 	m_pLastDefaultParams = &GetDefaultParams();
 
 	REGISTER_COMMAND("e_ParticleListEmitters", &CmdParticleListEmitters, 0, "Writes all emitters to log");
@@ -676,7 +673,7 @@ void CParticleManager::Update()
 
 			e.SetUpdateParticlesJobState(NULL);
 
-			bool bRenderedLastFrame = e.TimeNotRendered() == 0.f && e.GetAge() > 0.f;
+			bool bRenderedLastFrame = e.TimeNotRendered() == 0 && e.GetAge() > 0;
 
 			e.Update();
 
@@ -1334,7 +1331,7 @@ void CParticleManager::ListEmitters(cstr sDesc, bool bForce)
 		int anEmitters[3] = { 0 };
 
 		// Log summary, and state of each emitter.
-		CryLog("Emitters %s: time %.3f", sDesc, GetParticleTimer()->GetFrameStartTime().GetSeconds());
+		CryLog("Emitters %s: time %.3f", sDesc, GTimer(particle)->GetFrameStartTime().GetSeconds());
 		for (const auto& e : m_Emitters)
 		{
 			if (e.IsActive())

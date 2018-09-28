@@ -730,7 +730,7 @@ void CCryPluginManager::UpdateBeforePhysics()
 
 void CCryPluginManager::UpdateAfterSystem()
 {
-	const float frameTime = gEnv->pTimer->GetFrameTime();
+	const CTimeValue frameTime = GetGTimer()->GetFrameTime();
 	const std::vector<Cry::IEnginePlugin*>& updatedPlugins = GetUpdatedPluginsForStep(Cry::IEnginePlugin::EUpdateStep::MainUpdate);
 	for (Cry::IEnginePlugin* pPlugin : updatedPlugins)
 	{

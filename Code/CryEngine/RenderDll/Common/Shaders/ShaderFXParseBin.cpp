@@ -957,7 +957,7 @@ SShaderBin* CShaderManBin::GetBinShader(const char* szName, bool bInclude, uint3
 			*pbChanged = false;
 	}
 
-	//float fTime0 = iTimer->GetAsyncCurTime();
+	//float fTime0 = GTimer(d3d)->GetAsyncCurTime();
 
 	SShaderBin* pSHB = SearchInCache(szName, bInclude);
 	if (pSHB)
@@ -1115,7 +1115,7 @@ SShaderBin* CShaderManBin::GetBinShader(const char* szName, bool bInclude, uint3
 						{
 							CryMessageBox(acTemp, "Invalid ShaderCache", eMB_Error);
 							bShowMessageBox = false;
-							CrySleep(33);
+							CryLowLatencySleep("0.033");
 						}
 					}
 				}
@@ -1199,7 +1199,7 @@ SShaderBin* CShaderManBin::GetBinShader(const char* szName, bool bInclude, uint3
 	}
 
 	/*
-	   sfTotalTime += iTimer->GetAsyncCurTime() - fTime0;
+	   sfTotalTime += GTimer(d3d)->GetAsyncCurTime() - fTime0;
 
 	   {
 	   char acTmp[1024];
@@ -3443,7 +3443,7 @@ bool CShaderManBin::ParseBinFX_LightStyle(CParserBin& Parser, SParserFrame& Fram
 	if (!ls)
 	{
 		ls = new CLightStyle;
-		ls->m_LastTime = 0;
+		ls->m_LastTime.SetSeconds(0);
 		ls->m_Color = Col_White;
 		CLightStyle::s_LStyles[nStyle] = ls;
 	}
@@ -3476,7 +3476,7 @@ bool CShaderManBin::ParseBinFX_LightStyle(CParserBin& Parser, SParserFrame& Fram
 			break;
 
 		case eT_Speed:
-			ls->m_TimeIncr = Parser.GetFloat(Parser.m_Data);
+			ls->m_TimeIncr = BADMP(Parser.GetFloat(Parser.m_Data));
 			break;
 		default:
 			assert(0);
@@ -3732,7 +3732,7 @@ SShaderTechnique* CShaderManBin::ParseBinFX_Technique(CParserBin& Parser, SParse
 	return pShTech;
 }
 
-float g_fTimeA;
+CTimeValue g_fTimeA;
 
 bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
 {
@@ -3740,7 +3740,7 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
 
 	bool bRes = true;
 
-	float fTimeA = iTimer->GetAsyncCurTime();
+	CTimeValue fTimeA = GTimer(d3d)->GetAsyncCurTime();
 
 #if !defined(SHADER_NO_SOURCES)
 	CParserBin Parser(pBin, ef);
@@ -4157,7 +4157,7 @@ bool CShaderManBin::ParseBinFX(SShaderBin* pBin, CShader* ef, uint64 nMaskGen)
 	}
 	#endif
 
-	g_fTimeA += iTimer->GetAsyncCurTime() - fTimeA;
+	g_fTimeA += GTimer(d3d)->GetAsyncCurTime() - fTimeA;
 
 	return bRes;
 #endif
@@ -4626,9 +4626,9 @@ void CShaderMan::mfPostLoadFX(CShader* ef, std::vector<SShaderTechParseParams>& 
 
 bool STexSamplerRT::Update()
 {
-	if (m_pAnimInfo && m_pAnimInfo->m_Time && gRenDev->m_bPauseTimer == 0)
+	if (m_pAnimInfo && m_pAnimInfo->m_Time != 0 && gRenDev->m_bPauseTimer == 0)
 	{
-		float time = gRenDev->GetFrameSyncTime().GetSeconds();
+		CTimeValue time = gRenDev->GetFrameSyncTime();
 		assert(time >= 0);
 		uint32 m = (uint32)(time / m_pAnimInfo->m_Time) % (m_pAnimInfo->m_NumAnimTexs);
 		assert(m < (uint32)m_pAnimInfo->m_TexPics.Num());

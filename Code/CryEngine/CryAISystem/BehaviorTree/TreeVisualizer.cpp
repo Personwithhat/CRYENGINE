@@ -163,7 +163,7 @@ void TreeVisualizer::DrawTimestampCollection(const TimestampCollection& timestam
 	DrawLine("Timestamp Collection", Col_Yellow);
 	DrawLine("", Col_White);
 
-	CTimeValue timeNow = gEnv->pTimer->GetFrameStartTime();
+	CTimeValue timeNow = GetGTimer()->GetFrameStartTime();
 	Timestamps::const_iterator it = timestampCollection.GetTimestamps().begin();
 	Timestamps::const_iterator end = timestampCollection.GetTimestamps().end();
 	for (; it != end; ++it)
@@ -348,7 +348,7 @@ void DebugTreeSerializer::CollectVariablesInfo(const BehaviorTreeInstance& insta
 
 void DebugTreeSerializer::CollectTimeStamps(const BehaviorTreeInstance& instance)
 {
-	CTimeValue timeNow = gEnv->pTimer->GetFrameStartTime();
+	CTimeValue timeNow = GetGTimer()->GetFrameStartTime();
 	Timestamps::const_iterator it = instance.timestampCollection.GetTimestamps().begin();
 	Timestamps::const_iterator end = instance.timestampCollection.GetTimestamps().end();
 
@@ -358,7 +358,7 @@ void DebugTreeSerializer::CollectTimeStamps(const BehaviorTreeInstance& instance
 		TimeStamp timeStamp;
 		timeStamp.name = it->id.timestampName;
 		timeStamp.bIsValid = it->IsValid();
-		timeStamp.value = it->IsValid() ? (timeNow - it->time).GetSeconds() : 0.0f;
+		timeStamp.value = it->IsValid() ? timeNow - it->time : 0;
 
 		m_data.timeStamps.push_back(timeStamp);
 	}

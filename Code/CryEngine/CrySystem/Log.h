@@ -111,7 +111,7 @@ private: // -------------------------------------------------------------------
 #endif
 
 	ISystem*                  m_pSystem;
-	float                     m_fLastLoadingUpdateTime; // for non-frequent streamingEngine update
+	CTimeValue                m_fLastLoadingUpdateTime; // for non-frequent streamingEngine update
 	string                    m_filename;               // Contains exactly what was passed in SetFileName
 	string                    m_filePath;               // Contains full path to the log file
 	string                    m_backupFilePath;
@@ -147,12 +147,12 @@ private: // -------------------------------------------------------------------
 		LogStringType str;
 		const char*   ptr;
 		ELogType      type;
-		float         time;
+		CTimeValue    time;
 
 		SLogHistoryItem()
 			: ptr(nullptr)
 			, type(eMessage)
-			, time(0.0f) {}
+			, time(0) {}
 	};
 	SLogHistoryItem m_history[16];
 	int             m_iLastHistoryItem;

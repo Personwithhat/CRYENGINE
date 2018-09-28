@@ -25,10 +25,10 @@ public:
 		return m_timeValues[timestamp];
 	}
 	
-	float GetTimeMS(uint32 timestamp0, uint32 timestamp1)
+	CTimeValue GetTime(uint32 timestamp0, uint32 timestamp1)
 	{
 		uint64 duration = std::max(m_timeValues[timestamp0], m_timeValues[timestamp1]) - std::min(m_timeValues[timestamp0], m_timeValues[timestamp1]);
-		return duration / (float)(m_frequency / 1000);
+		return CTimeValue(duration / (mpfloat)m_frequency);
 	}
 
 protected:

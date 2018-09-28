@@ -1028,7 +1028,8 @@ public:
 	//! Returns a microsecond sample.
 	static uint32 GetTimeSample()
 	{
-		return static_cast<uint32>(gEnv->pTimer->GetAsyncTime().GetMicroSecondsAsInt64());
+		// Float inaccuracy is fine, debug/profiling
+		return static_cast<uint32>(GetGTimer()->GetAsyncTime().GetMicroSeconds());
 	}
 };
 

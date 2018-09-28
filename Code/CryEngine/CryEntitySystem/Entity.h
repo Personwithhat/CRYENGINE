@@ -192,7 +192,7 @@ public:
 
 	//////////////////////////////////////////////////////////////////////////
 
-	virtual void SetTimer(ISimpleEntityEventListener* pListener, EntityId id, const CryGUID& componentInstanceGUID, uint8 timerId, int timeInMilliseconds) final;
+	virtual void SetTimer(ISimpleEntityEventListener* pListener, EntityId id, const CryGUID& componentInstanceGUID, uint8 timerId, const CTimeValue& inTime) final;
 	virtual void KillTimer(ISimpleEntityEventListener* pListener, uint8 timerId) final;
 	virtual void KillAllTimers(ISimpleEntityEventListener* pListener) final;
 
@@ -324,7 +324,7 @@ public:
 	int                                LoadCloudBlocker(int nSlot, const SCloudBlockerProperties& properties);
 	virtual int                        LoadFogVolume(int nSlot, const SFogVolumeProperties& properties) override;
 
-	int                                FadeGlobalDensity(int nSlot, float fadeTime, float newGlobalDensity);
+	int                                FadeGlobalDensity(int nSlot, const CTimeValue& fadeTime, float newGlobalDensity);
 
 	virtual void                       SetSubObjHideMask(int nSlot, hidemask nSubObjHideMask) final        { GetEntityRender()->SetSubObjHideMask(nSlot, nSubObjHideMask); }
 	virtual hidemask                   GetSubObjHideMask(int nSlot) const final                            { return GetEntityRender()->GetSubObjHideMask(nSlot); }
@@ -387,7 +387,7 @@ public:
 	virtual bool                  HandleVariableChange(const char* szVarName, const void* pVarData) final;
 
 	virtual void                  OnRenderNodeVisibilityChange(bool bBecomeVisible) final;
-	virtual float                 GetLastSeenTime() const final;
+	virtual const CTimeValue&     GetLastSeenTime() const final;
 
 	virtual INetEntity*           AssignNetEntityLegacy(INetEntity* ptr) final;
 	virtual INetEntity*           GetNetEntity() final;

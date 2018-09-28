@@ -5,8 +5,11 @@
 
 namespace
 {
-static inline Vec3 RandomPosition(const Vec3& centre, const Vec3& wind_speed, float life_time, float radius, float extents)
+static inline Vec3 RandomPosition(const Vec3& centre, const Vec3& wind_speed, const CTimeValue& life_timeIn, float radius, float extents)
 {
+	// Float inaccuracy is fine, random lifetime.
+	float life_time = (float)life_timeIn.GetSeconds();
+
 	Vec3 result;
 	result.x = centre.x - (wind_speed.x * life_time * 0.5f) + cry_random(-radius, radius);
 	result.y = centre.y - (wind_speed.y * life_time * 0.5f) + cry_random(-radius, radius);
@@ -25,13 +28,13 @@ struct SBreeze
 	IPhysicalEntity* wind_area;
 	Vec3             position;
 	Vec3             direction;
-	float            lifetime;
+	CTimeValue       lifetime;
 
 	SBreeze()
 		: wind_area()
 		, position()
 		, direction()
-		, lifetime(-1.f)
+		, lifetime(-1)
 	{}
 };
 
@@ -148,13 +151,13 @@ void CBreezeGenerator::Update()
 	buoyancy.iMedium = 1;
 
 	pe_params_pos pp;
-	const float frame_time = GetTimer()->GetFrameTime();
+	const CTimeValue frame_time = GTimer(render)->GetFrameTime();
 	const Vec3 centre = Get3DEngine()->GetRenderingCamera().GetPosition();
 	for (uint32 i = 0; i < m_params.breezeCount; ++i)
 	{
 		SBreeze& breeze = m_breezes[i];
 		breeze.lifetime -= frame_time;
-		if (breeze.lifetime < 0.f)
+		if (breeze.lifetime < 0)
 		{
 			Vec3 pos = RandomPosition(centre, m_params.windVector, m_params.breezeLifeTime, m_params.breezeSpawnRadius, m_params.breezeRadius);
 			if (m_params.breezeFixedHeight != -1.f)
@@ -165,7 +168,8 @@ void CBreezeGenerator::Update()
 			buoyancy.waterFlow = breeze.direction = RandomDirection(m_params.windVector, m_params.breezeSpread) * cry_random(0.0f, m_params.breezeStrength);
 			breeze.wind_area->SetParams(&pp);
 			breeze.wind_area->SetParams(&buoyancy);
-			breeze.lifetime = m_params.breezeLifeTime * cry_random(0.5f, 1.0f);
+			// Float inaccuracy is fine, random lifetime.
+			breeze.lifetime = m_params.breezeLifeTime * (float)cry_random<CTimeValue>("0.5", 1).GetSeconds();
 		}
 		else
 		{

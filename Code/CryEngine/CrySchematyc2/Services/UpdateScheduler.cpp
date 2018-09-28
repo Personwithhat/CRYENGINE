@@ -682,7 +682,7 @@ namespace Schematyc2
 	}
 
 	////////////////////////////////////////////////////////////////
-	bool CUpdateScheduler::BeginFrame(float frameTime)
+	bool CUpdateScheduler::BeginFrame(const CTimeValue& frameTime)
 	{
 		CRY_PROFILE_FUNCTION(PROFILE_GAME);
 		CRY_ASSERT(!m_bInFrame);

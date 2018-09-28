@@ -59,7 +59,7 @@ struct CSmartObjectEvent
 	// < 0 means this event should be removed
 	// 0 means just started
 	// 1 means ready to be used
-	float m_Delay;
+	mpfloat m_Delay;
 };
 
 ///////////////////////////////////////////////
@@ -389,7 +389,7 @@ protected:
 	MapTimesByClass m_mapLastUpdateTimes;
 
 	// LookAt helpers
-	float m_fLookAtLimit;
+	mpfloat m_fLookAtLimit;
 	Vec3  m_vLookAtPos;
 
 	ESO_Validate   m_eValidationResult;
@@ -654,16 +654,16 @@ struct CCondition
 	bool                             bHorizLimitOnly;
 	float                            fOrientationToTargetLimit;
 
-	float                            fMinDelay;
-	float                            fMaxDelay;
-	float                            fMemory;
+	CTimeValue                       fMinDelay;
+	CTimeValue                       fMaxDelay;
+	CTimeValue                       fMemory;
 
 	float                            fProximityFactor;
 	float                            fOrientationFactor;
 	float                            fVisibilityFactor;
 	float                            fRandomnessFactor;
 
-	float                            fLookAtPerc;
+	mpfloat                          fLookAtPerc;
 	CSmartObject::DoubleVectorStates userPreActionStates;
 	CSmartObject::DoubleVectorStates objectPreActionStates;
 	EActionType                      eActionType;
@@ -771,7 +771,7 @@ public:
 };
 
 // while querying matches the events will be stored in a container of this type sorted by priority
-typedef std::multimap<float, CQueryEvent> QueryEventMap;
+typedef std::multimap<CTimeValue, CQueryEvent> QueryEventMap;
 
 ///////////////////////////////////////////////
 // CSmartObjectManager receives notifications from entity system about entities being spawned and deleted.
@@ -867,7 +867,7 @@ public:
 	void SoftReset();
 
 	void Update();
-	void UpdateBannedSOs(float frameDeltaTime);
+	void UpdateBannedSOs(const CTimeValue& frameDeltaTime);
 	void ResetBannedSOs();
 
 	void Serialize(TSerialize ser);
@@ -907,7 +907,7 @@ private:
 		float    groundOffset;
 	};
 
-	typedef VectorMap<CSmartObject*, float> SmartObjectFloatMap;
+	typedef VectorMap<CSmartObject*, CTimeValue> SmartObjectFloatMap;
 	CSmartObjectOffMeshNavigation*           m_pOffMeshNavigation;
 	SmartObjectFloatMap                      m_bannedNavSmartObjects;
 	std::map<string, string>                 m_MappingSOUserPathType;
@@ -923,9 +923,9 @@ private:
 	typedef std::set<CSmartObject*> SmartObjects;
 	static SmartObjects g_AllSmartObjects;
 
-	typedef std::pair<CSmartObject*, CCondition*> PairObjectCondition;
-	typedef std::pair<PairObjectCondition, float> PairDelayTime;
-	typedef std::vector<PairDelayTime>            VecDelayTimes;
+	typedef std::pair<CSmartObject*, CCondition*>   PairObjectCondition;
+	typedef std::pair<PairObjectCondition, mpfloat> PairDelayTime;
+	typedef std::vector<PairDelayTime>              VecDelayTimes;
 
 	struct Pred_IgnoreSecond
 	{
@@ -966,7 +966,7 @@ private:
 	void               ClearConditions();
 	void               Reset();
 
-	float              CalculateDelayTime(CSmartObject* pUser, const Vec3& posUser,
+	CTimeValue         CalculateDelayTime(CSmartObject* pUser, const Vec3& posUser,
 	                                      CSmartObject* pObject, const Vec3& posObject, CCondition* pCondition) const;
 	float              CalculateDot(CCondition* condition, const Vec3& dir, CSmartObject* user) const;
 	int                Process(CSmartObject* pSmartObjectUser, CSmartObjectClass* pClass);

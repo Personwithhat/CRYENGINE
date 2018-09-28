@@ -459,7 +459,7 @@ void CEntityPhysics::OnTimer(int id)
 			return;
 		}
 		// Re-create timer, re-use same id
-		GetEntity()->SetTimer(this, GetEntity()->GetId(), CryGUID(), 0, 50);
+		GetEntity()->SetTimer(this, GetEntity()->GetId(), CryGUID(), 0, "0.05");
 	}
 }
 
@@ -1448,7 +1448,7 @@ void CEntityPhysics::PhysicalizeSoft(SEntityPhysicalizeParams& params)
 		pfd.iForeignFlags = params.nAttachToPart;
 		m_pPhysicalEntity->SetParams(&pfd);
 		GetEntity()->SetInternalFlag(CEntity::EInternalFlag::PhysicsAttachClothOnRender, true);
-		GetEntity()->SetTimer(this, GetEntity()->GetId(), CryGUID(), 0, 50);
+		GetEntity()->SetTimer(this, GetEntity()->GetId(), CryGUID(), 0, "0.05");
 	}
 }
 

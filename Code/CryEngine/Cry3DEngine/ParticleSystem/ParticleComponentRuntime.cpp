@@ -586,7 +586,7 @@ pfx2::TParticleHeap& CParticleComponentRuntime::MemHeap()
 
 float CParticleComponentRuntime::DeltaTime() const
 {
-	return m_pEmitter->GetDeltaTime();
+	return m_pEmitter->GetDeltaTime().BADGetSeconds();
 }
 
 }

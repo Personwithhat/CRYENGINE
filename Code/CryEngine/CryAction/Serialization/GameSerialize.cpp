@@ -749,7 +749,7 @@ ELoadGameResult CGameSerialize::LoadGame(CCryAction* pCryAction, const char* met
 	// load timer data
 	loadEnvironment.m_pSer = loadEnvironment.m_pLoadGame->GetSection(SAVEGAME_TIMER_SECTION);
 	if (loadEnvironment.m_pSer.get())
-		gEnv->pTimer->Serialize(*loadEnvironment.m_pSer);
+		GetGTimer()->Serialize(*loadEnvironment.m_pSer);
 	else
 	{
 		GameWarning("Unable to find timer");
@@ -1028,7 +1028,7 @@ void CGameSerialize::SaveEngineSystems(SSaveEnvironment& savEnv)
 	savEnv.m_checkpoint.Start();
 
 	// timer data
-	gEnv->pTimer->Serialize(savEnv.m_pSaveGame->AddSection(SAVEGAME_TIMER_SECTION));
+	GetGTimer()->Serialize(savEnv.m_pSaveGame->AddSection(SAVEGAME_TIMER_SECTION));
 	savEnv.m_checkpoint.Check("Timer");
 
 	// terrain modifications (e.g. heightmap changes)
@@ -1360,7 +1360,7 @@ void CGameSerialize::LoadEngineSystems(SLoadEnvironment& loadEnv)
 	if (!loadEnv.m_pSer.get())
 		GameWarning("Unable to open timer %s", SAVEGAME_TIMER_SECTION);
 	else
-		gEnv->pTimer->Serialize(*loadEnv.m_pSer);
+		GetGTimer()->Serialize(*loadEnv.m_pSer);
 
 	// Now Pause the Game timer if not already done!
 	// so no time passes until serialization is over

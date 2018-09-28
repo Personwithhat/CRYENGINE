@@ -58,7 +58,7 @@ CAIActor* GetAIActor(const BehaviorTree::UpdateContext& context)
 
 const CTimeValue& GetFrameStartTime(const BehaviorTree::UpdateContext& context)
 {
-	return gEnv->pTimer->GetFrameStartTime();
+	return GetGTimer()->GetFrameStartTime();
 }
 }
 
@@ -351,7 +351,7 @@ public:
 	};
 
 	Bubble()
-		: m_duration(2.0)
+		: m_duration(2)
 		, m_balloonFlags(0)
 		, m_baloonFlag(false)
 		, m_logFlag(false)
@@ -367,7 +367,7 @@ public:
 	virtual LoadResult LoadFromXml(const XmlNodeRef& xml, const struct LoadContext& context, const bool strictMode)
 	{
 		m_message = xml->getAttr("message");
-		m_duration = 2.0f;
+		m_duration.SetSeconds(2);
 		xml->getAttr("duration", m_duration);
 		xml->getAttr("balloon", m_baloonFlag);
 		xml->getAttr("log", m_logFlag);
@@ -437,7 +437,7 @@ public:
 
 private:
 	string m_message;
-	float  m_duration;
+	CTimeValue m_duration;
 	uint32 m_balloonFlags;
 
 	bool m_baloonFlag;
@@ -1339,8 +1339,8 @@ public:
 	};
 
 	AdjustCoverStance()
-		: m_duration(-1.0f)
-		, m_variation(0.0f)
+		: m_duration(-1)
+		, m_variation(0)
 	{
 	}
 
@@ -1349,7 +1349,7 @@ public:
 		const stack_string str = xml->getAttr("duration");
 
 		if (str == "continuous")
-			m_duration = -1.0;
+			m_duration.SetSeconds(-1);
 		else
 		{
 			xml->getAttr("duration", m_duration);
@@ -1407,7 +1407,7 @@ public:
 
 	virtual void OnInitialize(const UpdateContext& context)
 	{
-		if (m_duration >= 0.0f)
+		if (m_duration >= 0)
 		{
 			RuntimeData& runtimeData = GetRuntimeData<RuntimeData>(context);
 			runtimeData.timer.Reset(m_duration, m_variation);
@@ -1438,7 +1438,7 @@ public:
 #ifdef DEBUG_MODULAR_BEHAVIOR_TREE
 	virtual void GetCustomDebugText(const UpdateContext& updateContext, stack_string& debugText) const
 	{
-		if (m_duration == -1.0f)
+		if (m_duration == -1)
 		{
 			debugText.Format("continuous");
 		}
@@ -1460,8 +1460,8 @@ private:
 		pipeUser->m_State.coverRequest.ClearCoverAction();
 	}
 
-	float m_duration;
-	float m_variation;
+	CTimeValue m_duration;
+	CTimeValue m_variation;
 	Timer m_timer;
 };
 
@@ -1550,7 +1550,7 @@ public:
 		bool       commFinished; // Set on communication end
 
 		RuntimeData()
-			: startTime(0.0f)
+			: startTime(0)
 			, playID(0)
 			, commFinished(false)
 		{
@@ -1600,11 +1600,11 @@ public:
 		: m_channelID(0)
 		, m_commID(0)
 		, m_ordering(SCommunicationRequest::Unordered)
-		, m_expiry(0.0f)
-		, m_minSilence(-1.0f)
+		, m_expiry(0)
+		, m_minSilence(-1)
 		, m_ignoreSound(false)
 		, m_ignoreAnim(false)
-		, m_timeout(8.0f)
+		, m_timeout(8)
 		, m_waitUntilFinished(true)
 	{
 	}
@@ -1812,7 +1812,7 @@ protected:
 		}
 
 		// Time out if angle threshold isn't reached for some time (to avoid deadlocks)
-		float elapsedTime = (GetAISystem()->GetFrameStartTime() - runtimeData.startTime).GetSeconds();
+		CTimeValue elapsedTime = GetAISystem()->GetFrameStartTime() - runtimeData.startTime;
 		if (elapsedTime > m_timeout)
 		{
 			ErrorReporter(*this, context).LogWarning("Communication timed out.");
@@ -1829,9 +1829,9 @@ private:
 	CommID                           m_commID;
 	CommChannelID                    m_channelID;
 	SCommunicationRequest::EOrdering m_ordering;
-	float                            m_expiry;
-	float                            m_minSilence;
-	float                            m_timeout;
+	CTimeValue                       m_expiry;
+	CTimeValue                       m_minSilence;
+	CTimeValue                       m_timeout;
 	bool                             m_ignoreSound;
 	bool                             m_ignoreAnim;
 	bool                             m_waitUntilFinished;
@@ -2983,11 +2983,11 @@ public:
 	{
 		CStrongRef<CAIObject> fireTarget;
 		CTimeValue            startTime;
-		float                 timeSpentWithCorrectDirection;
+		CTimeValue            timeSpentWithCorrectDirection;
 
 		RuntimeData()
-			: startTime(0.0f)
-			, timeSpentWithCorrectDirection(0.0f)
+			: startTime(0)
+			, timeSpentWithCorrectDirection(0)
 		{
 		}
 
@@ -3000,7 +3000,7 @@ public:
 
 	Aim()
 		: m_angleThresholdCosine(0.0f)
-		, m_durationOnceWithinThreshold(0.0f)   // -1 means "aim forever"
+		, m_durationOnceWithinThreshold(0)   // -1 means "aim forever"
 		, m_aimAtReferencePoint(false)
 	{
 	}
@@ -3023,11 +3023,11 @@ public:
 		const stack_string str = xml->getAttr("durationOnceWithinThreshold");
 		if (str == "forever")
 		{
-			m_durationOnceWithinThreshold = -1.0f;
+			m_durationOnceWithinThreshold.SetSeconds(-1);
 		}
 		else
 		{
-			m_durationOnceWithinThreshold = 0.2f;
+			m_durationOnceWithinThreshold.SetSeconds("0.2");
 			xml->getAttr("durationOnceWithinThreshold", m_durationOnceWithinThreshold);
 		}
 
@@ -3109,8 +3109,8 @@ protected:
 		runtimeData.fireTarget->SetPos(fireTargetPosition);
 		pipeUser.SetFireTarget(runtimeData.fireTarget);
 		pipeUser.SetFireMode(FIREMODE_AIM);
-		runtimeData.startTime = gEnv->pTimer->GetFrameStartTime();
-		runtimeData.timeSpentWithCorrectDirection = 0.0f;
+		runtimeData.startTime = GetGTimer()->GetFrameStartTime();
+		runtimeData.timeSpentWithCorrectDirection.SetSeconds(0);
 	}
 
 	virtual void OnTerminate(const UpdateContext& context) override
@@ -3140,7 +3140,7 @@ protected:
 			return Success;
 		}
 
-		const bool aimForever = m_durationOnceWithinThreshold < 0.0f;
+		const bool aimForever = m_durationOnceWithinThreshold < 0;
 		if (aimForever)
 			return Running;
 
@@ -3154,14 +3154,14 @@ protected:
 		const float dotProduct = currentDirection.Dot(desiredDirection);
 		if (dotProduct > m_angleThresholdCosine)
 		{
-			const float timeSpentWithCorrectDirection = runtimeData.timeSpentWithCorrectDirection + gEnv->pTimer->GetFrameTime();
+			const CTimeValue timeSpentWithCorrectDirection = runtimeData.timeSpentWithCorrectDirection + GetGTimer()->GetFrameTime();
 			runtimeData.timeSpentWithCorrectDirection = timeSpentWithCorrectDirection;
 			if (timeSpentWithCorrectDirection > m_durationOnceWithinThreshold)
 				return Success;
 		}
 
-		const CTimeValue& now = gEnv->pTimer->GetFrameStartTime();
-		if (now > runtimeData.startTime + CTimeValue(8.0f))
+		const CTimeValue& now = GetGTimer()->GetFrameStartTime();
+		if (now > runtimeData.startTime + CTimeValue(8))
 		{
 			gEnv->pLog->LogWarning("Agent '%s' failed to aim towards %f %f %f. Timed out...", pipeUser.GetName(), fireTargetAIObject->GetPos().x, fireTargetAIObject->GetPos().y, fireTargetAIObject->GetPos().z);
 			return Success;
@@ -3172,7 +3172,7 @@ protected:
 
 private:
 	float m_angleThresholdCosine;
-	float m_durationOnceWithinThreshold;   // -1 means "aim forever"
+	CTimeValue m_durationOnceWithinThreshold;   // -1 means "aim forever"
 	bool  m_aimAtReferencePoint;
 };
 
@@ -3191,7 +3191,7 @@ public:
 		Vec3                  mountedWeaponPivot;
 
 		RuntimeData()
-			: lastUpdateTime(0.0f)
+			: lastUpdateTime(0)
 			, initialDirection(ZERO)
 			, mountedWeaponPivot(ZERO)
 		{
@@ -3200,7 +3200,7 @@ public:
 
 	AimAroundWhileUsingAMachingGun()
 		: m_maxAngleRange(.0f)
-		, m_minSecondsBeweenUpdates(.0f)
+		, m_minSecondsBeweenUpdates(0)
 	{
 	}
 
@@ -3213,7 +3213,7 @@ public:
 		xml->getAttr("maxAngleRange", maxAngleRange);
 		m_maxAngleRange = DEG2RAD(maxAngleRange);
 
-		m_minSecondsBeweenUpdates = 2;
+		m_minSecondsBeweenUpdates.SetSeconds(2);
 		xml->getAttr("minSecondsBeweenUpdates", m_minSecondsBeweenUpdates);
 
 		bool useReferencePointForInitialDirectionAndPivotPosition = true;
@@ -3264,7 +3264,7 @@ protected:
 		pipeUser->SetFireMode(FIREMODE_AIM);
 
 		UpdateAimingPosition(runtimeData);
-		runtimeData.lastUpdateTime = gEnv->pTimer->GetFrameStartTime();
+		runtimeData.lastUpdateTime = GetGTimer()->GetFrameStartTime();
 	}
 
 	virtual void OnTerminate(const UpdateContext& context) override
@@ -3290,8 +3290,8 @@ protected:
 		IF_UNLIKELY (!runtimeData.fireTarget)
 			return Success;
 
-		const CTimeValue now = gEnv->pTimer->GetFrameStartTime();
-		const float elapsedSecondsFromPreviousUpdate = now.GetDifferenceInSeconds(runtimeData.lastUpdateTime);
+		const CTimeValue now = GetGTimer()->GetFrameStartTime();
+		const CTimeValue elapsedSecondsFromPreviousUpdate = now - runtimeData.lastUpdateTime;
 		if (elapsedSecondsFromPreviousUpdate > m_minSecondsBeweenUpdates)
 		{
 			UpdateAimingPosition(runtimeData);
@@ -3315,7 +3315,7 @@ private:
 	}
 
 	float m_maxAngleRange;
-	float m_minSecondsBeweenUpdates;
+	CTimeValue m_minSecondsBeweenUpdates;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -3328,13 +3328,13 @@ public:
 	struct RuntimeData
 	{
 		Vec3  desiredBodyDirection;
-		float timeSpentAligning;
-		float correctBodyDirectionTime;
+		CTimeValue timeSpentAligning;
+		CTimeValue correctBodyDirectionTime;
 
 		RuntimeData()
 			: desiredBodyDirection(ZERO)
-			, timeSpentAligning(0.0f)
-			, correctBodyDirectionTime(0.0f)
+			, timeSpentAligning(0)
+			, correctBodyDirectionTime(0)
 		{
 		}
 	};
@@ -3508,7 +3508,7 @@ protected:
 		RuntimeData& runtimeData = GetRuntimeData<RuntimeData>(context);
 
 		runtimeData.desiredBodyDirection = desiredBodyDirection;
-		runtimeData.timeSpentAligning = 0.0f;
+		runtimeData.timeSpentAligning.SetSeconds(0);
 	}
 
 	virtual void OnTerminate(const UpdateContext& context) override
@@ -3533,22 +3533,22 @@ protected:
 		const Vec3 actualBodyDir = pipeUser.GetBodyInfo().vAnimBodyDir;
 		const bool turnedTowardsDesiredDirection = (actualBodyDir.Dot(runtimeData.desiredBodyDirection) > m_stopWithinAngleCosined);
 		if (turnedTowardsDesiredDirection)
-			runtimeData.correctBodyDirectionTime += gEnv->pTimer->GetFrameTime();
+			runtimeData.correctBodyDirectionTime += GetGTimer()->GetFrameTime();
 		else
-			runtimeData.correctBodyDirectionTime = 0.0f;
+			runtimeData.correctBodyDirectionTime.SetSeconds(0);
 
-		const float timeSpentAligning = runtimeData.timeSpentAligning + gEnv->pTimer->GetFrameTime();
+		const CTimeValue timeSpentAligning = runtimeData.timeSpentAligning + GetGTimer()->GetFrameTime();
 		runtimeData.timeSpentAligning = timeSpentAligning;
 
-		if (runtimeData.correctBodyDirectionTime > 0.2f)
+		if (runtimeData.correctBodyDirectionTime > "0.2")
 			return Success;
 
-		const float timeout = 8.0f;
+		const CTimeValue timeout = 8;
 		if (timeSpentAligning > timeout)
 		{
 			ErrorReporter(*this, context).LogWarning(
 			  "Failed to turn in direction %f %f %f within %f seconds. Proceeding anyway.",
-			  runtimeData.desiredBodyDirection.x, runtimeData.desiredBodyDirection.y, runtimeData.desiredBodyDirection.z, timeout);
+			  runtimeData.desiredBodyDirection.x, runtimeData.desiredBodyDirection.y, runtimeData.desiredBodyDirection.z, (float)timeout.GetSeconds());
 			return Success;
 		}
 
@@ -4280,9 +4280,9 @@ public:
 		PostureManager::PostureQueryID postureQueryID;
 
 		RuntimeData()
-			: endTime(0.0f)
-			, nextPostureQueryTime(0.0f)
-			, timeObstructed(0.0f)
+			: endTime(0)
+			, nextPostureQueryTime(0)
+			, timeObstructed(0)
 			, bestPostureID(-1)
 			, postureQueryID(0)
 		{
@@ -4290,9 +4290,9 @@ public:
 	};
 
 	ShootFromCover()
-		: m_duration(0.0f)
+		: m_duration(0)
 		, m_fireMode(FIREMODE_BURST)
-		, m_aimObstructedTimeout(-1.0f)
+		, m_aimObstructedTimeout(-1)
 	{
 	}
 
@@ -4382,8 +4382,8 @@ protected:
 
 		RuntimeData& runtimeData = GetRuntimeData<RuntimeData>(context);
 
-		const CTimeValue& now = gEnv->pTimer->GetFrameStartTime();
-		runtimeData.endTime = now + CTimeValue(m_duration);
+		const CTimeValue& now = GetGTimer()->GetFrameStartTime();
+		runtimeData.endTime = now + m_duration;
 		runtimeData.nextPostureQueryTime = now;
 
 		if (CPipeUser* pipeUser = GetPipeUser(context))
@@ -4392,7 +4392,7 @@ protected:
 			pipeUser->SetFireMode(m_fireMode);
 		}
 
-		runtimeData.timeObstructed = 0.0f;
+		runtimeData.timeObstructed.SetSeconds(0);
 	}
 
 	virtual void OnTerminate(const UpdateContext& context) override
@@ -4420,7 +4420,7 @@ protected:
 
 		RuntimeData& runtimeData = GetRuntimeData<RuntimeData>(context);
 
-		const CTimeValue& now = gEnv->pTimer->GetFrameStartTime();
+		const CTimeValue& now = GetGTimer()->GetFrameStartTime();
 		if (now > runtimeData.endTime)
 			return Success;
 
@@ -4429,12 +4429,12 @@ protected:
 		if (!pipeUser->IsInCover())
 			return Failure;
 
-		if (m_aimObstructedTimeout >= 0.0f)
+		if (m_aimObstructedTimeout >= 0)
 		{
 			const bool isAimObstructed = pipeUser && (pipeUser->GetState().aimObstructed || pipeUser->GetAimState() == AI_AIM_OBSTRUCTED);
 			if (isAimObstructed)
 			{
-				runtimeData.timeObstructed += gEnv->pTimer->GetFrameTime();
+				runtimeData.timeObstructed += GetGTimer()->GetFrameTime();
 				if (runtimeData.timeObstructed >= m_aimObstructedTimeout)
 				{
 					return Failure;
@@ -4442,7 +4442,7 @@ protected:
 			}
 			else
 			{
-				runtimeData.timeObstructed = 0.0f;
+				runtimeData.timeObstructed.SetSeconds(0);
 			}
 		}
 
@@ -4507,7 +4507,7 @@ protected:
 
 				if (foundPosture)
 				{
-					runtimeData.nextPostureQueryTime = now + CTimeValue(2.0f);
+					runtimeData.nextPostureQueryTime = now + CTimeValue(2);
 
 					pipeUser->m_State.bodystate = postureInfo->stance;
 					pipeUser->m_State.lean = postureInfo->lean;
@@ -4518,7 +4518,7 @@ protected:
 				}
 				else
 				{
-					runtimeData.nextPostureQueryTime = now + CTimeValue(1.0f);
+					runtimeData.nextPostureQueryTime = now + CTimeValue(1);
 				}
 			}
 		}
@@ -4534,9 +4534,9 @@ protected:
 	}
 
 private:
-	float     m_duration;
-	EFireMode m_fireMode;
-	float     m_aimObstructedTimeout;
+	CTimeValue m_duration;
+	EFireMode  m_fireMode;
+	CTimeValue m_aimObstructedTimeout;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -4579,30 +4579,32 @@ public:
 		CTimeValue            timeObstructed;
 
 		RuntimeData()
-			: timeWhenShootingShouldEnd(0.0f)
-			, timeObstructed(0.0f)
+			: timeWhenShootingShouldEnd(0)
+			, timeObstructed(0)
 		{
 		}
 	};
 
 	Shoot()
-		: m_duration(0.0f)
+		: m_duration(0)
 		, m_shootAt(ShootOp::ShootAt::AttentionTarget)
 		, m_stance(STANCE_STAND)
 		, m_fireMode(FIREMODE_OFF)
 		, m_stanceToUseIfSlopeIsTooSteep(STANCE_STAND)
 		, m_allowedSlopeNormalDeviationFromUpInRadians(0.0f)
-		, m_aimObstructedTimeout(-1.0f)
+		, m_aimObstructedTimeout(-1)
 		, m_position(ZERO)
 	{
 	}
 
+	// POINT OF INTEREST
+	// Use of IF_UNLIKELY etc.
 	virtual LoadResult LoadFromXml(const XmlNodeRef& xml, const struct LoadContext& context, const bool strictMode) override
 	{
 		IF_UNLIKELY (BaseClass::LoadFromXml(xml, context, strictMode) == LoadFailure)
 			return LoadFailure;
 
-		IF_UNLIKELY (!xml->getAttr("duration", m_duration) || m_duration < 0.0f)
+		IF_UNLIKELY (!xml->getAttr("duration", m_duration) || m_duration < 0)
 		{
 			ErrorReporter(*this, context).LogError("%s", ErrorReporter::ErrorMessageInvalidAttribute("Shoot", "duration", ToString(m_duration), "Missing or invalid value. Duration cannot be empty and should be greater or equal to 0").c_str());
 			return LoadFailure;
@@ -4789,8 +4791,8 @@ protected:
 		movementRequest.type = MovementRequest::Stop;
 		gEnv->pAISystem->GetMovementSystem()->QueueRequest(movementRequest);
 
-		runtimeData.timeWhenShootingShouldEnd = gEnv->pTimer->GetFrameStartTime() + CTimeValue(m_duration);
-		runtimeData.timeObstructed = 0.0f;
+		runtimeData.timeWhenShootingShouldEnd = GetGTimer()->GetFrameStartTime() + m_duration;
+		runtimeData.timeObstructed.SetSeconds(0);
 	}
 
 	virtual void OnTerminate(const UpdateContext& context) override
@@ -4818,18 +4820,18 @@ protected:
 	{
 		RuntimeData& runtimeData = GetRuntimeData<RuntimeData>(context);
 
-		const CTimeValue& now = gEnv->pTimer->GetFrameStartTime();
+		const CTimeValue& now = GetGTimer()->GetFrameStartTime();
 
 		if (now >= runtimeData.timeWhenShootingShouldEnd)
 			return Success;
 
-		if (m_aimObstructedTimeout >= 0.0f)
+		if (m_aimObstructedTimeout >= 0)
 		{
 			CPipeUser* pipeUser = GetPipeUser(context);
 			const bool isAimObstructed = pipeUser && (pipeUser->GetState().aimObstructed || pipeUser->GetAimState() == AI_AIM_OBSTRUCTED);
 			if (isAimObstructed)
 			{
-				runtimeData.timeObstructed += gEnv->pTimer->GetFrameTime();
+				runtimeData.timeObstructed += GetGTimer()->GetFrameTime();
 				if (runtimeData.timeObstructed >= m_aimObstructedTimeout)
 				{
 					return Failure;
@@ -4837,7 +4839,7 @@ protected:
 			}
 			else
 			{
-				runtimeData.timeObstructed = 0.0f;
+				runtimeData.timeObstructed.SetSeconds(0);
 			}
 		}
 
@@ -4879,13 +4881,13 @@ private:
 	}
 
 	Vec3             m_position;
-	float            m_duration;
+	CTimeValue       m_duration;
 	ShootOp::ShootAt m_shootAt;
 	EFireMode        m_fireMode;
 	EStance          m_stance;
 	EStance          m_stanceToUseIfSlopeIsTooSteep;
 	float            m_allowedSlopeNormalDeviationFromUpInRadians;
-	float            m_aimObstructedTimeout;
+	CTimeValue       m_aimObstructedTimeout;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -4904,7 +4906,7 @@ public:
 		bool       grenadeHasBeenThrown;
 
 		RuntimeData()
-			: timeWhenWeShouldGiveUpThrowing(0.0f)
+			: timeWhenWeShouldGiveUpThrowing(0)
 			, grenadeHasBeenThrown(false)
 		{
 		}
@@ -4912,7 +4914,7 @@ public:
 
 	ThrowGrenade()
 		: m_fragGrenadeThrownEvent("WPN_SHOOT")
-		, m_timeout(0.0f)
+		, m_timeout(0)
 		, m_grenadeType(eRGT_EMP_GRENADE)
 	{
 	}
@@ -4922,7 +4924,7 @@ public:
 		IF_UNLIKELY (BaseClass::LoadFromXml(xml, context, strictMode) == LoadFailure)
 			return LoadFailure;
 
-		IF_UNLIKELY (!xml->getAttr("timeout", m_timeout) || m_timeout < 0.0f)
+		IF_UNLIKELY (!xml->getAttr("timeout", m_timeout) || m_timeout < 0)
 		{
 			ErrorReporter(*this, context).LogError("%s", ErrorReporter::ErrorMessageInvalidAttribute("ThrowGrenade", "timeout", ToString(m_timeout), "Missing or invalid value. Timeout cannot be empty and should be greater or equal to 0").c_str());
 			return LoadFailure;
@@ -4967,7 +4969,7 @@ protected:
 		RuntimeData& runtimeData = GetRuntimeData<RuntimeData>(context);
 
 		runtimeData.grenadeHasBeenThrown = false;
-		runtimeData.timeWhenWeShouldGiveUpThrowing = GetFrameStartTime(context) + CTimeValue(m_timeout);
+		runtimeData.timeWhenWeShouldGiveUpThrowing = GetFrameStartTime(context) + m_timeout;
 
 		if (CPuppet* puppet = GetPuppet(context))
 		{
@@ -5005,7 +5007,7 @@ protected:
 
 private:
 	const Event           m_fragGrenadeThrownEvent;
-	float                 m_timeout;
+	CTimeValue            m_timeout;
 	ERequestedGrenadeType m_grenadeType;
 };
 

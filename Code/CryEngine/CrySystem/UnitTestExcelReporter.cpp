@@ -170,7 +170,7 @@ void CTestExcelReporter::OnFinishTesting(const SRunContext& context, bool openRe
 		{
 			AddCell("FAIL", CELL_CENTERED);
 		}
-		AddCell(static_cast<int>(res.runTimeInMs));
+		AddCell(static_cast<int>(res.fRunTime.GetMilliSeconds()));
 		AddCell(static_cast<uint32>(res.failures.size()));
 		AddCell(res.testInfo.fileName.c_str());
 		AddCell(res.testInfo.lineNumber);
@@ -217,11 +217,11 @@ void CTestExcelReporter::OnSingleTestStart(const STestInfo& testInfo)
 	m_log.Log(text);
 }
 
-void CTestExcelReporter::OnSingleTestFinish(const STestInfo& testInfo, float fRunTimeInMs, bool bSuccess, const std::vector<SError>& failures)
+void CTestExcelReporter::OnSingleTestFinish(const STestInfo& testInfo, const CTimeValue& fRunTime, bool bSuccess, const std::vector<SError>& failures)
 {
 	if (bSuccess)
 	{
-		m_log.Log("Test result: [%s]%s:%s | OK (%3.2fms)", testInfo.module.c_str(), testInfo.suite.c_str(), testInfo.name.c_str(), fRunTimeInMs);
+		m_log.Log("UnitTestFinish: [%s]%s:%s | OK (%3.2fms)", info.GetModule(), info.GetSuite(), info.GetName(), fRunTimeInMs);
 	}
 	else
 	{

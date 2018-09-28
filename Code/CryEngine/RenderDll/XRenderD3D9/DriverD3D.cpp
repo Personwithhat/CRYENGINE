@@ -46,34 +46,28 @@
 	#include <D3Dcompiler.h>
 #endif
 
-void CD3D9Renderer::LimitFramerate(const int maxFPS, const bool bUseSleep)
+void CD3D9Renderer::LimitFramerate(const int maxFPS)
 {
 	CRY_PROFILE_REGION(PROFILE_RENDERER, "RT_FRAME_CAP");
 
 	if (maxFPS > 0)
 	{
-		CTimeValue timeFrameMax;
-		const float safeMarginFPS = 0.5f;//save margin to not drop below 30 fps
-		static CTimeValue sTimeLast = gEnv->pTimer->GetAsyncTime();
+		// PERSONAL CRYTEK: Strange/pointless margin. 
+		// const mpfloat safeMarginFPS = "0.5"; // Safe margin to not drop below 30 fps
+		static CTimeValue sTimeLast = 0;
+		CTimeValue currentTime = GetGTimer()->GetAsyncTime();
 
-		timeFrameMax.SetMilliSeconds((int64)(1000.f / ((float)maxFPS + safeMarginFPS)));
-		const CTimeValue timeLast = timeFrameMax + sTimeLast;
-		while (timeLast.GetValue() > gEnv->pTimer->GetAsyncTime().GetValue())
-		{
-			if (bUseSleep)
-			{
-				CrySleep(1);
-			}
-			else
-			{
-				volatile int i = 0;
-				while (i++ < 1000)
-					;
-			}
+		// Target time-step based on max FPS. Minimum of 30.
+		CTimeValue tStep = 1 / mpfloat(max(maxFPS, 30));
+		CTimeValue tLeft = tStep - (currentTime - sTimeLast);
+
+		if(tLeft > 0){
+			CryLowLatencySleep(tLeft);
 		}
 
-		sTimeLast = gEnv->pTimer->GetAsyncTime();
+		sTimeLast = GetGTimer()->GetAsyncTime();
 	}
+
 }
 
 CCryNameTSCRC CTexture::s_sClassName = CCryNameTSCRC("CTexture");
@@ -2104,7 +2098,7 @@ void CD3D9Renderer::DebugPerfBars(const SRenderStatistics& RStats,int nX, int nY
 	nY += 20;
 
 	float fSmooth = 5.0f;
-	fFrameTime = (iTimer->GetFrameTime() + fFrameTime * fSmooth) / (fSmooth + 1.0f);
+	fFrameTime = (GTimer(d3d)->GetFrameTime().BADGetSeconds() + fFrameTime * fSmooth) / (fSmooth + 1.0f);
 
 	ColorF colF = Col_Orange;
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colF.r, false, "Frame: %.3fms", fFrameTime * 1000.0f);
@@ -2659,13 +2653,13 @@ void CD3D9Renderer::RT_RenderDebug(bool bRenderStats)
 	if (CV_r_showtimegraph)
 	{
 		static byte* fg;
-		static float fPrevTime = iTimer->GetCurrTime();
+		static CTimeValue fPrevTime = GTimer(d3d)->GetFrameStartTime();
 		static int sPrevWidth = 0;
 		static int sPrevHeight = 0;
 		static int nC;
 
-		float fCurTime = iTimer->GetCurrTime();
-		float frametime = fCurTime - fPrevTime;
+		CTimeValue fCurTime = GTimer(d3d)->GetFrameStartTime();
+		CTimeValue frametime = fCurTime - fPrevTime;
 		fPrevTime = fCurTime;
 		int wdt = pDC->GetViewport().width;
 		int hgt = pDC->GetViewport().height;
@@ -2698,7 +2692,7 @@ void CD3D9Renderer::RT_RenderDebug(bool bRenderStats)
 		}
 		else
 			fScale = 0.1f;
-		f = frametime / fScale;
+		f = frametime.BADGetSeconds() / fScale;
 		f = 255.0f - CLAMP(f * 255.0f, 0, 255.0f);
 		if (fg)
 		{
@@ -2740,7 +2734,7 @@ void CD3D9Renderer::RT_RenderDebug(bool bRenderStats)
 
 		fScaleTotalMem = (float)CRenderer::GetTexturesStreamPoolSize() - 1;
 
-		static float fPrevTime = iTimer->GetCurrTime();
+		static CTimeValue fPrevTime = GTimer(d3d)->GetFrameStartTime();
 		static int sPrevWidth = 0;
 		static int sPrevHeight = 0;
 		static int nC;
@@ -2811,7 +2805,7 @@ void CD3D9Renderer::RT_RenderDebug(bool bRenderStats)
 
 		if (sMask & 2)
 		{
-			f = RStats.m_fTexUploadTime / fScaleTimeUpl;
+			f = RStats.m_fTexUploadTime.BADGetSeconds() / fScaleTimeUpl;
 			f = 255.0f - CLAMP(f * 255.0f, 0, 255.0f);
 			fgTimeUpl[nC] = (byte)f;
 			Graph(fgTimeUpl, 0, hgt - 280, wdt, 256, nC, type, NULL, ColTimeUpl, fScaleTimeUpl);
@@ -3246,19 +3240,19 @@ void CD3D9Renderer::RT_EndFrame()
 	if (m_bDeviceLost)
 		return;
 
-	float fTime = 0; //iTimer->GetAsyncCurTimePrec();
+	float fTime = 0; //GTimer(d3d)->GetAsyncCurTimePrec();
 	HRESULT hReturn = E_FAIL;
 
-	CTimeValue TimeEndF = iTimer->GetAsyncTime();
+	CTimeValue TimeEndF = GTimer(d3d)->GetAsyncTime();
 
 	const ESystemGlobalState systemState = iSystem->GetSystemGlobalState();
 	if (systemState > ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_END)
 	{
-		CTimeValue time0 = iTimer->GetAsyncTime();
+		CTimeValue time0 = GTimer(d3d)->GetAsyncTime();
 
 		CTexture::Update();
 
-		SRenderStatistics::Write().m_fTexUploadTime += (iTimer->GetAsyncTime() - time0).GetSeconds();
+		SRenderStatistics::Write().m_fTexUploadTime += (GTimer(d3d)->GetAsyncTime() - time0).GetSeconds();
 	}
 
 #if defined(ENABLE_SIMPLE_GPU_TIMERS)
@@ -3293,7 +3287,7 @@ void CD3D9Renderer::RT_EndFrame()
 		m_pPipelineProfiler->EndFrame();
 #endif
 
-	CTimeValue timePresentBegin = iTimer->GetAsyncTime();
+	CTimeValue timePresentBegin = GTimer(d3d)->GetAsyncTime();
 	GetS3DRend().SubmitFrameToHMD();
 
 #if defined(ENABLE_SIMPLE_GPU_TIMERS)
@@ -3324,7 +3318,7 @@ void CD3D9Renderer::RT_EndFrame()
 	gRenDev->m_DevMan.RT_Tick();
 	GetDeviceObjectFactory().OnEndFrame(gRenDev->GetRenderFrameID());
 
-	SRenderStatistics::Write().m_Summary.endTime = iTimer->GetAsyncTime().GetDifferenceInSeconds(TimeEndF);
+	SRenderStatistics::Write().m_Summary.endTime = (GTimer(d3d)->GetAsyncTime() - TimeEndF);
 
 	// Update downscaled viewport
 	m_PrevViewportScale = m_CurViewportScale;
@@ -3490,7 +3484,7 @@ void CD3D9Renderer::RT_EndFrame()
 		m_nFrameSwapID++;
 	}
 
-	SRenderStatistics::Write().m_Summary.waitForGPU += iTimer->GetAsyncTime().GetDifferenceInSeconds(timePresentBegin);
+	SRenderStatistics::Write().m_Summary.waitForGPU += (GTimer(d3d)->GetAsyncTime() - timePresentBegin);
 
 #ifdef ENABLE_BENCHMARK_SENSOR
 	m_benchmarkRendererSensor->afterSwapBuffers(GetDevice(), GetDeviceContext());
@@ -3700,7 +3694,7 @@ bool CD3D9Renderer::RT_ScreenShot(const char* filename, CRenderDisplayContext* p
 #if defined(ENABLE_PROFILING_CODE)
 	iLog->LogWithType(ILog::eInputResponse, " ");
 	iLog->LogWithType(ILog::eInputResponse, "$5Drawcalls: %d", SRenderStatistics::Write().GetNumberOfDrawCalls());
-	iLog->LogWithType(ILog::eInputResponse, "$5FPS: %.1f (%.1f ms)", gEnv->pTimer->GetFrameRate(), gEnv->pTimer->GetFrameTime() * 1000.0f);
+	iLog->LogWithType(ILog::eInputResponse, "$5FPS: %.1f (%.1f ms)", GetGTimer()->GetFrameRate(), (float)GetGTimer()->GetFrameTime().GetMilliSeconds());
 #endif
 
 	int nPolygons, nShadowVolPolys;
@@ -4648,7 +4642,7 @@ void CD3D9Renderer::UpdateTextureInVideoMemory(uint32 tnum, unsigned char* newda
 	pTex->UpdateTextureRegion(newdata, posx, posy, posz, w, h, sizez, eTFSrc);
 }
 
-bool CD3D9Renderer::EF_PrecacheResource(SShaderItem* pSI, int iScreenTexels, float fTimeToReady, int Flags, int nUpdateId, int nCounter)
+bool CD3D9Renderer::EF_PrecacheResource(SShaderItem* pSI, int iScreenTexels, const CTimeValue& fTimeToReady, int Flags, int nUpdateId, int nCounter)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_RENDERER);
 
@@ -4696,7 +4690,7 @@ bool CD3D9Renderer::EF_PrecacheResource(SShaderItem* pSI, int iScreenTexels, flo
 					float currentMipFactor = expf((maxMipMap - minMipMap) * 2.0f * 0.69314718055994530941723212145818f /*LN2*/);
 					float fMipFactor = currentMipFactor / gRenDev->GetMipDistFactor(pITex->GetHeight(), pITex->GetWidth());
 
-					CD3D9Renderer::EF_PrecacheResource(pITex, fMipFactor, 0.f, Flags, nUpdateId, nCounter);
+					CD3D9Renderer::EF_PrecacheResource(pITex, fMipFactor, 0, Flags, nUpdateId, nCounter);
 				}
 			}
 		}
@@ -4705,7 +4699,7 @@ bool CD3D9Renderer::EF_PrecacheResource(SShaderItem* pSI, int iScreenTexels, flo
 	return true;
 }
 
-bool CD3D9Renderer::EF_PrecacheResource(SShaderItem* pSI, float fMipFactorSI, float fTimeToReady, int Flags, int nUpdateId, int nCounter)
+bool CD3D9Renderer::EF_PrecacheResource(SShaderItem* pSI, float fMipFactorSI, const CTimeValue& fTimeToReady, int Flags, int nUpdateId, int nCounter)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_RENDERER);
 
@@ -4745,7 +4739,7 @@ bool CD3D9Renderer::EF_PrecacheResource(SShaderItem* pSI, float fMipFactorSI, fl
 				if (ITexture* pITex = pResTex->m_Sampler.m_pITex)
 				{
 					float fMipFactor = fMipFactorSI * min(fabsf(pResTex->GetTiling(0)), fabsf(pResTex->GetTiling(1)));
-					CD3D9Renderer::EF_PrecacheResource(pITex, fMipFactor, 0.f, Flags, nUpdateId, nCounter);
+					CD3D9Renderer::EF_PrecacheResource(pITex, fMipFactor, 0, Flags, nUpdateId, nCounter);
 				}
 			}
 		}
@@ -4754,7 +4748,7 @@ bool CD3D9Renderer::EF_PrecacheResource(SShaderItem* pSI, float fMipFactorSI, fl
 	return true;
 }
 
-bool CD3D9Renderer::EF_PrecacheResource(ITexture* pTP, float fMipFactor, float fTimeToReady, int Flags, int nUpdateId, int nCounter)
+bool CD3D9Renderer::EF_PrecacheResource(ITexture* pTP, float fMipFactor, const CTimeValue& fTimeToReady, int Flags, int nUpdateId, int nCounter)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_RENDERER);
 
@@ -5229,7 +5223,6 @@ void CD3D9Renderer::DebugShowRenderTarget()
 
 ILog* iLog;
 IConsole* iConsole;
-ITimer* iTimer;
 ISystem* iSystem;
 
 //////////////////////////////////////////////////////////////////////////
@@ -5339,7 +5332,7 @@ extern "C" DLL_EXPORT IRenderer * CreateCryRenderInterface(ISystem * pSystem)
 {
 	iConsole = gEnv->pConsole;
 	iLog = gEnv->pLog;
-	iTimer = gEnv->pTimer;
+	SetGTimer(GetGTimer(), GTimers::d3d);
 	iSystem = gEnv->pSystem;
 
 	gcpRendD3D->InitRenderer();

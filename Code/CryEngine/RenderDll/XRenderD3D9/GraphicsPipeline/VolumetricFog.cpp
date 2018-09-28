@@ -40,7 +40,7 @@ struct SFogVolumeInjectInfo
 	Vec4     rampParams;
 
 	Vec3     windOffset;
-	float    noiseElapsedTime;
+	CTimeValue noiseElapsedTime;
 
 	Vec3     noiseSpatialFrequency;
 	float    noiseScale;

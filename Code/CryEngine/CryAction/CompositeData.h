@@ -28,9 +28,11 @@ enum EBasicTypes4CC
 	eBT_mtrx = 'mtrx', // Matrix34<f32>
 	eBT_quat = 'quat', // Quat<f32>
 	eBT_qutt = 'qutt', // QuatT<f32>
+
+	eBT_TVal = 'tval', // CTimeValue PERSONAL TODO: I don't think this can fit here anyways!! Too large?
 };
 
-using TBasicType = CryVariant<int8, uint8, int16, uint16, int32, uint32, int64, uint64, f32, f64, string, Vec3, Ang3, Matrix34, Quat, QuatT>;
+using TBasicType = CryVariant<int8, uint8, int16, uint16, int32, uint32, int64, uint64, f32, f64, string, Vec3, Ang3, Matrix34, Quat, QuatT, CTimeValue>;
 
 template<typename T>
 static inline T ComposeValue(const uint8* data, size_t size)
@@ -103,6 +105,11 @@ static inline TBasicType ComposeValue(const IMetadata* metadata)
 		break;
 	case eBT_qutt:
 		v = TBasicType(ComposeValue<QuatT>(dt, sz));
+		break;
+	case eBT_TVal:
+		// PERSONAL DEBUG: memcpy issues?
+		//v = TBasicType(ComposeValue<CTimeValue>(dt, sz));
+		assert(0);
 		break;
 	default:
 		break;

@@ -222,7 +222,7 @@ template<typename T>
 void AddParamMods(XmlNodeRef mods, TVarEParam<T>& param)
 {
 	AddParamMods(mods, static_cast<TVarParam<T>&>(param));
-	if (param.GetStrengthCurve()(VMIN) != T(1.f))
+	if (param.GetStrengthCurve()(VMIN) != T(1))
 	{
 		XmlNodeRef data = AddPtrElement(mods, SerializeNames<T>::curve());
 		AddValue(data, "Domain", "Age");
@@ -236,7 +236,7 @@ template<typename T>
 void AddParamMods(XmlNodeRef mods, TVarEPParam<T>& param)
 {
 	AddParamMods(mods, static_cast<TVarEParam<T>&>(param));
-	if (param.GetAgeCurve()(VMIN) != T(1.f))
+	if (param.GetAgeCurve()(VMIN) != T(1))
 	{
 		XmlNodeRef data = AddPtrElement(mods, SerializeNames<T>::curve());
 		AddValue(data, "Domain", "Age");

@@ -939,12 +939,12 @@ I3DEngine::ELevelLoadStatus C3DEngineLevelLoadTimeslicer::DoStep()
 			{
 				m_owner.PrintMessage("Starting loading level characters ...");
 				INDENT_LOG_DURING_SCOPE();
-				float fStartTime = m_owner.GetCurAsyncTimeSec();
+				CTimeValue fStartTime = m_owner.GetCurAsyncTimeSec();
 
 				gEnv->pCharacterManager->PreloadLevelModels();
 
-				float dt = m_owner.GetCurAsyncTimeSec() - fStartTime;
-				m_owner.PrintMessage("Finished loading level characters (%.1f sec)", dt);
+				CTimeValue dt = m_owner.GetCurAsyncTimeSec() - fStartTime;
+				m_owner.PrintMessage("Finished loading level characters (%.1f sec)", (float)dt.GetSeconds());
 			}
 		}
 	}
@@ -1349,15 +1349,15 @@ void C3DEngine::LoadEnvironmentSettingsFromXML(XmlNodeRef pInputNode)
 	PrintComment("Loading environment settings from XML ...");
 
 	// set start and end time for dawn/dusk (to fade moon/sun light in and out)
-	float dawnTime = (float) atof(GetXMLAttribText(pInputNode, "Lighting", "DawnTime", "355"));
-	float dawnDuration = (float) atof(GetXMLAttribText(pInputNode, "Lighting", "DawnDuration", "10"));
-	float duskTime = (float) atof(GetXMLAttribText(pInputNode, "Lighting", "DuskTime", "365"));
-	float duskDuration = (float) atof(GetXMLAttribText(pInputNode, "Lighting", "DuskDuration", "10"));
+	CTimeValue dawnTime = CTimeValue(GetXMLAttribText(pInputNode, "Lighting", "DawnTime", "355"));
+	CTimeValue dawnDuration = CTimeValue(GetXMLAttribText(pInputNode, "Lighting", "DawnDuration", "10"));
+	CTimeValue duskTime = CTimeValue(GetXMLAttribText(pInputNode, "Lighting", "DuskTime", "365"));
+	CTimeValue duskDuration = CTimeValue(GetXMLAttribText(pInputNode, "Lighting", "DuskDuration", "10"));
 
-	m_dawnStart = (dawnTime - dawnDuration * 0.5f) / 60.0f;
-	m_dawnEnd = (dawnTime + dawnDuration * 0.5f) / 60.0f;
-	m_duskStart = 12.0f + (duskTime - duskDuration * 0.5f) / 60.0f;
-	m_duskEnd = 12.0f + (duskTime + duskDuration * 0.5f) / 60.0f;
+	m_dawnStart = (dawnTime - dawnDuration * "0.5") / 60;
+	m_dawnEnd   = (dawnTime + dawnDuration * "0.5") / 60;
+	m_duskStart = CTimeValue(12) + (duskTime - duskDuration * "0.5") / 60;
+	m_duskEnd   = CTimeValue(12) + (duskTime + duskDuration * "0.5") / 60;
 
 	if (m_dawnEnd > m_duskStart)
 	{
@@ -1671,12 +1671,11 @@ void C3DEngine::LoadParticleEffects(const char* szFolderName)
 		if (GetCVars()->e_ParticlesPreload)
 		{
 			// Force loading all effects and assets, to ensure no runtime stalls.
-			CTimeValue t0 = GetTimer()->GetAsyncTime();
+			CTimeValue t0 = GTimer(render)->GetAsyncTime();
 			PrintMessage("Preloading Particle Effects...");
 			m_pPartManager->LoadLibrary("*", NULL, true);
-			CTimeValue t1 = GetTimer()->GetAsyncTime();
-			float dt = (t1 - t0).GetSeconds();
-			PrintMessage("Particle Effects Loaded in %.2f seconds", dt);
+			CTimeValue t1 = GTimer(render)->GetAsyncTime();
+			PrintMessage("Particle Effects Loaded in %.2f seconds", (float)(t1 - t0).GetSeconds());
 		}
 		else
 		{

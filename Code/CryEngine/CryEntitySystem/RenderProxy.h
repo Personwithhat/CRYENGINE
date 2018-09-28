@@ -47,7 +47,8 @@ public:
 	void         SetSlotMaterial(int nSlot, IMaterial* pMaterial);
 	IMaterial*   GetSlotMaterial(int nSlot) const;
 
-	float        GetLastSeenTime() const { return m_fLastSeenTime; }
+	const CTimeValue&   GetLastSeenTime() const { return m_fLastSeenTime; }
+	void                SetLastSeenTime(const CTimeValue& fNewTime) { m_fLastSeenTime = fNewTime; }
 	//////////////////////////////////////////////////////////////////////////
 
 	bool                IsSlotValid(int nIndex) const { return nIndex >= 0 && nIndex < (int)m_slots.size() && m_slots[nIndex] != NULL; };
@@ -72,7 +73,7 @@ public:
 	int                 LoadLight(int nSlot, SRenderLight* pLight, uint16 layerId);
 	int                 LoadCloudBlocker(int nSlot, const SCloudBlockerProperties& properties);
 	int                 LoadFogVolume(int nSlot, const SFogVolumeProperties& properties);
-	int                 FadeGlobalDensity(int nSlot, float fadeTime, float newGlobalDensity);
+	int                 FadeGlobalDensity(int nSlot, const CTimeValue& fadeTime, float newGlobalDensity);
 #if defined(USE_GEOM_CACHES)
 	int                 LoadGeomCache(int nSlot, const char* sFilename);
 #endif
@@ -111,8 +112,6 @@ public:
 	// Internal slot access function.
 	ILINE CEntitySlot* Slot(int nIndex) const { assert(nIndex >= 0 && nIndex < (int)m_slots.size()); return m_slots[nIndex]; }
 	IStatObj*          GetCompoundObj() const;
-
-	void               SetLastSeenTime(float fNewTime) { m_fLastSeenTime = fNewTime; }
 
 	void               DebugDraw(const SGeometryDebugDrawInfo& info);
 	// Calls UpdateRenderNode on every slot.
@@ -155,7 +154,7 @@ private:
 	AABB m_localBBox = AABB(ZERO, ZERO);
 
 	// Time passed since this entity was seen last time  (wrong: this is an absolute time, todo: fix float absolute time values)
-	float m_fLastSeenTime;
+	CTimeValue m_fLastSeenTime;
 
 	// Rendering related member variables, Passed to 3d engine render nodes.
 	IEntity::SRenderNodeParams m_renderNodeParams;
