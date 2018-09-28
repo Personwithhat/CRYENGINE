@@ -39,7 +39,7 @@ SERIALIZATION_ENUM_END()
 
 namespace
 {
-const float nTimeLineMinutesScale = 60.0f;
+const int nTimeLineMinutesScale = 60;
 const int nRulerHeight = 30;
 const int nRulerGradientHeight = 14;
 const float fToDParameterComareEpsilon = 0.0001f;
@@ -53,17 +53,17 @@ ITimeOfDay* GetTimeOfDay()
 	return pTimeOfDay;
 }
 
-float QTimeToFloat(const QTime& time)
+CTimeValue QTimeToTime(const QTime& time)
 {
-	const int nSeconds = QTime(0, 0, 0).secsTo(time);
-	const float fTime = nSeconds / 3600.0f;
+	const mpfloat nSeconds = QTime(0, 0, 0).secsTo(time);
+	const CTimeValue fTime = nSeconds / 3600;
 	return fTime;
 }
 
-QTime FloatToQTime(float fTime)
+QTime TimeToQTime(const CTimeValue& fTime)
 {
-	unsigned int hour = floor(fTime);
-	unsigned int minute = floor((fTime - floor(fTime)) * nTimeLineMinutesScale + 0.5f);
+	unsigned int hour = (int)floor(fTime.GetSeconds());
+	unsigned int minute = (int)floor((fTime.GetSeconds() - hour) * nTimeLineMinutesScale + "0.5");
 	if (hour > 23)
 	{
 		hour = 23;
@@ -167,7 +167,7 @@ QRgb ColorLinearToGamma(const Vec3& col)
 	return qRgb(int(r), int(g), int(b));
 }
 
-void DrawGradient(ITimeOfDay* pTimeOfDay, int selectedParam, QPainter& painter, const QRect& rect, const Range& visibleRange)
+void DrawGradient(ITimeOfDay* pTimeOfDay, int selectedParam, QPainter& painter, const QRect& rect, const TRange<CTimeValue>& visibleRange)
 {
 	if (selectedParam >= 0 && selectedParam < pTimeOfDay->GetVariableCount())
 	{
@@ -417,7 +417,7 @@ void QTimeOfDayWidget::Refresh()
 	if (m_selectedParamId < 0)
 	{
 		m_curveEdit->SetFitMargin(0.0f);
-		m_curveEdit->ZoomToTimeRange(SAnimTime(0.0f), SAnimTime(m_fAnimTimeSecondsIn24h));
+		m_curveEdit->ZoomToTimeRange(0, m_fAnimTimeSecondsIn24h);
 	}
 	else
 	{
@@ -431,12 +431,12 @@ void QTimeOfDayWidget::OnIdleUpdate()
 	if (m_bIsPlaying)
 	{
 		ITimeOfDay* pTimeOfDay = GetTimeOfDay();
-		float fHour = pTimeOfDay->GetTime();
+		CTimeValue fHour = pTimeOfDay->GetTime();
 
 		ITimeOfDay::SAdvancedInfo advInfo;
 		pTimeOfDay->GetAdvancedInfo(advInfo);
-		float dt = gEnv->pTimer->GetFrameTime();
-		float fTime = fHour + dt * advInfo.fAnimSpeed;
+		CTimeValue dt = GetGTimer()->GetFrameTime();
+		CTimeValue fTime = fHour + dt * advInfo.fAnimSpeed;
 		if (fTime > advInfo.fEndTime)
 			fTime = advInfo.fStartTime;
 		if (fTime < advInfo.fStartTime)
@@ -486,9 +486,9 @@ void QTimeOfDayWidget::UpdateCurveContent()
 
 void QTimeOfDayWidget::CurveEditTimeChanged()
 {
-	float time = m_curveEdit->Time().ToFloat();
+	CTimeValue time = m_curveEdit->Time();
 	time /= m_fAnimTimeSecondsIn24h;
-	float fTODTime = time * 24.0f;
+	CTimeValue fTODTime = time * 24;
 	SetTODTime(fTODTime);
 	UpdateCurrentTimeEdit();
 	UpdateVarPropTree();
@@ -496,7 +496,7 @@ void QTimeOfDayWidget::CurveEditTimeChanged()
 
 void QTimeOfDayWidget::CurrentTimeEdited()
 {
-	const float fTODTime = QTimeToFloat(m_currentTimeEdit->time());
+	const CTimeValue fTODTime = QTimeToTime(m_currentTimeEdit->time());
 	SetTODTime(fTODTime);
 	UpdateCurveTime();
 	UpdateVarPropTree();
@@ -511,7 +511,7 @@ void QTimeOfDayWidget::OnPropertySelected()
 	if (m_selectedParamId < 0)
 	{
 		UpdateCurveContent();
-		m_curveEdit->ZoomToTimeRange(SAnimTime(0.0f), SAnimTime(m_fAnimTimeSecondsIn24h));
+		m_curveEdit->ZoomToTimeRange(0, m_fAnimTimeSecondsIn24h);
 		return;
 	}
 
@@ -571,8 +571,8 @@ void QTimeOfDayWidget::CheckParameterChanged(STODParameter& param, const Vec3& n
 {
 	ITimeOfDay* pTimeOfDay = GetTimeOfDay();
 	const int paramID = param.GetParamID();
-	const float fTime = pTimeOfDay->GetTime();
-	const float fSplineTime = (fTime / 24.0f) * m_fAnimTimeSecondsIn24h;
+	const CTimeValue fTime = pTimeOfDay->GetTime();
+	const CTimeValue fSplineTime = (fTime / 24) * m_fAnimTimeSecondsIn24h;
 
 	bool bChanged = false;
 	const Vec3 oldValue = param.GetValue();
@@ -666,20 +666,20 @@ void QTimeOfDayWidget::OnSplineEditing()
 	if (!m_bIsPlaying)
 	{
 		// update current time if something is selected
-		float fMinSelectedTime = std::numeric_limits<float>::max();
+		CTimeValue fMinSelectedTime = CTimeValue::Max();
 		for (auto& curve : pContent->m_curves)
 		{
 			for (auto& key : curve.m_keys)
 			{
 				if (key.m_bSelected)
-					fMinSelectedTime = std::min(fMinSelectedTime, key.m_time.ToFloat());
+					fMinSelectedTime = std::min(fMinSelectedTime, key.m_time);
 			}
 		}
 
 		fMinSelectedTime /= m_fAnimTimeSecondsIn24h;
-		if (fMinSelectedTime >= 0.0f && fMinSelectedTime <= 1.0f)
+		if (fMinSelectedTime >= 0 && fMinSelectedTime <= 1)
 		{
-			SetTODTime(fMinSelectedTime * 24.0f);
+			SetTODTime(fMinSelectedTime * 24);
 			UpdateCurrentTimeEdit();
 			UpdateCurveTime();
 		}
@@ -747,7 +747,7 @@ void QTimeOfDayWidget::OnPasteCurveContent()
 	}
 }
 
-void QTimeOfDayWidget::SetTODTime(const float fTime)
+void QTimeOfDayWidget::SetTODTime(const CTimeValue& fTime)
 {
 	GetTimeOfDay()->SetTime(fTime, true);
 
@@ -835,7 +835,7 @@ void QTimeOfDayWidget::CreateCurveEditor(QSplitter* pParent)
 	m_curveEdit = new CCurveEditor(this);
 	m_curveEdit->FillWithCurveToolsAndConnect(toolBar);
 	m_curveEdit->SetContent(m_curveContent.get());
-	m_curveEdit->SetTimeRange(SAnimTime(0.0f), SAnimTime(m_fAnimTimeSecondsIn24h));
+	m_curveEdit->SetTimeRange(0), SAnimTime(m_fAnimTimeSecondsIn24h));
 	m_curveEdit->SetRulerVisible(true);
 	m_curveEdit->SetRulerHeight(nRulerHeight);
 	m_curveEdit->SetRulerTicksYOffset(nRulerGradientHeight);
@@ -849,7 +849,7 @@ void QTimeOfDayWidget::CreateCurveEditor(QSplitter* pParent)
 	connect(m_curveEdit, &CCurveEditor::SignalScrub, this, &QTimeOfDayWidget::CurveEditTimeChanged);
 	connect(m_curveEdit, &CCurveEditor::SignalDrawRulerBackground, [this](QPainter& painter, const QRect& rulerRect, const Range& visibleRange)
 	{
-		DrawGradient(GetTimeOfDay(), m_selectedParamId, painter, rulerRect, visibleRange);
+		DrawGradient(GetTimeOfDay(), m_selectedParamId, painter, rulerRect, TRange<CTimeValue>(BADTIME(visibleRange.start), BADTIME(visibleRange.end))););
 	});
 	connect(m_curveEdit, &CCurveEditor::SignalContentAboutToBeChanged, this, &QTimeOfDayWidget::UndoBegin);
 	connect(m_curveEdit, &CCurveEditor::SignalContentChanging, this, &QTimeOfDayWidget::OnSplineEditing);
@@ -884,7 +884,7 @@ void QTimeOfDayWidget::CreateCurveEditor(QSplitter* pParent)
 		m_startTimeEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 		connect(m_startTimeEdit, &CTimeEditControl::timeChanged, [](const QTime& time)
 		{
-			const float fTODTime = QTimeToFloat(time);
+			const CTimeValue fTODTime = QTimeToFloat(time);
 			UpdateToDAdvancedInfo([fTODTime](ITimeOfDay::SAdvancedInfo& sAdvInfo) { sAdvInfo.fStartTime = fTODTime; });
 		});
 		pMediaBarLayoutLeft->addWidget(startTimeLabel);
@@ -925,7 +925,7 @@ void QTimeOfDayWidget::CreateCurveEditor(QSplitter* pParent)
 		{
 			m_curveEdit->setFocus();
 			const QString value = m_playSpeedEdit->text();
-			const float fFloatValue = value.toFloat();
+			const mpfloat fFloatValue = value.toStdString().c_str();
 			UpdateToDAdvancedInfo([fFloatValue](ITimeOfDay::SAdvancedInfo& sAdvInfo) { sAdvInfo.fAnimSpeed = fFloatValue; });
 		});
 
@@ -953,7 +953,7 @@ void QTimeOfDayWidget::CreateCurveEditor(QSplitter* pParent)
 		m_endTimeEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 		connect(m_endTimeEdit, &CTimeEditControl::timeChanged, [](const QTime& time)
 		{
-			const float fTODTime = QTimeToFloat(time);
+			const CTimeValue fTODTime = QTimeToTime(time);
 			UpdateToDAdvancedInfo([fTODTime](ITimeOfDay::SAdvancedInfo& sAdvInfo) { sAdvInfo.fEndTime = fTODTime; });
 		});
 
@@ -1057,13 +1057,13 @@ void QTimeOfDayWidget::UpdateValues()
 	ITimeOfDay::SAdvancedInfo advInfo;
 	pTimeOfDay->GetAdvancedInfo(advInfo);
 
-	const QTime startTime = FloatToQTime(advInfo.fStartTime);
+	const QTime startTime = TimeToQTime(advInfo.fStartTime);
 	SetQTimeEditTimeBlocking(m_startTimeEdit, startTime);
-	const QTime endTime = FloatToQTime(advInfo.fEndTime);
+	const QTime endTime = TimeToQTime(advInfo.fEndTime);
 	SetQTimeEditTimeBlocking(m_endTimeEdit, endTime);
 
 	m_playSpeedEdit->blockSignals(true);
-	m_playSpeedEdit->setText(QString::number(advInfo.fAnimSpeed));
+	m_playSpeedEdit->setText(QString::number(BADF advInfo.fAnimSpeed));
 	m_playSpeedEdit->blockSignals(false);
 
 	UpdateConstPropTree();
@@ -1115,8 +1115,8 @@ void QTimeOfDayWidget::UpdateVarPropTree()
 void QTimeOfDayWidget::UpdateCurrentTimeEdit()
 {
 	ITimeOfDay* pTimeOfDay = GetTimeOfDay();
-	const float fTime = pTimeOfDay->GetTime();
-	QTime currentTime = FloatToQTime(fTime);
+	const CTimeValue fTime = pTimeOfDay->GetTime();
+	QTime currentTime = TimeToQTime(fTime);
 
 	SetQTimeEditTimeBlocking(m_currentTimeEdit, currentTime);
 }
@@ -1124,9 +1124,9 @@ void QTimeOfDayWidget::UpdateCurrentTimeEdit()
 void QTimeOfDayWidget::UpdateCurveTime()
 {
 	ITimeOfDay* pTimeOfDay = GetTimeOfDay();
-	const float fTime = pTimeOfDay->GetTime();
-	const float fSplineTime = (fTime / 24.0f) * m_fAnimTimeSecondsIn24h;
-	m_curveEdit->SetTime(SAnimTime(fSplineTime));
+	const CTimeValue fTime = pTimeOfDay->GetTime();
+	const CTimeValue fSplineTime = (fTime / 24) * m_fAnimTimeSecondsIn24h;
+	m_curveEdit->SetTime(fSplineTime);
 }
 
 bool QTimeOfDayWidget::eventFilter(QObject* obj, QEvent* event)

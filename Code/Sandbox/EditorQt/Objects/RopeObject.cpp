@@ -211,7 +211,7 @@ void CRopeObject::Display(CObjectRenderHelper& objRenderHelper)
 			nLinkedMask = pRopeNode->GetLinkedEndsMask();
 
 		m_endLinksDisplayUpdateCounter++;
-		if (pRopeNode && m_endLinksDisplayUpdateCounter > 10 && gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep == 0.0f)
+		if (pRopeNode && m_endLinksDisplayUpdateCounter > 10 && gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep == 0)
 		{
 			m_endLinksDisplayUpdateCounter = 0;
 

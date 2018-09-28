@@ -14,8 +14,8 @@ public:
 	void            SetName(const char* name);
 	const char*     GetName() const;
 
-	void            SetTimeRange(Range timeRange);
-	Range           GetTimeRange() { return m_timeRange; }
+	void            SetTimeRange(TRange<CTimeValue> timeRange);
+	TRange<CTimeValue> GetTimeRange() { return m_timeRange; }
 
 	int             GetNodeCount() const;
 	CSequencerNode* GetNode(int index) const;
@@ -35,5 +35,5 @@ private:
 	SequencerNodes m_nodes;
 
 	string         m_name;
-	Range          m_timeRange;
+	TRange<CTimeValue> m_timeRange;
 };

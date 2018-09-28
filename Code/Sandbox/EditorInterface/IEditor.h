@@ -382,8 +382,13 @@ struct IEditor
 
 	virtual ESystemConfigSpec GetEditorConfigSpec() const = 0;
 
+	virtual void              SetConsoleTime(const char* var, const CTimeValue& value) = 0;
+	virtual void              SetConsoleMP(const char* var, const mpfloat& value) = 0;
 	virtual void              SetConsoleVar(const char* var, const int value) = 0;
 	virtual void              SetConsoleVar(const char* var, const float value) = 0;
+
+	virtual CTimeValue        GetConsoleTime(const char* var) = 0;
+	virtual mpfloat           GetConsoleMP(const char* var) = 0;
 	virtual float             GetConsoleVar(const char* var) = 0;
 
 	//! Adds a handler for native OS specific events. Useful for plugins that need access to specific OS messages.
@@ -398,8 +403,8 @@ struct IEditor
 	virtual FileSystem::CEnumerator* GetFileSystemEnumerator() = 0;
 	virtual IFileChangeMonitor*      GetFileMonitor() = 0;
 
-	virtual void                     SetCurrentMissionTime(float time) = 0;
-	virtual float                    GetCurrentMissionTime() = 0;
+	virtual void                     SetCurrentMissionTime(const CTimeValue& time) = 0;
+	virtual CTimeValue               GetCurrentMissionTime() = 0;
 
 	//todo : remove functor
 	typedef Functor2<CPopupMenuItem*, const CBaseObject*> TContextMenuExtensionFunc;

@@ -235,7 +235,7 @@ private:
 
 	std::vector<HTREEITEM> m_fragmentItems;
 
-	float                  m_filterDelay;
+	CTimeValue             m_filterDelay;
 
 	// Drag / Drop
 	COleDropTarget*               m_pDropTarget;

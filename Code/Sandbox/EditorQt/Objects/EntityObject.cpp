@@ -1855,7 +1855,7 @@ void CEntityObject::GetScriptProperties(XmlNodeRef xmlEntityNode)
 			{
 				if (IVariable* pSnowFlakeCount = FindVariableInSubBlock(m_pLuaProperties, pSubBlockSnowFall, "nSnowFlakeCount"))
 				{
-					pSnowFlakeCount->SetLimits(0, 10000, 0, true, true);
+					pSnowFlakeCount->SetLimitsG(0, 10000, 0, true, true);
 				}
 			}
 
@@ -2324,6 +2324,14 @@ template<> struct IVariableType<string>
 template<> struct IVariableType<Vec3>
 {
 	enum { value = IVariable::VECTOR };
+};
+template<> struct IVariableType<mpfloat>
+{
+	enum { value = IVariable::MP };
+};
+template<> struct IVariableType<CTimeValue>
+{
+	enum { value = IVariable::TV };
 };
 
 void CEntityObject::DrawProjectorPyramid(SDisplayContext& dc, float dist)
@@ -5785,6 +5793,16 @@ float CEntityObject::GetEntityPropertyFloat(const char* name) const
 	return GetEntityProperty<float>(name, 0.0f);
 }
 
+CTimeValue CEntityObject::GetEntityPropertyTV(const char* name) const
+{
+	return GetEntityProperty<CTimeValue>(name, "");
+}
+
+mpfloat CEntityObject::GetEntityPropertyMP(const char* name) const
+{
+	return GetEntityProperty<mpfloat>(name, "");
+}
+
 string CEntityObject::GetMouseOverStatisticsText() const
 {
 	if (m_pEntity)
@@ -5825,7 +5843,7 @@ string CEntityObject::GetMouseOverStatisticsText() const
 					IGeomCache::SStatistics stats = pGeomCache->GetStatistics();
 
 					string averageDataRate;
-					FormatFloatForUI(averageDataRate, 2, stats.m_averageAnimationDataRate);
+					FormatFloatForUI(averageDataRate, 2, (double)stats.m_averageAnimationDataRate);
 
 					statsText += "\n  " + (stats.m_bPlaybackFromMemory ? string("Playback from Memory") : string("Playback from Disk"));
 					statsText += "\n  " + averageDataRate + " MiB/s Average Animation Data Rate";
@@ -5963,6 +5981,16 @@ void CEntityObject::SetEntityPropertyString(const char* name, const string& valu
 	SetEntityProperty<string>(name, value);
 }
 
+void CEntityObject::SetEntityPropertyMP(const char* name, const mpfloat& value)
+{
+	SetEntityProperty<mpfloat>(name, value);
+}
+
+void CEntityObject::SetEntityPropertyTV(const char* name, const CTimeValue& value)
+{
+	SetEntityProperty<CTimeValue>(name, value);
+}
+
 SPyWrappedProperty CEntityObject::PyGetEntityProperty(const char* pName) const
 {
 	IVariable* pVariable = NULL;
@@ -6007,6 +6035,16 @@ SPyWrappedProperty CEntityObject::PyGetEntityProperty(const char* pName) const
 	{
 		value.type = SPyWrappedProperty::eType_String;
 		pVariable->Get(value.stringValue);
+		return value;
+	}
+	else if (pVariable->GetType() == IVariable::MP)
+	{
+		assert(false && "Not supported yet.");
+		return value;
+	}
+	else if (pVariable->GetType() == IVariable::TV)
+	{
+		assert(false && "Not supported yet.");
 		return value;
 	}
 	else if (pVariable->GetType() == IVariable::VECTOR)
@@ -6172,6 +6210,16 @@ SPyWrappedProperty PyGetObjectVariableRec(IVariableContainer* pVariableContainer
 		{
 			value.type = SPyWrappedProperty::eType_String;
 			pVariable->Get(value.stringValue);
+			return value;
+		}
+		else if (pVariable->GetType() == IVariable::MP)
+		{
+			assert(false && "Not supported yet.");
+			return value;
+		}
+		else if (pVariable->GetType() == IVariable::TV)
+		{
+			assert(false && "Not supported yet.");
 			return value;
 		}
 		else if (pVariable->GetType() == IVariable::VECTOR)

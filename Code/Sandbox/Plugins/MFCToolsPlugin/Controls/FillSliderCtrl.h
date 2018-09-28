@@ -46,7 +46,7 @@ public:
 	// Operations
 public:
 	//! Set current value.
-	virtual void SetValue(float val);
+	virtual void SetValue(const mpfloat& val);
 
 	// Generated message map functions
 protected:

@@ -65,12 +65,12 @@ CPhonemesCtrl::CPhonemesCtrl()
 	m_nHitSentence = -1;
 
 	m_fZoom = 1;
-	m_fOrigin = 0;
+	m_fOrigin.SetSeconds(0);
 
 	ClearSelection();
 
 	m_TimeUpdateRect.SetRectEmpty();
-	m_fTimeMarker = -10;
+	m_fTimeMarker.SetSeconds("-0.01");
 }
 
 CPhonemesCtrl::~CPhonemesCtrl()
@@ -162,15 +162,15 @@ BOOL CPhonemesCtrl::PreTranslateMessage(MSG* pMsg)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CPhonemesCtrl::TimeToClient(int time)
+int CPhonemesCtrl::TimeToClient(const CTimeValue& time)
 {
-	return floor((time - m_fOrigin) * (m_fZoom) + 0.5f) + m_rcPhonemes.left;
+	return (int)floor(((time - m_fOrigin) * (m_fZoom) + "0.5").GetSeconds()) + m_rcPhonemes.left;
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CPhonemesCtrl::ClientToTime(int x)
+CTimeValue CPhonemesCtrl::ClientToTime(int x)
 {
-	return ((x - m_rcPhonemes.left) / (m_fZoom) + m_fOrigin);
+	return ((x - m_rcPhonemes.left) / (m_fZoom) + m_fOrigin.GetSeconds());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -240,8 +240,8 @@ void CPhonemesCtrl::DrawPhonemes(CDC* pDC)
 		{
 			Phoneme& ph = GetPhoneme(sentenceIndex, i);
 
-			int x = TimeToClient(ph.time0 + m_sentences[sentenceIndex].startTime * 1000.0f);
-			int x1 = TimeToClient(ph.time1 + m_sentences[sentenceIndex].startTime * 1000.0f);
+			int x = TimeToClient(ph.time0 + m_sentences[sentenceIndex].startTime);
+			int x1 = TimeToClient(ph.time1 + m_sentences[sentenceIndex].startTime);
 
 			if (x1 < rcClip.left - 2)
 				continue;
@@ -301,8 +301,8 @@ void CPhonemesCtrl::DrawWords(CDC* pDC)
 		{
 			Word& w = GetWord(sentenceIndex, i);
 
-			int x = TimeToClient(w.time0 + m_sentences[sentenceIndex].startTime * 1000.0f);
-			int x1 = TimeToClient(w.time1 + m_sentences[sentenceIndex].startTime * 1000.0f);
+			int x = TimeToClient(w.time0 + m_sentences[sentenceIndex].startTime);
+			int x1 = TimeToClient(w.time1 + m_sentences[sentenceIndex].startTime);
 
 			if (x1 < rcClip.left - 2)
 				continue;
@@ -605,9 +605,9 @@ BOOL CPhonemesCtrl::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 //////////////////////////////////////////////////////////////////////////////
 CPhonemesCtrl::EHitCode CPhonemesCtrl::HitTest(CPoint point)
 {
-	int time = ClientToTime(point.x);
-	int time0 = ClientToTime(point.x - 2);
-	int time1 = ClientToTime(point.x + 2);
+	CTimeValue time = ClientToTime(point.x);
+	CTimeValue time0 = ClientToTime(point.x - 2);
+	CTimeValue time1 = ClientToTime(point.x + 2);
 
 	CRect rc;
 	GetClientRect(rc);
@@ -623,7 +623,7 @@ CPhonemesCtrl::EHitCode CPhonemesCtrl::HitTest(CPoint point)
 		for (i = 0; i < num; i++)
 		{
 			Phoneme& ph = GetPhoneme(sentenceIndex, i);
-			if (time0 <= ph.time0 + m_sentences[sentenceIndex].startTime * 1000.0f && time1 >= ph.time0 + m_sentences[sentenceIndex].startTime * 1000.0f)
+			if (time0 <= ph.time0 + m_sentences[sentenceIndex].startTime && time1 >= ph.time0 + m_sentences[sentenceIndex].startTime)
 			{
 				m_nHitSentence = sentenceIndex;
 				m_nHitPhoneme = i;
@@ -634,7 +634,7 @@ CPhonemesCtrl::EHitCode CPhonemesCtrl::HitTest(CPoint point)
 		for (i = 0; i < num; i++)
 		{
 			Phoneme& ph = GetPhoneme(sentenceIndex, i);
-			if (time0 <= ph.time1 + m_sentences[sentenceIndex].startTime * 1000.0f && time1 >= ph.time1 + m_sentences[sentenceIndex].startTime * 1000.0f)
+			if (time0 <= ph.time1 + m_sentences[sentenceIndex].startTime  && time1 >= ph.time1 + m_sentences[sentenceIndex].startTime)
 			{
 				m_nHitSentence = sentenceIndex;
 				m_nHitPhoneme = i;
@@ -645,7 +645,7 @@ CPhonemesCtrl::EHitCode CPhonemesCtrl::HitTest(CPoint point)
 		for (i = 0; i < num; i++)
 		{
 			Phoneme& ph = GetPhoneme(sentenceIndex, i);
-			if (time >= ph.time0 + m_sentences[sentenceIndex].startTime * 1000.0f && time <= ph.time1 + m_sentences[sentenceIndex].startTime * 1000.0f)
+			if (time >= ph.time0 + m_sentences[sentenceIndex].startTime  && time <= ph.time1 + m_sentences[sentenceIndex].startTime)
 			{
 				m_nHitSentence = sentenceIndex;
 				m_nHitPhoneme = i;
@@ -674,7 +674,7 @@ void CPhonemesCtrl::StartTracking()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CPhonemesCtrl::SetPhonemeTime(int sentenceIndex, int index, int t0, int t1)
+void CPhonemesCtrl::SetPhonemeTime(int sentenceIndex, int index, const CTimeValue& t0, const CTimeValue& t1)
 {
 	if (index < 0 || index >= GetPhonemeCount(sentenceIndex))
 		return;
@@ -710,26 +710,26 @@ void CPhonemesCtrl::TrackPoint(CPoint point)
 
 	if (nPhoneme >= 0 && nPhoneme < GetPhonemeCount(nSentenceIndex))
 	{
-		int time0 = GetPhoneme(nSentenceIndex, nPhoneme).time0 + m_sentences[nSentenceIndex].startTime * 1000.0f;
-		int time1 = GetPhoneme(nSentenceIndex, nPhoneme).time1 + m_sentences[nSentenceIndex].startTime * 1000.0f;
+		CTimeValue time0 = GetPhoneme(nSentenceIndex, nPhoneme).time0 + m_sentences[nSentenceIndex].startTime;
+		CTimeValue time1 = GetPhoneme(nSentenceIndex, nPhoneme).time1 + m_sentences[nSentenceIndex].startTime;
 
-		int time = ClientToTime(point.x);
+		CTimeValue time = ClientToTime(point.x);
 
 		if (m_hitCode == HIT_EDGE_LEFT)
 		{
 			if (time <= time1)
-				SetPhonemeTime(nSentenceIndex, nPhoneme, time - m_sentences[nSentenceIndex].startTime * 1000.0f, time1 - m_sentences[nSentenceIndex].startTime * 1000.0f);
+				SetPhonemeTime(nSentenceIndex, nPhoneme, time - m_sentences[nSentenceIndex].startTime, time1 - m_sentences[nSentenceIndex].startTime);
 		}
 		else if (m_hitCode == HIT_EDGE_RIGHT)
 		{
 			if (time >= time0)
-				SetPhonemeTime(nSentenceIndex, nPhoneme, time0 - m_sentences[nSentenceIndex].startTime * 1000.0f, time - m_sentences[nSentenceIndex].startTime * 1000.0f);
+				SetPhonemeTime(nSentenceIndex, nPhoneme, time0 - m_sentences[nSentenceIndex].startTime, time - m_sentences[nSentenceIndex].startTime);
 		}
 		else if (m_hitCode == HIT_PHONEME)
 		{
-			int dt = ClientToTime(point.x) - ClientToTime(m_LButtonDown.x);
+			CTimeValue dt = ClientToTime(point.x) - ClientToTime(m_LButtonDown.x);
 
-			SetPhonemeTime(nSentenceIndex, nPhoneme, time0 + dt - m_sentences[nSentenceIndex].startTime * 1000.0f, time1 + dt - m_sentences[nSentenceIndex].startTime * 1000.0f);
+			SetPhonemeTime(nSentenceIndex, nPhoneme, time0 + dt - m_sentences[nSentenceIndex].startTime, time1 + dt - m_sentences[nSentenceIndex].startTime);
 		}
 
 		SendNotifyEvent(PHONEMECTRLN_CHANGE);
@@ -872,12 +872,12 @@ void CPhonemesCtrl::InsertPhoneme(CPoint point, int phonemeId)
 	if (!GetPhonemeLib()->GetPhonemeInfo(phonemeId, phonemeInfo))
 		return;
 
-	int time = ClientToTime(point.x);
+	CTimeValue time = ClientToTime(point.x);
 
 	int sentenceIndex = -1;
 	for (int i = 0, sentenceCount = m_sentences.size(); i < sentenceCount; ++i)
 	{
-		if (time >= m_sentences[i].startTime * 1000.0f && time <= m_sentences[i].endTime * 1000.0f)
+		if (time >= m_sentences[i].startTime && time <= m_sentences[i].endTime)
 			sentenceIndex = i;
 	}
 
@@ -895,24 +895,24 @@ void CPhonemesCtrl::InsertPhoneme(CPoint point, int phonemeId)
 
 		ClearSelection();
 
-		int endTime = time + 100;
+		CTimeValue endTime = time + "0.1";		// PERSONAL DEBUG: Make sure to double check units on all these times. Marker/etc. was in 'milliseconds'!??
 		// Find phoneme after this time.
 		int i;
 		for (i = 0; i < GetPhonemeCount(sentenceIndex); i++)
 		{
 			Phoneme& ph = GetPhoneme(sentenceIndex, i);
-			if (ph.time0 + m_sentences[sentenceIndex].startTime * 1000.0f > time)
+			if (ph.time0 + m_sentences[sentenceIndex].startTime  > time)
 			{
-				if (endTime - m_sentences[sentenceIndex].startTime * 1000.0f >= ph.time0)
-					endTime = ph.time0 - 10 + m_sentences[sentenceIndex].startTime * 1000.0f;
+				if (endTime - m_sentences[sentenceIndex].startTime  >= ph.time0)
+					endTime = ph.time0 - "0.01" + m_sentences[sentenceIndex].startTime ;
 			}
 		}
 
 		if (endTime <= time)
-			endTime = time + 1;
+			endTime = time + "0.001";
 
-		phoneme.time0 = time - m_sentences[sentenceIndex].startTime * 1000.0f;
-		phoneme.time1 = endTime - m_sentences[sentenceIndex].startTime * 1000.0f;
+		phoneme.time0 = time - m_sentences[sentenceIndex].startTime;
+		phoneme.time1 = endTime - m_sentences[sentenceIndex].startTime;
 		m_sentences[sentenceIndex].phonemes.push_back(phoneme);
 
 		UpdatePhonemeLengths();
@@ -956,10 +956,8 @@ void CPhonemesCtrl::ClearSelection()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CPhonemesCtrl::SetTimeMarker(float fTime)
+void CPhonemesCtrl::SetTimeMarker(const CTimeValue& fTime)
 {
-	fTime = fTime * 1000;
-
 	if (fTime == m_fTimeMarker)
 		return;
 
@@ -1063,7 +1061,7 @@ void CPhonemesCtrl::SendNotifyEvent(int nEvent)
 }
 
 //////////////////////////////////////////////////////////////////////////
-std::pair<int, int> CPhonemesCtrl::PhonemeFromTime(int time)
+std::pair<int, int> CPhonemesCtrl::PhonemeFromTime(const CTimeValue& time)
 {
 	int i;
 	for (int sentenceIndex = 0, sentenceCount = m_sentences.size(); sentenceIndex < sentenceCount; ++sentenceIndex)
@@ -1072,7 +1070,7 @@ std::pair<int, int> CPhonemesCtrl::PhonemeFromTime(int time)
 		for (i = 0; i < num; i++)
 		{
 			Phoneme& ph = GetPhoneme(sentenceIndex, i);
-			if (time >= ph.time0 + m_sentences[sentenceIndex].startTime * 1000.0f && time <= ph.time1 + m_sentences[sentenceIndex].startTime * 1000.0f)
+			if (time >= ph.time0 + m_sentences[sentenceIndex].startTime && time <= ph.time1 + m_sentences[sentenceIndex].startTime)
 				return std::make_pair(sentenceIndex, i);
 		}
 	}
@@ -1080,7 +1078,7 @@ std::pair<int, int> CPhonemesCtrl::PhonemeFromTime(int time)
 }
 
 //////////////////////////////////////////////////////////////////////////
-std::pair<int, int> CPhonemesCtrl::WordFromTime(int time)
+std::pair<int, int> CPhonemesCtrl::WordFromTime(const CTimeValue& time)
 {
 	int i;
 	for (int sentenceIndex = 0, sentenceCount = m_sentences.size(); sentenceIndex < sentenceCount; ++sentenceIndex)
@@ -1089,7 +1087,7 @@ std::pair<int, int> CPhonemesCtrl::WordFromTime(int time)
 		for (i = 0; i < num; i++)
 		{
 			Word& ph = GetWord(sentenceIndex, i);
-			if (time >= ph.time0 + m_sentences[sentenceIndex].startTime * 1000.0f && time <= ph.time1 + m_sentences[sentenceIndex].startTime * 1000.0f)
+			if (time >= ph.time0 + m_sentences[sentenceIndex].startTime  && time <= ph.time1 + m_sentences[sentenceIndex].startTime)
 			{
 				return std::make_pair(sentenceIndex, i);
 			}
@@ -1106,7 +1104,7 @@ void CPhonemesCtrl::StoreUndo()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CPhonemesCtrl::SetZoom(float fZoom)
+void CPhonemesCtrl::SetZoom(const mpfloat& fZoom)
 {
 	m_fZoom = fZoom;
 	if (GetSafeHwnd())
@@ -1114,7 +1112,7 @@ void CPhonemesCtrl::SetZoom(float fZoom)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CPhonemesCtrl::SetScrollOffset(float fOrigin)
+void CPhonemesCtrl::SetScrollOffset(const CTimeValue& fOrigin)
 {
 	m_fOrigin = fOrigin;
 	if (GetSafeHwnd())
@@ -1171,13 +1169,13 @@ int CPhonemesCtrl::GetSentenceCount()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CPhonemesCtrl::SetSentenceStartTime(int sentenceIndex, float startTime)
+void CPhonemesCtrl::SetSentenceStartTime(int sentenceIndex, const CTimeValue& startTime)
 {
 	m_sentences[sentenceIndex].startTime = startTime;
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CPhonemesCtrl::SetSentenceEndTime(int sentenceIndex, float endTime)
+void CPhonemesCtrl::SetSentenceEndTime(int sentenceIndex, const CTimeValue& endTime)
 {
 	m_sentences[sentenceIndex].endTime = endTime;
 }

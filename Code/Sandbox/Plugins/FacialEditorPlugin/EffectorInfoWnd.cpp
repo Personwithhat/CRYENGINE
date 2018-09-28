@@ -127,7 +127,7 @@ public:
 		m_pVarBlock->AddVariable(mv_attachment, "Attachment/Bone");
 		m_pVarBlock->AddVariable(mv_posOffset, "Position Offset");
 		m_pVarBlock->AddVariable(mv_rotOffset, "Rotation Angle");
-		mv_rotOffset->SetLimits(-360, 360);
+		mv_rotOffset->SetLimits(Vec3(-360), Vec3(360));
 
 		mv_attachment = (CString)m_pEffector->GetParamString(EFE_PARAM_BONE_NAME);
 		mv_posOffset = m_pEffector->GetParamVec3(EFE_PARAM_BONE_POS_AXIS);
@@ -679,7 +679,7 @@ void CEffectorInfoWnd::SetWeight(float fWeight, float fBalance)
 
 	for (int i = 0; i < (int)m_controllers.size(); i++)
 	{
-		m_controllers[i].pSplineCtrl->SetTimeMarker(fWeight);
+		m_controllers[i].pSplineCtrl->SetTimeMarker(BADTIME(fWeight));
 	}
 
 	if (m_pCurrPosCtrl)
@@ -691,7 +691,7 @@ void CEffectorInfoWnd::SetWeight(float fWeight, float fBalance)
 	}
 
 	if (m_pContext)
-		m_pContext->SetPreviewWeight(fWeight);
+		m_pContext->SetPreviewWeight(BADMP(fWeight));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -804,8 +804,8 @@ void CEffectorInfoWnd::OnEditorNotifyEvent(EEditorNotifyEvent event)
 	{
 		if (event == eNotify_OnIdleUpdate)
 		{
-			float dt = gEnv->pTimer->GetFrameTime();
-			float fWeight = m_fCurrWeight + dt;
+			CTimeValue dt = GetGTimer()->GetFrameTime();
+			float fWeight = m_fCurrWeight + dt.BADGetSeconds();
 			if (fWeight > 1)
 				fWeight = -1;
 			if (fWeight < -1)
