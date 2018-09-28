@@ -348,12 +348,12 @@ void CSystem::RenderPhysicsStatistics(IPhysicalWorld* pWorld)
 				mask                 |= (70 - pInfos[j].peakAge) >> 31;
 				pInfos[j].nTicksPeak += pInfos[j].nTicksLast - pInfos[j].nTicksPeak & mask;
 				pInfos[j].nCallsPeak += pInfos[j].nCallsLast - pInfos[j].nCallsPeak & mask;
-				float time     = gEnv->pTimer->TicksToSeconds(pInfos[j].nTicksAvg) * 1000.0f;
+				float time     = (float)GetGTimer()->TicksToTime(pInfos[j].nTicksAvg).GetMilliSeconds();
 				float timeNorm = time * (1.0f / 32);
 				fColor[1] = fColor[2] = 1.0f - (max(0.7f, min(1.0f, timeNorm)) - 0.7f) * (1.0f / 0.3f);
 				IRenderAuxText::Draw2dLabel(renderMarginX, renderMarginY + i * lineSize, fontSize, fColor, false,
 				  "%s %.2fms/%d (peak %.2fms/%d)", pInfos[j].pName, time, pInfos[j].nCallsLast,
-				  gEnv->pTimer->TicksToSeconds(pInfos[j].nTicksPeak) * 1000.0f, pInfos[j].nCallsPeak);
+					(float)GetGTimer()->TicksToTime(pInfos[j].nTicksPeak).GetMilliSeconds(), pInfos[j].nCallsPeak);
 				pInfos[j].peakAge = pInfos[j].peakAge + 1 & ~mask;
 				if (j == nGroups - 3) ++i;
 			}
@@ -369,8 +369,8 @@ void CSystem::RenderPhysicsStatistics(IPhysicalWorld* pWorld)
 				pInfos[j].nTicksPeak += pInfos[j].nTicks - pInfos[j].nTicksPeak & mask;
 				pInfos[j].nCallsPeak += pInfos[j].nCalls - pInfos[j].nCallsPeak & mask;
 				IRenderAuxText::Draw2dLabel(renderMarginX, renderMarginY + i * lineSize, fontSize, fColor, false,
-				  "%s %.2fms/%d (peak %.2fms/%d)", pInfos[j].pName, gEnv->pTimer->TicksToSeconds(pInfos[j].nTicks) * 1000.0f, pInfos[j].nCalls,
-				  gEnv->pTimer->TicksToSeconds(pInfos[j].nTicksPeak) * 1000.0f, pInfos[j].nCallsPeak);
+				  "%s %.2fms/%d (peak %.2fms/%d)", pInfos[j].pName, (float)GetGTimer()->TicksToTime(pInfos[j].nTicks).GetMilliSeconds(), pInfos[j].nCalls,
+					(float)GetGTimer()->TicksToTime(pInfos[j].nTicksPeak).GetMilliSeconds(), pInfos[j].nCallsPeak);
 				pInfos[j].peakAge = pInfos[j].peakAge + 1 & ~mask;
 				pInfos[j].nCalls  = pInfos[j].nTicks = 0;
 			}

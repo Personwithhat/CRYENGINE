@@ -821,7 +821,7 @@ void CFrameProfileSystem::EndFrame()
 		gEnv->pRenderer->GetThreadIDs(mainThreadId, renderThreadId);
 
  	int nWeightMode = 0;
-	const float smoothFactor = gEnv->pTimer->GetProfileFrameBlending(nullptr, &nWeightMode);
+	const mpfloat smoothFactor = GetGTimer()->GetProfileFrameBlending(nullptr, &nWeightMode);
 
 	if (!m_bEnabled && !profile_network)
 	{
