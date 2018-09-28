@@ -738,14 +738,14 @@ bool CGameEngine::LoadAI(const string& levelName, const string& missionName)
 	if (!IsLevelLoaded())
 		return false;
 
-	float fStartTime = m_pISystem->GetITimer()->GetAsyncCurTime();
+	CTimeValue fStartTime = m_pISystem->GetITimer()->GetAsyncCurTime();
 	CryLog("Loading AI data %s, %s", (const char*)levelName, (const char*)missionName);
 	gEnv->pAISystem->FlushSystemNavigation();
 
 	// Load only navmesh data, all other working systems are currently restored when editor objects are loaded
 	gEnv->pAISystem->LoadLevelData(levelName, missionName, eAILoadDataFlag_MNM);
 
-	CryLog("Finished Loading AI data in %6.3f secs", m_pISystem->GetITimer()->GetAsyncCurTime() - fStartTime);
+	CryLog("Finished Loading AI data in %6.3f secs", (float)(m_pISystem->GetITimer()->GetAsyncCurTime() - fStartTime).GetSeconds());
 
 	return true;
 }
@@ -1526,7 +1526,7 @@ void CGameEngine::Update()
 			notifier->OnPreEditorUpdate();
 		}
 
-		gEnv->GetJobManager()->SetFrameStartTime(gEnv->pTimer->GetAsyncTime());
+		gEnv->GetJobManager()->SetFrameStartTime(GetGTimer()->GetAsyncTime());
 
 		Cry::IPluginManager* const pPluginManager = gEnv->pSystem->GetIPluginManager();
 		pPluginManager->UpdateBeforeSystem();
@@ -1814,7 +1814,7 @@ void CGameEngine::UpdateAIManagerFromEditor(const uint32 updateFlags)
 		return;
 	}
 
-	pAiManager->Update(gEnv->pTimer->GetFrameStartTime(), gEnv->pTimer->GetFrameTime(), updateFlags);
+	pAiManager->Update(GetGTimer()->GetFrameStartTime(), GetGTimer()->GetFrameTime(), updateFlags);
 }
 
 namespace Private_EditorCommands

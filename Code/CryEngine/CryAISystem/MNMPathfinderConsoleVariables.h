@@ -18,8 +18,8 @@ struct SAIConsoleVarsMNMPathfinder
 	DeclareConstIntCVar(PathfinderAvoidanceCostForGroupMates, 2);
 
 	int   MNMPathFinderDebug;
-	float MNMPathFinderQuota;
-	float AllowedTimeForPathfinding;
+	CTimeValue MNMPathFinderQuota;
+	CTimeValue AllowedTimeForPathfinding;
 	float PathfinderExplosiveDangerRadius;
 	float PathfinderExplosiveDangerMaxThreatDistance;
 	float PathfinderGroupMatesAvoidanceRadius;

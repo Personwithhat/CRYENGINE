@@ -93,7 +93,7 @@ void CVehiclePartParticleEffect::Reset()
 }
 
 //------------------------------------------------------------------------
-void CVehiclePartParticleEffect::Update(const float frameTime)
+void CVehiclePartParticleEffect::Update(const CTimeValue& frameTime)
 {
 	CVehiclePartBase::Update(frameTime);
 }
@@ -146,7 +146,7 @@ void CVehiclePartParticleEffect::ActivateParticleEffect(bool activate)
 		{
 			SpawnParams spawnParams;
 
-			spawnParams.fPulsePeriod = 1.0f;
+			spawnParams.fPulsePeriod.SetSeconds(1);
 
 			pEntity->GetParticleEmitter(m_slot)->SetSpawnParams(spawnParams);
 

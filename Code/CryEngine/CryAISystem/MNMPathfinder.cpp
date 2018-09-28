@@ -742,7 +742,7 @@ void CMNMPathfinder::ConstructPathIfWayWasFound(MNM::PathfinderUtils::Processing
 		CTimeValue timeBeforePathConstruction;
 		if (gAIEnv.CVars.pathfinder.MNMPathFinderDebug)
 		{
-			timeBeforePathConstruction = gEnv->pTimer->GetAsyncCurTime();
+			timeBeforePathConstruction = GetGTimer()->GetAsyncCurTime();
 		}
 
 		bPathConstructed = ConstructPathFromFoundWay(
@@ -755,8 +755,8 @@ void CMNMPathfinder::ConstructPathIfWayWasFound(MNM::PathfinderUtils::Processing
 
 		if (gAIEnv.CVars.pathfinder.MNMPathFinderDebug)
 		{
-			CTimeValue timeAfterPathConstruction = gEnv->pTimer->GetAsyncCurTime();
-			const float constructionPathTime = timeAfterPathConstruction.GetDifferenceInSeconds(timeBeforePathConstruction) * 1000.0f;
+			CTimeValue timeAfterPathConstruction = GetGTimer()->GetAsyncCurTime();
+			const CTimeValue constructionPathTime = timeAfterPathConstruction - timeBeforePathConstruction;
 			processingContext.totalTimeConstructPath += constructionPathTime;
 			processingContext.peakTimeConstructPath = max(processingContext.peakTimeConstructPath, constructionPathTime);
 		}
@@ -768,15 +768,15 @@ void CMNMPathfinder::ConstructPathIfWayWasFound(MNM::PathfinderUtils::Processing
 				CTimeValue timeBeforeBeautifyPath;
 				if (gAIEnv.CVars.pathfinder.MNMPathFinderDebug)
 				{
-					timeBeforeBeautifyPath = gEnv->pTimer->GetAsyncCurTime();
+					timeBeforeBeautifyPath = GetGTimer()->GetAsyncCurTime();
 				}
 
 				outputPath.PullPathOnNavigationMesh(navMesh, gAIEnv.CVars.pathfinder.PathStringPullingIterations, processingRequest.data.requestParams.pCustomPathCostComputer.get());
 
 				if (gAIEnv.CVars.pathfinder.MNMPathFinderDebug)
 				{
-					CTimeValue timeAfterBeautifyPath = gEnv->pTimer->GetAsyncCurTime();
-					const float beautifyPathTime = timeAfterBeautifyPath.GetDifferenceInSeconds(timeBeforeBeautifyPath) * 1000.0f;
+					CTimeValue timeAfterBeautifyPath = GetGTimer()->GetAsyncCurTime();
+					const CTimeValue beautifyPathTime = timeAfterBeautifyPath - timeBeforeBeautifyPath;
 					processingContext.totalTimeBeautifyPath += beautifyPathTime;
 					processingContext.peakTimeBeautifyPath = max(processingContext.peakTimeBeautifyPath, beautifyPathTime);
 				}
@@ -854,8 +854,8 @@ void CMNMPathfinder::DebugStatistics(MNM::PathfinderUtils::ProcessingContext& pr
 
 	MNM::AStarContention::ContentionStats stats = processingContext.workingSet.aStarNodesList.GetContentionStats();
 
-	const float avgTimeConstructPath = processingContext.constructedPathsCount > 0 ? processingContext.totalTimeConstructPath / processingContext.constructedPathsCount : 0.0f;
-	const float avgTimeBeautifyPath = processingContext.constructedPathsCount > 0 ? processingContext.totalTimeBeautifyPath / processingContext.constructedPathsCount : 0.0f;
+	const CTimeValue avgTimeConstructPath = processingContext.constructedPathsCount > 0 ? processingContext.totalTimeConstructPath / processingContext.constructedPathsCount : 0;
+	const CTimeValue avgTimeBeautifyPath = processingContext.constructedPathsCount > 0 ? processingContext.totalTimeBeautifyPath / processingContext.constructedPathsCount : 0;
 
 	text.Format(
 	  "MNMPathFinder Context %d - Frame time quota (%f ms) - EntityId: %d AgentTypeId: %d - Status: %s\n"
@@ -865,19 +865,19 @@ void CMNMPathfinder::DebugStatistics(MNM::PathfinderUtils::ProcessingContext& pr
 	  "\tConstruction time:       Avg - %2.5f ms / Max - %2.5f ms\n"
 	  "\tBeautify time:           Avg - %2.5f ms / Max - %2.5f ms",
 	  contextNumber,
-	  stats.frameTimeQuota,
+	  (float)stats.frameTimeQuota.GetMilliSeconds(),
 	  processingContext.processingRequest.data.requestParams.requesterEntityId,
 	  (uint32)processingContext.processingRequest.data.requestParams.agentTypeID,
 	  processingContext.GetStatusAsString(),
 	  processingContext.constructedPathsCount,
 	  stats.averageSearchSteps,
 	  stats.peakSearchSteps,
-	  stats.averageSearchTime,
-	  stats.peakSearchTime,
-	  avgTimeConstructPath,
-	  processingContext.peakTimeConstructPath,
-	  avgTimeBeautifyPath,
-	  processingContext.peakTimeBeautifyPath
+	  (float)stats.averageSearchTime.GetMilliSeconds(),
+	  (float)stats.peakSearchTime.GetMilliSeconds(),
+	  (float)avgTimeConstructPath.GetMilliSeconds(),
+	  (float)processingContext.peakTimeConstructPath.GetMilliSeconds(),
+	  (float)avgTimeBeautifyPath.GetMilliSeconds(),
+	  (float)processingContext.peakTimeBeautifyPath.GetMilliSeconds()
 	);
 
 	IRenderAuxText::Draw2dLabel(100.f, textY, 1.4f, Col_White, false, "%s", text.c_str());

@@ -28,7 +28,7 @@ public:
 	size_t       GetNumKeys() const { return m_keys.size(); }
 	bool         HasKeys() const    { return GetNumKeys() > 0; }
 
-	float        Interpolate(float time) const;
+	float        Interpolate(const mpfloat& time) const;
 #ifdef CRY_PFX2_USE_SSE
 	floatv       Interpolate(const floatv time) const;
 #endif
@@ -39,7 +39,7 @@ public:
 	virtual void       GetKey(int i, KeyType& key) const override;
 	virtual void       FromSpline(const ISplineEvaluator& spline) override;
 
-	virtual void       Interpolate(float time, ValueType& value) override;
+	virtual void       Interpolate(const mpfloat& time, ValueType& value) override;
 
 	static  Formatting StringFormatting()             { return Formatting(";,:"); }
 	virtual Formatting GetFormatting() const override { return StringFormatting(); }
@@ -61,8 +61,8 @@ private:
 
 	struct SplineKey
 	{
-		float time;
-		float timeMult;
+		mpfloat time;
+		mpfloat timeMult; // 1/Time
 		float value;
 		float coeff0;
 		float coeff1;
@@ -129,7 +129,7 @@ template<int DIMS> SERIALIZATION_WITH_MEMBER_FUNCTION(CParticleMultiSpline<DIMS>
 class CParticleDoubleSpline : public CParticleMultiSpline<2>
 {
 public:
-	ILINE float  Interpolate(float time, float unormRand) const;
+	ILINE float  Interpolate(const mpfloat& time, float unormRand) const;
 #ifdef CRY_PFX2_USE_SSE
 	ILINE floatv Interpolate(floatv time, floatv unormRand) const;
 #endif
@@ -140,7 +140,7 @@ SERIALIZATION_WITH_MEMBER_FUNCTION(CParticleDoubleSpline)
 class CParticleColorSpline : public CParticleMultiSpline<3>
 {
 public:
-	ILINE Vec3  Interpolate(float time) const;
+	ILINE Vec3  Interpolate(const mpfloat& time) const;
 #ifdef CRY_PFX2_USE_SSE
 	ILINE Vec3v Interpolate(floatv time) const;
 #endif

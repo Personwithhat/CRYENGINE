@@ -171,7 +171,7 @@ void TreeVisualizer::DrawTimestampCollection(const TimestampCollection& timestam
 		ColorB color;
 		if (it->IsValid())
 		{
-			s.Format("%s [%.2f]", it->id.timestampName, m_updateContext.frameStartTime.GetDifferenceInSeconds(it->time));
+			s.Format("%s [%.2f]", it->id.timestampName, (float)(m_updateContext.frameStartTime - it->time).GetSeconds());
 			color = Col_ForestGreen;
 		}
 		else
@@ -404,7 +404,7 @@ void DebugTreeSerializer::CollectTimeStamps(const BehaviorTreeInstance& instance
 		TimeStamp timeStamp;
 		timeStamp.name = it->id.timestampName;
 		timeStamp.bIsValid = it->IsValid();
-		timeStamp.value = it->IsValid() ? (updateContext.frameStartTime.GetDifferenceInSeconds(it->time)) : 0.0f;
+		timeStamp.value = it->IsValid() ? (updateContext.frameStartTime - it->time) : 0;
 
 		m_data.timeStamps.push_back(timeStamp);
 	}

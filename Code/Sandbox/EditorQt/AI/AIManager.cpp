@@ -109,8 +109,8 @@ CAIManager::CAIManager()
 	, m_navigationRegenerationPausedCount(0)
 	, m_navigationUpdatePaused(false)
 	, m_resumeNavigationRegenWhenPumpedPhysicsEventsAreFinished(false)
-	, m_frameStartTime(0.0f)
-	, m_frameDeltaTime(0.0f)
+	, m_frameStartTime(0)
+	, m_frameDeltaTime(0)
 {
 	m_pAISystem = nullptr;
 	m_pBehaviorLibrary = new CAIBehaviorLibrary;
@@ -154,7 +154,7 @@ void CAIManager::Init(ISystem* system)
 	LoadNavigationEditorSettings();
 }
 
-void CAIManager::Update(const CTimeValue frameStartTime, const float frameDeltaTime, uint32 updateFlags)
+void CAIManager::Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, uint32 updateFlags)
 {
 	if (!m_pAISystem)
 		return;

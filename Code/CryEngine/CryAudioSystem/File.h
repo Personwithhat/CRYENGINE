@@ -51,7 +51,7 @@ public:
 		, m_pReadStream(nullptr)
 		, m_pImplData(pImplData)
 #if defined(CRY_AUDIO_USE_DEBUG_CODE)
-		, m_timeCached(0.0f)
+		, m_timeCached(0)
 #endif // CRY_AUDIO_USE_DEBUG_CODE
 	{
 	}
@@ -68,7 +68,7 @@ public:
 	Impl::IFile*                       m_pImplData;
 
 #if defined(CRY_AUDIO_USE_DEBUG_CODE)
-	float m_timeCached;
+	CTimeValue m_timeCached;
 #endif // CRY_AUDIO_USE_DEBUG_CODE
 };
 } // namespace CryAudio

@@ -80,7 +80,7 @@ void CFlowNode_ColorGradient::ProcessEvent(EFlowEvent event, SActivationInfo* pA
 	if (event == IFlowNode::eFE_Activate && IsPortActive(pActivationInformation, eIP_Trigger))
 	{
 		const string texturePath = GetPortString(pActivationInformation, eInputPorts_TexturePath);
-		const float timeToFade = GetPortFloat(pActivationInformation, eInputPorts_TransitionTime);
+		const CTimeValue timeToFade = GetPortTime(pActivationInformation, eInputPorts_TransitionTime);
 		gEnv->p3DEngine->GetColorGradingCtrl()->SetColorGradingLut(texturePath.c_str(), timeToFade);
 	}
 }

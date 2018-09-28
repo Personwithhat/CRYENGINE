@@ -107,7 +107,7 @@ void WindImpl::ResetVariables()
 	breezeGenerationEnabled = false;
 	breezeStrength = 1.0f;
 	breezeVariance = 1.0f;
-	breezeLifeTime = 15.0f;
+	breezeLifeTime.SetSeconds(15);
 	breezeCount = 4;
 	breezeRadius = 5.0f;
 	breezeSpawnRadius = 25.0f;

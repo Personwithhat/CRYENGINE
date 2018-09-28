@@ -141,7 +141,7 @@ CScriptBind_System::CScriptBind_System(IScriptSystem* pScriptSystem, ISystem* pS
 	m_pLog = gEnv->pLog;
 	m_pRenderer = gEnv->pRenderer;
 	m_pConsole = gEnv->pConsole;
-	m_pTimer = gEnv->pTimer;
+	SetGTimer(GetGTimer(), GTimers::sbind);
 	m_p3DEngine = gEnv->p3DEngine;
 
 	pScriptSystem->SetGlobalValue("SCANDIR_ALL", SCANDIR_ALL);
@@ -167,7 +167,7 @@ CScriptBind_System::CScriptBind_System(IScriptSystem* pScriptSystem, ISystem* pS
 	SCRIPT_REG_FUNC(Error);
 	SCRIPT_REG_TEMPLFUNC(IsEditor, "");
 	SCRIPT_REG_TEMPLFUNC(IsEditing, "");
-	SCRIPT_REG_FUNC(GetCurrTime);
+	SCRIPT_REG_FUNC(GetFrameStartTime);
 	SCRIPT_REG_FUNC(GetCurrAsyncTime);
 	SCRIPT_REG_FUNC(GetFrameTime);
 	SCRIPT_REG_FUNC(GetLocalOSTime);
@@ -524,10 +524,10 @@ int CScriptBind_System::SetConsoleImage(IFunctionHandler* pH)
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-int CScriptBind_System::GetCurrTime(IFunctionHandler* pH)
+int CScriptBind_System::GetFrameStartTime(IFunctionHandler* pH)
 {
 	SCRIPT_CHECK_PARAMETERS(0);
-	float fTime = m_pTimer->GetCurrTime();
+	CTimeValue fTime = GTimer(sbind)->GetFrameStartTime();
 	return pH->EndFunction(fTime);
 }
 
@@ -535,7 +535,7 @@ int CScriptBind_System::GetCurrTime(IFunctionHandler* pH)
 int CScriptBind_System::GetCurrAsyncTime(IFunctionHandler* pH)
 {
 	SCRIPT_CHECK_PARAMETERS(0);
-	float fTime = m_pTimer->GetAsyncCurTime();
+	CTimeValue fTime = GTimer(sbind)->GetAsyncCurTime();
 	return pH->EndFunction(fTime);
 }
 
@@ -543,7 +543,7 @@ int CScriptBind_System::GetCurrAsyncTime(IFunctionHandler* pH)
 int CScriptBind_System::GetFrameTime(IFunctionHandler* pH)
 {
 	SCRIPT_CHECK_PARAMETERS(0);
-	float fTime = m_pTimer->GetFrameTime();
+	CTimeValue fTime = GTimer(sbind)->GetFrameTime();
 	return pH->EndFunction(fTime);
 }
 

@@ -28,7 +28,7 @@ struct SAIConsoleVarsNavigation
 	const char* MNMDebugDrawFlag;
 	const char* DebugDrawNavigationQueryListFilterByCaller;
 	float       NavmeshTileDistanceDraw;
-	float       NavmeshStabilizationTimeToUpdate;
+	CTimeValue  NavmeshStabilizationTimeToUpdate;
 	int         MNMProfileMemory;
 	int         MNMDebugAccessibility;
 	int         MNMEditorBackgroundUpdate;

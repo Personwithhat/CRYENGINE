@@ -101,8 +101,8 @@ protected:
 
 	EPlayBehavior            m_behavior = ePlayBehavior_Single;
 
-	float                    m_minDelay = 0.0f;
-	float                    m_maxDelay = 1000.0f;
+	CTimeValue               m_minDelay = 0;
+	CTimeValue               m_maxDelay = 1;
 
 	Vec3                     m_randomizationArea = Vec3(ZERO);
 	EDrawActivityRadius      m_drawActivityRadius = eDrawActivityRadius_Disabled;

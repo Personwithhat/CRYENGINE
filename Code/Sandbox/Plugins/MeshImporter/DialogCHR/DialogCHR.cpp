@@ -1057,7 +1057,7 @@ void CDialogCHR::RenderPhysics(const SRenderContext& rc, ICharacterInstance* pCh
 		pPhysRender->DrawEntityHelpers(pBaseEntity, drawHelpers);
 	}
 
-	const f32 frameTime = GetIEditor()->GetSystem()->GetITimer()->GetFrameTime();
+	const CTimeValue frameTime = GetIEditor()->GetSystem()->GetITimer()->GetFrameTime();
 	pPhysRender->Flush(frameTime);
 	pAuxGeom->SetRenderFlags(savedFlags);
 }
@@ -1120,7 +1120,7 @@ static void CoolDown(std::vector<float>& heat)
 {
 	for (float& h : heat)
 	{
-		h = std::max(0.0f, h - kSelectionCooldownPerSec * gEnv->pSystem->GetITimer()->GetFrameTime());
+		h = std::max(0.0f, h - kSelectionCooldownPerSec * gEnv->pSystem->GetITimer()->GetFrameTime().BADGetSeconds());
 	}
 }
 

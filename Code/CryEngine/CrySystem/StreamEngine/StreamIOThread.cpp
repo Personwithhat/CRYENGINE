@@ -95,7 +95,7 @@ void CStreamingIOThread::Pause(bool bPause)
 void CStreamingIOThread::ThreadEntry()
 {
 #ifdef STREAMENGINE_ENABLE_STATS
-	CTimeValue t0 = gEnv->pTimer->GetAsyncTime();
+	CTimeValue t0 = GetGTimer()->GetAsyncTime();
 #endif
 
 	m_nLastReadDiskOffset = 0;
@@ -127,18 +127,17 @@ void CStreamingIOThread::ThreadEntry()
 			bool bWaiting = true;
 			while (bWaiting)
 			{
-				CTimeValue t1 = gEnv->pTimer->GetAsyncTime();
+				CTimeValue t1 = GetGTimer()->GetAsyncTime();
 				CTimeValue deltaT = t1 - t0;
-				uint64 msec = deltaT.GetMilliSecondsAsInt64();
-				if (msec < 1000)
+				if (deltaT < 1)
 				{
-					bWaiting = !m_awakeEvent.Wait(1000 - (uint32)msec);
+					bWaiting = !m_awakeEvent.Wait((uint32)(CTimeValue(1) - deltaT).GetMilliSeconds());
 				}
 
 				if (bWaiting)
 				{
 					// update the delta time again
-					t1 = gEnv->pTimer->GetAsyncTime();
+					t1 = GetGTimer()->GetAsyncTime();
 					deltaT = t1 - t0;
 
 					m_InMemoryStats.Update(deltaT);
@@ -232,7 +231,7 @@ void CStreamingIOThread::ThreadEntry()
 
 				while (m_bPaused)
 				{
-					CrySleep(10);
+					CryLowLatencySleep("0.01");
 				}
 			}
 
@@ -376,24 +375,24 @@ void CStreamingIOThread::ThreadEntry()
 
 				if (g_cvars.sys_streaming_max_bandwidth != 0)
 				{
-					CTimeValue t1 = gEnv->pTimer->GetAsyncTime();
+					CTimeValue t1 = GetGTimer()->GetAsyncTime();
 					CTimeValue deltaT = t1 - t0;
 
 					// Sleep in case we are streaming too fast.
-					const float fTheoreticalReadTime = float(nSizeOnMedia) / g_cvars.sys_streaming_max_bandwidth * 0.00000095367431640625f; // / (1024*1024)
+					const CTimeValue fTheoreticalReadTime = BADTIME(float(nSizeOnMedia) / g_cvars.sys_streaming_max_bandwidth * 0.00000095367431640625f); // / (1024*1024)
 
-					if (fTheoreticalReadTime - deltaT.GetSeconds() > FLT_EPSILON)
+					if (fTheoreticalReadTime - deltaT > TV_EPSILON)
 					{
-						uint32 nSleepTime = uint32(1000.f * (fTheoreticalReadTime - deltaT.GetSeconds()));
-						CrySleep(nSleepTime);
+						CTimeValue nSleepTime = fTheoreticalReadTime - deltaT;
+						CryLowLatencySleep(nSleepTime);
 					}
 				}
 
-				CTimeValue t1 = gEnv->pTimer->GetAsyncTime();
+				CTimeValue t1 = GetGTimer()->GetAsyncTime();
 				CTimeValue deltaT = t1 - t0;
 
 				// update the stats every second
-				if (deltaT.GetMilliSecondsAsInt64() > 1000)
+				if (deltaT.GetSeconds() > 1)
 				{
 					m_InMemoryStats.Update(deltaT);
 					m_NotInMemoryStats.Update(deltaT);
@@ -415,19 +414,20 @@ void CStreamingIOThread::SStats::Update(const CTimeValue& deltaT)
 	m_nTotalRequestCount += m_nTempRequestCount;
 	m_TotalReadTime += m_TempReadTime;
 
-	if (m_TempReadTime.GetValue() != 0)
+	if (m_TempReadTime != 0)
 		m_nActualReadBandwith = (uint32)(m_nTempBytesRead / m_TempReadTime.GetSeconds());
 	else
 		m_nActualReadBandwith = 0;
 	m_nCurrentReadBandwith = (uint32)(m_nTempBytesRead / deltaT.GetSeconds());
-	m_fReadingDuringLastSecond = m_TempReadTime.GetSeconds() / deltaT.GetSeconds() * 100;
+
+	m_fReadingDuringLastSecond = m_TempReadTime / deltaT * 100;
 
 	if (m_nTempRequestCount > 0)
 		m_nReadOffsetInLastSecond = m_nTempReadOffset / m_nTempRequestCount;
 	else
 		m_nReadOffsetInLastSecond = 0;
 
-	m_TempReadTime.SetValue(0);
+	m_TempReadTime.SetSeconds(0);
 	m_nTempBytesRead = 0;
 	m_nTempReadOffset = 0;
 	m_nTempRequestCount = 0;
@@ -726,11 +726,11 @@ void CStreamingWorkerThread::ThreadEntry()
 			case eWorkerAsyncCallback:
 				{
 #ifndef _RELEASE
-					float fTime = gEnv->pTimer->GetAsyncCurTime();
+					CTimeValue fTime = GetGTimer()->GetAsyncCurTime();
 #endif
 					m_pStreamEngine->ReportAsyncFileRequestComplete(pFileRequest);
 #ifndef _RELEASE
-					float fTime1 = gEnv->pTimer->GetAsyncCurTime();
+					CTimeValue fTime1 = GetGTimer()->GetAsyncCurTime();
 #endif
 
 #ifdef STREAMENGINE_ENABLE_STATS
@@ -738,7 +738,7 @@ void CStreamingWorkerThread::ThreadEntry()
 #endif
 
 #ifndef _RELEASE
-					if ((fTime1 - fTime) > 1.f && !pFileRequest->m_strFileName.empty())
+					if ((fTime1 - fTime) > 1 && !pFileRequest->m_strFileName.empty())
 					{
 						string str;
 						str.Format("[ACALL] %s time=%.5f\n", pFileRequest->m_strFileName.c_str(), (fTime1 - fTime));

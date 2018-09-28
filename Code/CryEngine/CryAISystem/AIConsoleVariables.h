@@ -37,8 +37,8 @@ struct SAIConsoleVars
 	DeclareConstIntCVar(IgnorePlayer, 0);
 
 	int                              AiSystem;
-	float                            OverlayMessageDuration;
-	float                            AIUpdateInterval;
+	CTimeValue                       OverlayMessageDuration;
+	CTimeValue                       AIUpdateInterval;
 	float                            SteepSlopeUpValue;
 	float                            SteepSlopeAcrossValue;
 	float                            WaterOcclusionScale;

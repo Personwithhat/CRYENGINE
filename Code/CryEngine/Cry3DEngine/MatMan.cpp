@@ -1124,7 +1124,7 @@ void CMatMan::PreloadLevelMaterials()
 	//return;
 
 	PrintMessage("==== Starting Loading Level Materials ====");
-	float fStartTime = GetCurAsyncTimeSec();
+	CTimeValue fStartTime = GetGTimer()->GetAsyncTime();
 
 	IResourceList* pResList = GetISystem()->GetIResourceManager()->GetLevelResourceList();
 
@@ -1168,7 +1168,7 @@ void CMatMan::PreloadLevelMaterials()
 	}
 
 	//GetISystem()->GetIResourceManager()->UnloadLevelCachePak( MTL_LEVEL_CACHE_PAK );
-	PrintMessage("==== Finished loading level Materials: %d  mtls loaded (%d from LevelCache) in %.1f sec ====", nCounter, nInLevelCacheCount, GetCurAsyncTimeSec() - fStartTime);
+	PrintMessage("==== Finished loading level Materials: %d  mtls loaded (%d from LevelCache) in %.1f sec ====", nCounter, nInLevelCacheCount, (float)(GetGTimer()->GetAsyncTime() - fStartTime).GetSeconds());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1176,7 +1176,7 @@ void CMatMan::PreloadDecalMaterials()
 {
 	CRY_PROFILE_FUNCTION(PROFILE_LOADING_ONLY);
 
-	float fStartTime = GetCurAsyncTimeSec();
+	CTimeValue fStartTime = GetGTimer()->GetAsyncTime();
 
 	bool bVerboseLogging = GetCVars()->e_StatObjPreload > 1;
 	int nCounter = 0;
@@ -1205,7 +1205,7 @@ void CMatMan::PreloadDecalMaterials()
 			nCounter++;
 		}
 	}
-	PrintMessage("==== Finished Loading Decal Materials: %d  mtls loaded in %.1f sec ====", nCounter, GetCurAsyncTimeSec() - fStartTime);
+	PrintMessage("==== Finished Loading Decal Materials: %d  mtls loaded in %.1f sec ====", nCounter, (float)(GetGTimer()->GetAsyncTime() - fStartTime).GetSeconds());
 }
 
 //////////////////////////////////////////////////////////////////////////

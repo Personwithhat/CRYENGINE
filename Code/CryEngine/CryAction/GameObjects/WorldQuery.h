@@ -71,7 +71,7 @@ public:
 	virtual void                 ProcessEvent(const SEntityEvent&) {}
 	virtual Cry::Entity::EventFlags GetEventMask() const { return Cry::Entity::EventFlags(); }
 	virtual void                 SetChannelId(uint16 id)     {};
-	virtual void                 PostUpdate(float frameTime) { CRY_ASSERT(false); }
+	virtual void                 PostUpdate(const CTimeValue& frameTime) { CRY_ASSERT(false); }
 	virtual void                 PostRemoteSpawn()           {};
 	virtual void                 GetMemoryUsage(ICrySizer* pSizer) const;
 	// ~IGameObjectExtension
@@ -217,7 +217,7 @@ private:
 	static const int kMaxQueuedRays = 6;
 	SRayInfo         m_queuedRays[kMaxQueuedRays];
 	uint32           m_requestCounter;
-	float            m_timeLastDeferredResult;
+	CTimeValue       m_timeLastDeferredResult;
 #endif
 
 	// ray-cast query

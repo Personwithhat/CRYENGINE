@@ -51,16 +51,16 @@ namespace MNM
 			const NavMeshQueryDebugBatchId batchNumber;
 			const size_t                   batchSize;
 			const TriangleDataArray        triangleDataArray;
-			const float                    elapsedTimeInMs;
+			const CTimeValue               elapsedTime;
 
 			SBatchData(const NavMeshQueryDebugBatchId batchNumber_,
 				const size_t batchSize_,
-				const float elapsedTimeInMs_,
+				const CTimeValue elapsedTime_,
 				const INavMesh* pMesh,
 				const TriangleIDArray& triangleIDArray)
 				: batchNumber(batchNumber_)
 				, batchSize(batchSize_)
-				, elapsedTimeInMs(elapsedTimeInMs_)
+				, elapsedTime(elapsedTime_)
 				, triangleDataArray(INavMeshQueryDebug::GetTriangleData(pMesh, triangleIDArray))
 			{
 			}
@@ -73,7 +73,7 @@ namespace MNM
 				Cry::UDR::CScope_FixedString batchesScope("Batches");
 				{
 					stack_string batchTimeText;
-					batchTimeText.Format("Batch %lu \tSize: %lu \tTime: %2.5f ms", batchNumber, triangleDataArray.size(), elapsedTimeInMs);
+					batchTimeText.Format("Batch %lu \tSize: %lu \tTime: %2.5f ms", batchNumber, triangleDataArray.size(), (float)elapsedTime.GetMilliSeconds());
 					Cry::UDR::CScope_FixedString batchScope(batchTimeText.c_str());
 					{
 						for (size_t i = 0; i < triangleDataArray.size(); ++i)
@@ -143,18 +143,18 @@ namespace MNM
 		//! SQueryDebugData stores all required information to debug a INavMeshQuery (1:1 relationship)
 		struct SQueryDebugData
 		{
-			CTimeValue             timeAtStart;
-			size_t                 trianglesCount;
-			float                  elapsedTimeTotalInMs;
-			float                  elapsedTimeRunningInMs;
-			BatchDataArray         batchHistory;
-			InvalidationDataArray  invalidationsHistory;
+			CTimeValue            timeAtStart;
+			size_t                trianglesCount;
+			CTimeValue            elapsedTimeTotal;
+			CTimeValue            elapsedTimeRunning;
+			BatchDataArray        batchHistory;
+			InvalidationDataArray invalidationsHistory;
 
 			SQueryDebugData()
-				: timeAtStart(0.f)
+				: timeAtStart(0)
 				, trianglesCount(0)
-				, elapsedTimeTotalInMs(0.f)
-				, elapsedTimeRunningInMs(0.f)
+				, elapsedTimeTotal(0)
+				, elapsedTimeRunning(0)
 			{}
 		};
 

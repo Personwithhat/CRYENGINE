@@ -286,7 +286,7 @@ void CCore::PrePhysicsUpdate()
 	MEMSTAT_FUNCTION_CONTEXT(EMemStatContextType::Other);
 	if (WantPrePhysicsUpdate())
 	{
-		m_pUpdateScheduler->BeginFrame(gEnv->pTimer->GetFrameTime());
+		m_pUpdateScheduler->BeginFrame(GetGTimer()->GetFrameTime());
 		m_pUpdateScheduler->Update(EUpdateStage::PrePhysics | EUpdateDistribution::Earliest, EUpdateStage::PrePhysics | EUpdateDistribution::End);
 	}
 }
@@ -298,7 +298,7 @@ void CCore::Update()
 	{
 		if (!m_pUpdateScheduler->InFrame())
 		{
-			m_pUpdateScheduler->BeginFrame(gEnv->pTimer->GetFrameTime());
+			m_pUpdateScheduler->BeginFrame(GetGTimer()->GetFrameTime());
 		}
 
 		if (gEnv->IsEditing())

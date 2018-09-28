@@ -81,7 +81,7 @@ int CVariableValue::GetValueAsInt() const
 		DrsLogWarning((string("Tried to get value as a INT from a non-integer variable, type of the variable is actually: ") + GetTypeAsString()).c_str());
 	}
 #endif
-	return m_value;
+	return (int)m_value;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -90,10 +90,10 @@ float CVariableValue::GetValueAsFloat() const
 #if defined(ENABLE_VARIABLE_VALUE_TYPE_CHECKINGS)
 	if (m_type != eDRVT_Float)
 	{
-		DrsLogWarning((string("Tried to get value as a FLOAT from a non-integer variable, type of the variable is actually: ") + GetTypeAsString()).c_str());
+		DrsLogWarning((string("Tried to get value as a FLOAT from a non-float variable, type of the variable is actually: ") + GetTypeAsString()).c_str());
 	}
 #endif
-	return m_value / 100.0f;
+	return (float)m_value / 100.0f;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -106,6 +106,31 @@ bool CVariableValue::GetValueAsBool() const
 	}
 #endif
 	return m_value != 0;
+}
+
+//--------------------------------------------------------------------------------------------------
+mpfloat CVariableValue::GetValueAsMP() const
+{
+#if defined(ENABLE_VARIABLE_VALUE_TYPE_CHECKINGS)
+	if (m_type != eDRVT_MPFloat)
+	{
+		DrsLogWarning((string("Tried to get value as a MPFLOAT from a non-mpfloat variable, type of the variable is actually: ") + GetTypeAsString()).c_str());
+	}
+#endif
+	return (mpfloat)m_value / 100;
+
+}
+
+//--------------------------------------------------------------------------------------------------
+CTimeValue CVariableValue::GetValueAsTime() const
+{
+#if defined(ENABLE_VARIABLE_VALUE_TYPE_CHECKINGS)
+	if (m_type != eDRVT_Time)
+	{
+		DrsLogWarning((string("Tried to get value as a CTIMEVALUE from a non-timevalue variable, type of the variable is actually: ") + GetTypeAsString()).c_str());
+	}
+#endif
+	return (mpfloat)m_value / 100;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -165,6 +190,10 @@ string CVariableValue::GetValueAsString() const //should be used for debug outpu
 		return m_hashedText;
 	case eDRVT_Boolean:
 		return (m_value != 0) ? "TRUE" : "FALSE";
+	case eDRVT_MPFloat:
+		return CryStringUtils::toString((mpfloat)m_value / 100);
+	case eDRVT_Time:
+		return CryStringUtils::toString((mpfloat)m_value / 100);
 	}
 #endif
 	return CryStringUtils::toString(m_value);

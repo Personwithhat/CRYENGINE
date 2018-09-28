@@ -91,7 +91,7 @@ public:
 	virtual void                 ProcessEvent(const SEntityEvent& event) override;
 	virtual Cry::Entity::EventFlags GetEventMask() const override { return Cry::Entity::EventFlags(); }
 	virtual void                 SetChannelId(uint16 id) override;
-	virtual void                 PostUpdate(float frameTime) override;
+	virtual void                 PostUpdate(const CTimeValue& frameTime) override;
 	virtual void                 PostRemoteSpawn() override;
 	// ~IGameObjectExtension
 

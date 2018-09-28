@@ -84,7 +84,7 @@ namespace Cry
 			UpdateTimeMetadata(m_prims.back()->GetMetadata());
 		}
 
-		void CRenderPrimitiveCollection::AddSphereWithDebugDrawDuration(const Vec3& pos, float radius, const ColorF& color, const float duration)
+		void CRenderPrimitiveCollection::AddSphereWithDebugDrawDuration(const Vec3& pos, float radius, const ColorF& color, const CTimeValue& duration)
 		{
 			auto pPrimitive = std::shared_ptr<CRenderPrimitiveBase>(new CRenderPrimitive_Sphere(pos, radius, color));
 			m_prims.push_back(pPrimitive);
@@ -92,7 +92,7 @@ namespace Cry
 			UpdateTimeMetadata(pPrimitive->GetMetadata());
 		}
 
-		void CRenderPrimitiveCollection::AddLineWithDebugDrawDuration(const Vec3& pos1, const Vec3& pos2, const ColorF& color, const float duration)
+		void CRenderPrimitiveCollection::AddLineWithDebugDrawDuration(const Vec3& pos1, const Vec3& pos2, const ColorF& color, const CTimeValue& duration)
 		{
 			auto pPrimitive = std::shared_ptr<CRenderPrimitiveBase>(new CRenderPrimitive_Line(pos1, pos2, color));
 			m_prims.push_back(pPrimitive);
@@ -100,7 +100,7 @@ namespace Cry
 			UpdateTimeMetadata(m_prims.back()->GetMetadata());
 		}
 
-		void CRenderPrimitiveCollection::AddTriangleWithDebugDrawDuration(const Vec3& vtx1, const Vec3& vtx2, const Vec3& vtx3, const ColorF& color, const float duration)
+		void CRenderPrimitiveCollection::AddTriangleWithDebugDrawDuration(const Vec3& vtx1, const Vec3& vtx2, const Vec3& vtx3, const ColorF& color, const CTimeValue& duration)
 		{
 			auto pPrimitive = std::shared_ptr<CRenderPrimitiveBase>(new CRenderPrimitive_Triangle(vtx1, vtx2, vtx3, color));
 			m_prims.push_back(pPrimitive);
@@ -108,7 +108,7 @@ namespace Cry
 			UpdateTimeMetadata(m_prims.back()->GetMetadata());
 		}
 
-		void CRenderPrimitiveCollection::AddTextWithDebugDrawDuration(const Vec3& pos, float size, const ColorF& color, const float duration, const char* szFormat, ...)
+		void CRenderPrimitiveCollection::AddTextWithDebugDrawDuration(const Vec3& pos, float size, const ColorF& color, const CTimeValue& duration, const char* szFormat, ...)
 		{
 			stack_string text;
 			va_list ap;
@@ -123,7 +123,7 @@ namespace Cry
 			UpdateTimeMetadata(pPrimitive->GetMetadata());
 		}
 
-		void CRenderPrimitiveCollection::AddArrowWithDebugDrawDuration(const Vec3& from, const Vec3& to, float coneRadius, float coneHeight, const ColorF& color, const float duration)
+		void CRenderPrimitiveCollection::AddArrowWithDebugDrawDuration(const Vec3& from, const Vec3& to, float coneRadius, float coneHeight, const ColorF& color, const CTimeValue& duration)
 		{
 			auto pPrimitive = std::shared_ptr<CRenderPrimitiveBase>(new CRenderPrimitive_Arrow(from, to, coneRadius, coneHeight, color));
 			m_prims.push_back(pPrimitive);
@@ -131,7 +131,7 @@ namespace Cry
 			UpdateTimeMetadata(pPrimitive->GetMetadata());
 		}
 
-		void CRenderPrimitiveCollection::AddAxesWithDebugDrawDuration(const Vec3& pos, const Matrix33& axes, const float duration)
+		void CRenderPrimitiveCollection::AddAxesWithDebugDrawDuration(const Vec3& pos, const Matrix33& axes, const CTimeValue& duration)
 		{
 			auto pPrimitive1 = std::shared_ptr<CRenderPrimitiveBase>(new CRenderPrimitive_Line(pos, pos + axes.GetColumn0(), Col_Red));
 			auto pPrimitive2 = std::shared_ptr<CRenderPrimitiveBase>(new CRenderPrimitive_Line(pos, pos + axes.GetColumn1(), Col_Green));
@@ -148,7 +148,7 @@ namespace Cry
 			UpdateTimeMetadata(pPrimitive1->GetMetadata());
 		}
 
-		void CRenderPrimitiveCollection::AddAABBWithDebugDrawDuration(const AABB& aabb, const ColorF& color, const float duration)
+		void CRenderPrimitiveCollection::AddAABBWithDebugDrawDuration(const AABB& aabb, const ColorF& color, const CTimeValue& duration)
 		{
 			auto pPrimitive = std::shared_ptr<CRenderPrimitiveBase>(new CRenderPrimitive_AABB(aabb, color));
 			m_prims.push_back(pPrimitive);
@@ -156,7 +156,7 @@ namespace Cry
 			UpdateTimeMetadata(pPrimitive->GetMetadata());
 		}
 
-		void CRenderPrimitiveCollection::AddOBBWithDebugDrawDuration(const OBB& obb, const Vec3& pos, const ColorF& color, const float duration)
+		void CRenderPrimitiveCollection::AddOBBWithDebugDrawDuration(const OBB& obb, const Vec3& pos, const ColorF& color, const CTimeValue& duration)
 		{
 			auto pPrimitive = std::shared_ptr<CRenderPrimitiveBase>(new CRenderPrimitive_OBB(obb, pos, color));
 			m_prims.push_back(pPrimitive);
@@ -164,7 +164,7 @@ namespace Cry
 			UpdateTimeMetadata(pPrimitive->GetMetadata());
 		}
 
-		void CRenderPrimitiveCollection::AddConeWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const float duration)
+		void CRenderPrimitiveCollection::AddConeWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const CTimeValue& duration)
 		{
 			const Vec3 coneEnd = pos + dir.GetNormalizedSafe() * height;
 			auto pPrimitive = std::shared_ptr<CRenderPrimitiveBase>(new CRenderPrimitive_Arrow(pos, coneEnd, radius, height, color));
@@ -174,7 +174,7 @@ namespace Cry
 			UpdateTimeMetadata(pPrimitive->GetMetadata());
 		}
 
-		void CRenderPrimitiveCollection::AddCylinderWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const float duration)
+		void CRenderPrimitiveCollection::AddCylinderWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const CTimeValue& duration)
 		{
 			auto pPrimitive = std::shared_ptr<CRenderPrimitiveBase>(new CRenderPrimitive_Cylinder(pos, dir, radius, height, color));
 			m_prims.push_back(pPrimitive);

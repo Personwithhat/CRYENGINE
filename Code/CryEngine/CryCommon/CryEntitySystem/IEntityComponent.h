@@ -487,8 +487,8 @@ public:
 	//! will override old timer, and old timer will not send finish event.
 	//! The timer will automatically be serialized to disk and restored for save games, assuming that a component with the same instance GUID exists at deserialization time.
 	//! \param timerId Timer ID, multiple timers with different IDs are possible.
-	//! \param timeInMilliseconds Timer timeout time in milliseconds.
-	void SetTimer(uint32 timerId, int timeInMilliseconds);
+	//! \param timeInMilliseconds Timer timeout time.
+	void SetTimer(uint32 timerId, const CTimeValue& time);
 	//! Stops the specified timer for this component instance
 	//! \see ENTITY_EVENT_TIMER
 	void KillTimer(uint32 timerId);
@@ -609,7 +609,7 @@ struct IEntityScriptComponent : public IEntityComponent
 {
 	CRY_ENTITY_COMPONENT_INTERFACE_GUID(IEntityScriptComponent, "bd6403cf-3b49-f39e-9540-3fd1c6d4f755"_cry_guid)
 
-	virtual void          SetScriptUpdateRate(float fUpdateEveryNSeconds) = 0;
+	virtual void          SetScriptUpdateRate(const CTimeValue& fUpdateEveryNSeconds) = 0;
 	virtual IScriptTable* GetScriptTable() = 0;
 	virtual void          CallEvent(const char* sEvent) = 0;
 	virtual void          CallEvent(const char* sEvent, float fValue) = 0;

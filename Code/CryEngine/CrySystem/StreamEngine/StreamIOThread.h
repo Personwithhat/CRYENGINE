@@ -77,10 +77,10 @@ public:
 			m_nTotalReadBytes = 0;
 			m_nTotalReadOffset = 0;
 			m_nTotalRequestCount = 0;
-			m_TotalReadTime.SetValue(0);
+			m_TotalReadTime.SetSeconds(0);
 		}
 
-		float      m_fReadingDuringLastSecond  = .0f;
+		nTime      m_fReadingDuringLastSecond  = 0;
 		CTimeValue m_TotalReadTime;
 		uint64     m_nTotalReadBytes           = 0;
 		uint64     m_nTotalReadOffset          = 0;

@@ -811,8 +811,8 @@ bool QPreviewWidget::Render()
 			}
 		}
 
-		float tod = GetIEditorImpl()->GetCurrentMissionTime();
-		GetIEditorImpl()->SetCurrentMissionTime(12.0f);
+		CTimeValue tod = GetIEditorImpl()->GetCurrentMissionTime();
+		GetIEditorImpl()->SetCurrentMissionTime(12);
 
 		SetCamera(m_camera);
 
@@ -1341,7 +1341,7 @@ void QPreviewWidget::FitToScreen()
 
 void QPreviewWidget::ProcessKeys()
 {
-	float speedScale = 60.0f * GetIEditorImpl()->GetSystem()->GetITimer()->GetFrameTime();
+	float speedScale = 60.0f * GetIEditorImpl()->GetSystem()->GetITimer()->GetFrameTime().BADGetSeconds();
 	if (speedScale > 20.0f)
 	{
 		speedScale = 20.0f;

@@ -44,12 +44,12 @@ public:
 	void                    UndoVariableChange(ITimeOfDay::IPreset* pPreset, int paramId, bool undo, const DynArray<char>& undoState, DynArray<char>& redoState);
 	void                    RedoVariableChange(ITimeOfDay::IPreset* pPreset, int paramId, const DynArray<char>& redoState);
 
-	void                    SetCurrentTime(QWidget* pSender, float time);
+	void					SetCurrentTime(QWidget* pSender, const CTimeValue& time);
 
-	void                    GetEnginePlaybackParams(float& startTime, float& endTime, float& speed) const;
-	float                   GetCurrentTime() const;
+	void					GetEnginePlaybackParams(CTimeValue& startTime, CTimeValue& endTime, mpfloat& speed) const;
+	CTimeValue				GetCurrentTime() const;
 	// User changed AndvancedInfo. Send it to the Engine
-	void                    SetEnginePlaybackParams(float startTime, float endTime, float speed) const;
+	void                    SetEnginePlaybackParams(const CTimeValue& startTime, const CTimeValue& endTime, const mpfloat& speed) const;
 
 	PlaybackMode            GetPlaybackMode() const;
 	void                    TogglePlaybackMode();
@@ -69,9 +69,9 @@ public:
 	CCrySignal<void()>                             signalVariableTreeChanged;
 	CCrySignal<void()>                             signalCurveContentChanged;
 
-	CCrySignal<void(QWidget* pSender, float time)> signalCurrentTimeChanged;
-	CCrySignal<void(PlaybackMode newMod)>          signalPlaybackModeChanged;
-	CCrySignal<void(QEvent* event)>                signalHandleKeyEventsInVarPropertyTree;
+	CCrySignal<void(QWidget* pSender, CTimeValue time)> signalCurrentTimeChanged;
+	CCrySignal<void(PlaybackMode newMod)>				signalPlaybackModeChanged;
+	CCrySignal<void(QEvent* event)>						signalHandleKeyEventsInVarPropertyTree;
 
 private:
 	virtual void OnEditorNotifyEvent(EEditorNotifyEvent event) override;

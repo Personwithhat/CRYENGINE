@@ -44,23 +44,23 @@ CSoftEntity::CSoftEntity(CPhysicalWorld *pworld, IGeneralMemoryHeap* pHeap)
 	, m_pTetrEdges(nullptr)
 	, m_pTetrQueue(nullptr)
 	, m_lastPos(ZERO)
-	, m_timeStepFull(0.0f)
-	, m_timeStepPerformed(0.0f)
-	, m_timeStepSurplus(0.0f)
+	, m_timeStepFull(0)
+	, m_timeStepPerformed(0)
+	, m_timeStepSurplus(0)
 	, m_gravity(0.0f, 0.0f, -9.8f)
 	, m_Emin(sqr(0.01f))
-	, m_maxAllowedStep(0.1f)
+	, m_maxAllowedStep("0.1")
 	, m_nSlowFrames(0)
 	, m_damping(0.0f)
 	, m_accuracy(0.01f)
 	, m_nMaxIters(20)
-	, m_prevTimeInterval(0.0f)
+	, m_prevTimeInterval(0)
 	, m_bSkinReady(0)
 	, m_maxMove(0.0f)
 	, m_maxAllowedDist(1e10f)
 	, m_thickness(0.04f)
 	, m_ks(10.0f)
-	, m_maxSafeStep(0.2f)
+	, m_maxSafeStep("0.2")
 	, m_density(0.0f)
 	, m_coverage(0.0f)
 	, m_friction(0.0f)
@@ -84,7 +84,7 @@ CSoftEntity::CSoftEntity(CPhysicalWorld *pworld, IGeneralMemoryHeap* pHeap)
 	, m_wind(ZERO)
 	, m_wind0(ZERO)
 	, m_wind1(ZERO)
-	, m_windTimer(0.0f)
+	, m_windTimer(0)
 	, m_windVariance(0.2f)
 	, m_pCore(nullptr)
 	, m_pos0core(ZERO)
@@ -195,7 +195,7 @@ int CSoftEntity::AddGeometry(phys_geometry *pgeom, pe_geomparams* params, int id
 			if (m_nCoreVtx=j) {
 				pe_params_pos pp;
 				pp.pos = m_pos+m_qrot*((m_pos0core/=j)+params->pos); pp.q = m_qrot*params->q;
-				m_pCore = (CRigidEntity*)m_pWorld->CreatePhysicalEntity(PE_RIGID,0.0f,&pp,m_pForeignData,0x5AFE);
+				m_pCore = (CRigidEntity*)m_pWorld->CreatePhysicalEntity(PE_RIGID,0,&pp,m_pForeignData,0x5AFE);
 				m_pCore->m_iForeignData = m_iForeignData;
 				pe_geomparams gp;
 				gp.pos = m_pos + m_qrot*params->pos;
@@ -405,7 +405,7 @@ int CSoftEntity::AddGeometry(phys_geometry *pgeom, pe_geomparams* params, int id
 		pMesh->m_flags &= ~mesh_transient;
 		EventPhysPostStep epps; InitEvent(&epps,this,get_iCaller());
 		epps.pos = m_pos; epps.q = m_qrot;
-		epps.dt = 0; epps.idStep = m_pWorld->m_idStep;
+		epps.dt.SetSeconds(0); epps.idStep = m_pWorld->m_idStep;
 		m_pWorld->OnEvent(pef_log_poststep, &epps);
 	}
 
@@ -515,7 +515,7 @@ int CSoftEntity::SetParams(pe_params *_params, int bThreadSafe)
 		if (!is_unused(params->thickness)) m_thickness = params->thickness;
 		if (!is_unused(params->friction)) m_friction = params->friction;
 		if (!is_unused(params->ks) && (m_ks = params->ks)<0)
-			m_ks *= -m_parts[0].mass/(m_nVtx*sqr(m_maxAllowedStep));
+			m_ks *= -m_parts[0].mass/(m_nVtx*sqr(m_maxAllowedStep.BADGetSeconds()));
 		if (!is_unused(params->airResistance)) m_airResistance = params->airResistance;
 		if (!is_unused(params->waterResistance)) m_waterResistance = params->waterResistance;
 		if (!is_unused(params->wind)) if ((m_wind0=m_wind1=m_wind = params->wind).len2()>0)
@@ -926,7 +926,7 @@ int CSoftEntity::Action(pe_action *_action, int bThreadSafe)
 			for(int i=0; i<action->nPoints; i++) //if (!m_vtx[i].bAttached) 
 				m_vtx[i].ptAttach = (action->points[i]-action->posHost)*action->qHost;
 			if (m_maxSafeStep>0) for(int i=0;i<m_nEdges;i++) {
-				float len2=sqr(m_edges[i].len0), lenNew2=(m_vtx[m_edges[i].ivtx[0]].ptAttach-m_vtx[m_edges[i].ivtx[1]].ptAttach).len2(), e2=sqr(m_edges[i].len0*m_maxSafeStep*0.5f);
+				float len2=sqr(m_edges[i].len0), lenNew2=(m_vtx[m_edges[i].ivtx[0]].ptAttach-m_vtx[m_edges[i].ivtx[1]].ptAttach).len2(), e2=sqr(m_edges[i].len0*m_maxSafeStep.BADGetSeconds()*0.5f);
 				if (min(sqr(len2+lenNew2-e2)-len2*lenNew2*4, len2+lenNew2-e2)>0)
 					m_edges[i].len0 = sqrt_tpl(lenNew2);
 			}
@@ -969,7 +969,7 @@ int CSoftEntity::Action(pe_action *_action, int bThreadSafe)
 			}
 			if (!(m_flags & sef_skeleton))
 				pMesh->m_flags |= mesh_transient;	// mark the mesh as modified so that cloth will send a poststep on its reusage
-			m_windTimer = 0;
+			m_windTimer.SetSeconds(0);
 		}
 		return 1;
 	}
@@ -1052,27 +1052,28 @@ int CSoftEntity::Action(pe_action *_action, int bThreadSafe)
 }
 
 
-void CSoftEntity::StartStep(float time_interval)
+void CSoftEntity::StartStep(const CTimeValue& time_interval)
 {
-	m_timeStepPerformed = 0;
+	m_timeStepPerformed.SetSeconds(0);
 	m_timeStepFull = time_interval+m_timeStepSurplus;
-	m_timeStepSurplus = 0;
+	m_timeStepSurplus.SetSeconds(0);
 }
 
 
-float CSoftEntity::GetMaxTimeStep(float time_interval)
+CTimeValue CSoftEntity::GetMaxTimeStep(const CTimeValue& time_interval)
 {
-	if (m_timeStepPerformed > m_timeStepFull-0.001f)
+	if (m_timeStepPerformed > m_timeStepFull-"0.001")
 		return time_interval;
 	return min(min(m_timeStepFull-m_timeStepPerformed,m_maxAllowedStep),time_interval);
 }
 
 
-void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *checkParts,int nCheckParts, 
-														const plane &waterPlane,const Vec3 &waterFlow,float waterDensity,	float airDensity,
+void CSoftEntity::StepInner(const CTimeValue& time_interval, int bCollMode, check_part *checkParts, int nCheckParts,
+														const plane &waterPlane, const Vec3 &waterFlow,float waterDensity, float airDensity,
 														const Vec3 &lastposHost, const quaternionf &lastqHost,
                             se_vertex *pvtx)
 {
+	const float tSeconds = time_interval.BADGetSeconds();
 	#define m_vtx pvtx
 	int i,j,i0,i1,j1,iter,imask;
 	float l0,rsep,area,kr,windage,rmax,vreq,rthickness=1.0f/max(1e-8f,m_thickness);
@@ -1111,7 +1112,7 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 				Vec3 vtx[4],com,P,L; int idx[4]; 
 				for(j=0;j<4;j++) vtx[j] = m_vtx[idx[j]=pLat->m_pTetr[i].ivtx[j]].pos;
 				kr = (vtx[1]-vtx[0] ^ vtx[2]-vtx[0])*(vtx[3]-vtx[0]);
-				for(j=0;j<4;j++) vtx[j] += m_vtx[idx[j]].vel*time_interval;
+				for(j=0;j<4;j++) vtx[j] += m_vtx[idx[j]].vel*tSeconds;
 				if (min(-kr,(vtx[1]-vtx[0] ^ vtx[2]-vtx[0])*(vtx[3]-vtx[0]))>0.0f) {
 					Matrix33 I,Ivtx; float mass;
 					for(com.zero(),mass=0.0f,j=0;j<4;j++)
@@ -1140,8 +1141,8 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 			if (diff.len2() > sqr(maxDiff))	{
 				m_vtx[i].pos += diff;	diff.NormalizeFast(); m_vtx[i].pos -= diff*maxDiff;
 			}
-			if (diff*(diff+m_vtx[i].vel*time_interval) < 0.0f)
-				m_vtx[i].pos += m_vtx[i].vel*((m_vtx[i].vel*diff)/m_vtx[i].vel.len2() - time_interval);
+			if (diff*(diff+m_vtx[i].vel*tSeconds) < 0.0f)
+				m_vtx[i].pos += m_vtx[i].vel*((m_vtx[i].vel*diff)/m_vtx[i].vel.len2() - tSeconds);
 		}
 	}
 
@@ -1149,13 +1150,13 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 	if (!(bCollMode&2)) for(i0=m_nAttachedVtx; i0<m_nConnectedVtx; i0++) {
 		i = m_vtx[i0].idx;
 		Vec3 pos0 = m_vtx[i].pos;
-		m_vtx[i].pos += m_vtx[i].vel*time_interval;
+		m_vtx[i].pos += m_vtx[i].vel*tSeconds;
 
 		float siblingCheck = m_massDecay>0.0f ? 0.0f:1.0f;
 		if (m_maxSafeStep>0) 
 			for(j=m_vtx[i].iStartEdge; j<=m_vtx[i].iEndEdge; j++) if (m_edges[m_pVtxEdges[j]].len>=0) {
 				i1 = m_edges[m_pVtxEdges[j]].ivtx[0]+m_edges[m_pVtxEdges[j]].ivtx[1]-i;
-				if (m_vtx[i1].idx0<i0 && min(fabs_tpl(m_vtx[i1].mass-m_vtx[i].mass)+siblingCheck, (m_vtx[i1].pos-m_vtx[i].pos).len2()-sqr(l.x=m_edges[m_pVtxEdges[j]].len0*(1.0f+m_maxSafeStep)))>1e-8f) {
+				if (m_vtx[i1].idx0<i0 && min(fabs_tpl(m_vtx[i1].mass-m_vtx[i].mass)+siblingCheck, (m_vtx[i1].pos-m_vtx[i].pos).len2()-sqr(l.x=m_edges[m_pVtxEdges[j]].len0*(1.0f+m_maxSafeStep.BADGetSeconds())))>1e-8f) {
 					m_vtx[i].pos = m_vtx[i1].pos + (m_vtx[i].pos-m_vtx[i1].pos).normalized()*l.x;
 					m_edges[m_pVtxEdges[j]].len = -1;
 				}
@@ -1222,7 +1223,7 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 					i1 += j1-i1 & -isneg(fabs_tpl((aray.m_ray.origin-checkParts[j].contPlane[j1].origin)*checkParts[j].contPlane[j1].n)-
 															 fabs_tpl((aray.m_ray.origin-checkParts[j].contPlane[i1].origin)*checkParts[j].contPlane[i1].n));
 				if ((aray.m_ray.origin-checkParts[j].contPlane[i1].origin).len2() > checkParts[j].contRadius[i1]*1.2f) {
-					aray.m_ray.dir = ((v-m_vtx[i].vel)*checkParts[j].R)*m_prevTimeInterval;
+					aray.m_ray.dir = ((v-m_vtx[i].vel)*checkParts[j].R)*m_prevTimeInterval.BADGetSeconds();
 					aray.m_dirn = aray.m_ray.dir.normalized();
 					aray.m_ray.origin -= aray.m_dirn*m_thickness;
 					aray.m_ray.dir += aray.m_dirn*m_thickness;
@@ -1277,7 +1278,7 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 		if (!m_V0)
 			m_V0 = max(V,1e-6f);
 		kPressure = m_V0/max(V,m_V0*0.05f);
-		m_pressure = max(0.0f, m_pressure+m_dpressure*time_interval);
+		m_pressure = max(0.0f, m_pressure+m_dpressure*tSeconds);
 	}
 	Vec3 gdir,gax[2];
 	Vec3 gBBox[2] = { Vec2(ZERO), Vec2(ZERO) };
@@ -1332,23 +1333,23 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 			m_pWorld->RasterizeEntities(grid[j], hbuf[j]=m_hbuf+grid[0].size.x*grid[0].size.y*j, 0, 1e10f, Vec3(ZERO),Vec3(1e5f), 0,this);
 			grid[j].origin -= m_vtx[0].pos+m_pos+m_offs0;
 		}
-		diffDensity = min(100.0f,airDensity/max(1e-6f,densityInside*kPressure)) * time_interval;
+		diffDensity = min(100.0f,airDensity/max(1e-6f,densityInside*kPressure))*tSeconds;
 	}
 
 	for(i0=m_nAttachedVtx; i0<m_nConnectedVtx; i0++) { // apply gravity, buoyancy, wind (or water resistance), and internal pressure
 		i = m_vtx[i0].idx;
 		if ((l0=(m_vtx[i].pos+m_pos-waterPlane.origin)*waterPlane.n)<0) {
-			m_vtx[i].vel -= m_gravity*(waterDensity*m_vtxvol*time_interval*min(1.0f,-l0*rthickness));
+			m_vtx[i].vel -= m_gravity*(waterDensity*m_vtxvol*tSeconds*min(1.0f,-l0*rthickness));
 			kr = m_waterResistance;	w = waterFlow;
 		}	else {
-			kr = m_airResistance;	w = m_wind0*m_windTimer+m_wind1*(1.0f-m_windTimer);
+			kr = m_airResistance;	w = m_wind0*m_windTimer.BADGetSeconds()+m_wind1*(1.0f-m_windTimer.BADGetSeconds());
 		}
 		for(j=m_vtx[i].iStartEdge,windage=0; j<=m_vtx[i].iEndEdge; j++)
 			windage += ((m_vtx[m_edges[m_pVtxEdges[j]].ivtx[1]].pos-m_vtx[m_edges[m_pVtxEdges[j]].ivtx[0]].pos)*m_vtx[i].n)*
 				(iszero(i^m_edges[m_pVtxEdges[j]].ivtx[0])*2-1)*m_edges[m_pVtxEdges[j]].rlen;
-		m_vtx[i].vel += m_vtx[i].n*((m_vtx[i].n*(w-m_vtx[i].vel))*m_vtx[i].area*area*(windage*m_vtx[i].rnEdges+1)*kr*time_interval);
+		m_vtx[i].vel += m_vtx[i].n*((m_vtx[i].n*(w-m_vtx[i].vel))*m_vtx[i].area*area*(windage*m_vtx[i].rnEdges+1)*kr*tSeconds);
 		m_vtx[i].vel += m_vtx[i].n*(m_vtx[i].area*m_pressure*kPressure*m_vtx[i].bFullFan);
-		m_vtx[i].vel += m_gravity*time_interval;
+		m_vtx[i].vel += m_gravity*tSeconds;
 	}
 
 	if (diffDensity) for(i0=m_nAttachedVtx; i0<m_nConnectedVtx; i0++) {	// apply buoyancy from internal medium
@@ -1373,7 +1374,7 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 				if (l.len2()>0) {
 					float angle0 = m_edges[m_pVtxEdges[j]].angle0[iszero(i-m_edges[m_pVtxEdges[j]].ivtx[1])];
 					l *= ((angle0-1+sg)/l.len()-m_edges[m_pVtxEdges[j]].rlen*m_edges[m_pVtxEdges[j1]].rlen*sg);
-					l *= time_interval*m_kShapeStiffnessTang;
+					l *= tSeconds*m_kShapeStiffnessTang;
 					m_vtx[m_edges[m_pVtxEdges[j ]].ivtx[1]+m_edges[m_pVtxEdges[j ]].ivtx[0]-i].vel -= l^edge0;
 					m_vtx[m_edges[m_pVtxEdges[j1]].ivtx[1]+m_edges[m_pVtxEdges[j1]].ivtx[0]-i].vel += l^edge1;
 				}
@@ -1381,7 +1382,7 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 			for(j=m_vtx[i].iStartEdge; j<=m_vtx[i].iEndEdge; j++)	{
 				edge0 = m_vtx[m_edges[m_pVtxEdges[j ]].ivtx[1]+m_edges[m_pVtxEdges[j ]].ivtx[0]-i].pos-m_vtx[i].pos;
 				l	= (m_vtx[i].n*edge0.len2()-edge0*(m_vtx[i].n*edge0))*m_edges[m_pVtxEdges[j]].rlen;
-				l *= (angle-m_vtx[i].angle0)*time_interval*m_kShapeStiffnessNorm;
+				l *= (angle-m_vtx[i].angle0)*tSeconds*m_kShapeStiffnessNorm;
 				m_vtx[m_edges[m_pVtxEdges[j ]].ivtx[1]+m_edges[m_pVtxEdges[j ]].ivtx[0]-i].vel += l;
 				m_vtx[i].vel -= l;
 			}
@@ -1393,7 +1394,7 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 		for(j=m_nAttachedVtx; j<m_nConnectedVtx; j++) {
 			i = m_vtx[j].idx;
 			v = (lastqHost*m_vtx[i].ptAttach+lastposHost-m_vtx[i].pos-m_pos-m_offs0)*m_stiffnessAnim*(1-m_stiffnessDecayAnim*m_vtx[i].iSorted*denom);
-			float t = max(0.0f, 1.0f-m_dampingAnim*time_interval);
+			float t = max(0.0f, 1.0f-m_dampingAnim* tSeconds);
 			m_vtx[i].vel = m_vtx[i].vel*t + v*(1.0f-t);
 		}
 	}
@@ -1428,21 +1429,21 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 			}
 		} while(rmax>m_accuracy && ++iter<m_nMaxIters);
 	} else {
-		for(i=0;i<m_nVtx;i++) m_vtx[i].pos0=m_vtx[i].pos-(m_vtx[i].vel0=m_vtx[i].vel)*(time_interval*0.5f);
+		for(i=0;i<m_nVtx;i++) m_vtx[i].pos0=m_vtx[i].pos-(m_vtx[i].vel0=m_vtx[i].vel)*(tSeconds*0.5f);
 		for(i=0; i<m_nEdges; i++) {	// calculate edge lengths
 			l = m_vtx[m_edges[i].ivtx[0]].pos0 - m_vtx[m_edges[i].ivtx[1]].pos0;
 			m_edges[i].rlen = 1.0f/max(1E-4f,m_edges[i].len = sqrt_tpl(l.len2()));
 		}
-		float ks = m_ks*m_parts[0].mass/m_nVtx, kmax = m_maxSafeStep>0 ? m_maxSafeStep:10.0f;
+		float ks = m_ks*m_parts[0].mass/m_nVtx, kmax = m_maxSafeStep>0 ? m_maxSafeStep.BADGetSeconds() : 10.0f;
 		for(i=0; i<m_nEdges; i++) {
 			i0=m_edges[i].ivtx[0]; i1=m_edges[i].ivtx[1];
 			l = m_vtx[i1].pos0-m_vtx[i0].pos0;
-			F  = l*(ks*min(kmax,m_edges[i].rlen*(m_edges[i].len-m_edges[i].len0))*time_interval);
-			F += l*(((m_vtx[i1].vel0-m_vtx[i0].vel0)*l)*ks*sqr(time_interval)*0.5f*sqr(m_edges[i].rlen));
+			F  = l*(ks*min(kmax,m_edges[i].rlen*(m_edges[i].len-m_edges[i].len0))*tSeconds);
+			F += l*(((m_vtx[i1].vel0-m_vtx[i0].vel0)*l)*ks*sqr(tSeconds)*0.5f*sqr(m_edges[i].rlen));
 			m_vtx[i0].vel += F*m_vtx[i0].massinv;	m_vtx[i1].vel -= F*m_vtx[i1].massinv;
 		}
 		for(v.zero(),i=0; i<m_nVtx; v+=m_vtx[i++].vel);
-		float kd = 2*sqrt_tpl(m_ks)*time_interval;
+		float kd = 2*sqrt_tpl(m_ks)*tSeconds;
 		const float v0=3, kv=0.1f;
 		for(v/=max(1,m_nVtx),i=0; i<m_nVtx; i++)
 			m_vtx[i].vel = (m_vtx[i].vel-v)*max(0.5f,1-kd*max(m_damping,(sqrt_fast_tpl((m_vtx[i].vel-v).len2())-v0)*kv))+v;
@@ -1525,8 +1526,10 @@ void CSoftEntity::StepInner(float time_interval, int bCollMode, check_part *chec
 #endif
 }
 
-int CSoftEntity::Step(float time_interval)
+int CSoftEntity::Step(const CTimeValue& time_intervalIn)
 {
+	CTimeValue time_interval = time_intervalIn;
+
 	if (m_nVtx<=0 || !m_bAwake || !m_nConnectedVtx && !m_pressure)
 		return 1;
 
@@ -1553,7 +1556,8 @@ int CSoftEntity::Step(float time_interval)
 	pe_params_buoyancy pb[4];
 	plane waterPlane; 
 	Vec3 waterFlow(ZERO);
-	float waterDensity=0,airDensity=1,ktimeBack;
+	float waterDensity=0, airDensity=1;
+	nTime ktimeBack;
 	{ ReadLock lock(m_lockSoftBody);
 
 	CRY_PROFILE_FUNCTION(PROFILE_PHYSICS );
@@ -1581,15 +1585,15 @@ int CSoftEntity::Step(float time_interval)
 			m_vtx[i].pContactEnt->Release(); m_vtx[i].pContactEnt = 0; m_vtx[i].bAttached = 0;
 		}
 	}
-	if (time_interval+m_windTimer==0.0f) {
-		m_windTimer=0.001f; goto report_step0;
+	if (time_interval+m_windTimer == 0) {
+		m_windTimer.SetSeconds("0.001"); goto report_step0;
 	}
-	if (m_flags & sef_volumetric && time_interval<m_maxAllowedStep*0.95f && m_timeStepFull>m_maxAllowedStep)
+	if (m_flags & sef_volumetric && time_interval<m_maxAllowedStep*"0.95" && m_timeStepFull>m_maxAllowedStep)
 		if ((m_timeStepSurplus+=time_interval) > m_maxAllowedStep) {
-			m_timeStepSurplus-=m_maxAllowedStep; time_interval=m_maxAllowedStep;
+			m_timeStepSurplus-=m_maxAllowedStep; time_interval = m_maxAllowedStep; // PERSONAL CRYTEK: Clamping time
 		}	else
 			return 1;
-	if (m_timeStepPerformed>m_timeStepFull-0.001f)
+	if (m_timeStepPerformed>m_timeStepFull-"0.001")
 		return 1;
 	m_timeStepPerformed += time_interval;
 	ktimeBack = (m_timeStepFull-m_timeStepPerformed)/m_timeStepFull*(iszero(m_pWorld->m_bWorldStep-2)^1);
@@ -1606,8 +1610,8 @@ int CSoftEntity::Step(float time_interval)
 	if (!m_wind0.len2())
 		m_wind0 = m_wind1 = w;
 
-	if ((m_windTimer+=time_interval*4)>1.0f) {
-		m_windTimer = 0; m_wind0 = m_wind1;
+	if ((m_windTimer += time_interval*4) > 1) {
+		m_windTimer.SetSeconds(0); m_wind0 = m_wind1;
 		float windage = m_windVariance*(fabs_tpl(w.x)+fabs_tpl(w.y)+fabs_tpl(w.z));
 		m_wind1 = w+Vec3(cry_random(0.0f, windage),cry_random(0.0f, windage),cry_random(0.0f, windage));
 	}
@@ -1722,11 +1726,11 @@ int CSoftEntity::Step(float time_interval)
 		m_vtx[i].vcontact = m_vtx[i].vel = (pbody->v+(pbody->w^m_vtx[i].pos-pbody->pos))*(1-m_kRigid);
 		m_vtx[i].pos -= m_pos+m_offs0;
 
-		if (min(m_maxSafeStep,m_timeStepPerformed+0.001f-m_timeStepFull)>0) 
+		if (min(m_maxSafeStep,m_timeStepPerformed+"0.001"-m_timeStepFull)>0) 
 			for(j=m_vtx[i].iStartEdge; j<=m_vtx[i].iEndEdge; j++) if (m_edges[m_pVtxEdges[j]].len>=0) {
 				int i2 = m_edges[m_pVtxEdges[j]].ivtx[0]+m_edges[m_pVtxEdges[j]].ivtx[1]-i;
-				if (m_vtx[i2].idx0>i0 && (m_vtx[i2].pos-m_vtx[i].pos).len2() > sqr(m_edges[m_pVtxEdges[j]].len0*(1.0f+m_maxSafeStep))) {
-					m_vtx[i2].pos = m_vtx[i].pos + (m_vtx[i2].pos-m_vtx[i].pos).normalized()*(m_edges[m_pVtxEdges[j]].len0*(1.0f+m_maxSafeStep));
+				if (m_vtx[i2].idx0>i0 && (m_vtx[i2].pos-m_vtx[i].pos).len2() > sqr(m_edges[m_pVtxEdges[j]].len0*(1.0f+m_maxSafeStep.BADGetSeconds()))) {
+					m_vtx[i2].pos = m_vtx[i].pos + (m_vtx[i2].pos-m_vtx[i].pos).normalized()*(m_edges[m_pVtxEdges[j]].len0*(1.0f+m_maxSafeStep.BADGetSeconds()));
 					m_edges[m_pVtxEdges[j]].len = -1;
 				}
 			}
@@ -1750,11 +1754,11 @@ int CSoftEntity::Step(float time_interval)
 	stepdone:
 
 	pos0 = m_vtx[m_vtx[0].idx].pos;
-	rmax = m_maxMove/sqr(max(0.0001f,time_interval));
+	rmax = m_maxMove/sqr(max(0.0001f,time_interval.BADGetSeconds()));
 	BBox[0].zero(); BBox[1].zero();	
 	for(i0=0; i0<m_nConnectedVtx; i0++) {
 		v = vHost + (wHost ^ m_vtx[i=m_vtx[i0].idx].pos+m_pos+m_offs0-lastposHost);
-		kr = min(1.0f,m_damping*time_interval)*(1+(-m_vtx[i].bAttached>>31));
+		kr = min(1.0f,m_damping*time_interval.BADGetSeconds())*(1+(-m_vtx[i].bAttached>>31));
 		m_vtx[i].vel = m_vtx[i].vel*(1.0f-kr) + v*kr;
 		m_vtx[i].pos -= pos0;
 		rmax = max(rmax, m_vtx[i].vel.len2()*m_vtx[i].bAttached);
@@ -1815,7 +1819,7 @@ int CSoftEntity::Step(float time_interval)
 		m_iLastLog = m_pWorld->m_iLastLogPump;
 	}
 
-	return isneg(m_timeStepFull-m_timeStepPerformed-0.001f);
+	return isneg(m_timeStepFull-m_timeStepPerformed-"0.001");
 }
 
 void CSoftEntity::SyncMeshVtx(bool recalcNormals)
@@ -1897,7 +1901,7 @@ int CSoftEntity::RayTrace(SRayTraceRes& rtr)
 }
 
 
-int CSoftEntity::GetStateSnapshot(CStream &stm,float time_back,int flags)
+int CSoftEntity::GetStateSnapshot(CStream &stm, const CTimeValue& time_back,int flags)
 {
 	stm.WriteNumberInBits(SNAPSHOT_VERSION,4);
 	stm.WriteBits((uint8*)&m_qrot0,sizeof(m_qrot0)*8);
@@ -1926,7 +1930,7 @@ int CSoftEntity::SetStateFromSnapshot(CStream &stm, int flags)
 	return 1;
 }
 
-int CSoftEntity::GetStateSnapshot(TSerialize ser, float time_back, int flags)
+int CSoftEntity::GetStateSnapshot(TSerialize ser, const CTimeValue& time_back, int flags)
 {
 	if (m_flags & sef_skeleton || flags & 16)
 		if (ser.BeginOptionalGroup("updated", m_bMeshUpdated != 0)) {

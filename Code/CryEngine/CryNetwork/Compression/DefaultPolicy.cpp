@@ -56,16 +56,36 @@ public:
 		return WriteBytes(out, &value, sizeof(value));
 	}
 
+	// PERSONAL TODO/CRYTEK: Don't know of a better way to serialize this at the moment.
+	// Hence conversion to string in between reading/writing :<
+	// Better than having 2 digits accuracy -.-
 	bool ReadValue(CCommInputStream& in, CTimeValue& value, CArithModel* pModel, uint32 age) const
 	{
-		value = pModel->ReadTime(in, eTS_Network);
-		return true;
+		//	value = pModel->ReadTime(in, eTS_Network);
+		return ReadValue(in, value.m_lValue, pModel, age);
 	}
 	bool WriteValue(CCommOutputStream& out, CTimeValue value, CArithModel* pModel, uint32 age) const
 	{
-		pModel->WriteTime(out, eTS_Network, value);
-		return true;
+		// pModel->WriteTime(out, eTS_Network, value);
+		return WriteValue(out, value.m_lValue, pModel, age);
 	}
+
+	#define MP_FUNCTION(T)\
+		bool ReadValue(CCommInputStream& in, T& value, CArithModel* pModel, uint32 age) const\
+		{\
+			string s;\
+			bool bRes = pModel->ReadString(in, s);\
+			if (bRes)\
+				value = s.c_str();\
+			return bRes;\
+		}\
+		bool WriteValue(CCommOutputStream& out, T value, CArithModel* pModel, uint32 age) const\
+		{\
+			pModel->WriteString(out, value.str());\
+			return true;\
+		}
+	#include <CrySystem\mpfloat.types>
+	#undef MP_FUNCTION
 
 	bool ReadValue(CCommInputStream& in, ScriptAnyValue& value, CArithModel* pModel, uint32 age) const
 	{

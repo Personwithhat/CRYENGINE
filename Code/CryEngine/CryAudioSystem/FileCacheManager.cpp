@@ -402,7 +402,7 @@ void CFileCacheManager::DrawDebugInfo(IRenderAuxGeom& auxGeom, float const posX,
 
 	if (!g_afcmDebugInfo.empty())
 	{
-		float const frameTime = gEnv->pTimer->GetAsyncTime().GetSeconds();
+		CTimeValue const frameTime = GetGTimer()->GetAsyncTime();
 
 		for (auto const& infoPair : g_afcmDebugInfo)
 		{
@@ -430,7 +430,7 @@ void CFileCacheManager::DrawDebugInfo(IRenderAuxGeom& auxGeom, float const posX,
 				color = Debug::s_afcmColorFileNotFound;
 			}
 
-			float const ratio = (frameTime - pFile->m_timeCached) / 2.0f;
+			float const ratio = (frameTime - pFile->m_timeCached).BADGetSeconds() / 2.0f;
 
 			if (ratio <= 1.0f)
 			{
@@ -472,7 +472,7 @@ bool CFileCacheManager::FinishStreamInternal(IReadStreamPtr const pStream, int u
 			pFile->m_flags = (pFile->m_flags | EFileFlags::Cached) & ~(EFileFlags::Loading | EFileFlags::NotCached);
 
 #if defined(CRY_AUDIO_USE_DEBUG_CODE)
-			pFile->m_timeCached = gEnv->pTimer->GetAsyncTime().GetSeconds();
+			pFile->m_timeCached = GetGTimer()->GetAsyncTime();
 #endif  // CRY_AUDIO_USE_DEBUG_CODE
 
 			Impl::SFileInfo fileInfo;
@@ -570,7 +570,7 @@ void CFileCacheManager::UncacheFile(CFile* const pFile)
 	pFile->m_useCount = 0;
 
 #if defined(CRY_AUDIO_USE_DEBUG_CODE)
-	pFile->m_timeCached = 0.0f;
+	pFile->m_timeCached.SetSeconds(0);
 #endif // CRY_AUDIO_USE_DEBUG_CODE
 }
 
@@ -632,8 +632,8 @@ bool CFileCacheManager::TryCacheFileCacheEntryInternal(
 			streamReadParams.nOffset = 0;
 			streamReadParams.nFlags = IStreamEngine::FLAGS_NO_SYNC_CALLBACK;
 			streamReadParams.dwUserData = static_cast<DWORD_PTR>(id);
-			streamReadParams.nLoadTime = 0;
-			streamReadParams.nMaxLoadTime = 0;
+			streamReadParams.nLoadTime.SetSeconds(0);
+			streamReadParams.nMaxLoadTime.SetSeconds(0);
 			streamReadParams.ePriority = estpUrgent;
 			streamReadParams.pBuffer = pFile->m_pMemoryBlock->GetData();
 			streamReadParams.nSize = static_cast<int unsigned>(pFile->m_size);

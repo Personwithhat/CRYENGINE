@@ -97,7 +97,7 @@ void CTestExcelReporter::OnFinishTesting(const SRunContext& context, bool openRe
 		name.Format("[%s] %s:%s", res.testInfo.module.c_str(), res.testInfo.suite.c_str(), res.testInfo.name.c_str());
 		AddCell(name);
 		AddCell("FAIL", CELL_CENTERED);
-		AddCell((int)res.runTimeInMs);
+		AddCell((int)res.runTime.GetMilliSeconds());
 		AddCell((uint64)res.failures.size());
 		AddCell(res.testInfo.fileName.c_str());
 		AddCell(res.testInfo.lineNumber);
@@ -172,7 +172,7 @@ void CTestExcelReporter::OnFinishTesting(const SRunContext& context, bool openRe
 		{
 			AddCell("FAIL", CELL_CENTERED);
 		}
-		AddCell(static_cast<int>(res.runTimeInMs));
+		AddCell(static_cast<int>(res.runTime.GetMilliSeconds()));
 		AddCell(static_cast<uint32>(res.failures.size()));
 		AddCell(res.testInfo.fileName.c_str());
 		AddCell(res.testInfo.lineNumber);
@@ -221,11 +221,11 @@ void CTestExcelReporter::OnSingleTestStart(const STestInfo& testInfo)
 	m_log.Log("%s", text.c_str());
 }
 
-void CTestExcelReporter::OnSingleTestFinish(const STestInfo& testInfo, float fRunTimeInMs, bool bSuccess, const std::vector<SError>& failures)
+void CTestExcelReporter::OnSingleTestFinish(const STestInfo& testInfo, const CTimeValue& fRunTime, bool bSuccess, const std::vector<SError>& failures)
 {
 	if (bSuccess)
 	{
-		m_log.Log("Test result: [%s]%s:%s | OK (%3.2fms)", testInfo.module.c_str(), testInfo.suite.c_str(), testInfo.name.c_str(), fRunTimeInMs);
+		m_log.Log("Test result: [%s]%s:%s | OK (%3.2fms)", testInfo.module.c_str(), testInfo.suite.c_str(), testInfo.name.c_str(), (float)fRunTime.GetMilliSeconds());
 	}
 	else
 	{
@@ -236,7 +236,7 @@ void CTestExcelReporter::OnSingleTestFinish(const STestInfo& testInfo, float fRu
 		}
 	}
 
-	m_results.push_back(STestResult { testInfo, fRunTimeInMs, bSuccess, failures });
+	m_results.push_back(STestResult { testInfo, fRunTime, bSuccess, failures });
 }
 
 static constexpr const char* szExcelReporterSave = "%USER%/TestResults/CryTestTemp.json";

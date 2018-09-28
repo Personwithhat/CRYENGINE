@@ -33,8 +33,8 @@ public:
 	virtual void   SetVariance(float variance) override               { m_params.breezeVariance = variance; }
 	virtual float  GetVariance() const override                       { return m_params.breezeVariance; }
 
-	virtual void   SetLifetime(float lifetime) override               { m_params.breezeLifeTime = lifetime; }
-	virtual float  GetLifetime() const override                       { return m_params.breezeLifeTime; }
+	virtual void  SetLifetime(const CTimeValue&  lifetime) override   { m_params.breezeLifeTime = lifetime; }
+	virtual const CTimeValue& GetLifetime() const override            { return m_params.breezeLifeTime; }
 
 	virtual void   SetCount(uint32 count) override                    { m_params.breezeCount = count; }
 	virtual uint32 GetCount() const override                          { return m_params.breezeCount; }

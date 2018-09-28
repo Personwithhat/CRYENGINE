@@ -27,11 +27,11 @@ private:
 	void  ResetPlaybackEdits();
 	void  OnPlaybackParamsChanged();
 
-	float GetTimeAsFloat(CTimeEditControl* pTimeCtrl) const;
-	QTime FloatToQTime(float time) const;
+	CTimeValue GetTime(CTimeEditControl* pTimeCtrl) const;
+	QTime TimeToQTime(const CTimeValue& time) const;
 
 	void  OnPlaybackModeChanged(PlaybackMode newMode);
-	void  OnCurrentTimeChanged(QWidget* pSender, float newTime);
+	void  OnCurrentTimeChanged(QWidget* pSender, const CTimeValue& newTime);
 	void  CurrentTimeEdited();
 
 	CController&      m_controller;

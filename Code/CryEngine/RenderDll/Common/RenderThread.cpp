@@ -298,7 +298,7 @@ void SRenderThread::RC_EndFrame(bool bWait)
 	SyncMainWithRender(true);
 }
 
-void SRenderThread::RC_PrecacheResource(ITexture* pTP, float fMipFactor, float fTimeToReady, int Flags, int nUpdateId)
+void SRenderThread::RC_PrecacheResource(ITexture* pTP, float fMipFactor, const CTimeValue& fTimeToReady, int Flags, int nUpdateId)
 {
 	if (!pTP)
 		return;
@@ -407,10 +407,10 @@ void SRenderThread::RC_StopVideoThread()
 //===========================================================================================
 
 #ifdef DO_RENDERSTATS
-	#define START_PROFILE_RT_SCOPE() CTimeValue Time = iTimer->GetAsyncTime();
-	#define START_PROFILE_RT()       Time = iTimer->GetAsyncTime();
-	#define END_PROFILE_PLUS_RT(Dst) Dst += iTimer->GetAsyncTime().GetDifferenceInSeconds(Time);
-	#define END_PROFILE_RT(Dst)      Dst = iTimer->GetAsyncTime().GetDifferenceInSeconds(Time);
+	#define START_PROFILE_RT_SCOPE() CTimeValue Time = GTimer(d3d)->GetAsyncTime();
+	#define START_PROFILE_RT()		 Time = GTimer(d3d)->GetAsyncTime();
+	#define END_PROFILE_PLUS_RT(Dst) Dst += GTimer(d3d)->GetAsyncTime() - Time;
+	#define END_PROFILE_RT(Dst)      Dst = GTimer(d3d)->GetAsyncTime() - Time;
 #else
 	#define START_PROFILE_RT_SCOPE()
 	#define START_PROFILE_RT()
@@ -622,7 +622,7 @@ void SRenderThread::Process()
 	{
 		CRY_PROFILE_SECTION(PROFILE_RENDERER, "Loop: RenderThread");
 
-		CTimeValue Time = iTimer->GetAsyncTime();
+		CTimeValue Time = GTimer(d3d)->GetAsyncTime();
 
 		WaitFlushCond();
 		const uint64 start = CryGetTicks();
@@ -636,14 +636,14 @@ void SRenderThread::Process()
 
 		if (m_eVideoThreadMode == eVTM_Disabled)
 		{
-			CTimeValue TimeAfterWait = iTimer->GetAsyncTime();
+			CTimeValue TimeAfterWait = GTimer(d3d)->GetAsyncTime();
 			if (gRenDev->m_bStartLevelLoading)
-				SRenderStatistics::Write().m_Summary.idleLoading += TimeAfterWait.GetDifferenceInSeconds(Time);
+				SRenderStatistics::Write().m_Summary.idleLoading += (TimeAfterWait - Time);
 
 			ProcessCommands();
 			SignalFlushFinishedCond();
 
-			float fT = iTimer->GetAsyncTime().GetDifferenceInSeconds(TimeAfterWait);
+			CTimeValue fT = GTimer(d3d)->GetAsyncTime() - TimeAfterWait;
 			if (gRenDev->m_bStartLevelLoading)
 				SRenderStatistics::Write().m_Summary.busyLoading += fT;
 		}
@@ -661,7 +661,7 @@ void SRenderThread::Process()
 			SwitchMode(true);
 
 			{
-				CTimeValue lastTime = gEnv->pTimer->GetAsyncTime();
+				CTimeValue lastTime = GetGTimer()->GetAsyncTime();
 
 				// Enable v-sync for the loading screen to cap frame-rate
 				const int vSync = gcpRendD3D->m_VSync;
@@ -691,8 +691,8 @@ void SRenderThread::Process()
 #endif
 
 					frameId += 1;
-					CTimeValue curTime = gEnv->pTimer->GetAsyncTime();
-					float deltaTime = max((curTime - lastTime).GetSeconds(), 0.0f);
+					CTimeValue curTime = GetGTimer()->GetAsyncTime();
+					CTimeValue deltaTime = max(curTime - lastTime, CTimeValue(0));
 					lastTime = curTime;
 					gRenDev->m_DevBufMan.Update(frameId, true);
 
@@ -761,7 +761,7 @@ void SRenderThread::ProcessLoading()
 {
 	do
 	{
-		float fTime = iTimer->GetAsyncCurTime();
+		CTimeValue fTime = GTimer(d3d)->GetAsyncCurTime();
 
 		WaitFlushCond();
 
@@ -773,17 +773,17 @@ void SRenderThread::ProcessLoading()
 		}
 
 		{
-			float fTimeAfterWait = iTimer->GetAsyncCurTime();
+			CTimeValue fTimeAfterWait = GTimer(d3d)->GetAsyncCurTime();
 			if (gRenDev->m_bStartLevelLoading)
-				SRenderStatistics::Write().m_Summary.idleLoading += fTimeAfterWait - fTime;
+				SRenderStatistics::Write().m_Summary.idleLoading += (fTimeAfterWait - fTime);
 
 			// NOTE:
 			ProcessCommands();
 			SignalFlushFinishedCond();
 
-			float fTimeAfterProcess = iTimer->GetAsyncCurTime();
+			CTimeValue fTimeAfterProcess = GTimer(d3d)->GetAsyncCurTime();
 			if (gRenDev->m_bStartLevelLoading)
-				SRenderStatistics::Write().m_Summary.busyLoading += fTimeAfterProcess - fTimeAfterWait;
+				SRenderStatistics::Write().m_Summary.busyLoading += (fTimeAfterProcess - fTimeAfterWait);
 		}
 
 		if (m_eVideoThreadMode == eVTM_RequestStop)

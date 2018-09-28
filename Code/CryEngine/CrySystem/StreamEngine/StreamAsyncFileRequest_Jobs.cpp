@@ -251,11 +251,9 @@ void CAsyncIOFileRequest::DecompressBlockEntry(SStreamJobEngineState engineState
 		if (readStatus == Z_OK || readStatus == Z_STREAM_END)
 		{
 #if defined(STREAMENGINE_ENABLE_TIMING)
-			LARGE_INTEGER liEnd, liFreq;
+			LARGE_INTEGER liEnd;
 			QueryPerformanceCounter(&liEnd);
-			QueryPerformanceFrequency(&liFreq);
-
-			m_unzipTime += CTimeValue((int64)((liEnd.QuadPart - liStart.QuadPart) * CTimeValue::TIMEVALUE_PRECISION / liFreq.QuadPart));
+			m_unzipTime += GetGTimer()->TicksToTime(liEnd.QuadPart - liStart.QuadPart);
 #endif
 		}
 		else
@@ -390,11 +388,9 @@ void CAsyncIOFileRequest::DecryptBlockEntry(SStreamJobEngineState engineState, i
 		if (decryptOK)
 		{
 	#if defined(STREAMENGINE_ENABLE_TIMING)
-			LARGE_INTEGER liEnd, liFreq;
+			LARGE_INTEGER liEnd;
 			QueryPerformanceCounter(&liEnd);
-			QueryPerformanceFrequency(&liFreq);
-
-			m_decryptTime += CTimeValue((int64)((liEnd.QuadPart - liStart.QuadPart) * CTimeValue::TIMEVALUE_PRECISION / liFreq.QuadPart));
+			m_decryptTime += GetGTimer()->TicksToTime(liEnd.QuadPart - liStart.QuadPart);
 	#endif
 		}
 		else
@@ -588,7 +584,7 @@ void CAsyncIOFileRequest::JobFinalize_Decompress(CAsyncIOFileRequest_TransferPtr
 	pReq->JobFinalize_Buffer(engineState);
 
 #if defined(STREAMENGINE_ENABLE_STATS) && defined(STREAMENGINE_ENABLE_TIMING)
-	if (pReq->m_unzipTime.GetValue() != 0)
+	if (pReq->m_unzipTime.GetSeconds() != 0)
 	{
 		engineState.pDecompressStats->m_nTotalBytesUnziped += pReq->m_nFileSize;
 		engineState.pDecompressStats->m_totalUnzipTime += pReq->m_unzipTime;
@@ -618,7 +614,7 @@ void CAsyncIOFileRequest::JobFinalize_Decrypt(CAsyncIOFileRequest_TransferPtr& p
 	pReq->JobFinalize_Buffer(engineState);
 
 #if defined(STREAMENGINE_ENABLE_STATS) && defined(STREAMENGINE_ENABLE_TIMING)
-	if (pReq->m_decryptTime.GetValue() != 0)
+	if (pReq->m_decryptTime.GetSeconds() != 0)
 	{
 		engineState.pDecompressStats->m_nTotalBytesDecrypted += pReq->m_nFileSize;
 		engineState.pDecompressStats->m_totalDecryptTime += pReq->m_decryptTime;
@@ -669,7 +665,7 @@ void CAsyncIOFileRequest::JobFinalize_Validate(const SStreamJobEngineState& engi
 			if (m_crc32FromHeader != 0 && m_nPageReadStart == 0 && m_nRequestedSize == m_nFileSize)  //Compute the CRC32 if appropriate.
 			{
 #if defined(STREAMENGINE_ENABLE_TIMING)
-				LARGE_INTEGER liStart, liEnd, liFreq;
+				LARGE_INTEGER liStart, liEnd;
 				QueryPerformanceCounter(&liStart);
 #endif  //STREAMENGINE_ENABLE_TIMING
 
@@ -677,10 +673,7 @@ void CAsyncIOFileRequest::JobFinalize_Validate(const SStreamJobEngineState& engi
 
 #if defined(STREAMENGINE_ENABLE_TIMING)
 				QueryPerformanceCounter(&liEnd);
-				QueryPerformanceFrequency(&liFreq);
-
-				m_verifyTime += CTimeValue((int64)((liEnd.QuadPart - liStart.QuadPart) * CTimeValue::TIMEVALUE_PRECISION / liFreq.QuadPart));
-
+				m_verifyTime += GetGTimer()->TicksToTime(liEnd.QuadPart - liStart.QuadPart);
 	#if defined(STREAMENGINE_ENABLE_STATS)
 				engineState.pDecompressStats->m_nTotalBytesVerified += m_nFileSize;
 				engineState.pDecompressStats->m_totalVerifyTime += m_verifyTime;
@@ -713,7 +706,7 @@ void CAsyncIOFileRequest::JobFinalize_Transfer(CAsyncIOFileRequest_TransferPtr& 
 #endif
 
 #if defined(STREAMENGINE_ENABLE_TIMING)
-		pSelf->m_completionTime = gEnv->pTimer->GetAsyncTime();
+		pSelf->m_completionTime = GetGTimer()->GetAsyncTime();
 #endif
 
 		int nCallbackThreads = engineState.pReportQueues->size();

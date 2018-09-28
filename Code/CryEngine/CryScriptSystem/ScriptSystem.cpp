@@ -691,8 +691,8 @@ CScriptSystem::CScriptSystem()
 	, m_pPreCacheBufferTable(nullptr)
 	, m_pErrorHandlerFunc(nullptr)
 	, m_pSystem(nullptr)
-	, m_fGCFreq(10.0f)
-	, m_lastGCTime(0.0f)
+	, m_fGCFreq(10)
+	, m_lastGCTime(0)
 	, m_nLastGCCount(0)
 	, m_forceReloadCount(0)
 	, m_pScriptTimerMgr(nullptr)
@@ -1474,6 +1474,12 @@ void CScriptSystem::PushAny(const ScriptAnyValue& var)
 	case EScriptAnyType::Number:
 		lua_pushnumber(L, var.GetNumber());
 		break;
+	case EScriptAnyType::MPFloat:
+		lua_pushnumber(L, BADF var.GetMP());
+		break;
+	case EScriptAnyType::Time:
+		lua_pushnumber(L, var.GetTime().BADGetSeconds());
+		break;
 	case EScriptAnyType::String:
 		lua_pushstring(L, var.GetString());
 		break;
@@ -1494,8 +1500,7 @@ void CScriptSystem::PushAny(const ScriptAnyValue& var)
 		PushVec3(var.GetVector());
 		break;
 	default:
-		// Must handle everything.
-		assert(0);
+		assert(0 && "ScriptAnyValue failed to handle push.");
 	}
 }
 
@@ -2141,7 +2146,7 @@ void CScriptSystem::Update()
 	CRY_PROFILE_SECTION(PROFILE_SCRIPT, "ScriptSystem: Update");
 	MEMSTAT_FUNCTION_CONTEXT(EMemStatContextType::Other);
 	
-	ITimer* pTimer = gEnv->pTimer;
+	ITimer* pTimer = GetGTimer();
 	CTimeValue nCurTime = pTimer->GetFrameStartTime();
 
 	// Enable debugger if needed.
@@ -2151,8 +2156,8 @@ void CScriptSystem::Update()
 
 	// Might need to check for new lua code needing hooks
 
-	float currTime = pTimer->GetCurrTime();
-	float frameTime = pTimer->GetFrameTime();
+	CTimeValue currTime = pTimer->GetFrameStartTime();
+	CTimeValue frameTime = pTimer->GetFrameTime();
 
 	IScriptSystem* pScriptSystem = m_pSystem->GetIScriptSystem();
 
@@ -2206,11 +2211,11 @@ void CScriptSystem::Update()
 		//TRACE("--[after coll]GC DELTA %d [time =%f]",m_pScriptSystem->GetCGCount()-nStartGC,fTimeAfter-fTimeBefore);
 	}
 
-	m_pScriptTimerMgr->Update(nCurTime.GetMilliSecondsAsInt64());
+	m_pScriptTimerMgr->Update(nCurTime);
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CScriptSystem::SetGCFrequency(const float fRate)
+void CScriptSystem::SetGCFrequency(const CTimeValue& fRate)
 {
 	if (fRate >= 0)
 		m_fGCFreq = fRate;

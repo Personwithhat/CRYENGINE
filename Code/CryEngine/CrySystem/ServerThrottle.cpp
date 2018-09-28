@@ -28,8 +28,8 @@ public:
 
 	float* Update()
 	{
-		CTimeValue frameTime = gEnv->pTimer->GetFrameStartTime();
-		if (frameTime - m_lastUpdate > 5.0f)
+		CTimeValue frameTime = GetGTimer()->GetFrameStartTime();
+		if ((frameTime - m_lastUpdate).GetSeconds() > 5)
 		{
 			m_lastUpdate = frameTime;
 

@@ -43,7 +43,7 @@ public:
 
 	virtual void OnSingleTestStart(const CryTest::STestInfo& testInfo) override;
 
-	virtual void OnSingleTestFinish(const CryTest::STestInfo& testInfo, float fRunTimeInMs, bool bSuccess, const std::vector<CryTest::SError>& failures) override;
+	virtual void OnSingleTestFinish(const CryTest::STestInfo& testInfo, const CTimeValue& fRunTime, bool bSuccess, const std::vector<CryTest::SError>& failures) override;
 
 	virtual void SaveTemporaryReport() override
 	{
@@ -120,7 +120,7 @@ public:
 
 	void OnStart();
 
-	void OnFinish(bool success, float durationMs, const std::vector<CryTest::SError>& failures);
+	void OnFinish(bool success, const CTimeValue& duration, const std::vector<CryTest::SError>& failures);
 
 private:
 
@@ -128,7 +128,7 @@ private:
 	CCryTestRunnerSystem&  m_system;
 	CryTest::CTestFactory* m_pFactory;
 	ECryTestState          m_result = ECryTestState::NotRun;
-	float                  m_duration = 0;
+	CTimeValue             m_duration = 0;
 	QString                m_message;
 	int                    m_index = -1;
 };
@@ -198,7 +198,7 @@ public:
 
 	void OnSingleTestStart(const CryTest::STestInfo& testInfo);
 
-	void OnSingleTestFinish(const CryTest::STestInfo& testInfo, float fRunTimeInMs, bool bSuccess, const std::vector<CryTest::SError>& failures);
+	void OnSingleTestFinish(const CryTest::STestInfo& testInfo, const CTimeValue& fRunTime, bool bSuccess, const std::vector<CryTest::SError>& failures);
 
 	CCryTestEntry* GetTestFromTestInfo(const CryTest::STestInfo& info);
 private:

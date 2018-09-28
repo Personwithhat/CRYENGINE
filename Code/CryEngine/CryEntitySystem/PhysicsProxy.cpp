@@ -472,7 +472,7 @@ void CEntityPhysics::OnTimer(int id)
 			return;
 		}
 		// Re-create timer, re-use same id
-		GetEntity()->SetTimer(this, GetEntity()->GetId(), CryGUID(), 0, 200);
+		GetEntity()->SetTimer(this, GetEntity()->GetId(), CryGUID(), 0, "0.2");
 	}
 }
 

@@ -203,7 +203,7 @@ void CVehiclePartEntity::Reset()
 }
 
 //------------------------------------------------------------------------
-void CVehiclePartEntity::Update(const float frameTime)
+void CVehiclePartEntity::Update(const CTimeValue& frameTime)
 {
 	CVehiclePartBase::Update(frameTime);
 

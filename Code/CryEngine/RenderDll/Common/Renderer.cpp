@@ -205,7 +205,7 @@ void CRenderer::InitRenderer()
 	//init_math();
 
 	m_bPauseTimer = 0;
-	m_fPrevTime   = -1.0f;
+	m_fPrevTime.SetSeconds(-1);
 
 	//  m_RP.m_ShaderCurrTime = 0.0f;
 
@@ -289,7 +289,7 @@ void CRenderer::InitRenderer()
 
 	SRenderStatistics::s_pCurrentOutput = &m_frameRenderStats[0];
 	SRenderStatistics::s_pPreviousOutput = &m_frameRenderStats[1];
-	memset(SRenderStatistics::s_pCurrentOutput, 0, sizeof(m_frameRenderStats));
+	for (int i = 0; i< RT_COMMAND_BUF_COUNT; i++) { m_frameRenderStats[i] = SRenderStatistics{}; }
 }
 
 CRenderer::~CRenderer()
@@ -1086,7 +1086,7 @@ void CRenderer::FreeSystemResources(int nFlags)
 	CRY_ASSERT((nFlags & FRR_TEXTURES) == 0 || ((nFlags & requiredForTextures) == requiredForTextures));
 #endif
 
-	CTimeValue tBegin = gEnv->pTimer->GetAsyncTime();
+	CTimeValue tBegin = GetGTimer()->GetAsyncTime();
 
 	StopLoadtimeFlashPlayback();
 
@@ -1165,8 +1165,8 @@ void CRenderer::FreeSystemResources(int nFlags)
 		CRenderElement::ShutDown();
 	}
 
-	CTimeValue tDeltaTime = gEnv->pTimer->GetAsyncTime() - tBegin;
-	iLog->Log("*** Clearing render resources took %.1f msec ***", tDeltaTime.GetMilliSeconds());
+	CTimeValue tDeltaTime = GetGTimer()->GetAsyncTime() - tBegin;
+	iLog->Log("*** Clearing render resources took %.1f msec ***", (float)tDeltaTime.GetMilliSeconds());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1892,7 +1892,7 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl) const
 	if (!dl)
 		return false;
 
-	float fTime = iTimer->GetCurrTime() * dl->GetAnimSpeed();
+	CTimeValue fTime = GTimer(d3d)->GetFrameStartTime() * dl->GetAnimSpeed();
 
 	const uint32 nStyle = dl->m_nLightStyle;
 
@@ -1920,14 +1920,14 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl) const
 		IAnimTrack* pSpecMultTrack = pLightAnimNode->GetTrackForParameter(eAnimParamType_LightSpecularMult);
 		IAnimTrack* pHDRDynamicTrack = pLightAnimNode->GetTrackForParameter(eAnimParamType_LightHDRDynamic);
 
-		float time = (dl->m_Flags & DLF_TRACKVIEW_TIMESCRUBBING) ? dl->m_fTimeScrubbed : fTime;
-		float phase = static_cast<float>(dl->m_nLightPhase) / 100.0f;
+		CTimeValue time = (dl->m_Flags & DLF_TRACKVIEW_TIMESCRUBBING) ? dl->m_fTimeScrubbed : fTime;
+		mpfloat phase = mpfloat(dl->m_nLightPhase) / 100;
 
 		if (pPosTrack && pPosTrack->GetNumKeys() > 0 &&
 		    !(pPosTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
-			float duration = max(pPosTrack->GetKeyTime(pPosTrack->GetNumKeys() - 1).ToFloat(), 0.001f);
-			float timeNormalized = static_cast<float>(fmod(time + phase * duration, duration));
+			CTimeValue duration = max(pPosTrack->GetKeyTime(pPosTrack->GetNumKeys() - 1), CTimeValue("0.001"));
+			CTimeValue timeNormalized = (time + phase * duration) % duration; // PERSONAL CRYTEK: This is not normalized time, plus all the ones below.
 			Vec3 vOffset = stl::get<Vec3>(pPosTrack->GetValue(timeNormalized));
 			dl->m_Origin = dl->m_BaseOrigin + vOffset;
 		}
@@ -1935,8 +1935,8 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl) const
 		if (pRotTrack && pRotTrack->GetNumKeys() > 0 &&
 		    !(pRotTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
-			float duration = max(pRotTrack->GetKeyTime(pRotTrack->GetNumKeys() - 1).ToFloat(), 0.001f);
-			float timeNormalized = static_cast<float>(fmod(time + phase * duration, duration));
+			CTimeValue duration = max(pRotTrack->GetKeyTime(pRotTrack->GetNumKeys() - 1), CTimeValue("0.001"));
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			Vec3 vRot = stl::get<Vec3>(pRotTrack->GetValue(timeNormalized));
 			static_cast<SRenderLight*>(dl)->SetMatrix(
 				dl->m_BaseObjMatrix * Matrix34::CreateRotationXYZ(Ang3(DEG2RAD(vRot.x), DEG2RAD(vRot.y), DEG2RAD(vRot.z))),
@@ -1946,8 +1946,8 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl) const
 		if (pColorTrack && pColorTrack->GetNumKeys() > 0 &&
 		    !(pColorTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
-			float duration = max(pColorTrack->GetKeyTime(pColorTrack->GetNumKeys() - 1).ToFloat(), 0.001f);
-			float timeNormalized = static_cast<float>(fmod(time + phase * duration, duration));
+			CTimeValue duration = max(pColorTrack->GetKeyTime(pColorTrack->GetNumKeys() - 1), CTimeValue("0.001"));
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			Vec3 vColor = stl::get<Vec3>(pColorTrack->GetValue(timeNormalized));
 			dl->m_Color = ColorF(vColor.x / 255.0f, vColor.y / 255.0f, vColor.z / 255.0f);
 		}
@@ -1959,8 +1959,8 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl) const
 		if (pDiffMultTrack && pDiffMultTrack->GetNumKeys() > 0 &&
 		    !(pDiffMultTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
-			float duration = max(pDiffMultTrack->GetKeyTime(pDiffMultTrack->GetNumKeys() - 1).ToFloat(), 0.001f);
-			float timeNormalized = static_cast<float>(fmod(time + phase * duration, duration));
+			CTimeValue duration = max(pDiffMultTrack->GetKeyTime(pDiffMultTrack->GetNumKeys() - 1), CTimeValue("0.001"));
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			float diffMult = stl::get<float>(pDiffMultTrack->GetValue(timeNormalized));
 			dl->m_Color = dl->m_BaseColor * diffMult;
 		}
@@ -1968,8 +1968,8 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl) const
 		if (pRadiusTrack && pRadiusTrack->GetNumKeys() > 0 &&
 		    !(pRadiusTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
-			float duration = max(pRadiusTrack->GetKeyTime(pRadiusTrack->GetNumKeys() - 1).ToFloat(), 0.001f);
-			float timeNormalized = static_cast<float>(fmod(time + phase * duration, duration));
+			CTimeValue duration = max(pRadiusTrack->GetKeyTime(pRadiusTrack->GetNumKeys() - 1), CTimeValue("0.001"));
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			float radius = stl::get<float>(pRadiusTrack->GetValue(timeNormalized));
 			dl->SetRadius(radius);
 		}
@@ -1977,8 +1977,8 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl) const
 		if (pSpecMultTrack && pSpecMultTrack->GetNumKeys() > 0 &&
 		    !(pSpecMultTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
-			float duration = max(pSpecMultTrack->GetKeyTime(pSpecMultTrack->GetNumKeys() - 1).ToFloat(), 0.001f);
-			float timeNormalized = static_cast<float>(fmod(time + phase * duration, duration));
+			CTimeValue duration = max(pSpecMultTrack->GetKeyTime(pSpecMultTrack->GetNumKeys() - 1), CTimeValue("0.001"));
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			float specMult = stl::get<float>(pSpecMultTrack->GetValue(timeNormalized));
 			dl->m_SpecMult = specMult;
 		}
@@ -1986,8 +1986,8 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl) const
 		if (pHDRDynamicTrack && pHDRDynamicTrack->GetNumKeys() > 0 &&
 		    !(pHDRDynamicTrack->GetFlags() & IAnimTrack::eAnimTrackFlags_Disabled))
 		{
-			float duration = max(pHDRDynamicTrack->GetKeyTime(pHDRDynamicTrack->GetNumKeys() - 1).ToFloat(), 0.001f);
-			float timeNormalized = static_cast<float>(fmod(time + phase * duration, duration));
+			CTimeValue duration = max(pHDRDynamicTrack->GetKeyTime(pHDRDynamicTrack->GetNumKeys() - 1), CTimeValue("0.001"));
+			CTimeValue timeNormalized = (time + phase * duration) % duration;
 			float hdrDynamic = stl::get<float>(pHDRDynamicTrack->GetValue(timeNormalized));
 			dl->m_fHDRDynamic = hdrDynamic;
 		}
@@ -2000,7 +2000,7 @@ bool CRenderer::EF_UpdateDLight(SRenderLight* dl) const
 
 		// Add user light phase
 		float fPhaseFromID = ((float)dl->m_nLightPhase) * fRecipMaxInt8;
-		fTime += (fPhaseFromID - floorf(fPhaseFromID)) * ls->m_TimeIncr;
+		fTime += BADTIME(fPhaseFromID - floorf(fPhaseFromID)) * ls->m_TimeIncr;
 
 		ls->mfUpdate(fTime);
 
@@ -2470,7 +2470,7 @@ void CRenderer::EF_QueryImpl(ERenderQueryTypes eQuery, void* pInOut0, uint32 nIn
 				stats->bPoolOverflowTotally = CTexture::s_bOutOfMemoryTotally;
 				CTexture::s_bOutOfMemoryTotally = false;
 				stats->nMaxPoolSize = CRenderer::GetTexturesStreamPoolSize() * 1024 * 1024;
-				stats->nThroughput = (CTexture::s_nStreamingTotalTime > 0.f) ? size_t((double)CTexture::s_nStreamingThroughput / CTexture::s_nStreamingTotalTime) : 0;
+				stats->nThroughput = (CTexture::s_nStreamingTotalTime > 0) ? size_t(CTexture::s_nStreamingThroughput / CTexture::s_nStreamingTotalTime) : 0;
 
 #ifndef _RELEASE
 				stats->nNumTexturesPerFrame = m_frameRenderStats[m_nProcessThreadID].m_NumTextures;
@@ -2526,7 +2526,7 @@ void CRenderer::EF_QueryImpl(ERenderQueryTypes eQuery, void* pInOut0, uint32 nIn
 			}
 
 			if (pInOut1)
-				WriteQueryResult(pInOut1, nInOutSize1, static_cast<bool>(CTexture::s_nStreamingTotalTime > 0.f && stats != NULL));
+				WriteQueryResult(pInOut1, nInOutSize1, static_cast<bool>(CTexture::s_nStreamingTotalTime > 0 && stats != NULL));
 		}
 		break;
 
@@ -2829,7 +2829,7 @@ void CRenderer::SetTextureAlphaChannelFromRGB(byte* pMemBuffer, int nTexSize)
 
 //=============================================================================
 // Precaching
-void CRenderer::PrecacheTexture(ITexture* pTP, float fMipFactor, float fTimeToReady, int Flags, int nUpdateId)
+void CRenderer::PrecacheTexture(ITexture* pTP, float fMipFactor, const CTimeValue& fTimeToReady, int Flags, int nUpdateId)
 {
 	if (!CRenderer::CV_r_texturesstreaming)
 		return;
@@ -2840,14 +2840,14 @@ void CRenderer::PrecacheTexture(ITexture* pTP, float fMipFactor, float fTimeToRe
 	pTexture->PrecacheAsynchronously(fMipFactor, Flags, nUpdateId);
 }
 
-bool CRenderer::EF_PrecacheResource(ITexture* pTP, float fMipFactor, float fTimeToReady, int Flags, int nUpdateId)
+bool CRenderer::EF_PrecacheResource(ITexture* pTP, float fMipFactor, const CTimeValue& fTimeToReady, int Flags, int nUpdateId)
 {
 	m_pRT->RC_PrecacheResource(pTP, fMipFactor, fTimeToReady, Flags, nUpdateId);
 
 	return true;
 }
 
-bool CRenderer::EF_PrecacheResource(SRenderLight* pLS, float fMipFactor, float fTimeToReady, int Flags, int nUpdateId)
+bool CRenderer::EF_PrecacheResource(SRenderLight* pLS, float fMipFactor, const CTimeValue& fTimeToReady, int Flags, int nUpdateId)
 {
 	CRY_ASSERT_MESSAGE(pLS, "Invalid parameter given to EF_PrecacheResource");
 	ITexture* pLightTexture = pLS->m_pLightImage ? pLS->m_pLightImage : pLS->m_pLightDynTexSource ? pLS->m_pLightDynTexSource->GetTexture() : NULL;
@@ -2862,7 +2862,7 @@ bool CRenderer::EF_PrecacheResource(SRenderLight* pLS, float fMipFactor, float f
 	return true;
 }
 
-bool CRenderer::EF_PrecacheResource(IRenderShaderResources* pShaderResources, float fMipFactorSI, float fTimeToReady, int nFlags, int nUpdateId)
+bool CRenderer::EF_PrecacheResource(IRenderShaderResources* pShaderResources, float fMipFactorSI, const CTimeValue& fTimeToReady, int nFlags, int nUpdateId)
 {
 	CRY_ASSERT_MESSAGE(pShaderResources, "Invalid parameter given to EF_PrecacheResource");
 	CShaderResources* pSR = (CShaderResources*)pShaderResources;
@@ -2906,7 +2906,7 @@ bool CRenderer::EF_PrecacheResource(IRenderShaderResources* pShaderResources, fl
 	return true;
 }
 
-bool CRenderer::EF_PrecacheResource(IRenderShaderResources* pShaderResources, int iScreenTexels, float fTimeToReady, int Flags, int nUpdateId)
+bool CRenderer::EF_PrecacheResource(IRenderShaderResources* pShaderResources, int iScreenTexels, const CTimeValue& fTimeToReady, int Flags, int nUpdateId)
 {
 	CRY_ASSERT_MESSAGE(pShaderResources, "Invalid parameter given to EF_PrecacheResource");
 	CShaderResources* pSR = (CShaderResources*)pShaderResources;
@@ -2951,14 +2951,14 @@ bool CRenderer::EF_PrecacheResource(IRenderShaderResources* pShaderResources, in
 			float currentMipFactor = expf((maxMipMap - minMipMap) * 2.0f * 0.69314718055994530941723212145818f /*M_LN2*/);
 			float fMipFactor = currentMipFactor / gRenDev->GetMipDistFactor(pTexture->GetHeight(), pTexture->GetWidth());
 
-			CRenderer::EF_PrecacheResource(pTexture, fMipFactor, 0.f, Flags, nUpdateId);
+			CRenderer::EF_PrecacheResource(pTexture, fMipFactor, 0, Flags, nUpdateId);
 		}
 	}
 
 	return true;
 }
 
-bool CRenderer::EF_PrecacheResource(SShaderItem* pSI, float fMipFactorSI, float fTimeToReady, int Flags, int nUpdateId)
+bool CRenderer::EF_PrecacheResource(SShaderItem* pSI, float fMipFactorSI, const CTimeValue& fTimeToReady, int Flags, int nUpdateId)
 {
 	CRY_ASSERT_MESSAGE(pSI, "Invalid parameter given to EF_PrecacheResource");
 	CShader* pSH = (CShader*)pSI->m_pShader;
@@ -2972,7 +2972,7 @@ bool CRenderer::EF_PrecacheResource(SShaderItem* pSI, float fMipFactorSI, float 
 	return true;
 }
 
-bool CRenderer::EF_PrecacheResource(SShaderItem* pSI, int iScreenTexels, float fTimeToReady, int Flags, int nUpdateId)
+bool CRenderer::EF_PrecacheResource(SShaderItem* pSI, int iScreenTexels, const CTimeValue& fTimeToReady, int Flags, int nUpdateId)
 {
 	CRY_ASSERT_MESSAGE(pSI, "Invalid parameter given to EF_PrecacheResource");
 	CShader* pSH = (CShader*)pSI->m_pShader;
@@ -2986,12 +2986,12 @@ bool CRenderer::EF_PrecacheResource(SShaderItem* pSI, int iScreenTexels, float f
 	return true;
 }
 
-bool CRenderer::EF_PrecacheResource(IShader* pSH, float fMipFactor, float fTimeToReady, int Flags, int nUpdateId)
+bool CRenderer::EF_PrecacheResource(IShader* pSH, float fMipFactor, const CTimeValue& fTimeToReady, int Flags, int nUpdateId)
 {
 	return true;
 }
 
-bool CRenderer::EF_PrecacheResource(IRenderMesh* _pPB, IMaterial* pMaterial, float fMipFactor, float fTimeToReady, int nFlags, int nUpdateId)
+bool CRenderer::EF_PrecacheResource(IRenderMesh* _pPB, IMaterial* pMaterial, float fMipFactor, const CTimeValue& fTimeToReady, int nFlags, int nUpdateId)
 {
 	CRY_ASSERT_MESSAGE(_pPB && pMaterial, "Invalid parameter given to EF_PrecacheResource");
 	CRenderMesh* pPB = (CRenderMesh*)_pPB;
@@ -3645,8 +3645,8 @@ void CRenderer::PostLevelLoading()
 		m_bStartLevelLoading = false;
 		if (m_pRT->IsMultithreaded())
 		{
-			iLog->Log("-- Render thread was idle during level loading: %.3f secs", SRenderStatistics::Write().m_Summary.idleLoading);
-			iLog->Log("-- Render thread was busy during level loading: %.3f secs", SRenderStatistics::Write().m_Summary.busyLoading);
+			iLog->Log("-- Render thread was idle during level loading: %.3f secs", (float)SRenderStatistics::Write().m_Summary.idleLoading.GetSeconds());
+			iLog->Log("-- Render thread was busy during level loading: %.3f secs", (float)SRenderStatistics::Write().m_Summary.busyLoading.GetSeconds());
 		}
 
 		m_cEF.mfSortResources();
@@ -3762,9 +3762,9 @@ bool CRenderer::IsDebugRenderNode(IRenderNode* pRenderNode) const
 void SRenderStatistics::Begin(const SRenderStatistics* prevData)
 {
 #if defined(_DEBUG)
-	memcpy(this, prevData, sizeof(SRenderStatistics));
+	*this = *prevData;
 #else
-	memset(this, 0, sizeof(SRenderStatistics));
+	*this = SRenderStatistics{};
 #endif
 }
 
@@ -3772,7 +3772,7 @@ void SRenderStatistics::Finish()
 {
 	// Finish filling the current frame's global timings
 	{
-		m_Summary.frameTime = iTimer->GetRealFrameTime();
+		m_Summary.frameTime = GTimer(d3d)->GetRealFrameTime();
 		m_Summary.renderTime += m_Summary.miscTime;
 		m_Summary.renderTime += m_Summary.flashTime;
 
@@ -4306,12 +4306,12 @@ void CRenderer::GetMemoryUsage(ICrySizer* pSizer)
 }
 
 // retrieves the bandwidth calculations for the audio streaming
-void CRenderer::GetBandwidthStats(float* fBandwidthRequested)
+void CRenderer::GetBandwidthStats(rTime* fBandwidthRequested)
 {
 #if !defined (_RELEASE) || defined(ENABLE_STATOSCOPE_RELEASE)
 	if (fBandwidthRequested)
 	{
-		*fBandwidthRequested = (CTexture::s_nBytesSubmittedToStreaming) / 1024.0f;
+		*fBandwidthRequested = (CTexture::s_nBytesSubmittedToStreaming) / 1024;
 	}
 #endif
 }
@@ -4337,13 +4337,13 @@ void CRenderer::RemoveAsyncTextureCompileListener(IAsyncTextureCompileListener* 
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-float CRenderer::GetGPUFrameTime()
+CTimeValue CRenderer::GetGPUFrameTime()
 {
 	const SRenderStatistics::SFrameSummary& rtSummary = SRenderStatistics::Read().m_Summary;
 
 	float fGPUidle = rtSummary.gpuIdlePerc * 0.01f;     // normalise %
 	float fGPUload = 1.0f - fGPUidle;                   // normalised non-idle time
-	float fGPUtime = rtSummary.gpuFrameTime * fGPUload; // GPU time in seconds
+	CTimeValue fGPUtime = rtSummary.gpuFrameTime * BADMP(fGPUload); // GPU time in seconds
 	return fGPUtime;
 }
 
@@ -4890,7 +4890,7 @@ void CRenderer::SyncMainWithRender()
 
 	// Update timing of the graphics pipeline
 	{
-		CTimeValue time = gEnv->pTimer->GetFrameStartTime(ITimer::ETIMER_UI);
+		CTimeValue time = GetGTimer()->GetFrameStartTime(ITimer::ETIMER_UI);
 		SetFrameSyncTime(time);
 		if (!m_bPauseTimer)
 		{
@@ -5077,12 +5077,12 @@ void CRenderer::EnableBatchMode(bool enable)
 	}
 }
 
-bool CRenderer::StopRendererAtFrameEnd(uint timeoutMilliseconds)
+bool CRenderer::StopRendererAtFrameEnd(const CTimeValue& timeout)
 {
 	m_mtxStopAtRenderFrameEnd.Lock();
 	m_bStopRendererAtFrameEnd = true;
 
-	if (!m_condStopAtRenderFrameEnd.TimedWait(m_mtxStopAtRenderFrameEnd, timeoutMilliseconds))
+	if (!m_condStopAtRenderFrameEnd.TimedWait(m_mtxStopAtRenderFrameEnd, (uint)timeout.GetMilliSeconds()))
 	{
 		m_mtxStopAtRenderFrameEnd.Unlock();
 		return false;

@@ -46,16 +46,16 @@ namespace Cry
 				void	                    AddCone(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color) const;
 				void	                    AddCylinder(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color) const;
 
-				void	                    AddSphereWithDebugDrawDuration(const Vec3& pos, float radius, const ColorF& color, const float duration) const;
-				void	                    AddLineWithDebugDrawDuration(const Vec3& pos1, const Vec3& pos2, const ColorF& color, const float duration) const;
-				void	                    AddTriangleWithDebugDrawDuration(const Vec3& vtx1, const Vec3& vtx2, const Vec3& vtx3, const ColorF& color, const float duration) const;
-				void	                    AddTextWithDebugDrawDuration(const Vec3& pos, float size, const ColorF& color, const float duration, const char* szFormat, ...) const PRINTF_PARAMS(6, 7);
-				void	                    AddArrowWithDebugDrawDuration(const Vec3& from, const Vec3& to, float coneRadius, float coneHeight, const ColorF& color, const float duration) const;
-				void	                    AddAxesWithDebugDrawDuration(const Vec3& pos, const Matrix33& axes, const float duration) const;
-				void	                    AddAABBWithDebugDrawDuration(const AABB& aabb, const ColorF& color, const float duration) const;
-				void	                    AddOBBWithDebugDrawDuration(const OBB& obb, const Vec3& pos, const ColorF& color, const float duration) const;
-				void	                    AddConeWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const float duration) const;
-				void	                    AddCylinderWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const float duration) const;
+				void	                    AddSphereWithDebugDrawDuration(const Vec3& pos, float radius, const ColorF& color, const CTimeValue& duration) const;
+				void	                    AddLineWithDebugDrawDuration(const Vec3& pos1, const Vec3& pos2, const ColorF& color, const CTimeValue& duration) const;
+				void	                    AddTriangleWithDebugDrawDuration(const Vec3& vtx1, const Vec3& vtx2, const Vec3& vtx3, const ColorF& color, const CTimeValue& duration) const;
+				void	                    AddTextWithDebugDrawDuration(const Vec3& pos, float size, const ColorF& color, const CTimeValue& duration, const char* szFormat, ...) const PRINTF_PARAMS(6, 7);
+				void	                    AddArrowWithDebugDrawDuration(const Vec3& from, const Vec3& to, float coneRadius, float coneHeight, const ColorF& color, const CTimeValue& duration) const;
+				void	                    AddAxesWithDebugDrawDuration(const Vec3& pos, const Matrix33& axes, const CTimeValue& duration) const;
+				void	                    AddAABBWithDebugDrawDuration(const AABB& aabb, const ColorF& color, const CTimeValue& duration) const;
+				void	                    AddOBBWithDebugDrawDuration(const OBB& obb, const Vec3& pos, const ColorF& color, const CTimeValue& duration) const;
+				void	                    AddConeWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const CTimeValue& duration) const;
+				void	                    AddCylinderWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const CTimeValue& duration) const;
 
 				// these forward to the INode's ILogMessageCollection
 				void                        LogInformation(const char* szFormat, ...) const PRINTF_PARAMS(2, 3);
@@ -169,25 +169,25 @@ namespace Cry
 			m_pNode->GetRenderPrimitiveCollection().AddCylinder(pos, dir, radius, height, color);
 		}
 
-		inline void CScopeBase::CDebugElementsAdapter::AddSphereWithDebugDrawDuration(const Vec3& pos, float radius, const ColorF& color, const float duration) const
+		inline void CScopeBase::CDebugElementsAdapter::AddSphereWithDebugDrawDuration(const Vec3& pos, float radius, const ColorF& color, const CTimeValue& duration) const
 		{
 			CRY_ASSERT(m_pNode);
 			m_pNode->GetRenderPrimitiveCollection().AddSphereWithDebugDrawDuration(pos, radius, color, duration);
 		}
 
-		inline void CScopeBase::CDebugElementsAdapter::AddLineWithDebugDrawDuration(const Vec3& pos1, const Vec3& pos2, const ColorF& color, const float duration) const
+		inline void CScopeBase::CDebugElementsAdapter::AddLineWithDebugDrawDuration(const Vec3& pos1, const Vec3& pos2, const ColorF& color, const CTimeValue& duration) const
 		{
 			CRY_ASSERT(m_pNode);
 			m_pNode->GetRenderPrimitiveCollection().AddLineWithDebugDrawDuration(pos1, pos2, color, duration);
 		}
 
-		inline void CScopeBase::CDebugElementsAdapter::AddTriangleWithDebugDrawDuration(const Vec3& vtx1, const Vec3& vtx2, const Vec3& vtx3, const ColorF& color, const float duration) const
+		inline void CScopeBase::CDebugElementsAdapter::AddTriangleWithDebugDrawDuration(const Vec3& vtx1, const Vec3& vtx2, const Vec3& vtx3, const ColorF& color, const CTimeValue& duration) const
 		{
 			CRY_ASSERT(m_pNode);
 			m_pNode->GetRenderPrimitiveCollection().AddTriangleWithDebugDrawDuration(vtx1, vtx2, vtx3, color, duration);
 		}
 
-		inline void CScopeBase::CDebugElementsAdapter::AddTextWithDebugDrawDuration(const Vec3& pos, float size, const ColorF& color, const float duration, const char* szFormat, ...) const
+		inline void CScopeBase::CDebugElementsAdapter::AddTextWithDebugDrawDuration(const Vec3& pos, float size, const ColorF& color, const CTimeValue& duration, const char* szFormat, ...) const
 		{
 			CRY_ASSERT(m_pNode);
 			stack_string text;
@@ -198,37 +198,37 @@ namespace Cry
 			m_pNode->GetRenderPrimitiveCollection().AddTextWithDebugDrawDuration(pos, size, color, duration, "%s", text.c_str());
 		}
 
-		inline void CScopeBase::CDebugElementsAdapter::AddArrowWithDebugDrawDuration(const Vec3& from, const Vec3& to, float coneRadius, float coneHeight, const ColorF& color, const float duration) const
+		inline void CScopeBase::CDebugElementsAdapter::AddArrowWithDebugDrawDuration(const Vec3& from, const Vec3& to, float coneRadius, float coneHeight, const ColorF& color, const CTimeValue& duration) const
 		{
 			CRY_ASSERT(m_pNode);
 			m_pNode->GetRenderPrimitiveCollection().AddArrowWithDebugDrawDuration(from, to, coneRadius, coneHeight, color, duration);
 		}
 
-		inline void CScopeBase::CDebugElementsAdapter::AddAxesWithDebugDrawDuration(const Vec3& pos, const Matrix33& axes, const float duration) const
+		inline void CScopeBase::CDebugElementsAdapter::AddAxesWithDebugDrawDuration(const Vec3& pos, const Matrix33& axes, const CTimeValue& duration) const
 		{
 			CRY_ASSERT(m_pNode);
 			m_pNode->GetRenderPrimitiveCollection().AddAxesWithDebugDrawDuration(pos, axes, duration);
 		}
 
-		inline void CScopeBase::CDebugElementsAdapter::AddAABBWithDebugDrawDuration(const AABB& aabb, const ColorF& color, const float duration) const
+		inline void CScopeBase::CDebugElementsAdapter::AddAABBWithDebugDrawDuration(const AABB& aabb, const ColorF& color, const CTimeValue& duration) const
 		{
 			CRY_ASSERT(m_pNode);
 			m_pNode->GetRenderPrimitiveCollection().AddAABBWithDebugDrawDuration(aabb, color, duration);
 		}
 
-		inline void CScopeBase::CDebugElementsAdapter::AddOBBWithDebugDrawDuration(const OBB& obb, const Vec3& pos, const ColorF& color, const float duration) const
+		inline void CScopeBase::CDebugElementsAdapter::AddOBBWithDebugDrawDuration(const OBB& obb, const Vec3& pos, const ColorF& color, const CTimeValue& duration) const
 		{
 			CRY_ASSERT(m_pNode);
 			m_pNode->GetRenderPrimitiveCollection().AddOBBWithDebugDrawDuration(obb, pos, color, duration);
 		}
 
-		inline void CScopeBase::CDebugElementsAdapter::AddConeWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const float duration) const
+		inline void CScopeBase::CDebugElementsAdapter::AddConeWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const CTimeValue& duration) const
 		{
 			CRY_ASSERT(m_pNode);
 			m_pNode->GetRenderPrimitiveCollection().AddConeWithDebugDrawDuration(pos, dir, radius, height, color, duration);
 		}
 
-		inline void CScopeBase::CDebugElementsAdapter::AddCylinderWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const float duration) const
+		inline void CScopeBase::CDebugElementsAdapter::AddCylinderWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const CTimeValue& duration) const
 		{
 			CRY_ASSERT(m_pNode);
 			m_pNode->GetRenderPrimitiveCollection().AddCylinderWithDebugDrawDuration(pos, dir, radius, height, color, duration);

@@ -476,7 +476,7 @@ void CTestSystem::FinishTest()
 
 	std::chrono::duration<float, std::milli> runTime = m_currentTestInstance->GetCurrentTestElapsed();
 	if (auto pReporter = m_pReporter.lock())
-		pReporter->OnSingleTestFinish(m_currentTestInstance->GetTestInfo(), runTime.count(), !failed, m_currentTestInstance->GetFailures());
+		pReporter->OnSingleTestFinish(m_currentTestInstance->GetTestInfo(), BADTIME(runTime.count())/1000, !failed, m_currentTestInstance->GetFailures());
 	m_currentTestInstance.reset();
 }
 
@@ -517,7 +517,7 @@ void CTestSystem::ThreadEntry()
 			ReportNonCriticalError("Time out", "", 0);
 			std::chrono::duration<float, std::milli> runTime = m_currentTestInstance->GetCurrentTestElapsed();
 			if (auto pReporter = m_pReporter.lock())
-				pReporter->OnSingleTestFinish(m_currentTestInstance->GetTestInfo(), runTime.count(), false, m_currentTestInstance->GetFailures());
+				pReporter->OnSingleTestFinish(m_currentTestInstance->GetTestInfo(), BADTIME(runTime.count())/1000, false, m_currentTestInstance->GetFailures());
 
 			SignalStopWork();
 			gEnv->pSystem->Quit();

@@ -147,7 +147,7 @@ private: // -------------------------------------------------------------------
 	bool                            m_bIsPostSystemInit = false;
 
 	ISystem*                  m_pSystem;
-	float                     m_fLastLoadingUpdateTime; // for non-frequent streamingEngine update
+	CTimeValue                m_fLastLoadingUpdateTime; // for non-frequent streamingEngine update
 	string                    m_filename;               // Contains only the file name and the extension
 	string                    m_filePath;               // Contains the full absolute path to the log file
 	string                    m_backupFilePath;         // Contains the full absolute path to the backup log file
@@ -183,12 +183,12 @@ private: // -------------------------------------------------------------------
 		LogStringType str;
 		const char*   ptr;
 		ELogType      type;
-		float         time;
+		CTimeValue    time;
 
 		SLogHistoryItem()
 			: ptr(nullptr)
 			, type(eMessage)
-			, time(0.0f) {}
+			, time(0) {}
 	};
 	SLogHistoryItem m_history[16];
 	int             m_iLastHistoryItem = 0;

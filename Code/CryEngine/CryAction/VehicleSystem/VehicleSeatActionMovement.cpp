@@ -20,7 +20,7 @@
 
 //------------------------------------------------------------------------
 CVehicleSeatActionMovement::CVehicleSeatActionMovement()
-	: m_delayedStop(0.0f),
+	: m_delayedStop(0),
 	m_actionForward(0.0f),
 	m_pVehicle(NULL),
 	m_pSeat(NULL)
@@ -59,7 +59,7 @@ void CVehicleSeatActionMovement::Reset()
 	m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_NoUpdate);
 
 	m_actionForward = 0.0f;
-	m_delayedStop = 0.0f;
+	m_delayedStop.SetSeconds(0);
 
 	if (IVehicleMovement* pMovement = m_pVehicle->GetMovement())
 		pMovement->Reset();
@@ -74,10 +74,10 @@ void CVehicleSeatActionMovement::StartUsing(EntityId passengerId)
 	if (!pMovement)
 		return;
 
-	if (m_delayedStop >= 0.0f)
+	if (m_delayedStop >= 0)
 	{
 		m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_NoUpdate);
-		m_delayedStop = 0.0f;
+		m_delayedStop.SetSeconds(0);
 
 		pMovement->StopDriving();
 	}
@@ -98,7 +98,7 @@ void CVehicleSeatActionMovement::StopUsing()
 	CRY_ASSERT(m_pSeat);
 
 	// default to continuing for a bit
-	m_delayedStop = 0.8f;
+	m_delayedStop.SetSeconds("0.8");
 
 	IActor* pActor = pActorSystem->GetActor(m_pSeat->GetPassenger());
 
@@ -110,14 +110,14 @@ void CVehicleSeatActionMovement::StopUsing()
 		if (pPhys && pPhys->GetStatus(&status))
 		{
 			if (status.v.GetLengthSquared() < 25.0f)
-				m_delayedStop = 0.0f;
+				m_delayedStop.SetSeconds(0);
 		}
 
 		if (m_actionForward > 0.0f)
-			m_delayedStop = 1.5f;
+			m_delayedStop.SetSeconds("1.5");
 
 		if (pMovement->GetMovementType() == IVehicleMovement::eVMT_Air)
-			m_delayedStop *= 2.0f;
+			m_delayedStop *= 2;
 
 		m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_AlwaysUpdate);
 
@@ -128,7 +128,7 @@ void CVehicleSeatActionMovement::StopUsing()
 	{
 		if (pMovement->GetMovementType() == IVehicleMovement::eVMT_Air)
 		{
-			m_delayedStop = 0.0f;
+			m_delayedStop.SetSeconds(0);
 			m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_AlwaysUpdate);
 		}
 		else
@@ -153,7 +153,7 @@ void CVehicleSeatActionMovement::OnAction(const TVehicleActionId actionId, int a
 }
 
 //------------------------------------------------------------------------
-void CVehicleSeatActionMovement::Update(const float deltaTime)
+void CVehicleSeatActionMovement::Update(const CTimeValue& deltaTime)
 {
 	IVehicleMovement* pMovement = m_pVehicle->GetMovement();
 	CRY_ASSERT(pMovement);
@@ -162,10 +162,10 @@ void CVehicleSeatActionMovement::Update(const float deltaTime)
 
 	if (isReadyToStopEngine)
 	{
-		if (m_delayedStop > 0.0f)
+		if (m_delayedStop > 0)
 			m_delayedStop -= deltaTime;
 
-		if (m_delayedStop <= 0.0f)
+		if (m_delayedStop <= 0)
 		{
 			m_pVehicle->SetObjectUpdate(this, IVehicle::eVOU_NoUpdate);
 			pMovement->StopDriving();

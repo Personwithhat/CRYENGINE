@@ -68,19 +68,19 @@ struct SAIConsoleVarsLegacyFiring
 	DeclareConstIntCVar(LobThrowSimulateRandomInaccuracy, 0);
 
 	int   AmbientFireQuota;
-	float AmbientFireUpdateInterval;
+	CTimeValue AmbientFireUpdateInterval;
 	float DrawFireEffectDecayRange;
 	float DrawFireEffectMinDistance;
 	float DrawFireEffectMinTargetFOV;
 	float DrawFireEffectMaxAngle;
-	float DrawFireEffectTimeScale;
+	mpfloat DrawFireEffectTimeScale;
 	float CoolMissesBoxSize;
 	float CoolMissesBoxHeight;
 	float CoolMissesMinMissDistance;
 	float CoolMissesMaxLightweightEntityMass;
 	float CoolMissesProbability;
-	float CoolMissesCooldown;
+	CTimeValue CoolMissesCooldown;
 	float LobThrowMinAllowedDistanceFromFriends;
-	float LobThrowTimePredictionForFriendPositions;
+	CTimeValue LobThrowTimePredictionForFriendPositions;
 	float LobThrowPercentageOfDistanceToTargetUsedForInaccuracySimulation;
 };

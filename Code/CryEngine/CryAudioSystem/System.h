@@ -111,7 +111,7 @@ private:
 
 	bool                  m_isInitialized = false;
 	bool                  m_didThreadWait = false;
-	volatile float        m_accumulatedFrameTime = 0.0f;
+	volatile float        m_accumulatedFrameTime = 0.0f;    // PERSONAL IMPROVE: More volatile time issues
 	std::atomic<uint32>   m_externalThreadFrameId{ 0 };
 	uint32                m_lastExternalThreadFrameId = 0;
 	uint16                m_objectPoolSize = 0;

@@ -322,7 +322,7 @@ bool CDialogLinesDatabaseImportExportHelper::ImportFromFile(const char* szSource
 						if (!currentLineData[(int)eDataColumns::flags].empty())
 							pLineSet->SetFlags(std::stoi(currentLineData[(int)eDataColumns::flags].c_str())); //not too nice, that we directly import a bitmask
 						if (!currentLineData[(int)eDataColumns::maxQueueDuration].empty())
-							pLineSet->SetMaxQueuingDuration(std::stof(currentLineData[(int)eDataColumns::maxQueueDuration].c_str()));
+							pLineSet->SetMaxQueuingDuration(BADTIME(std::stof(currentLineData[(int)eDataColumns::maxQueueDuration].c_str())));
 					}
 					//else TODO: Discard existing lines?
 
@@ -339,7 +339,7 @@ bool CDialogLinesDatabaseImportExportHelper::ImportFromFile(const char* szSource
 					pLine->SetLipsyncAnimation(CryStringUtils::WStrToUTF8(currentLineData[(int)eDataColumns::lipsyncAnimation]).c_str());
 					pLine->SetCustomData(CryStringUtils::WStrToUTF8(currentLineData[(int)eDataColumns::customData]).c_str());
 					if (!currentLineData[(int)eDataColumns::pauseLength].empty())
-						pLine->SetPauseLength(std::stof(currentLineData[(int)eDataColumns::pauseLength].c_str()));
+						pLine->SetPauseLength(BADTIME(std::stof(currentLineData[(int)eDataColumns::pauseLength].c_str())));
 				}
 			}
 		}

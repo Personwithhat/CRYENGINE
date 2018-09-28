@@ -70,10 +70,10 @@ CTrackViewSequence::CTrackViewSequence(IAnimSequence* pSequence)
 	, m_bQueueNotifications(false)
 	, m_bNodeSelectionChanged(false)
 	, m_bForceAnimation(false)
-	, m_time(0.0f)
+	, m_time(0)
 {
-	m_playbackRange.start = SAnimTime(-1);
-	m_playbackRange.end = SAnimTime(-1);
+	m_playbackRange.start.SetSeconds(-1);
+	m_playbackRange.end.SetSeconds(-1);
 	assert(m_pAnimSequence);
 }
 
@@ -592,7 +592,7 @@ void CTrackViewSequence::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOn
 	}
 }
 
-void CTrackViewSequence::PasteKeysFromClipboard(CTrackViewAnimNode* pTargetNode, CTrackViewTrack* pTargetTrack, const SAnimTime time)
+void CTrackViewSequence::PasteKeysFromClipboard(CTrackViewAnimNode* pTargetNode, CTrackViewTrack* pTargetTrack, const CTimeValue& time)
 {
 	assert(CUndo::IsRecording());
 
@@ -607,7 +607,7 @@ void CTrackViewSequence::PasteKeysFromClipboard(CTrackViewAnimNode* pTargetNode,
 		size_t selectedKeysCount = 0;
 		clipboardContent->getAttr("selectedKeysCount", selectedKeysCount);
 
-		SAnimTime offsetTime = selectedKeysCount > 1 ? SAnimTime(0) : time;
+		CTimeValue offsetTime = selectedKeysCount > 1 ? 0 : time;
 
 		for (auto iter = matchedLocations.begin(); iter != matchedLocations.end(); ++iter)
 		{
@@ -835,14 +835,14 @@ void CTrackViewSequence::GetMatchedPasteLocationsRec(std::vector<TMatchedTrackLo
 	}
 }
 
-bool CTrackViewSequence::SetTimeRange(TRange<SAnimTime> timeRange, bool skipSettingsChanged)
+bool CTrackViewSequence::SetTimeRange(TRange<CTimeValue> timeRange, bool skipSettingsChanged)
 {
 	if (timeRange.start >= timeRange.end)
 	{
 		return false;
 	}
 
-	const TRange<SAnimTime> currentTimeRange = GetTimeRange();
+	const TRange<CTimeValue> currentTimeRange = GetTimeRange();
 
 	if (CUndo::IsRecording())
 	{
@@ -868,16 +868,16 @@ bool CTrackViewSequence::SetTimeRange(TRange<SAnimTime> timeRange, bool skipSett
 	return true;
 }
 
-void CTrackViewSequence::SetPlaybackRange(TRange<SAnimTime> playbackRange, bool skipSettingsChanged)
+void CTrackViewSequence::SetPlaybackRange(TRange<CTimeValue> playbackRange, bool skipSettingsChanged)
 {
-	const TRange<SAnimTime> currentPlaybackRange = GetPlaybackRange();
+	const TRange<CTimeValue> currentPlaybackRange = GetPlaybackRange();
 	if (CUndo::IsRecording())
 	{
 		// Store old sequence settings
 		CUndo::Record(new CUndoSequenceSettings(this));
 	}
 
-	const TRange<SAnimTime> currentTimeRange = GetTimeRange();
+	const TRange<CTimeValue> currentTimeRange = GetTimeRange();
 
 	if (playbackRange.start < currentTimeRange.start || playbackRange.end > currentTimeRange.end)
 		playbackRange.start = currentTimeRange.start;
@@ -895,7 +895,7 @@ void CTrackViewSequence::SetPlaybackRange(TRange<SAnimTime> playbackRange, bool 
 	}
 }
 
-TRange<SAnimTime> CTrackViewSequence::GetTimeRange() const
+TRange<CTimeValue> CTrackViewSequence::GetTimeRange() const
 {
 	return m_pAnimSequence->GetTimeRange();
 }
@@ -947,7 +947,7 @@ bool CTrackViewSequence::IsActiveSequence() const
 	return CTrackViewPlugin::GetAnimationContext()->GetSequence() == this;
 }
 
-const SAnimTime CTrackViewSequence::GetTime() const
+const CTimeValue& CTrackViewSequence::GetTime() const
 {
 	return m_time;
 }
@@ -964,17 +964,17 @@ void CTrackViewSequence::Serialize(Serialization::IArchive& ar)
 
 		CTrackViewSequenceNoNotificationContext context(this);
 
-		SAnimTime start;
+		CTimeValue start;
 		ar(start, "start", "Start Time");
-		SAnimTime end;
+		CTimeValue end;
 		ar(end, "end", "End Time");
-		bChangeRejected |= !SetTimeRange(TRange<SAnimTime>(start, end), true);
+		bChangeRejected |= !SetTimeRange(TRange<CTimeValue>(start, end), true);
 
-		SAnimTime playbackStart;
+		CTimeValue playbackStart;
 		ar(playbackStart, "playback_start", "Playback Start Time");
-		SAnimTime playbackEnd;
+		CTimeValue playbackEnd;
 		ar(playbackEnd, "playback_end", "Playback End Time");
-		SetPlaybackRange(TRange<SAnimTime>(playbackStart, playbackEnd), true);
+		SetPlaybackRange(TRange<CTimeValue>(playbackStart, playbackEnd), true);
 
 		uint32 flags = GetFlags();
 
@@ -1005,11 +1005,11 @@ void CTrackViewSequence::Serialize(Serialization::IArchive& ar)
 		const string name = GetName();
 		ar(name, "name", "Name");
 
-		const TRange<SAnimTime> timeRange = GetTimeRange();
+		TRange<CTimeValue> timeRange = GetTimeRange();
 		ar(timeRange.start, "start", "Start Time");
 		ar(timeRange.end, "end", "End Time");
 
-		const TRange<SAnimTime> playbackTimeRange = GetPlaybackRange();
+		TRange<CTimeValue> playbackTimeRange = GetPlaybackRange();
 		ar(playbackTimeRange.start, "playback_start", "Playback Start Time");
 		ar(playbackTimeRange.end, "playback_end", "Playback End Time");
 

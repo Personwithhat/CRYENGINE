@@ -13,13 +13,13 @@ class CColorGradingTextureLoader
 public:
 	struct STextureToLoad
 	{
-		ITexture* pTexture;
-		float     timeToFadeInSeconds;
-		string    texturePath;
+		ITexture*  pTexture;
+		CTimeValue timeToFade;
+		string     texturePath;
 	};
 
 	// Command to wait till next frame
-	void LoadTexture(const string& colorGradingTexturePath, float timeToFadeInSeconds);
+	void LoadTexture(const string& colorGradingTexturePath, const CTimeValue& timeToFade);
 	void Reset();
 
 	// Get valid textures from last frame request
@@ -38,30 +38,30 @@ public:
 	void Reset();
 
 	// Prepares RenderView for rendering
-	void UpdateRenderView(IRenderView& renderView, float timeSinceLastFrame);
+	void UpdateRenderView(IRenderView& renderView, const CTimeValue& timeSinceLastFrame);
 
 	void Serialize(TSerialize& ar) override;
 
 private:
-	virtual void SetColorGradingLut(const char* szTexture, float timeToFadeInSeconds) override;
+	virtual void SetColorGradingLut(const char* szTexture, const CTimeValue& timeToFade) override;
 
 	void ProcessNewCharts();
-	void Update(float timeSinceLastFrame);
+	void Update(const CTimeValue& timeSinceLastFrame);
 	void FadeOutOtherLayers();
 	void RemoveFadedOutLayers();
 	void FillRenderView(IRenderView& renderView);
 
 	struct SColorChart
 	{
-		SColorChart(int texID, float blendAmount, float timeToFadeInInSeconds, const string& texturePath);
+		SColorChart(int texID, float blendAmount, const CTimeValue& timeToFadeInInSeconds, const string& texturePath);
 
-		void FadeIn(float timeSinceLastFrame);
+		void FadeIn(const CTimeValue& timeSinceLastFrame);
 		void FadeOut(float blendAmountOfFadingInGradient);
 
 		int    texID;
 		float  blendAmount;
-		float  timeToFadeInInSeconds;
-		float  elapsedTime;
+		CTimeValue  timeToFade;
+		CTimeValue  elapsedTime;
 		float  maximumBlendAmount;
 		string texturePath;
 	};

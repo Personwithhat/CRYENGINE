@@ -352,12 +352,12 @@ public:
 	void UpdateRenderNodeStreamingPriority(IRenderNode* pObj, float fEntDistance, float fImportanceFactor, bool bFullUpdate, const SRenderingPassInfo& passInfo, bool bHighPriority = false);
 
 	void GetMemoryUsage(class ICrySizer* pSizer) const;
-	void       GetBandwidthStats(float* fBandwidthRequested);
+	void GetBandwidthStats(rTime* fBandwidthRequested);
 
 	void       ReregisterEntitiesInArea(AABB* pBox, bool bCleanUpTree = false);
 	//	void ProcessEntityParticles(IRenderNode * pEnt, float fEntDistance);
 	void       UpdateObjectsStreamingPriority(bool bSyncLoad, const SRenderingPassInfo& passInfo);
-	ILINE void SetCurrentTime(float fCurrentTime) { m_fCurrTime = fCurrentTime; }
+	ILINE void SetCurrentTime(const CTimeValue& currentTime) { m_CurrTime = currentTime; }
 	void       ProcessObjectsStreaming(const SRenderingPassInfo& passInfo);
 
 	// implementation parts of ProcessObjectsStreaming
@@ -467,7 +467,7 @@ public:
 	_smart_ptr<CStatObj>            m_pDefaultCGF;
 	PodArray<SStreamAbleObject>     m_arrStreamableObjects;
 	PodArray<COctreeNode*>          m_arrStreamingNodeStack;
-	PodArray<SObjManPrecachePoint>  m_vStreamPreCachePointDefs;
+	std::vector<SObjManPrecachePoint*> m_vStreamPreCachePointDefs;
 	PodArray<SObjManPrecacheCamera> m_vStreamPreCacheCameras;
 	int                             m_nNextPrecachePointId;
 	bool                            m_bCameraPrecacheOverridden;
@@ -483,7 +483,7 @@ private:
 	PodArray<IStreamable*>  m_arrStreamableToDelete;
 	bool                    m_bNeedProcessObjectsStreaming_Finish;
 
-	float                   m_fCurrTime;
+	CTimeValue              m_CurrTime;
 
 	_smart_ptr<IRenderMesh> m_pRMBox;
 	_smart_ptr<IRenderMesh> m_pBillboardMesh;

@@ -32,7 +32,7 @@ void Command_ColorGradingChartImage(IConsoleCmdArgs* pCmd)
 } // namespace ColorGradingCtrl_Private
 
 //////////////////////////////////////////////////////////////////////////
-void CColorGradingTextureLoader::LoadTexture(const string& colorGradingTexturePath, float timeToFadeInSeconds)
+void CColorGradingTextureLoader::LoadTexture(const string& colorGradingTexturePath, const CTimeValue& timeToFade)
 {
 	const uint32 COLORCHART_TEXFLAGS = FT_NOMIPS | FT_DONT_STREAM | FT_STATE_CLAMP;
 	ITexture* pTexture = gEnv->pRenderer->EF_LoadTexture(colorGradingTexturePath, COLORCHART_TEXFLAGS);
@@ -43,7 +43,7 @@ void CColorGradingTextureLoader::LoadTexture(const string& colorGradingTexturePa
 		return;
 	}
 
-	m_thisFrameRequest.emplace_back(STextureToLoad{ pTexture, timeToFadeInSeconds, colorGradingTexturePath });
+	m_thisFrameRequest.emplace_back(STextureToLoad{ pTexture, timeToFade, colorGradingTexturePath });
 }
 
 void CColorGradingTextureLoader::Reset()
@@ -78,18 +78,18 @@ std::vector<CColorGradingTextureLoader::STextureToLoad> CColorGradingTextureLoad
 }
 
 //////////////////////////////////////////////////////////////////////////
-CColorGradingCtrl::SColorChart::SColorChart(int texID_, float blendAmount_, float timeToFadeInInSeconds_, const string& texturePath_)
+CColorGradingCtrl::SColorChart::SColorChart(int texID_, float blendAmount_, const CTimeValue& timeToFade_, const string& texturePath_)
 	: texID(texID_)
 	, blendAmount(blendAmount_)
-	, timeToFadeInInSeconds(timeToFadeInInSeconds_)
-	, elapsedTime(0.f)
+	, timeToFade(timeToFade_)
+	, elapsedTime(0)
 	, maximumBlendAmount(1.f)
 	, texturePath(texturePath_)
 {}
 
-void CColorGradingCtrl::SColorChart::FadeIn(float timeSinceLastFrame)
+void CColorGradingCtrl::SColorChart::FadeIn(const CTimeValue& timeSinceLastFrame)
 {
-	if (timeToFadeInInSeconds < 0.f)
+	if (timeToFade < 0)
 	{
 		blendAmount = 1.0f;
 		return;
@@ -97,7 +97,7 @@ void CColorGradingCtrl::SColorChart::FadeIn(float timeSinceLastFrame)
 
 	elapsedTime += timeSinceLastFrame;
 
-	blendAmount = elapsedTime / timeToFadeInInSeconds;
+	blendAmount = BADF(elapsedTime / timeToFade);
 	blendAmount = min(blendAmount, 1.0f);
 }
 
@@ -121,12 +121,12 @@ void CColorGradingCtrl::Reset()
 	stl::reconstruct(m_charts);
 }
 
-void CColorGradingCtrl::SetColorGradingLut(const char* szTexture, float timeToFadeInSeconds)
+void CColorGradingCtrl::SetColorGradingLut(const char* szTexture, const CTimeValue& timeToFade)
 {
 	const string texture(szTexture);
 	if (!texture.empty() && texture != "0")
 	{
-		m_textureLoader.LoadTexture(texture, timeToFadeInSeconds);
+		m_textureLoader.LoadTexture(texture, timeToFade);
 	}
 	else
 	{
@@ -134,7 +134,7 @@ void CColorGradingCtrl::SetColorGradingLut(const char* szTexture, float timeToFa
 	}
 }
 
-void CColorGradingCtrl::UpdateRenderView(IRenderView& renderView, float timeSinceLastFrame)
+void CColorGradingCtrl::UpdateRenderView(IRenderView& renderView, const CTimeValue& timeSinceLastFrame)
 {
 	ProcessNewCharts();
 	Update(timeSinceLastFrame);
@@ -156,11 +156,11 @@ void CColorGradingCtrl::ProcessNewCharts()
 
 	const auto& newChart = newCharts.back();
 
-	if (newChart.timeToFadeInSeconds < 0.01f)
+	if (newChart.timeToFade < "0.01")
 	{
 		// Switch to this color chart immediately, clean up all other layers
 		m_charts.clear();
-		m_charts.emplace_back(newChart.pTexture->GetTextureID(), 1.f, 0.f, newChart.texturePath);
+		m_charts.emplace_back(newChart.pTexture->GetTextureID(), 1.f, 0, newChart.texturePath);
 	}
 	else
 	{
@@ -170,11 +170,11 @@ void CColorGradingCtrl::ProcessNewCharts()
 			chart.maximumBlendAmount = chart.blendAmount;
 		}
 
-		m_charts.emplace_back(newChart.pTexture->GetTextureID(), 0.f, newChart.timeToFadeInSeconds, newChart.texturePath);
+		m_charts.emplace_back(newChart.pTexture->GetTextureID(), 0.f, newChart.timeToFade, newChart.texturePath);
 	}
 }
 
-void CColorGradingCtrl::Update(float timeSinceLastFrame)
+void CColorGradingCtrl::Update(const CTimeValue& timeSinceLastFrame)
 {
 	// No charts mean don't run the ColorGradingPass on renderer
 	if (m_charts.empty())

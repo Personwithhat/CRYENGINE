@@ -10,14 +10,14 @@ CStatObjFoliage::CStatObjFoliage()
 {
 	m_next = 0;
 	m_prev = 0;
-	m_lifeTime = 0;
+	m_lifeTime.SetSeconds(0);
 	m_ppThis = 0;
 	m_pStatObj = 0;
 	m_pRopes = 0;
 	m_pRopesActiveTime = 0;
 	m_nRopes = 0;
 	m_nRefCount = 1;
-	m_timeIdle = 0;
+	m_timeIdle.SetSeconds(0);
 	m_pVegInst = 0;
 	m_pTrunk = 0;
 	m_pSkinningTransformations[0] = 0;
@@ -26,7 +26,7 @@ CStatObjFoliage::CStatObjFoliage()
 	m_flags = 0;
 	m_bGeomRemoved = 0;
 	m_bEnabled = 1;
-	m_timeInvisible = 0;
+	m_timeInvisible.SetSeconds(0);
 	m_bDelete = 0;
 	m_pRenderObject = 0;
 	m_minEnergy = 0.0f;
@@ -260,7 +260,7 @@ SSkinningData* CStatObjFoliage::GetSkinningData(const Matrix34& RenderMat34, con
 	return pSkinningData;
 }
 
-void CStatObjFoliage::Update(float dt, const CCamera& rCamera)
+void CStatObjFoliage::Update(const CTimeValue& dt, const CCamera& rCamera)
 {
 	if (!*m_ppThis && !m_bDelete)
 		m_bDelete = 2;
@@ -311,7 +311,7 @@ void CStatObjFoliage::Update(float dt, const CCamera& rCamera)
 	int bEnable = bVisible & isneg(((rCamera.GetPosition() - bbox.GetCenter()).len2() - sqr(clipDist)) * clipDist - 0.0001f);
 	if (!bEnable)
 	{
-		if (inrange(m_timeInvisible += dt, 6.0f, 8.0f))
+		if (inrange(m_timeInvisible += dt, CTimeValue(6), CTimeValue(8)))
 			bEnable = 1;
 		else if (m_pTrunk && bVisible)
 		{
@@ -321,7 +321,7 @@ void CStatObjFoliage::Update(float dt, const CCamera& rCamera)
 
 	}
 	else
-		m_timeInvisible = 0;
+		m_timeInvisible.SetSeconds(0);
 	if (m_bEnabled != bEnable)
 	{
 		pe_params_flags pf;
@@ -342,7 +342,7 @@ void CStatObjFoliage::Update(float dt, const CCamera& rCamera)
 				m_pRopes[i]->SetParams(&sp);
 
 	if (nColl && (m_iActivationSource & 2 || bVisible))
-		m_timeIdle = 0;
+		m_timeIdle.SetSeconds(0);
 	if (!bHasBrokenRopes && m_lifeTime > 0 && (m_timeIdle += dt) > m_lifeTime)
 	{
 		*m_ppThis = 0;
@@ -488,7 +488,7 @@ int CStatObjFoliage::Serialize(TSerialize ser)
 				m_pStatObj->GetPhysicalWorld()->DestroyPhysicalEntity(m_pRopes[i]), m_pRopes[i] = 0;
 			else if (m_pRopes[i])
 				m_pRopes[i]->SetStateFromSnapshot(ser);
-			m_pRopesActiveTime[i] = -1;
+			m_pRopesActiveTime[i].SetSeconds(-1);
 			ser.EndGroup();
 		}
 	}

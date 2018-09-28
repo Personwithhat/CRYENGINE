@@ -117,10 +117,10 @@ void Command_SetWaitSeconds(IConsoleCmdArgs* pCmd)
 	if (pCmd->GetArgCount() > 1)
 	{
 		CXConsole* pConsole = static_cast<CXConsole*>(gEnv->pConsole);
-		if (pConsole->m_waitSeconds.GetValue() != 0)
+		if (pConsole->m_waitSeconds != 0)
 			CryWarning(EValidatorModule::VALIDATOR_MODULE_SYSTEM, EValidatorSeverity::VALIDATOR_WARNING, "You are overwriting the current wait seconds!");
-		pConsole->m_waitSeconds.SetSeconds(atof(pCmd->GetArg(1)));
-		pConsole->m_waitSeconds += gEnv->pTimer->GetFrameStartTime();
+		pConsole->m_waitSeconds.SetSeconds(pCmd->GetArg(1));
+		pConsole->m_waitSeconds += GetGTimer()->GetFrameStartTime();
 	}
 }
 
@@ -295,7 +295,7 @@ CXConsole::CXConsole(CSystem& system)
 	: m_managedConsoleCommandListeners(1)
 	, m_system(system)
 {
-	m_fRepeatTimer = 0;
+	m_fRepeatTimer.SetSeconds(0);
 	m_pSysDeactivateConsole = 0;
 	m_pFont = NULL;
 	m_pRenderer = NULL;
@@ -314,7 +314,7 @@ CXConsole::CXConsole(CSystem& system)
 	m_bIsProcessingGroup = false;
 	m_sdScrollDir = sdNONE;
 	m_bDrawCursor = true;
-	m_fCursorBlinkTimer = 0;
+	m_fCursorBlinkTimer.SetSeconds(0);
 
 	m_nCheatHashRangeFirst = 0;
 	m_nCheatHashRangeLast = 0;
@@ -329,7 +329,7 @@ CXConsole::CXConsole(CSystem& system)
 
 	m_deferredExecution = false;
 	m_waitFrames = 0;
-	m_waitSeconds = 0.0f;
+	m_waitSeconds.SetSeconds(0);
 	m_blockCounter = 0;
 
 	m_currentLoadConfigType = eLoadConfigInit;
@@ -920,6 +920,12 @@ void CXConsole::SaveInternalState(struct IDataWriteStream& writer) const
 			case ECVarType::Int64:
 				writer.WriteInt64(pCVar->GetI64Val());
 				break;
+			case ECVarType::MPFloat:
+				writer.WriteFloatMP(pCVar->GetMPVal());
+				break;
+			case ECVarType::TimeVal:
+				writer.WriteTime(pCVar->GetTime());
+				break;
 			case ECVarType::Invalid:
 				break;
 			}
@@ -956,6 +962,12 @@ void CXConsole::LoadInternalState(struct IDataReadStream& reader)
 			break;
 		case ECVarType::Int64:
 			pVar->Set(reader.ReadInt64());
+			break;
+		case ECVarType::MPFloat:
+			pVar->Set(reader.ReadFloatMP());
+			break;
+		case ECVarType::TimeVal:
+			pVar->Set(reader.ReadTime());
 			break;
 		case ECVarType::Invalid:
 			break;
@@ -1046,6 +1058,55 @@ ICVar* CXConsole::Register(const char* sName, float* src, float fValue, int nFla
 	return pCVar;
 }
 
+#define MP_FUNCTION(T)\
+ICVar* CXConsole::Register(const char* sName, T* src, const T& fValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify)\
+{\
+	AssertName(sName);\
+	\
+	ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);\
+	if (pCVar)\
+	{\
+		/* No log-stack here. Shouldn't be an issue?*/\
+		if (pCVar->GetFlags() & VF_CONST_CVAR)\
+			*src = pCVar->GetMPVal().conv<T>();\
+		else\
+			gEnv->pLog->LogError("[CVARS]: [DUPLICATE] CXConsole::Register(mpfloat): variable [%s] is already registered", pCVar->GetName()); \
+		return pCVar;\
+	}\
+	if (!allowModify)\
+		nFlags |= VF_CONST_CVAR;\
+	*src = fValue;\
+	const string name(sName);\
+	pCVar = new CXConsoleVariableMPType<T&>(this, name, *src, nFlags, help, true);\
+	RegisterVar(name, pCVar, pChangeFunc);\
+	return pCVar;\
+}
+#include <CrySystem/mpfloat.types>
+#undef MP_FUNCTION
+
+ICVar* CXConsole::Register(const char* sName, CTimeValue* src, const CTimeValue& fValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify)
+{
+	AssertName(sName);
+
+	ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
+	if (pCVar)
+	{
+		/* No log-stack here. Shouldn't be an issue?*/
+		if (pCVar->GetFlags() & VF_CONST_CVAR)
+			*src = pCVar->GetTime();
+		else
+			gEnv->pLog->LogError("[CVARS]: [DUPLICATE] CXConsole::Register(CTimeValue): variable [%s] is already registered", pCVar->GetName());
+		return pCVar;
+	}
+	if (!allowModify)
+		nFlags |= VF_CONST_CVAR;
+	*src = fValue;
+	const string name(sName);
+	pCVar = new CXConsoleVariableTimeValRef(this, name, *src, nFlags, help, true);
+	RegisterVar(name, pCVar, pChangeFunc);
+	return pCVar;
+}
+
 ICVar* CXConsole::Register(const char* sName, const char** src, const char* defaultValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify)
 {
 	AssertName(sName);
@@ -1110,6 +1171,48 @@ ICVar* CXConsole::RegisterFloat(const char* sName, float fValue, int nFlags, con
 
 	const string name(sName);
 	pCVar = new CXConsoleVariableFloat(this, name, fValue, nFlags, help, true);
+	RegisterVar(name, pCVar, pChangeFunc);
+	return pCVar;
+}
+
+
+#define MP_FUNCTION(T)\
+ICVar* CXConsole::RegisterMPFloat(const char* sName, const T& src, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)\
+{\
+	AssertName(sName);\
+	\
+	ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);\
+	if (pCVar)\
+	{\
+		gEnv->pLog->LogError("[CVARS]: [DUPLICATE] CXConsole::RegisterMPFloat(): variable [%s] is already registered", pCVar->GetName());\
+		/* No log-stack here. Shouldn't be an issue?*/\
+		return pCVar;\
+	}\
+	\
+	const string name(sName);\
+	pCVar = new CXConsoleVariableMPType<T>(this, name, src, nFlags, help, true);\
+	RegisterVar(name, pCVar, pChangeFunc);\
+	return pCVar;\
+}
+#include <CrySystem/mpfloat.types>
+#undef MP_FUNCTION
+
+ICVar* CXConsole::RegisterTime(const char* sName, const CTimeValue& src, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)
+{
+	AssertName(sName);
+
+	ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
+	if (pCVar)
+	{
+		gEnv->pLog->LogError("[CVARS]: [DUPLICATE] CXConsole::RegisterTime(): variable [%s] is already registered", pCVar->GetName());
+#if LOG_CVAR_INFRACTIONS_CALLSTACK
+		gEnv->pSystem->debug_LogCallStack();
+#endif // LOG_CVAR_INFRACTIONS_CALLSTACK
+		return pCVar;
+	}
+
+	const string name(sName);
+	pCVar = new CXConsoleVariableTimeVal(this, name, src, nFlags, help, true);
 	RegisterVar(name, pCVar, pChangeFunc);
 	return pCVar;
 }
@@ -1302,13 +1405,13 @@ void CXConsole::Update()
 	// Process Key press repeat (backspace and cursor on PC)
 	if (m_nRepeatEvent.keyId != eKI_Unknown)
 	{
-		const float fRepeatDelay = 1.0f / 40.0f;      // in sec (similar to Windows default but might differ from actual setting)
-		const float fHitchDelay = 1.0f / 10.0f;       // in sec. Very low, but still reasonable frame-rate (debug builds)
+		const CTimeValue fRepeatDelay = CTimeValue(1) / 40; // (similar to Windows default but might differ from actual setting)
+		const CTimeValue fHitchDelay  = CTimeValue(1) / 10; // Very low, but still reasonable frame-rate (debug builds)
 
-		m_fRepeatTimer -= gEnv->pTimer->GetRealFrameTime();                     // works even when time is manipulated
-		// m_fRepeatTimer -= gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI);		// can be used once ETIMER_UI works even with t_FixedTime
+		m_fRepeatTimer -= GetGTimer()->GetRealFrameTime();                      // works even when time is manipulated
+		// m_fRepeatTimer -= GetGTimer()->GetFrameTime(ITimer::ETIMER_UI);		// can be used once ETIMER_UI works even with t_FixedTime
 
-		if (m_fRepeatTimer <= 0.0f)
+		if (m_fRepeatTimer <= 0)
 		{
 			if (m_fRepeatTimer < -fHitchDelay)
 			{
@@ -1342,11 +1445,11 @@ bool CXConsole::OnInputEvent(const SInputEvent& event)
 		return false;
 
 	// restart cursor blinking
-	m_fCursorBlinkTimer = 0.0f;
+	m_fCursorBlinkTimer.SetSeconds(0);
 	m_bDrawCursor = true;
 
 	// key repeat
-	const float fStartRepeatDelay = 0.5f;           // in sec (similar to Windows default but might differ from actual setting)
+	const CTimeValue fStartRepeatDelay = "0.5";           // in sec (similar to Windows default but might differ from actual setting)
 	m_nRepeatEvent = event;
 	m_fRepeatTimer = fStartRepeatDelay;
 
@@ -1670,15 +1773,15 @@ void CXConsole::Draw()
 	{
 		// cursor blinking
 		{
-			m_fCursorBlinkTimer += gEnv->pTimer->GetRealFrameTime();                      // works even when time is manipulated
-			//	m_fCursorBlinkTimer += gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI);					// can be used once ETIMER_UI works even with t_FixedTime
+			m_fCursorBlinkTimer += GetGTimer()->GetRealFrameTime();                      // works even when time is manipulated
+			//	m_fCursorBlinkTimer += GetGTimer()->GetFrameTime(ITimer::ETIMER_UI);		// can be used once ETIMER_UI works even with t_FixedTime
 
-			const float fCursorBlinkDelay = 0.5f;           // in sec (similar to Windows default but might differ from actual setting)
+			const CTimeValue fCursorBlinkDelay = "0.5";           // in sec (similar to Windows default but might differ from actual setting)
 
 			if (m_fCursorBlinkTimer > fCursorBlinkDelay)
 			{
 				m_bDrawCursor = !m_bDrawCursor;
-				m_fCursorBlinkTimer = 0.0f;
+				m_fCursorBlinkTimer.SetSeconds(0);
 			}
 		}
 
@@ -2304,17 +2407,18 @@ void CXConsole::ExecuteDeferredCommands()
 		return;
 	}
 
-	if (m_waitSeconds.GetValue())
+	if (m_waitSeconds != 0)
 	{
-		if (m_waitSeconds > gEnv->pTimer->GetFrameStartTime())
+		if (m_waitSeconds > GetGTimer()->GetFrameStartTime())
 			return;
 
-		m_waitSeconds.SetValue(0); 	// Help to avoid overflow problems
+		// Help to avoid overflow problems
+		m_waitSeconds.SetSeconds(0);
 	}
 
 	const int blockCounter = m_blockCounter;
 
-	while (m_waitFrames == 0 && m_waitSeconds.GetValue() == 0 && !m_deferredCommands.empty())
+	while (m_waitFrames == 0 && m_waitSeconds == 0 && !m_deferredCommands.empty())
 	{
 		auto& deferredCommand = m_deferredCommands.front();
 		ExecuteStringInternal(deferredCommand.command.c_str(), false, deferredCommand.silentMode);
@@ -2335,7 +2439,7 @@ ELoadConfigurationType CXConsole::SetCurrentConfigType(ELoadConfigurationType co
 
 void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDevMode)
 {
-	CryLog("[CONSOLE] Executing console command '%s'. [%3.1f] seconds have passed since boot.", str.c_str(), (float)gEnv->pTimer->GetAsyncCurTime());
+	CryLog("[CONSOLE] Executing console command '%s'. [%3.1f] seconds have passed since boot.", str.c_str(), (float)GetGTimer()->GetAsyncCurTime().GetSeconds());
 	INDENT_LOG_DURING_SCOPE();
 
 	std::vector<string> args;
@@ -3569,25 +3673,25 @@ protected:
 
 bool ConsoleTestBase::IsCVarTestCommandCalled = false;
 
-CRY_TEST_WITH_FIXTURE(ConsoleOpenCloseTest, ConsoleTestBase, timeout = 60.f, game = true, editor = false)
+CRY_TEST_WITH_FIXTURE(ConsoleOpenCloseTest, ConsoleTestBase, timeout = 60, game = true, editor = false)
 {
 	commands =
 	{
 		ShowConsole,
-		CryTest::CCommandWait(0.1f),
+		CryTest::CCommandWait("0.1"),
 		[] {
 			CRY_TEST_ASSERT(gEnv->pConsole->IsOpened());
 		},
-		CryTest::CCommandWait(1.f),
+		CryTest::CCommandWait(1),
 		HideConsole,
-		CryTest::CCommandWait(0.1f),
+		CryTest::CCommandWait("0.1"),
 		[] {
 			CRY_TEST_ASSERT(!gEnv->pConsole->IsOpened());
 		}
 	};
 }
 
-CRY_TEST_WITH_FIXTURE(ConsoleCVarTest, ConsoleTestBase, timeout = 60.f, game = true, editor = false)
+CRY_TEST_WITH_FIXTURE(ConsoleCVarTest, ConsoleTestBase, timeout = 60, game = true, editor = false)
 {
 	commands =
 	{
@@ -3607,7 +3711,7 @@ CRY_TEST_WITH_FIXTURE(ConsoleCVarTest, ConsoleTestBase, timeout = 60.f, game = t
 	};
 }
 
-CRY_TEST_WITH_FIXTURE(ConsoleInputCommandTest, ConsoleTestBase, timeout = 60.f, game = true, editor = false)
+CRY_TEST_WITH_FIXTURE(ConsoleInputCommandTest, ConsoleTestBase, timeout = 60, game = true, editor = false)
 {
 	commands =
 	{
@@ -3616,12 +3720,12 @@ CRY_TEST_WITH_FIXTURE(ConsoleInputCommandTest, ConsoleTestBase, timeout = 60.f, 
 			REGISTER_COMMAND("TestCommand", CVarTestCommandCallback, 0, "ok");
 		},
 		ShowConsole,
-		CryTest::CCommandWait(0.1f),
+		CryTest::CCommandWait("0.1"),
 		[] {
 			gEnv->pConsole->SetInputLine("TestCommand");
 		},
 		CCommandSimulateInputKey(EKeyId::eKI_Enter),
-		CryTest::CCommandWait(1.f),
+		CryTest::CCommandWait(1),
 		[] {
 			CRY_TEST_ASSERT(IsCVarTestCommandCalled);
 		},

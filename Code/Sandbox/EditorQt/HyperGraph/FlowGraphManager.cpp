@@ -364,9 +364,9 @@ enum UIEnumType
 namespace
 {
 
-float GetValue(const CString& s, const char* token)
+mpfloat GetValue(const CString& s, const char* token)
 {
-	float fValue = 0.0f;
+	char str[256] = "0";
 	int pos = s.Find(token);
 	if (pos >= 0)
 	{
@@ -374,20 +374,23 @@ float GetValue(const CString& s, const char* token)
 		pos = s.Find('=', pos + 1);
 		if (pos >= 0)
 		{
-			sscanf(s.GetString() + pos + 1, "%f", &fValue);
+			sscanf(s.GetString() + pos + 1, "%[^,]", &str);
 		}
 	}
-	return fValue;
+
+	return mpfloat(str);
 }
 
-float GetValue(const char* s, const char* token)
+mpfloat GetValue(const char* s, const char* token)
 {
 	return GetValue(CString(s), token);
 }
 
 }
 
-UIEnumType ParseUIConfig(const char* sUIConfig, std::map<string, string>& outEnumPairs, Vec3& uiValueRanges)
+struct UIRange { mpfloat x; mpfloat y; };
+
+UIEnumType ParseUIConfig(const char* sUIConfig, std::map<string, string>& outEnumPairs, UIRange& uiValueRanges)
 {
 	UIEnumType enumType = eUI_None;
 	string uiConfig(sUIConfig);
@@ -500,7 +503,7 @@ IVariable* CFlowGraphManager::MakeInVar(const SInputPortConfig* pPortConfig, uin
 	const char* name = pPortConfig->name;
 	bool isEnumDataType = false;
 
-	Vec3 uiValueRanges(ZERO);
+	UIRange uiValueRanges;
 
 	// UI Parsing
 	if (pPortConfig->sUIConfig != 0)
@@ -581,8 +584,9 @@ IVariable* CFlowGraphManager::MakeInVar(const SInputPortConfig* pPortConfig, uin
 	}
 
 	// Set ranges if applicable
-	if (uiValueRanges.x != 0.0f || uiValueRanges.y != 0.0f)
-		pVar->SetLimits(uiValueRanges.x, uiValueRanges.y, true, true);
+	if (uiValueRanges.x != 0 || uiValueRanges.y != 0){
+		pVar->SetLimitsG(uiValueRanges.x, uiValueRanges.y);
+	}
 
 	// Take care of predefined datatypes
 	if (!isEnumDataType)
@@ -713,6 +717,12 @@ void CFlowGraphManager::GetNodeConfig(IFlowNodeData* pSrcNode, CFlowNode* pFlowN
 				case eFDT_String:
 					port.pVar->Set((pPortConfig->defaultData.GetPtr<string>())->c_str());
 					break;
+				case eFDT_Time:
+					port.pVar->Set(*pPortConfig->defaultData.GetPtr<CTimeValue>());
+					break;
+				case eFDT_MP:
+					port.pVar->Set(*pPortConfig->defaultData.GetPtr<mpfloat>());
+					break;
 				}
 
 				pFlowNode->AddPort(port);
@@ -769,6 +779,12 @@ IVariable* CFlowGraphManager::MakeSimpleVarFromFlowType(int type)
 		break;
 	case eFDT_String:
 		return new CVariableFlowNode<string>;
+		break;
+	case eFDT_Time:
+		return new CVariableFlowNode<CTimeValue>;
+		break;
+	case eFDT_MP:
+		return new CVariableFlowNode<mpfloat>;
 		break;
 	default:
 		// Any type.

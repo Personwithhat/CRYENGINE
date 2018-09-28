@@ -18,7 +18,7 @@
 int CDiskProfiler::profile_disk = 0;
 int CDiskProfiler::profile_disk_max_items = 10000;
 int CDiskProfiler::profile_disk_max_draw_items = 2000;
-float CDiskProfiler::profile_disk_timeframe = 5;    // max time for profiling timeframe
+CTimeValue CDiskProfiler::profile_disk_timeframe = 5;    // max time for profiling timeframe
 int CDiskProfiler::profile_disk_type_filter = -1;
 int CDiskProfiler::profile_disk_budget = -1;
 
@@ -57,7 +57,7 @@ CDiskProfiler::CDiskProfiler(ISystem* pSystem) : m_bEnabled(false), m_pSystem(pS
 	              "Set maximum number of IO statistics items to visualize\n"
 	              "The default value is 2000\n"
 	              "Usage: profile_disk_max_draw_items [num]");
-	REGISTER_CVAR(profile_disk_timeframe, 5, 0,
+	REGISTER_CVAR(profile_disk_timeframe, CTimeValue(5), 0,
 	              "Set maximum keeping time for collected IO statistics items in seconds\n"
 	              "The default value is 5 sec\n"
 	              "Usage: profile_disk_timeframe [sec]");
@@ -170,11 +170,12 @@ void CDiskProfiler::Render()
 			if ((*it)->m_nIOType != edotRead)  // item is not read IO
 				continue;
 
-			float dTime = (*it)->m_endIOTime - (*it)->m_beginIOTime;
+			CTimeValue dTime = (*it)->m_endIOTime - (*it)->m_beginIOTime;
 
 			if (dTime > 0)
 			{
-				float throughput = (float)(*it)->m_size / dTime;
+				// Float inaccuracy is fine, debug/profiling
+				float throughput = (float)(*it)->m_size / (float)dTime.GetSeconds();
 				if (firstMeasure)
 				{
 					minBandwidth = throughput;
@@ -194,7 +195,8 @@ void CDiskProfiler::Render()
 
 		if (!firstMeasure)
 		{
-			const float fThp = (float)bytesRead / 1024 / max(.01f, profile_disk_timeframe);
+			// Float inaccuracy is fine, debug/profiling
+			const float fThp = (float)bytesRead / 1024 / (float)max(CTimeValue("0.01"), profile_disk_timeframe).GetSeconds();
 
 			if (profile_disk_budget > 0 && profile_disk_budget < (int)fThp)
 			{
@@ -203,7 +205,7 @@ void CDiskProfiler::Render()
 
 			IRenderAuxText::Draw2dLabel(nTextLeft, labelHeight, fTextSize, colInfo1, false, "Avg read bandwidth: %.2f KB/s", fThp);
 			nTextLeft += 200;
-			IRenderAuxText::Draw2dLabel(nTextLeft, labelHeight, fTextSize, colInfo1, false, "Seeks: %i. Avg seeks %.2f seeks/s", seeks, (float)seeks / profile_disk_timeframe);
+			IRenderAuxText::Draw2dLabel(nTextLeft, labelHeight, fTextSize, colInfo1, false, "Seeks: %i. Avg seeks %.2f seeks/s", seeks, (float)seeks / (float)profile_disk_timeframe.GetSeconds());
 			nTextLeft += 200;
 		}
 	}
@@ -221,7 +223,7 @@ void CDiskProfiler::Render()
 
 	// show file IOs
 	int max_draws = 0;
-	float last_time = -1;
+	CTimeValue last_time = -1;
 	for (Statistics::reverse_iterator it = m_statistics.rbegin(); it != m_statistics.rend(); ++it)
 	{
 		if ((*it)->m_endIOTime < 0)  // item is not finished yep
@@ -298,7 +300,7 @@ void CDiskProfiler::Update()
 
 		Render();
 
-		const float timeNow = gEnv->pTimer->GetAsyncCurTime();
+		const CTimeValue timeNow = GetGTimer()->GetAsyncCurTime();
 
 		// clear redundant statistics
 		for (uint32 i = 0; i < m_statistics.size(); )
@@ -328,20 +330,21 @@ void CDiskProfiler::Update()
 	}
 }
 
-void CDiskProfiler::RenderBlock(const float timeStart, const float timeEnd, const ColorB threadColor, const ColorB IOTypeColor)
+void CDiskProfiler::RenderBlock(const CTimeValue& timeStart, const CTimeValue& timeEnd, const ColorB threadColor, const ColorB IOTypeColor)
 {
 	IRenderAuxGeom* pAux = gEnv->pRenderer->GetIRenderAuxGeom();
 
-	const float timeNow = gEnv->pTimer->GetAsyncCurTime();
+	const CTimeValue timeNow = GetGTimer()->GetAsyncCurTime();
 
 	const int width  = gEnv->pRenderer->GetOverlayWidth();
 
 	static const float halfSize = 8;  // bar thickness
 
+	// Float inaccuracy is fine, debug/profiling
 	// calc bar screen coords(in pixels)
-	float start = floorf((timeNow - timeStart) / profile_disk_timeframe * width);
+	float start = (float)floor((timeNow - timeStart) / profile_disk_timeframe * width);
 	start = min((float)width, max(0.f, start));
-	float end = floorf((timeNow - timeEnd) / profile_disk_timeframe * width);
+	float end = (float)floor((timeNow - timeEnd) / profile_disk_timeframe * width);
 	end = min((float)width, max(0.f, end));
 	end = max(end, start + 1.f); // avoid empty bars
 

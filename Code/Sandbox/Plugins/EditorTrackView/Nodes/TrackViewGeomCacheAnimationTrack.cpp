@@ -9,7 +9,7 @@
 
 	#include <Cry3DEngine/IGeomCache.h>
 
-CTrackViewKeyHandle CTrackViewGeomCacheAnimationTrack::CreateKey(const SAnimTime time)
+CTrackViewKeyHandle CTrackViewGeomCacheAnimationTrack::CreateKey(const CTimeValue& time)
 {
 	CTrackViewSequenceNotificationContext context(GetSequence());
 
@@ -38,16 +38,16 @@ CTrackViewKeyHandle CTrackViewGeomCacheAnimationTrack::CreateKey(const SAnimTime
 	return keyHandle;
 }
 
-SAnimTime CTrackViewGeomCacheAnimationTrack::GetKeyDuration(const uint index) const
+CTimeValue CTrackViewGeomCacheAnimationTrack::GetKeyDuration(const uint index) const
 {
 	CTrackViewKeyConstHandle handle = GetKey(index);
 	STimeRangeKey key;
 	handle.GetKey(&key);
 
-	return SAnimTime((key.m_endTime - key.m_startTime) / key.m_speed);
+	return (key.m_endTime - key.m_startTime) / key.m_speed;
 }
 
-SAnimTime CTrackViewGeomCacheAnimationTrack::GetKeyAnimDuration(const uint index) const
+CTimeValue CTrackViewGeomCacheAnimationTrack::GetKeyAnimDuration(const uint index) const
 {
 	IEntity* pEntity = static_cast<CTrackViewEntityNode*>(GetParentNode())->GetEntity();
 	if (pEntity)
@@ -63,20 +63,20 @@ SAnimTime CTrackViewGeomCacheAnimationTrack::GetKeyAnimDuration(const uint index
 				STimeRangeKey key;
 				handle.GetKey(&key);
 
-				return SAnimTime(pGeomCache->GetDuration() / key.m_speed);
+				return (pGeomCache->GetDuration() / key.m_speed);
 			}
 		}
 	}
 
-	return SAnimTime(0);
+	return 0;
 }
 
-SAnimTime CTrackViewGeomCacheAnimationTrack::GetKeyAnimStart(const uint index) const
+CTimeValue CTrackViewGeomCacheAnimationTrack::GetKeyAnimStart(const uint index) const
 {
 	CTrackViewKeyConstHandle handle = GetKey(index);
 	STimeRangeKey key;
 	handle.GetKey(&key);
-	return SAnimTime(key.m_startTime);
+	return key.m_startTime;
 }
 
 bool CTrackViewGeomCacheAnimationTrack::IsKeyAnimLoopable(const uint index) const

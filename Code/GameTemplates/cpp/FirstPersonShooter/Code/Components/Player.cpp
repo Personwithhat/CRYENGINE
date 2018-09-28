@@ -147,7 +147,7 @@ void CPlayerComponent::ProcessEvent(const SEntityEvent& event)
 		if(!m_isAlive)
 			return;
 		
-		const float frameTime = event.fParam[0];
+		const CTimeValue frameTime = event.tVal;
 
 		// Start by updating the movement request we want to send to the character controller
 		// This results in the physical representation of the character moving

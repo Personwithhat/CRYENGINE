@@ -19,7 +19,7 @@
 #include <Cry3DEngine/IRenderNode.h>
 #include <Cry3DEngine/IStatObj.h>
 
-#define MAX_OBJECTS_PHYS_SIMULATION_TIME (5)
+#define MAX_OBJECTS_PHYS_SIMULATION_TIME (CTimeValue(5))
 
 namespace
 {
@@ -133,7 +133,7 @@ REGISTER_EDITOR_UI_COMMAND_DESC(physics, stiff_IK, "Use Stiff IK Mode", "", "ico
 //////////////////////////////////////////////////////////////////////////
 CObjectPhysicsManager::CObjectPhysicsManager()
 {
-	m_fStartObjectSimulationTime = 0;
+	m_fStartObjectSimulationTime.SetSeconds(0);
 	m_pProgress = 0;
 	m_bSimulatingObjects = false;
 	m_wasSimObjects = 0;
@@ -818,14 +818,14 @@ void CObjectPhysicsManager::UpdateSimulatingObjects()
 		}
 	}
 
-	float curTime = GetISystem()->GetITimer()->GetAsyncCurTime();
-	float runningTime = (curTime - m_fStartObjectSimulationTime);
+	CTimeValue curTime = GetISystem()->GetITimer()->GetAsyncCurTime();
+	CTimeValue runningTime = (curTime - m_fStartObjectSimulationTime);
 
-	m_pProgress->Step(100 * runningTime / MAX_OBJECTS_PHYS_SIMULATION_TIME);
+	m_pProgress->Step((int)(100 * runningTime / MAX_OBJECTS_PHYS_SIMULATION_TIME));
 
 	if (m_simObjects.empty() || (runningTime > MAX_OBJECTS_PHYS_SIMULATION_TIME))
 	{
-		m_fStartObjectSimulationTime = 0;
+		m_fStartObjectSimulationTime.SetSeconds(0);
 		m_bSimulatingObjects = false;
 		SAFE_DELETE(m_pProgress);
 		GetIEditorImpl()->GetGameEngine()->SetSimulationMode(false, true);

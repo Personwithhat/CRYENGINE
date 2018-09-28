@@ -434,8 +434,9 @@ struct SEntityEvent
 	  const float f0,
 	  const float f1,
 	  const float f2,
-	  Vec3 const& _vec)
-		: vec(_vec)
+	  Vec3 const& _vec,
+	  CTimeValue const& t)
+		: vec(_vec), tVal(t)
 	{
 		nParam[0] = n0;
 		nParam[1] = n1;
@@ -466,6 +467,7 @@ struct SEntityEvent
 	intptr_t     nParam[4]; //!< Event parameters.
 	float        fParam[3];
 	Vec3         vec;
+	CTimeValue   tVal;
 };
 
 enum EEntityXFormFlags : uint32

@@ -39,7 +39,7 @@ void CGameQueryListener::Update()
 	CleanUpServers();
 }
 
-void CGameQueryListener::AddServer(const char* description, const char* target, const char* additionalText, uint32 ping)
+void CGameQueryListener::AddServer(const char* description, const char* target, const char* additionalText, const CTimeValue& ping)
 {
 	SGameServer server(target, description, additionalText, ping);
 	//compare messages in showcase and increment if fitting
@@ -99,7 +99,7 @@ void CGameQueryListener::Complete()
 	m_pNetListener->DeleteNetQueryListener();
 }
 
-void CGameQueryListener::AddPong(string address, uint32 ping)
+void CGameQueryListener::AddPong(string address, const CTimeValue& ping)
 {
 	std::vector<SGameServer>::iterator it = m_servers.begin();
 	for (; it != m_servers.end(); ++it)
@@ -112,7 +112,7 @@ void CGameQueryListener::AddPong(string address, uint32 ping)
 	}
 }
 
-void CGameQueryListener::GetServer(int number, char** server, char** data, int& ping)
+void CGameQueryListener::GetServer(int number, char** server, char** data, CTimeValue& ping)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_NETWORK);
 	if (number >= m_servers.size())
@@ -166,7 +166,7 @@ void CGameQueryListener::CleanUpServers()
 	if (m_servers.size() == 0)
 		return;
 
-	CTimeValue now = gEnv->pTimer->GetFrameStartTime();
+	CTimeValue now = GetGTimer()->GetFrameStartTime();
 
 	std::vector<SGameServer>::iterator it;
 	//kill old servers
@@ -186,9 +186,9 @@ void CGameQueryListener::CleanUpServers()
 	}
 }
 
-const char* CGameQueryListener::GetServerData(const char* server, int& o_ping)
+const char* CGameQueryListener::GetServerData(const char* server, CTimeValue& o_ping)
 {
-	o_ping = -1;
+	o_ping.SetSeconds(-1);
 
 	std::vector<SGameServer>::iterator it = m_servers.begin();
 	for (; it != m_servers.end(); ++it)

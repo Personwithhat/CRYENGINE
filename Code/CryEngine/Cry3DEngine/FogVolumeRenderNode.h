@@ -19,7 +19,7 @@ public:
 	virtual void            SetFogVolumeProperties(const SFogVolumeProperties& properties) override;
 	virtual const Matrix34& GetMatrix() const override;
 
-	virtual void            FadeGlobalDensity(float fadeTime, float newGlobalDensity) override;
+	virtual void            FadeGlobalDensity(const CTimeValue& fadeTime, float newGlobalDensity) override;
 
 	// implements IRenderNode
 	virtual void             GetLocalBounds(AABB& bbox) const override;
@@ -104,7 +104,7 @@ private:
 		{
 		}
 
-		void Set(float startTime, float endTime, float startValue, float endValue)
+		void Set(const CTimeValue& startTime, const CTimeValue& endTime, float startValue, float endValue)
 		{
 			m_startTime = startTime;
 			m_endTime = endTime;
@@ -122,20 +122,20 @@ private:
 			return m_startTime >= 0 && m_endTime > m_startTime && m_startValue != m_endValue;
 		}
 
-		bool IsTimeInRange(float time)
+		bool IsTimeInRange(const CTimeValue& time)
 		{
 			return time >= m_startTime && time <= m_endTime;
 		}
 
-		float GetValue(float time)
+		float GetValue(const CTimeValue& time)
 		{
-			float t = clamp_tpl((time - m_startTime) / (m_endTime - m_startTime), 0.0f, 1.0f);
-			return m_startValue + t * (m_endValue - m_startValue);
+			nTime t = CLAMP((time - m_startTime) / (m_endTime - m_startTime), 0, 1);
+			return m_startValue + BADF t * (m_endValue - m_startValue);
 		}
 
 	private:
-		float m_startTime;
-		float m_endTime;
+		CTimeValue m_startTime;
+		CTimeValue m_endTime;
 		float m_startValue;
 		float m_endValue;
 	};
@@ -165,10 +165,10 @@ private:
 	uint32                m_updateFrameID;
 	float                 m_windInfluence;
 	Vec3                  m_windOffset;
-	float                 m_noiseElapsedTime;
+	CTimeValue            m_noiseElapsedTime;
 	float                 m_densityNoiseScale;
 	float                 m_densityNoiseOffset;
-	float                 m_densityNoiseTimeFrequency;
+	mpfloat               m_densityNoiseTimeFrequency;
 	Vec3                  m_densityNoiseFrequency;
 	Vec3                  m_emission;
 

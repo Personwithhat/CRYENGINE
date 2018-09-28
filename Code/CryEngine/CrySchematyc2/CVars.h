@@ -22,7 +22,7 @@ namespace Schematyc2
 		static int    sc2_MaxRecursionDepth;
 		static ICVar* sc2_ExperimentalFeatures;
 		
-		static float  sc2_FunctionTimeLimit;
+		static CTimeValue sc2_FunctionTimeLimit;
 		static int    sc2_UseNewGraphPipeline;
 
 		static float  sc2_RelevanceGridCellSize;

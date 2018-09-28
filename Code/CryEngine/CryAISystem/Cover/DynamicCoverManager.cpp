@@ -21,7 +21,7 @@ void DynamicCoverManager::OnEntityEvent(IEntity* entity, const SEntityEvent& eve
 
 DynamicCoverManager::DynamicCoverManager()
 	: m_segmentsGrid(20.0f, 20.0f, 20.0f, segment_position(m_segments))
-	, m_frameDeltaTime(0.0f)
+	, m_frameDeltaTime(0)
 {
 }
 
@@ -157,7 +157,7 @@ void DynamicCoverManager::ClearValidationSegments()
 	m_validationQueue.clear();
 }
 
-void DynamicCoverManager::Update(const CTimeValue frameStartTime, const float frameDeltaTime)
+void DynamicCoverManager::Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime)
 {
 	PREFAST_SUPPRESS_WARNING(6239);
 
@@ -176,7 +176,7 @@ void DynamicCoverManager::Update(const CTimeValue frameStartTime, const float fr
 
 		if (state.state == EntityCoverState::Moving)
 		{
-			if ((m_frameStartTime - state.lastMovement).GetMilliSecondsAsInt64() >= 150)
+			if (m_frameStartTime - state.lastMovement >=" 0.15")
 			{
 				state.state = EntityCoverState::Sampling;
 
