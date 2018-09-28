@@ -190,6 +190,7 @@ public:
 		m_value = GetCVarOverride(szName, m_value);
 	}
 
+	using ICVar::Set; // Needed due to inability to inherit overloads......no point re-defining. Can probably be cleaned up.
 	virtual int GetIVal() const override
 	{
 		return static_cast<int>(m_value);
@@ -227,6 +228,7 @@ public:
 		CRY_ASSERT_MESSAGE(GetType() == ECVarType::Float, "Wrong Set() function called. %s", GetName());
 		SetInternal(static_cast<base_type>(value));
 	}
+	using ICVar::Set;
 	virtual void Set(int value) override
 	{
 		CRY_ASSERT_MESSAGE(GetType() == ECVarType::Int, "Wrong Set() function called. %s", GetName());
@@ -672,7 +674,7 @@ public:
 	string GetDetailedInfo() const;
 
 	// interface ICVar -----------------------------------------------------------------------------------
-
+	using ICVar::Set;	// PERSONAL TODO: This entire damn thing has been rewritten. ARGH.
 	virtual const char* GetHelp() const override;
 
 	virtual int         GetRealIVal() const override;
