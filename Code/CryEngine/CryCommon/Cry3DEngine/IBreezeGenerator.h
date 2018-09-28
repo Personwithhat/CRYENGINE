@@ -36,8 +36,8 @@ struct IBreezeGenerator
 	virtual float GetVariance() const = 0;
 
 	// The max. life of each breeze
-	virtual void SetLifetime(float lifetime) = 0;
-	virtual float GetLifetime() const = 0;
+	virtual void SetLifetime(const CTimeValue& lifetime) = 0;
+	virtual const CTimeValue& GetLifetime() const = 0;
 
 	// The max. number of wind areas active at the same time
 	virtual void SetCount(uint32 count) = 0;

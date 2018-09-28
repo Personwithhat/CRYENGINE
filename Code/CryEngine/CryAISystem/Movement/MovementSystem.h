@@ -35,7 +35,7 @@ public:
 	virtual MovementRequestID QueueRequest(const MovementRequest& request) override;
 	virtual void              UnsuscribeFromRequestCallback(const MovementRequestID& id) override;
 	virtual void              GetRequestStatus(const MovementRequestID& id, MovementRequestStatus& status) const override;
-	virtual void              Update(const CTimeValue frameStartTime, const float frameDeltaTime) override;
+	virtual void              Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime) override;
 	virtual void              Reset() override;
 	virtual void              RegisterFunctionToConstructMovementBlockForCustomNavigationType(Movement::CustomNavigationBlockCreatorFunction blockFactoryFunction) override;
 	virtual bool              AddActionAbilityCallbacks(const EntityId entityId, const SMovementActionAbilityCallbacks& ability) override;
@@ -88,7 +88,7 @@ private:
 	StandardMovementBlocksFactory                  m_builtinMovementBlocksFactory;
 
 	CTimeValue                                     m_frameStartTime;
-	float                                          m_frameDeltaTime;
+	CTimeValue                                     m_frameDeltaTime;
 };
 
 #endif // MovementSystem_h

@@ -412,7 +412,7 @@ void CCollisionAvoidanceSystem::PopulateState()
 	}
 }
 
-void CCollisionAvoidanceSystem::ApplyResults(float updateTime)
+void CCollisionAvoidanceSystem::ApplyResults(const CTimeValue& updateTime)
 {
 	if (gAIEnv.CVars.CollisionAvoidanceUpdateVelocities || gAIEnv.CVars.CollisionAvoidanceEnableRadiusIncrement)
 	{
@@ -424,7 +424,7 @@ void CCollisionAvoidanceSystem::ApplyResults(float updateTime)
 	}
 }
 
-void CCollisionAvoidanceSystem::Update(float updateTime)
+void CCollisionAvoidanceSystem::Update(const CTimeValue& updateTime)
 {
 	m_isUpdating = true;
 
@@ -706,8 +706,8 @@ void CCollisionAvoidanceSystem::ComputeObstacleConstraintLine(const SAgentParams
 	static const float heuristicWeightForDistance = 0.01f;
 	static const float minimumTimeHorizonScale = 0.25f;
 	const float adjustedTimeHorizonScale = max(min(timeHorizonScale, (heuristicWeightForDistance * distanceSq)), minimumTimeHorizonScale);
-	const float TimeHorizon = gAIEnv.CVars.CollisionAvoidanceObstacleTimeHorizon * adjustedTimeHorizonScale;
-	const float invTimeHorizon = 1.0f / TimeHorizon;
+	const CTimeValue TimeHorizon = gAIEnv.CVars.CollisionAvoidanceObstacleTimeHorizon * BADMP(adjustedTimeHorizonScale);
+	const float invTimeHorizon = BADF(1 / TimeHorizon);
 
 	Vec2 u;
 
@@ -779,8 +779,8 @@ Vec2 CCollisionAvoidanceSystem::ClampSpeedWithNavigationMesh(const SNavigationPr
 	Vec2 outputVelocity = velocityToClamp;
 	if (gAIEnv.CVars.CollisionAvoidanceClampVelocitiesWithNavigationMesh == 1)
 	{
-		const float invTimeHorizon = 1.0f / gAIEnv.CVars.CollisionAvoidanceAgentTimeHorizon;
-		const float TimeStep = gAIEnv.CVars.CollisionAvoidanceTimeStep;
+		const float invTimeHorizon = BADF(1 / gAIEnv.CVars.CollisionAvoidanceAgentTimeHorizon);
+		const CTimeValue TimeStep = gAIEnv.CVars.CollisionAvoidanceTimeStep;
 
 		const Vec3 from = agentPosition;
 		const Vec3 to = agentPosition + Vec3(velocityToClamp.x, velocityToClamp.y, 0.0f);
@@ -831,7 +831,7 @@ Vec2 CCollisionAvoidanceSystem::ClampSpeedWithNavigationMesh(const SNavigationPr
 				MNM::ERayCastResult result = navMesh.RayCast(startMeshLoc, triStart, endMeshLoc, triEnd, raycastRequest, pFilter);
 				if (result == MNM::ERayCastResult::Hit)
 				{
-					const float velocityMagnitude = min(TimeStep, raycastRequest.hit.distance.as_float());
+					const float velocityMagnitude = min(TimeStep.BADGetSeconds(), raycastRequest.hit.distance.as_float());
 					const Vec3 newEndLoc = agentPosition + (navMesh.ToWorldSpace(endMeshLoc).GetVec3() - agentPosition) * velocityMagnitude;
 					const Vec3 newVelocity = newEndLoc - agentPosition;
 					outputVelocity = Vec2(newVelocity.x, newVelocity.y) * invTimeHorizon;
@@ -863,12 +863,12 @@ void CCollisionAvoidanceSystem::ComputeAgentConstraintLine(const SAgentParams& a
 	const float radii = agent.radius + obstacleAgent.radius;
 	const float radiiSq = sqr(radii);
 
-	const float TimeHorizon = timeHorizonScale *
+	const CTimeValue TimeHorizon = BADMP(timeHorizonScale) *
 		(reciprocal ? gAIEnv.CVars.CollisionAvoidanceAgentTimeHorizon : gAIEnv.CVars.CollisionAvoidanceObstacleTimeHorizon);
-	const float TimeStep = gAIEnv.CVars.CollisionAvoidanceTimeStep;
+	const CTimeValue TimeStep = gAIEnv.CVars.CollisionAvoidanceTimeStep;
 
-	const float invTimeHorizon = 1.0f / TimeHorizon;
-	const float invTimeStep = 1.0f / TimeStep;
+	const float invTimeHorizon = BADF(1 / TimeHorizon);
+	const float invTimeStep    = BADF(1 / TimeStep);
 
 	Vec2 u;
 

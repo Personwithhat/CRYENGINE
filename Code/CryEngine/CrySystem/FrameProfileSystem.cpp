@@ -76,9 +76,9 @@ CFrameProfileSystem::CFrameProfileSystem()
 	, m_frameStartTime(0)
 	, m_totalProfileTime(0)
 	, m_frameTime(0)
-	, m_frameSecAvg(0.0f)
-	, m_frameLostSecAvg(0.0f)
-	, m_frameOverheadSecAvg(0.0f)
+	, m_frameSecAvg(0)
+	, m_frameLostSecAvg(0)
+	, m_frameOverheadSecAvg(0)
 	, m_pCurrentCustomSection(nullptr)
 	, m_bDisplayedProfilersValid(false)
 	, m_subsystemFilter(PROFILE_RENDERER)
@@ -266,9 +266,9 @@ void CFrameProfileSystem::Init()
 		"Enable drawing of page faults graph.");
 	REGISTER_CVAR(profile_network, 0, 0,
 		"Enables network profiling");
-	REGISTER_CVAR(profile_peak, PEAK_TOLERANCE, 0,
+	REGISTER_CVAR(profile_peak, PEAK_TOLERANCE, 0, // PERSONAL CRYTEK: Isn't this also memory-bytes/etc.?
 		"Profiler Peaks Tolerance in Milliseconds");
-	REGISTER_CVAR(profile_peak_display, 8.0f, 0,
+	REGISTER_CVAR(profile_peak_display, CTimeValue(8), 0,
 		"hot to cold time for peak display");
 	REGISTER_CVAR(profile_min_display_ms, 0.01f, 0,
 		"Minimum time in ms for displayed functions");
@@ -462,9 +462,9 @@ void CFrameProfileSystem::Reset()
 	m_frameStartTime = CryGetTicks();
 	m_frameTime = 0;
 	tls_overheadTime = 0;
-	m_frameSecAvg = 0.f;
-	m_frameLostSecAvg = 0.f;
-	m_frameOverheadSecAvg = 0.f;
+	m_frameSecAvg.SetSeconds(0);
+	m_frameLostSecAvg.SetSeconds(0);
+	m_frameOverheadSecAvg.SetSeconds(0);
 	m_bCollectionPaused = false;
 
 	// Iterate over all profilers update their history and reset them.
@@ -620,7 +620,7 @@ void CFrameProfileSystem::EndProfilerSection(CFrameProfilerSection* pSection)
 	{
 		if (pProfiler == s_pFrameProfileSystem->m_pGraphProfiler)
 		{
-			float fMillis = 1000.f * gEnv->pTimer->TicksToSeconds(totalTime);
+			float fMillis = (float)GetGTimer()->TicksToTime(totalTime).GetMilliSeconds();
 			CryLogAlways("Function Profiler: %s  (time=%.2fms)", s_pFrameProfileSystem->GetFullName(pProfiler), fMillis);
 			GetISystem()->debug_LogCallStack();
 		}
@@ -843,7 +843,7 @@ void CFrameProfileSystem::EndFrame()
 			{
 				if (pFrameProfiler != nullptr && (pFrameProfiler->m_description & PROFILE_TYPE_CHECK_MASK) == EProfileDescription::REGION)
 				{
-					pFrameProfiler->m_selfTime.Update(smoothFactor);
+					pFrameProfiler->m_selfTime.Update(BADF smoothFactor);
 
 					// Reset profiler.
 					pFrameProfiler->m_totalTime = 0;
@@ -927,11 +927,12 @@ void CFrameProfileSystem::EndFrame()
 			pfGetProcessMemoryInfo(GetCurrentProcess(), &pc, sizeof(pc));
 			m_nPagesFaultsLastFrame = (int)(pc.PageFaultCount - m_nLastPageFaultCount);
 			m_nLastPageFaultCount = pc.PageFaultCount;
-			static float fLastPFTime = 0;
+			static CTimeValue fLastPFTime = 0;
 			static int nPFCounter = 0;
 			nPFCounter += m_nPagesFaultsLastFrame;
-			float fCurr = gEnv->pTimer->TicksToSeconds(endTime);
-			if ((fCurr - fLastPFTime) >= 1.f)
+
+			CTimeValue fCurr = GetGTimer()->TicksToTime(endTime);
+			if ((fCurr - fLastPFTime) >= 1)
 			{
 				fLastPFTime = fCurr;
 				m_nPagesFaultsPerSec = nPFCounter;
@@ -987,9 +988,9 @@ void CFrameProfileSystem::EndFrame()
 			continue;
 
 		//////////////////////////////////////////////////////////////////////////
-		pFrameProfiler->m_totalTime.Update(smoothFactor);
-		pFrameProfiler->m_selfTime.Update(smoothFactor);
-		pFrameProfiler->m_count.Update(smoothFactor);
+		pFrameProfiler->m_totalTime.Update(BADF smoothFactor);
+		pFrameProfiler->m_selfTime.Update(BADF smoothFactor);
+		pFrameProfiler->m_count.Update(BADF smoothFactor);
 
 		switch ((int)m_displayQuantity)
 		{
@@ -1083,7 +1084,7 @@ void CFrameProfileSystem::EndFrame()
 				peak.count = pFrameProfiler->m_count;
 				peak.pageFaults = m_nPagesFaultsLastFrame;
 				peak.waiting = pFrameProfiler->m_description & EProfileDescription::WAITING;
-				peak.when = gEnv->pTimer->TicksToSeconds(m_totalProfileTime);
+				peak.when = GetGTimer()->TicksToTime(m_totalProfileTime);
 				AddPeak(peak);
 
 				// Call peak callbacks.
@@ -1152,20 +1153,20 @@ void CFrameProfileSystem::EndFrame()
 		m_subsystems[i].maxTime = (float)__fsel(m_subsystems[i].maxTime - m_subsystems[i].selfTime, m_subsystems[i].maxTime, m_subsystems[i].selfTime);
 	}
 
-	float frameSec = gEnv->pTimer->TicksToSeconds(m_frameTime);
+	CTimeValue frameSec = GetGTimer()->TicksToTime(m_frameTime);
 	m_frameSecAvg = Lerp(m_frameSecAvg, frameSec, smoothFactor);
 
-	float overheadtime = gEnv->pTimer->TicksToSeconds(tls_overheadTime);
+	CTimeValue overheadtime = GetGTimer()->TicksToTime(tls_overheadTime);
 	m_frameOverheadSecAvg = Lerp(m_frameOverheadSecAvg, overheadtime, smoothFactor);
 
-	float frameLostSec = gEnv->pTimer->TicksToSeconds(m_frameTime - selfAccountedTime);
+	CTimeValue frameLostSec = GetGTimer()->TicksToTime(m_frameTime - selfAccountedTime);
 	frameLostSec -= overheadtime;
 	m_frameLostSecAvg = Lerp(m_frameLostSecAvg, frameLostSec, smoothFactor);
 
 	if (m_nCurSample >= 0)
 	{
 		// Keep offline global time history.
-		m_frameTimeOfflineHistory.m_selfTime.push_back(FtoI(frameSec * 1e6f));
+		m_frameTimeOfflineHistory.m_selfTime.push_back(frameSec);
 		m_frameTimeOfflineHistory.m_count.push_back(1);
 		m_nCurSample++;
 	}
@@ -1179,10 +1180,10 @@ void CFrameProfileSystem::OnSliceAndSleep()
 	EndFrame();
 }
 
-float CFrameProfileSystem::GetSmoothFactor() const
+mpfloat CFrameProfileSystem::GetSmoothFactor() const
 {
-	float smoothTime = gEnv->pTimer->TicksToSeconds(m_totalProfileTime);
-	return gEnv->pTimer->GetProfileFrameBlending(&smoothTime);
+	CTimeValue smoothTime = GetGTimer()->TicksToTime(m_totalProfileTime);
+	return GetGTimer()->GetProfileFrameBlending(&smoothTime);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1199,11 +1200,11 @@ void CFrameProfileSystem::UpdateOfflineHistory(CFrameProfiler* pProfiler)
 	pProfiler->m_pOfflineHistory->m_selfTime.resize(newCount);
 	pProfiler->m_pOfflineHistory->m_count.resize(newCount);
 
-	uint32 micros = FtoI(gEnv->pTimer->TicksToSeconds(pProfiler->m_selfTime) * 1e6f);
+	CTimeValue time = GetGTimer()->TicksToTime(pProfiler->m_selfTime);
 	uint16 count = pProfiler->m_count;
 	for (int i = prevCont; i < newCount; i++)
 	{
-		pProfiler->m_pOfflineHistory->m_selfTime[i] = micros;
+		pProfiler->m_pOfflineHistory->m_selfTime[i] = time;
 		pProfiler->m_pOfflineHistory->m_count[i] = count;
 	}
 }

@@ -10,25 +10,25 @@ CTrackViewAnimationTrack::CTrackViewAnimationTrack(IAnimTrack* pTrack, CTrackVie
 {
 }
 
-SAnimTime CTrackViewAnimationTrack::GetKeyDuration(const uint index) const
+CTimeValue CTrackViewAnimationTrack::GetKeyDuration(const uint index) const
 {
 	SCharacterKey key;
 	GetKey(index, &key);
 
-	if (key.m_defaultAnimDuration == 0.0f)
+	if (key.m_defaultAnimDuration == 0)
 	{
 		key.m_defaultAnimDuration = GetKeyDurationFromAnimationData(key);
 	}
 
-	return SAnimTime(key.GetCroppedAnimDuration() / key.m_speed);
+	return key.GetCroppedAnimDuration() / key.m_speed;
 }
 
-SAnimTime CTrackViewAnimationTrack::GetKeyAnimDuration(const uint index) const
+CTimeValue CTrackViewAnimationTrack::GetKeyAnimDuration(const uint index) const
 {
 	SCharacterKey key;
 	GetKey(index, &key);
 
-	if (key.m_defaultAnimDuration == 0.0f)
+	if (key.m_defaultAnimDuration == 0)
 	{
 		key.m_defaultAnimDuration = GetKeyDurationFromAnimationData(key);
 	}
@@ -36,7 +36,7 @@ SAnimTime CTrackViewAnimationTrack::GetKeyAnimDuration(const uint index) const
 	return key.m_defaultAnimDuration;
 }
 
-SAnimTime CTrackViewAnimationTrack::GetKeyAnimStart(const uint index) const
+CTimeValue CTrackViewAnimationTrack::GetKeyAnimStart(const uint index) const
 {
 	SCharacterKey key;
 	GetKey(index, &key);
@@ -44,7 +44,7 @@ SAnimTime CTrackViewAnimationTrack::GetKeyAnimStart(const uint index) const
 	return key.m_startTime;
 }
 
-SAnimTime CTrackViewAnimationTrack::GetKeyAnimEnd(const uint index) const
+CTimeValue CTrackViewAnimationTrack::GetKeyAnimEnd(const uint index) const
 {
 	SCharacterKey key;
 	GetKey(index, &key);
@@ -52,9 +52,9 @@ SAnimTime CTrackViewAnimationTrack::GetKeyAnimEnd(const uint index) const
 	return key.m_endTime;
 }
 
-float CTrackViewAnimationTrack::GetKeyDurationFromAnimationData(const SCharacterKey& key) const
+CTimeValue CTrackViewAnimationTrack::GetKeyDurationFromAnimationData(const SCharacterKey& key) const
 {
-	float duration = 0.0f;
+	CTimeValue duration = 0;
 
 	CTrackViewNode* pParent = GetParentNode();
 	if (!pParent)
@@ -98,7 +98,7 @@ float CTrackViewAnimationTrack::GetKeyDurationFromAnimationData(const SCharacter
 	int animId = pAnimations->GetAnimIDByName(key.m_animation);
 	if (animId >= 0)
 	{
-		duration = pAnimations->GetDuration_sec(animId);
+		duration = pAnimations->GetDuration(animId);
 	}
 
 	return duration;

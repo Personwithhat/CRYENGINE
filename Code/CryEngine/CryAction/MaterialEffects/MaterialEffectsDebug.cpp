@@ -14,7 +14,7 @@ namespace MaterialEffectsUtils
 {
 #ifdef MATERIAL_EFFECTS_DEBUG
 
-	#define DEFAULT_DEBUG_VISUAL_MFX_LIFETIME 12.0f
+	#define DEFAULT_DEBUG_VISUAL_MFX_LIFETIME CTimeValue(12)
 
 void CVisualDebug::AddEffectDebugVisual(const TMFXEffectId effectId, const SMFXRunTimeEffectParams& runtimeParams)
 {
@@ -82,7 +82,7 @@ void CVisualDebug::AddLastSearchHint(const TMFXEffectId effectId, const int surf
 	m_lastSearchHint.fxId = effectId;
 }
 
-void CVisualDebug::Update(const CMaterialEffects& materialEffects, const float frameTime)
+void CVisualDebug::Update(const CMaterialEffects& materialEffects, const CTimeValue& frameTime)
 {
 	IRenderAuxGeom* pRenderAux = gEnv->pRenderer->GetIRenderAuxGeom();
 
@@ -93,7 +93,7 @@ void CVisualDebug::Update(const CMaterialEffects& materialEffects, const float f
 	newFlags.SetCullMode(e_CullModeNone);
 	pRenderAux->SetRenderFlags(newFlags);
 
-	const float baseDebugTimeOut = DEFAULT_DEBUG_VISUAL_MFX_LIFETIME;
+	const CTimeValue baseDebugTimeOut = DEFAULT_DEBUG_VISUAL_MFX_LIFETIME;
 
 	bool extendedDebugInfo = (CMaterialEffectsCVars::Get().mfx_DebugVisual == 2);
 
@@ -101,7 +101,7 @@ void CVisualDebug::Update(const CMaterialEffects& materialEffects, const float f
 	{
 		SDebugVisualEntry& currentFX = m_effectList[i];
 
-		if (currentFX.lifeTime <= 0.0f)
+		if (currentFX.lifeTime <= 0)
 		{
 			continue;
 		}
@@ -111,7 +111,7 @@ void CVisualDebug::Update(const CMaterialEffects& materialEffects, const float f
 		TMFXContainerPtr pEffectContainer = materialEffects.InternalGetEffect(currentFX.fxId);
 		if (pEffectContainer)
 		{
-			const float alpha = clamp_tpl(powf(((currentFX.lifeTime + 2.0f) / baseDebugTimeOut), 3.0f), 0.0f, 1.0f);
+			const float alpha = clamp_tpl(powf(BADF ((currentFX.lifeTime + 2) / baseDebugTimeOut), 3.0f), 0.0f, 1.0f);
 			const ColorB blue(0, 0, 255, (uint8)(192 * alpha));
 			const Vec3 coneBase = currentFX.fxPosition + (currentFX.fxDirection * 0.4f);
 			const Vec3 lineEnd = currentFX.fxPosition;

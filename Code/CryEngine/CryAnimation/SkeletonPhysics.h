@@ -20,7 +20,7 @@ public:
 	{
 		m_pCharPhysics = NULL;
 		m_ppBonePhysics = NULL;
-		m_timeStandingUp = 0.0f;
+		m_timeStandingUp.SetSeconds(0);
 		;
 
 		m_bHasPhysics = false;
@@ -73,7 +73,7 @@ public:
 public:
 	IPhysicalEntity*  m_pCharPhysics;
 	IPhysicalEntity** m_ppBonePhysics;
-	float             m_timeStandingUp;
+	CTimeValue        m_timeStandingUp;
 
 	bool              m_bHasPhysics          : 1;
 	bool              m_bHasPhysicsProxies   : 1;
@@ -176,7 +176,7 @@ public:
 	void             SetCharacterPhysics(IPhysicalEntity* pent)
 	{
 		m_pCharPhysics = pent;
-		m_timeStandingUp = -1.0f;
+		m_timeStandingUp.SetSeconds(-1);
 	}
 	int                             getBonePhysParentIndex(int nBoneIndex, int nLod = 0);
 
@@ -255,7 +255,7 @@ public:
 	// Execution
 public:
 	void Job_SynchronizeWithPhysicsPrepare(Memory::CPool& memoryPool);
-	void Job_Physics_SynchronizeFrom(Skeleton::CPoseData& poseData, float timeDelta);
+	void Job_Physics_SynchronizeFrom(Skeleton::CPoseData& poseData, const CTimeValue& timeDelta);
 
 	void SynchronizeWithPhysics(Skeleton::CPoseData& poseData);
 	void SynchronizeWithPhysicalEntity(IPhysicalEntity* pent, const Vec3& posMaster, const Quat& qMaster);
@@ -263,22 +263,22 @@ public:
 	void SynchronizeWithPhysicsPost();
 
 private:
-	void ProcessPhysics(Skeleton::CPoseData& poseData, float timeDelta);
+	void ProcessPhysics(Skeleton::CPoseData& poseData, const CTimeValue& timeDelta);
 
 	void Physics_SynchronizeToAux(const Skeleton::CPoseData& poseData);
 	void Physics_SynchronizeToEntity(IPhysicalEntity& physicalEntity, QuatT offset);
-	void Physics_SynchronizeToEntityArticulated(float fDeltaTimePhys);
-	void Physics_SynchronizeToImpact(float timeDelta);
+	void Physics_SynchronizeToEntityArticulated(const CTimeValue& fDeltaTimePhys);
+	void Physics_SynchronizeToImpact(const CTimeValue& timeDelta);
 
 	void Job_Physics_SynchronizeFromEntityPrepare(Memory::CPool& memoryPool, IPhysicalEntity* pPhysicalEntity);
 	void Job_Physics_SynchronizeFromEntity(Skeleton::CPoseData& poseData, IPhysicalEntity* pPhysicalEntity, QuatT offset);
-	void Job_Physics_SynchronizeFromEntityArticulated(Skeleton::CPoseData& poseData, float timeDelta);
+	void Job_Physics_SynchronizeFromEntityArticulated(Skeleton::CPoseData& poseData, const CTimeValue& timeDelta);
 	void Job_Physics_SynchronizeFromAuxPrepare(Memory::CPool& memoryPool);
 	void Job_Physics_SynchronizeFromAux(Skeleton::CPoseData& poseData);
 	void Job_Physics_SynchronizeFromImpactPrepare(Memory::CPool& memoryPool);
-	void Job_Physics_SynchronizeFromImpact(Skeleton::CPoseData& poseData, float timeDelta);
+	void Job_Physics_SynchronizeFromImpact(Skeleton::CPoseData& poseData, const CTimeValue& timeDelta);
 
-	void Job_Physics_BlendFromRagdoll(Skeleton::CPoseData& poseData, float timeDelta);
+	void Job_Physics_BlendFromRagdoll(Skeleton::CPoseData& poseData, const CTimeValue& timeDelta);
 	void SetPrevHost(IPhysicalEntity* pNewHost = 0)
 	{
 		if (m_pPrevCharHost == pNewHost)
@@ -296,7 +296,7 @@ private:
 public:
 	IPhysicalEntity*  m_pCharPhysics;
 	IPhysicalEntity** m_ppBonePhysics;
-	float             m_timeStandingUp;
+	CTimeValue        m_timeStandingUp;
 
 	bool              m_bBlendFromRagdollFlip : 1;
 	bool              m_bHasPhysics           : 1;
@@ -351,9 +351,9 @@ private:
 	int                     m_nAuxPhys;
 	int                     m_iSurfaceIdx;
 	DynArray<aux_phys_data> m_auxPhys;
-	f32                     m_fPhysBlendTime;
-	f32                     m_fPhysBlendMaxTime;
-	f32                     m_frPhysBlendMaxTime;
+	CTimeValue              m_fPhysBlendTime;
+	CTimeValue              m_fPhysBlendMaxTime;
+	rTime                   m_frPhysBlendMaxTime;
 	float                   m_stiffnessScale;
 	f32                     m_fScale;
 	f32                     m_fMass;

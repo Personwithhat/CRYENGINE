@@ -86,7 +86,7 @@ void CParticleEffect::Compile()
 			SetMax(m_timings.m_maxParticleLife, timings.m_maxParticleLife);
 			SetMax(m_timings.m_stableTime, timings.m_stableTime);
 			SetMax(m_timings.m_equilibriumTime, timings.m_equilibriumTime);
-			SetMax(m_timings.m_maxTotalLIfe, timings.m_maxTotalLIfe);
+			SetMax(m_timings.m_maxTotalLife, timings.m_maxTotalLife);
 		}
 	}
 

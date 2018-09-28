@@ -31,7 +31,7 @@ public:
 	virtual inline void                 ProcessEvent(const SEntityEvent& event)                                               {}
 	virtual Cry::Entity::EventFlags     GetEventMask() const final { return Cry::Entity::EventFlags(); };
 	virtual inline void                 SetChannelId(uint16 id)                                                         {}
-	virtual inline void                 PostUpdate(float frameTime)                                                     {}
+	virtual inline void                 PostUpdate(const CTimeValue& frameTime)                                         {}
 	virtual inline void                 PostRemoteSpawn()                                                               {}
 	virtual inline void                 GetMemoryUsage(ICrySizer* s) const                                              { s->Add(*this); }
 

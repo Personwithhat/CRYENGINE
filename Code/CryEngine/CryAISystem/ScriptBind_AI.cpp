@@ -3780,12 +3780,13 @@ int CScriptBind_AI::SetSoundPerceptionDescriptor(IFunctionHandler* pH)
 
 	// Set info if it was passed in
 	float fTemp = 0.0f;
+	CTimeValue tTemp;
 	if (pInfoTable->GetValue("minDist", fTemp))
 		sDescriptor.fMinDist = fTemp;
 	if (pInfoTable->GetValue("radiusScale", fTemp))
 		sDescriptor.fRadiusScale = fTemp;
-	if (pInfoTable->GetValue("soundTime", fTemp))
-		sDescriptor.fSoundTime = fTemp;
+	if (pInfoTable->GetValue("soundTime", tTemp))
+		sDescriptor.fSoundTime = tTemp;
 	if (pInfoTable->GetValue("baseThreat", fTemp))
 		sDescriptor.fBaseThreat = fTemp;
 	if (pInfoTable->GetValue("linStepMin", fTemp))
@@ -4566,7 +4567,7 @@ int CScriptBind_AI::GetFlyingVehicleFlockingPos(IFunctionHandler* pH)
 		debugVecSrc += vMyPos;
 		debugVecDst += vMyPos;
 
-		gEnv->pAISystem->AddDebugLine(debugVecSrc, debugVecDst, 255, 255, 255, 1.0f);
+		gEnv->pAISystem->AddDebugLine(debugVecSrc, debugVecDst, 255, 255, 255, 1);
 
 	}
 
@@ -4717,13 +4718,13 @@ int CScriptBind_AI::GetFlyingVehicleFlockingPos(IFunctionHandler* pH)
 			debugVec2.z = vMyPos.z;
 			if (dot1 > dot2)
 			{
-				gEnv->pAISystem->AddDebugLine(vMyPos, debugVec, 0, 255, 0, 1.0f);
-				gEnv->pAISystem->AddDebugLine(vMyPos, debugVec2, 255, 255, 255, 1.0f);
+				gEnv->pAISystem->AddDebugLine(vMyPos, debugVec, 0, 255, 0, 1);
+				gEnv->pAISystem->AddDebugLine(vMyPos, debugVec2, 255, 255, 255, 1);
 			}
 			else
 			{
-				gEnv->pAISystem->AddDebugLine(vMyPos, debugVec, 255, 255, 255, 1.0f);
-				gEnv->pAISystem->AddDebugLine(vMyPos, debugVec2, 0, 255, 0, 1.0f);
+				gEnv->pAISystem->AddDebugLine(vMyPos, debugVec, 255, 255, 255, 1);
+				gEnv->pAISystem->AddDebugLine(vMyPos, debugVec2, 0, 255, 0, 1);
 			}
 
 		}
@@ -4780,11 +4781,11 @@ int CScriptBind_AI::CheckVehicleColision(IFunctionHandler* pH)
 	{
 		PREFAST_ASSUME(pContact);
 		vHitPos = pContact->pt;
-		gEnv->pAISystem->AddDebugLine(pEntity->GetPos(), vHitPos, 0, 255, 255, 1.0f);
+		gEnv->pAISystem->AddDebugLine(pEntity->GetPos(), vHitPos, 0, 255, 255, 1);
 	}
 	else
 	{
-		gEnv->pAISystem->AddDebugLine(pEntity->GetPos(), pEntity->GetPos() + vFwd, 0, 0, 255, 1.0f);
+		gEnv->pAISystem->AddDebugLine(pEntity->GetPos(), pEntity->GetPos() + vFwd, 0, 0, 255, 1);
 	}
 
 	return pH->EndFunction(vHitPos);
@@ -6416,13 +6417,13 @@ int CScriptBind_AI::ChangeParameter(IFunctionHandler* pH)
 				ap.m_fCloakScaleTarget = fValue;
 				break;
 			case AIPARAM_FORGETTIME_TARGET:
-				ap.m_PerceptionParams.forgetfulnessTarget = fValue;
+				ap.m_PerceptionParams.forgetfulnessTarget = BADTIME(fValue);
 				break;
 			case AIPARAM_FORGETTIME_SEEK:
-				ap.m_PerceptionParams.forgetfulnessSeek = fValue;
+				ap.m_PerceptionParams.forgetfulnessSeek   = BADTIME(fValue);
 				break;
 			case AIPARAM_FORGETTIME_MEMORY:
-				ap.m_PerceptionParams.forgetfulnessMemory = fValue;
+				ap.m_PerceptionParams.forgetfulnessMemory = BADTIME(fValue);
 				break;
 			case AIPARAM_LOOKIDLE_TURNSPEED:
 				ap.m_lookIdleTurnSpeed = DEG2RAD(fValue);
@@ -6449,7 +6450,7 @@ int CScriptBind_AI::ChangeParameter(IFunctionHandler* pH)
 				ap.m_fProjectileLaunchDistScale = fValue;
 				break;
 			case AIPARAM_SIGHTDELAY:
-				ap.m_PerceptionParams.sightDelay = fValue;
+				ap.m_PerceptionParams.sightDelay = BADTIME(fValue);
 				break;
 			case AIPARAM_SIGHTNEARRANGE:
 				ap.m_PerceptionParams.sightNearRange = fValue;
@@ -6610,13 +6611,13 @@ int CScriptBind_AI::GetParameter(IFunctionHandler* pH)
 			return pH->EndFunction(ap.m_fCloakScale);
 			break;
 		case AIPARAM_FORGETTIME_TARGET:
-			return pH->EndFunction(10.0f / ap.m_PerceptionParams.forgetfulnessTarget);
+			return pH->EndFunction(10 / ap.m_PerceptionParams.forgetfulnessTarget);
 			break;
 		case AIPARAM_FORGETTIME_SEEK:
-			return pH->EndFunction(10.0f / ap.m_PerceptionParams.forgetfulnessSeek);
+			return pH->EndFunction(10 / ap.m_PerceptionParams.forgetfulnessSeek);
 			break;
 		case AIPARAM_FORGETTIME_MEMORY:
-			return pH->EndFunction(10.0f / ap.m_PerceptionParams.forgetfulnessMemory);
+			return pH->EndFunction(10 / ap.m_PerceptionParams.forgetfulnessMemory);
 			break;
 		case AIPARAM_LOOKIDLE_TURNSPEED:
 			return pH->EndFunction(RAD2DEG(ap.m_lookIdleTurnSpeed));
@@ -7825,7 +7826,8 @@ int CScriptBind_AI::SetFormationUpdateSight(IFunctionHandler* pH)
 	if (!pAI)
 		return pH->EndFunction();
 
-	float range = 0, minTime = 2, maxTime = 2;
+	float range = 0;
+	CTimeValue minTime = 2, maxTime = 2;
 
 	pH->GetParam(2, range);
 	if (range > 0)
@@ -7984,7 +7986,7 @@ int CScriptBind_AI::GetPointOnPathBySegNo(IFunctionHandler* pH)
 		return pH->EndFunction();
 
 	gAIEnv.pNavigation->GetPointOnPathBySegNo(pathName, vResult, segNo);
-	gEnv->pAISystem->AddDebugLine(pAI->GetPos(), vResult, 0, 255, 0, 0.4f);
+	gEnv->pAISystem->AddDebugLine(pAI->GetPos(), vResult, 0, 255, 0, "0.4");
 
 	return pH->EndFunction(vResult);
 
@@ -8097,7 +8099,7 @@ int CScriptBind_AI::GetNearestPathOfTypeInRange(IFunctionHandler* pH)
 	Vec3 pos(pAI->GetPos());
 	float range(0);
 	int type(0);
-	float devalue(0.0f);
+	CTimeValue devalue;
 	bool useStartNode(false);
 
 	if (!pH->GetParam(2, pos))
@@ -9013,7 +9015,7 @@ int CScriptBind_AI::SetRefpointToAnchor(IFunctionHandler* pH)
 			                                            rwi_stop_at_pierceable, &hit, 1);
 			if (bSeesTarget && hitsCount == 0 || !bSeesTarget && hitsCount)
 			{
-				gEnv->pAISystem->AddDebugLine(searchPos, hit.pt, 255, 0, 0, 10.0f);
+				gEnv->pAISystem->AddDebugLine(searchPos, hit.pt, 255, 0, 0, 10);
 				bestCandidatreDist = d;
 				nearestPos = pos;
 			}
@@ -9022,7 +9024,7 @@ int CScriptBind_AI::SetRefpointToAnchor(IFunctionHandler* pH)
 
 	if (!nearestPos.IsZero())
 	{
-		gEnv->pAISystem->AddDebugLine(searchPos, nearestPos, 255, 255, 255, 10.0f);
+		gEnv->pAISystem->AddDebugLine(searchPos, nearestPos, 255, 255, 255, 10);
 		pPipeUser->SetRefPointPos(nearestPos);
 		return pH->EndFunction(true);
 	}
@@ -9067,8 +9069,8 @@ int CScriptBind_AI::SetRefpointToPunchableObject(IFunctionHandler* pH)
 
 	pPipeUser->SetRefPointPos(posOut, dirOut);
 
-	GetAISystem()->AddDebugLine(posOut, posOut + Vec3(0, 0, 4), 255, 255, 255, 10.0f);
-	GetAISystem()->AddDebugLine(posOut + Vec3(0, 0, 1), posOut + Vec3(0, 0, 1) + dirOut, 255, 255, 255, 10.0f);
+	GetAISystem()->AddDebugLine(posOut, posOut + Vec3(0, 0, 4), 255, 255, 255, 10);
+	GetAISystem()->AddDebugLine(posOut + Vec3(0, 0, 1), posOut + Vec3(0, 0, 1) + dirOut, 255, 255, 255, 10);
 
 	return pH->EndFunction(objEntOut->GetScriptTable());
 }
@@ -9470,7 +9472,7 @@ int CScriptBind_AI::SetAttentiontarget(IFunctionHandler* pH)
 	return pH->EndFunction(1);
 }
 
-int CScriptBind_AI::RegisterInterestingEntity(IFunctionHandler* pH, ScriptHandle entityId, float radius, float baseInterest, const char* aiAction, Vec3 offset, float pause, int shared)
+int CScriptBind_AI::RegisterInterestingEntity(IFunctionHandler* pH, ScriptHandle entityId, float radius, float baseInterest, const char* aiAction, Vec3 offset, const CTimeValue pause, int shared)
 {
 	IEntity* pEntity = gEnv->pEntitySystem->GetEntity((EntityId)entityId.n);
 	if (!pEntity)
@@ -9755,7 +9757,7 @@ int CScriptBind_AI::SetInCover(IFunctionHandler* pH)
 //	commName - The name of the communication to play
 //	channelName - The name of the channel where the communication will play
 int CScriptBind_AI::PlayCommunication(IFunctionHandler* pH, ScriptHandle entityId, const char* commName,
-                                      const char* channelName, float contextExpiry)
+                                      const char* channelName, const CTimeValue contextExpiry)
 {
 	IEntity* entity = gEnv->pEntitySystem->GetEntity(static_cast<EntityId>(entityId.n));
 	if (!entity)
@@ -10953,7 +10955,7 @@ struct BehaviorLoader
 
 int CScriptBind_AI::LoadBehaviors(IFunctionHandler* pH, const char* folderName, const char* extension)
 {
-	CTimeValue startTime = gEnv->pTimer->GetAsyncTime();
+	CTimeValue startTime = GetGTimer()->GetAsyncTime();
 
 	BehaviorExplorer behaviorExplorer("CreateAIBehavior");
 	DirectoryExplorer()(folderName, extension, behaviorExplorer);
@@ -10972,7 +10974,7 @@ int CScriptBind_AI::LoadBehaviors(IFunctionHandler* pH, const char* folderName, 
 		}
 	}
 
-	CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
+	CTimeValue endTime = GetGTimer()->GetAsyncTime();
 	AILogAlways("Loaded %" PRISIZE_T " AI Behaviors in %.2fs...", behaviorExplorer.behaviors.size(), (endTime - startTime).GetSeconds());
 	if (numFailed != 0)
 	{

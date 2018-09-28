@@ -152,11 +152,11 @@ protected: // ------------------------------------------------------------------
 		}
 	}
 
-	char* m_szName;                                 // if VF_COPYNAME then this data need to be deleteed, otherwise it's pointer to .dll/.exe
+	char* m_szName;                                // if VF_COPYNAME then this data need to be deleteed, otherwise it's pointer to .dll/.exe
 
-	char* m_szHelp;                                 // pointer to the help string, might be 0
+	char* m_szHelp;                                // pointer to the help string, might be 0
 #if defined(DEDICATED_SERVER)
-	char* m_szDataProbeString;                              // value client is required to have for data probes
+	char* m_szDataProbeString;                     // value client is required to have for data probes
 #endif
 	int   m_flags;                                 // e.g. VF_CHEAT, ...
 
@@ -217,6 +217,7 @@ public:
 		return szReturnString;
 	}
 
+	using ICVar::Set; using ICVar::SetMaxValue; using ICVar::SetMinValue; using ICVar::SetAllowedValues;
 	virtual void Set(const char* szValue) override
 	{
 		CRY_ASSERT_MESSAGE(GetType() == ECVarType::String, "Wrong Set() function called. Use SetFromString() if you intended to set a numeric cvar with a string. %s", GetName());
@@ -471,6 +472,7 @@ protected:
 		if (value == m_value && (m_flags & VF_ALWAYSONCHANGE) == 0)
 			return;
 
+		// PERSONAL TODO: PERSONAL CRYTEK: This is wrong, passes in the OLD value not the NEW value!!
 		if (m_pConsole->OnBeforeVarChange(this, GetString()))
 		{
 			if (ICVar* pCVarLogging = gEnv->pConsole->GetCVar("sys_cvar_logging"))
@@ -543,6 +545,7 @@ public:
 		return m_value.c_str();
 	}
 
+	using ICVar::Set; using ICVar::SetMaxValue; using ICVar::SetMinValue; using ICVar::SetAllowedValues;
 	virtual void Set(const char* szValue) override
 	{
 		if (szValue == nullptr)
@@ -636,13 +639,13 @@ private:
 	std::vector<base_type>                   m_allowedValues;
 };
 
-using CXConsoleVariableInt = CXNumericConsoleVariable<int>;
-using CXConsoleVariableIntRef = CXNumericConsoleVariable<int&>;
-using CXConsoleVariableFloat = CXNumericConsoleVariable<float>;
-using CXConsoleVariableFloatRef = CXNumericConsoleVariable<float&>;
-using CXConsoleVariableInt64 = CXNumericConsoleVariable<int64>;
-using CXConsoleVariableString = CXStringConsoleVariable<string>;
-using CXConsoleVariableStringRef = CXStringConsoleVariable<string&>;
+using CXConsoleVariableInt			 = CXNumericConsoleVariable<int>;
+using CXConsoleVariableIntRef		 = CXNumericConsoleVariable<int&>;
+using CXConsoleVariableFloat		 = CXNumericConsoleVariable<float>;
+using CXConsoleVariableFloatRef	 = CXNumericConsoleVariable<float&>;
+using CXConsoleVariableInt64		 = CXNumericConsoleVariable<int64>;
+using CXConsoleVariableString		 = CXStringConsoleVariable<string>;
+using CXConsoleVariableStringRef  = CXStringConsoleVariable<string&>;
 
 #include <CryMemory/CrySizer.h>
 
@@ -672,13 +675,13 @@ public:
 	string GetDetailedInfo() const;
 
 	// interface ICVar -----------------------------------------------------------------------------------
-
 	virtual const char* GetHelp() const override;
 
 	virtual int         GetRealIVal() const override;
 
 	virtual void        DebugLog(const int expectedValue, const ICVar::EConsoleLogMode mode) const override;
 
+	using ICVar::Set; using ICVar::SetMaxValue; using ICVar::SetMinValue; using ICVar::SetAllowedValues;
 	virtual void        Set(int i) override;
 
 	// ConsoleVarFunc ------------------------------------------------------------------------------------
@@ -733,3 +736,174 @@ private: // --------------------------------------------------------------------
 	//   true=all console variables match the state (including default state), false otherwise
 	bool TestCVars(const SCVarGroup* pGroup, const ICVar::EConsoleLogMode mode = ICVar::eCLM_Off) const;
 };
+
+/*
+	PERSONAL CRYTEK: PERSONAL IMPROVE:
+	Much like in CVariable for Sandbox, I have yet to come up with a solution to integrate natural POD-types and mpfloat/ctimevalue.
+	Current CVar infrastructure, while much improved/readable over what ya had earlier, doesn't handle this setup well.
+
+	Moved here for readability.
+*/
+template<class B>
+class CXConsoleVariableMPType : public CXConsoleVariableBase
+{
+	using value_type = B;
+	using base_type = typename std::remove_reference<value_type>::type;
+	static_assert(
+		boost::is_same<base_type, CTimeValue>::value || 
+		std::is_base_of<boost::multiprecision::newNum<base_type>, base_type>::value,
+		"Base type has to be multi-precision");
+
+public:
+	CXConsoleVariableMPType(IConsole* const pConsole, const char* szName, const value_type var, int flags, const char* szHelp, bool ownedByConsole)
+		: CXConsoleVariableBase(pConsole, szName, flags, szHelp, ownedByConsole)
+		, m_value(var) // Assign here first, in case value_type is a reference
+		, m_maxValue(base_type::Max())
+		, m_minValue(base_type::Min())
+	{
+		m_value = GetCVarOverride(szName, m_value);
+	}
+
+	// PERSONAL IMPROVE: Another section where standerdized to/from string methods should REALLY be used lol.
+	// In this case, 'From' string e.g. Schematyc2::StringUtils::fromStr();
+	int GetIVal()					const override { assert(false && "Invalid get!"); return 0; }
+	int64 GetI64Val()				const override { assert(false && "Invalid get!"); return 0; }
+	float GetFVal()					const override { assert(false && "Invalid get!"); return 0; }
+	const char* GetString()			const override { 
+			static char szReturnString[MP_SIZE];
+			cry_sprintf(szReturnString, "%s", CryStringUtils::toString(m_value));
+			return szReturnString;
+	}
+
+	CTimeValue GetTime() const override { return GetTInternal(); }
+	template <class T = base_type, typename boost::disable_if_c<isTV>::type* = 0> CTimeValue GetTInternal() const { assert(false && "Get time from time CVar only"); return 0; }
+	template <class T = base_type, typename boost::enable_if_c< isTV>::type* = 0> CTimeValue GetTInternal() const { return m_value; }
+
+	mpfloat GetMPVal()	 const override { return GetMPInternal(); }
+	template <class T = base_type, typename boost::disable_if_c<isMP>::type* = 0> mpfloat GetMPInternal() const { assert(false && "Get mpfloat from MP CVar only"); return 0; }
+	template <class T = base_type, typename boost::enable_if_c< isMP>::type* = 0> mpfloat GetMPInternal() const { return m_value.conv<mpfloat>(); }
+
+	using ICVar::Set; using ICVar::SetMaxValue; using ICVar::SetMinValue; using ICVar::SetAllowedValues;
+	void Set(const char* szValue)			override { SetInternal(szValue); }
+	void Set(float value)					override { assert(false && "Invalid set!"); }
+	void Set(int value)						override { SetInternal(base_type(value)); }
+	void Set(int64 value)					override { SetInternal(base_type(value)); }
+	void Set(const base_type& value)		override { SetInternal(value); }
+
+	void SetFromString(const char* szValue) override
+	{
+		Set(szValue);
+	}
+
+	void SetMaxValue(int max)				override { SetMaxValue(base_type(max)); }
+	void SetMaxValue(int64 max)				override { SetMaxValue(base_type(max)); }
+	void SetMaxValue(float max)				override { assert(false && "Invalid set!"); }
+	void SetMaxValue(const base_type& max)	override
+	{
+		CRY_ASSERT_MESSAGE((m_flags & VF_BITFIELD) == 0, "Trying to set a minimum value on a bitfield (%s)", GetName());
+		CRY_ASSERT_MESSAGE(m_allowedValues.empty(), "SetMaxValue() called after SetAllowedValues(), the maximum will be ignored (%s)", GetName());
+
+		m_maxValue = max;
+		SetInternal(m_value);
+	}
+
+	void SetMinValue(int min)				override { SetMinValue(base_type(min)); }
+	void SetMinValue(int64 min)				override { SetMinValue(base_type(min)); }
+	void SetMinValue(float min)				override { assert(false && "Invalid set!"); }
+	void SetMinValue(const base_type& min)	override
+	{
+		CRY_ASSERT_MESSAGE((m_flags & VF_BITFIELD) == 0, "Trying to set a minimum value on a bitfield (%s)", GetName());
+		CRY_ASSERT_MESSAGE(m_allowedValues.empty(), "SetMinValue() called after SetAllowedValues(), the minimum will be ignored (%s)", GetName());
+
+		m_minValue = min;
+		SetInternal(m_value);
+	}
+
+	void SetAllowedValues(std::initializer_list<int> values)		override { assert(false && "Invalid set!"); }
+	void SetAllowedValues(std::initializer_list<int64> values)		override { assert(false && "Invalid set!"); }
+	void SetAllowedValues(std::initializer_list<float> values)		override { assert(false && "Invalid set!"); }
+	void SetAllowedValues(std::initializer_list<string> values)		override { assert(false && "Invalid set!"); }
+	void SetAllowedValues(std::initializer_list<base_type> values)	override
+	{
+		CRY_ASSERT_MESSAGE(values.size() == 0 || (m_maxValue == base_type::Max() && m_minValue == base_type::Min()),
+			"SetAllowedValues() called after SetMinValue() and/or SetMinValue(), minimum and maximum will be ignored (%s)", GetName());
+		m_allowedValues = values;
+	}
+
+	ECVarType GetType() const override
+	{
+		return GetTypeInternal();
+	}
+
+	void GetMemoryUsage(class ICrySizer* pSizer) const override { pSizer->AddObject(this, sizeof(*this)); }
+
+protected:
+	template <class T = base_type, typename boost::enable_if_c<isMP>::type* = 0> 
+	static constexpr ECVarType GetTypeInternal() { return ECVarType::MPFloat; }
+	
+	template <class T = base_type, typename boost::enable_if_c<isTV>::type* = 0> 
+	static constexpr ECVarType GetTypeInternal() { return ECVarType::TimeVal; }
+
+	void SetInternal(base_type value)
+	{
+		constexpr ECVarType type = GetTypeInternal();
+		if (!m_allowedValues.empty())
+		{
+			if (std::find(m_allowedValues.cbegin(), m_allowedValues.cend(), value) == m_allowedValues.cend())
+			{
+				if (ICVar* pCVarLogging = gEnv->pConsole->GetCVar("sys_cvar_logging"))
+				{
+					if (pCVarLogging->GetIVal() > 0)
+					{
+						CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "[CVARS] '%s' is not a valid value of '%s'", value.str(), GetName());
+					}
+				}
+				return;
+			}
+		}
+		else
+		{
+			if (value > m_maxValue || value < m_minValue)
+			{
+				if (ICVar* pCVarLogging = gEnv->pConsole->GetCVar("sys_cvar_logging"))
+				{
+					if (pCVarLogging->GetIVal() > 0)
+					{
+						CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "[CVARS] '%s' is not in the allowed range of '%s' (%s-%s)", value.str(), GetName(), m_minValue.str(), m_maxValue.str());
+					}
+				}
+				value = clamp_tpl(value, m_minValue, m_maxValue);
+			}
+		}
+
+		if (value == m_value && (m_flags & VF_ALWAYSONCHANGE) == 0)
+			return;
+	
+		if (m_pConsole->OnBeforeVarChange(this, value.str()))
+		{
+			if (ICVar* pCVarLogging = gEnv->pConsole->GetCVar("sys_cvar_logging"))
+			{
+				if (pCVarLogging->GetIVal() >= 2)
+				{
+					CryLog("[CVARS] '%s' set to %s (was %s)", GetName(), value.str(), GetString());
+				}
+			}
+
+			m_flags |= VF_MODIFIED;
+			m_value = value;
+
+			CallOnChangeFunctions();
+
+			m_pConsole->OnAfterVarChange(this);
+		}
+	}
+
+	value_type             m_value;
+
+	base_type              m_maxValue;
+	base_type              m_minValue;
+	std::vector<base_type> m_allowedValues;
+};
+
+using CXConsoleVariableTimeVal	 = CXConsoleVariableMPType<CTimeValue>;
+using CXConsoleVariableTimeValRef = CXConsoleVariableMPType<CTimeValue&>;

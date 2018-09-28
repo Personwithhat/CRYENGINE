@@ -19,10 +19,10 @@ public:
 	int   EnableVoiceChat;
 	int   ChannelStats;
 	float BandwidthAggressiveness;
-	float NetworkConnectivityDetectionInterval; // disabled if less than 1.0f
-	float InactivityTimeout;
-	float InactivityTimeoutDevmode;
-	int   BackoffTimeout;
+	CTimeValue NetworkConnectivityDetectionInterval; // disabled if less than 1 second
+	CTimeValue InactivityTimeout;
+	CTimeValue InactivityTimeoutDevmode;
+	CTimeValue BackoffTimeout;
 	int   MaxMemoryUsage;
 	int   EnableVoiceGroups;
 #if !NEW_BANDWIDTH_MANAGEMENT
@@ -34,11 +34,11 @@ public:
 #endif
 
 #if LOCK_NETWORK_FREQUENCY == 0
-	float channelLocalSleepTime;
+	CTimeValue channelLocalSleepTime;
 #endif // LOCK_NETWORK_FREQUENCY == 0
-	int   socketMaxTimeout;
-	int   socketBoostTimeout;
-	int   socketMaxTimeoutMultiplayer;
+	CTimeValue socketMaxTimeout;
+	CTimeValue socketBoostTimeout;
+	CTimeValue socketMaxTimeoutMultiplayer;
 
 #if NEW_BANDWIDTH_MANAGEMENT
 	float net_availableBandwidthServer;
@@ -58,8 +58,8 @@ public:
 	int   NewQueueBehaviour;
 	int   SafetySleeps;
 	int   MaxPacketSize;
-	float KeepAliveTime;
-	float PingTime;
+	CTimeValue KeepAliveTime;
+	CTimeValue PingTime;
 
 #if LOG_MESSAGE_DROPS
 	int LogDroppedMessagesVar;
@@ -135,8 +135,8 @@ public:
 	#define PACKET_LAG_MAX_CLAMP  (60.0f)       //-- Packet lag clamped to max 60 seconds (60 an arbitrary number to identify the value as 'seconds')
 
 	float net_PacketLossRate;
-	float net_PacketLagMin;
-	float net_PacketLagMax;
+	CTimeValue net_PacketLagMin;
+	CTimeValue net_PacketLagMax;
 	int   net_SimUseProfile;
 
 	static void OnPacketLossRateChange(ICVar* NewLossRate)
@@ -161,7 +161,7 @@ public:
 
 #ifdef ENABLE_UDP_PACKET_FRAGMENTATION
 	int   net_max_fragmented_packets_per_source;
-	float net_fragment_expiration_time;
+	CTimeValue net_fragment_expiration_time;
 	float net_packetfragmentlossrate;
 	static void OnPacketFragmentLossRateChange(ICVar* NewLossRate)
 	{
@@ -172,8 +172,8 @@ public:
 	}
 #endif
 
-	float HighLatencyThreshold; // disabled if less than 0.0f
-	float HighLatencyTimeLimit;
+	CTimeValue HighLatencyThreshold; // disabled if less than 0.0f
+	CTimeValue HighLatencyTimeLimit;
 
 #if ENABLE_DEBUG_KIT
 	int VisWindow;
@@ -187,7 +187,7 @@ public:
 	ICVar* pSchedulerDebug;
 	int    SchedulerDebugMode;
 	float  DebugDrawScale;
-	float  SchedulerSendExpirationPeriod;
+	CTimeValue  SchedulerSendExpirationPeriod;
 
 #if LOG_INCOMING_MESSAGES || LOG_OUTGOING_MESSAGES
 	int LogNetMessages;

@@ -129,7 +129,7 @@ public:
 	virtual IVehicleSeatAction*       GetISeatActionWeapons();
 	virtual const IVehicleSeatAction* GetISeatActionWeapons() const;
 
-	virtual void                      PrePhysUpdate(const float dt);
+	virtual void                      PrePhysUpdate(const CTimeValue& dt);
 
 	virtual void                      OffsetPosition(const Vec3& delta);
 	// ~IVehicleSeat
@@ -151,11 +151,11 @@ public:
 	bool     IsFree(IActor* pActor);
 
 	void     OnAction(const TVehicleActionId actionId, int activationMode, float value);
-	void     Update(float deltaTime);
+	void     Update(const CTimeValue& deltaTime);
 	void     UpdateView(SViewParams& viewParams);
-	void     UpdateRemote(IActor* pActor, float deltaTime);
+	void     UpdateRemote(IActor* pActor, const CTimeValue& deltaTime);
 
-	void     UpdateSounds(float deltaTime);
+	void     UpdateSounds(const CTimeValue& deltaTime);
 	void     StopSounds();
 
 	void Serialize(TSerialize ser, EEntityAspects);

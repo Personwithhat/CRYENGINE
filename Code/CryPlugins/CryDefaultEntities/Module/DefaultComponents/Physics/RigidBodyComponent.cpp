@@ -116,7 +116,7 @@ void CRigidBodyComponent::Physicalize()
 	m_pEntity->Physicalize(physParams);
 
 	pe_simulation_params simParams;
-	simParams.maxTimeStep = m_simulationParameters.maxTimeStep;
+	simParams.maxTimeStep = BADTIME(m_simulationParameters.maxTimeStep);
 	simParams.minEnergy = sqr(m_simulationParameters.sleepSpeed);
 	simParams.damping = m_simulationParameters.damping;
 	m_pEntity->GetPhysicalEntity()->SetParams(&simParams);

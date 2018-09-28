@@ -67,17 +67,17 @@ struct SPositionAdjuster
 		: m_targetLoc(IDENTITY)
 		, m_delta(ZERO)
 		, m_deltaRot(IDENTITY)
-		, m_lastTime(0.f)
-		, m_targetTime(0.f)
+		, m_lastTime(0)
+		, m_targetTime(0)
 		, m_invalid(true)
 		, m_pAnimatedCharacter(NULL)
 	{
 	}
 
-	void Init(IEntity& entity, const float blendTime)
+	void Init(IEntity& entity, const CTimeValue& blendTime)
 	{
 		m_targetTime = blendTime;
-		m_lastTime = 0.0f;
+		m_lastTime.SetSeconds(0);
 		m_invalid = false;
 
 		m_delta.zero();
@@ -87,35 +87,35 @@ struct SPositionAdjuster
 		m_pAnimatedCharacter = pActor ? pActor->GetAnimatedCharacter() : NULL;
 	}
 
-	void Update(IEntity& entity, float timePassed)
+	void Update(IEntity& entity, const CTimeValue& timePassed)
 	{
 		if (m_invalid)
 			return;
 
 		QuatT applyingDelta(IDENTITY);
 
-		const float newTime = min(m_lastTime + timePassed, m_targetTime);
-		const float deltaTime = newTime - m_lastTime;
-		if (deltaTime > 0.0f)
+		const CTimeValue newTime = min(m_lastTime + timePassed, m_targetTime);
+		const CTimeValue deltaTime = newTime - m_lastTime;
+		if (deltaTime > 0)
 		{
 			Quat totalDeltaRot, lastTotalDeltaRot;
 
-			const float targetTimeInverse = (float)__fres(m_targetTime);
+			const rTime targetTimeInverse = 1 / m_targetTime;
 
-			const float dt = deltaTime * targetTimeInverse;
+			const mpfloat dt = deltaTime * targetTimeInverse;
 
-			const float t = newTime * targetTimeInverse;
-			const float lastT = m_lastTime * targetTimeInverse;
+			const mpfloat t = newTime * targetTimeInverse;
+			const mpfloat lastT = m_lastTime * targetTimeInverse;
 
-			totalDeltaRot.SetSlerp(Quat(IDENTITY), m_deltaRot, t);
-			lastTotalDeltaRot.SetSlerp(Quat(IDENTITY), m_deltaRot, lastT);
+			totalDeltaRot.SetSlerp(Quat(IDENTITY), m_deltaRot, BADF t);
+			lastTotalDeltaRot.SetSlerp(Quat(IDENTITY), m_deltaRot, BADF lastT);
 
 			applyingDelta.q = (!lastTotalDeltaRot * totalDeltaRot);
-			applyingDelta.t = (m_delta * dt);
+			applyingDelta.t = (m_delta * BADF dt);
 
 			m_lastTime = newTime;
 		}
-		else if (m_targetTime == 0.f)
+		else if (m_targetTime == 0)
 		{
 			applyingDelta.t = m_delta;
 			applyingDelta.q = m_deltaRot;
@@ -145,8 +145,8 @@ struct SPositionAdjuster
 	QuatT               m_targetLoc;
 	Vec3                m_delta;
 	Quat                m_deltaRot;
-	float               m_lastTime;
-	float               m_targetTime;
+	CTimeValue          m_lastTime;
+	CTimeValue          m_targetTime;
 	bool                m_invalid;
 	IAnimatedCharacter* m_pAnimatedCharacter;
 };
@@ -154,7 +154,7 @@ struct SPositionAdjuster
 struct SCollisionAdjustParams
 {
 	SCollisionAdjustParams()
-		: maxAdjustmentSpeed(0.f)
+		: maxAdjustmentSpeed(0)
 		, heightOffset(0.f)
 		, heightMult(0.f)
 		, widthMult(0.f) {}
@@ -184,7 +184,7 @@ private:
 public:
 	PROCEDURAL_CONTEXT(CProceduralContext_AdjustPos, "AdjustPosContext", "c6c08712-1421-4854-adc5-6ab6422834bd"_cry_guid);
 
-	virtual void Update(float timePassed) override
+	virtual void Update(const CTimeValue& timePassed) override
 	{
 		if (m_enabled)
 		{
@@ -205,7 +205,7 @@ public:
 		}
 	}
 
-	void StartPosAdjust(QuatT targetLocation, float blendTime, bool ignorePos, bool ignoreRot, IScope* pScope)
+	void StartPosAdjust(QuatT targetLocation, const CTimeValue& blendTime, bool ignorePos, bool ignoreRot, IScope* pScope)
 	{
 		if (pScope)
 		{
@@ -331,7 +331,7 @@ private:
 		IEntity& entity = pScope->GetEntity();
 		const CAnimation* pAnim = pScope->GetTopAnim(0);
 
-		if (pCharInst && pAnim && (pAnim->GetTransitionWeight() > 0.0f))
+		if (pCharInst && pAnim && (pAnim->GetTransitionWeight() > 0))
 		{
 			QuatT startLoc;
 
@@ -377,11 +377,11 @@ private:
 		}
 
 		posAdjust.posAdjuster.m_targetTime -= posAdjust.posAdjuster.m_lastTime;
-		posAdjust.posAdjuster.m_lastTime = 0;
+		posAdjust.posAdjuster.m_lastTime.SetSeconds(0);
 		posAdjust.posAdjuster.m_invalid = false;
 	}
 
-	void UpdateCollisionCheck(float timePassed)
+	void UpdateCollisionCheck(const CTimeValue& timePassed)
 	{
 		AABB totalAABB(AABB::RESET);
 
@@ -470,7 +470,7 @@ private:
 				bool distanceYForwardValid = (distanceYForward > 0.f) && (distanceYForward < totalSize.y);
 				bool distanceYBackValid = (distanceYBack > 0.f) && (distanceYBack < totalSize.y);
 
-				float maxFrameMove = m_collisionAdjust.maxAdjustmentSpeed * timePassed;
+				float maxFrameMove = m_collisionAdjust.maxAdjustmentSpeed * timePassed.BADGetSeconds();
 
 				if (distanceXForwardValid != distanceXBackValid)
 				{
@@ -549,7 +549,7 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SPositionAdjustParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SPositionAdjustParams& params)
 	{
 		m_posAdjuster.Init(m_scope->GetEntity(), blendTime);
 
@@ -597,11 +597,11 @@ public:
 		}
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		m_posAdjuster.Update(*m_entity, timePassed);
 	}
@@ -667,7 +667,7 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SPositionAdjustWithCollisionCheck& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SPositionAdjustWithCollisionCheck& params)
 	{
 		const bool isRootEntity = IsRootEntity();
 
@@ -701,12 +701,12 @@ public:
 		}
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 		m_context->EndPosAdjust(m_scope);
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		if (m_paramNameCRC != 0)
 		{
@@ -736,7 +736,7 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const TParamsType& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const TParamsType& params)
 	{
 		m_posAdjuster.Init(m_scope->GetEntity(), blendTime);
 
@@ -768,11 +768,11 @@ public:
 		}
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		if (m_posAdjuster.m_lastTime > 0)
 		{
@@ -785,7 +785,7 @@ public:
 				UpdateDeltas(animStartLoc);
 
 				m_posAdjuster.m_targetTime -= m_posAdjuster.m_lastTime;
-				m_posAdjuster.m_lastTime = 0;
+				m_posAdjuster.m_lastTime.SetSeconds(0);
 			}
 		}
 
@@ -836,7 +836,7 @@ class CProceduralClipPosAdjustAlignEnd : public TProceduralClip<SPositionAdjustA
 public:
 	CProceduralClipPosAdjustAlignEnd();
 
-	virtual void OnEnter(float blendTime, float duration, const SPositionAdjustAnimParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SPositionAdjustAnimParams& params)
 	{
 		m_posAdjuster.Init(m_scope->GetEntity(), blendTime);
 		QuatT animStartLoc(IDENTITY);
@@ -858,17 +858,17 @@ public:
 		}
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		{
 			UpdateDeltas();
 
 			m_posAdjuster.m_targetTime -= m_posAdjuster.m_lastTime;
-			m_posAdjuster.m_lastTime = 0;
+			m_posAdjuster.m_lastTime.SetSeconds(0);
 		}
 
 		m_posAdjuster.Update(*m_entity, timePassed);
@@ -878,10 +878,10 @@ public:
 	{
 		const CAnimation* pAnim = m_scope->GetTopAnim(0);
 
-		if (pAnim && (pAnim->GetTransitionWeight() > 0.0f))
+		if (pAnim && (pAnim->GetTransitionWeight() > 0))
 		{
 			QuatT curLoc, endLoc;
-			float curANTime = m_charInstance->GetISkeletonAnim()->GetAnimationNormalizedTime(pAnim);
+			nTime curANTime = m_charInstance->GetISkeletonAnim()->GetAnimationNormalizedTime(pAnim);
 
 			// TODO Jean: hook this up when CryAnimation integration is done
 			//m_charInstance->GetISkeletonAnim().CalculateAnimationLocation(curLoc, pAnim, curANTime);
@@ -967,7 +967,7 @@ public:
 	{
 	}
 
-	virtual void OnEnter(float blendTime, float duration, const SProceduralClipPosAdjustTargetLocatorParams& params)
+	virtual void OnEnter(const CTimeValue& blendTime, const CTimeValue& duration, const SProceduralClipPosAdjustTargetLocatorParams& params)
 	{
 		m_posAdjuster.Init(m_scope->GetEntity(), blendTime);
 
@@ -1026,11 +1026,11 @@ public:
 		}
 	}
 
-	virtual void OnExit(float blendTime)
+	virtual void OnExit(const CTimeValue& blendTime)
 	{
 	}
 
-	virtual void Update(float timePassed)
+	virtual void Update(const CTimeValue& timePassed)
 	{
 		m_posAdjuster.Update(*m_entity, timePassed);
 	}

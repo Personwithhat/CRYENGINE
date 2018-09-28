@@ -93,7 +93,7 @@ struct SBezierKey
 		ar(m_controlPoint, "controlPoint", "Control Point");
 	}
 
-	SAnimTime           m_time;
+	CTimeValue          m_time;
 	SBezierControlPoint m_controlPoint;
 };
 

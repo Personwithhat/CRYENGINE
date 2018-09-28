@@ -25,7 +25,7 @@ public:
 	virtual const INavMeshQueryFilter*    GetNavigationQueryFilter() const override;
 	virtual const char*                   GetDebugName() const override;
 	virtual Cry::AI::CollisionAvoidance::ETreatType GetTreatmentDuringUpdateTick(Cry::AI::CollisionAvoidance::SAgentParams& outAgent, Cry::AI::CollisionAvoidance::SObstacleParams& outObstacle) const override;
-	virtual void                          ApplyComputedVelocity(const Vec2& avoidanceVelocity, float updateTime) override;
+	virtual void                          ApplyComputedVelocity(const Vec2& avoidanceVelocity, const CTimeValue& updateTime) override;
 
 private:
 	CEntityAINavigationComponent* m_pOwningNavigationComponent;

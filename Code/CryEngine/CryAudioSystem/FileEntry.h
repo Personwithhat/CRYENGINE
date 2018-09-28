@@ -56,7 +56,7 @@ public:
 		, m_pImplData(pImplData)
 	{
 #if defined(CRY_AUDIO_USE_PRODUCTION_CODE)
-		m_timeCached.SetValue(0);
+		m_timeCached.SetSeconds(0);
 #endif // CRY_AUDIO_USE_PRODUCTION_CODE
 	}
 

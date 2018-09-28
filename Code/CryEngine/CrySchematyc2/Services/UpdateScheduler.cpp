@@ -602,9 +602,9 @@ namespace Schematyc2
 		{
 			m_buckets[bucketIdx].SetFrequency(bucketIdx);
 		}
-		for (float& t : m_frameTimes)
+		for (CTimeValue& t : m_frameTimes)
 		{
-			t = 0.0f;
+			t.SetSeconds(0);
 		}
 	}
 
@@ -687,7 +687,7 @@ namespace Schematyc2
 	}
 
 	////////////////////////////////////////////////////////////////
-	bool CUpdateScheduler::BeginFrame(float frameTime)
+	bool CUpdateScheduler::BeginFrame(const CTimeValue& frameTime)
 	{
 		CRY_PROFILE_FUNCTION(PROFILE_GAME);
 		CRY_ASSERT(!m_bInFrame);
@@ -788,7 +788,7 @@ namespace Schematyc2
 			// Finish update stats
 			{
 				const int64 endTimeTicks = CryGetTicks();
-				stageUpdateStats.updateTime = CTimeValue(gEnv->pTimer->TicksToSeconds(endTimeTicks - startTimeTicks));
+				stageUpdateStats.updateTime = GetGTimer()->TicksToTime(endTimeTicks - startTimeTicks);
 
 				for (int index = 0; index < EUpdateFrequency::Count; ++index)
 				{

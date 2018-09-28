@@ -1073,7 +1073,6 @@ enum RenderIndexType
 // Interfaces from the Game
 extern ILog* iLog;
 extern IConsole* iConsole;
-extern ITimer* iTimer;
 extern ISystem* iSystem;
 
 template<class Container>

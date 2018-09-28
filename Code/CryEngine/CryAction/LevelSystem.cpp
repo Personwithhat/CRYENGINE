@@ -908,13 +908,13 @@ CLevelSystem::CLevelSystem(ISystem* pSystem)
 
 	// register with system to get loading progress events
 	m_pSystem->SetLoadingProgressListener(this);
-	m_fLastLevelLoadTime = 0;
+	m_fLastLevelLoadTime.SetSeconds(0);
 	m_fFilteredProgress = 0;
-	m_fLastTime = 0;
+	m_fLastTime.SetSeconds(0);
 	m_bLevelLoaded = false;
 	m_bRecordingFileOpens = false;
 
-	m_levelLoadStartTime.SetValue(0);
+	m_levelLoadStartTime.SetSeconds(0);
 
 	m_nLoadedLevelsCount = 0;
 
@@ -1293,11 +1293,11 @@ public:
 		NEXT_STEP(EStep::GameTokenLibs)
 		{
 			m_pSpamDelay = gEnv->pConsole->GetCVar("log_SpamDelay");
-			m_spamDelay = 0.0f;
+			m_spamDelay.SetSeconds(0);
 			if (m_pSpamDelay)
 			{
-				m_spamDelay = m_pSpamDelay->GetFVal();
-				m_pSpamDelay->Set(0.0f);
+				m_spamDelay = m_pSpamDelay->GetTime();
+				m_pSpamDelay->Set(CTimeValue(0));
 			}
 
 			// load all GameToken libraries this level uses incl. LevelLocal
@@ -1605,7 +1605,7 @@ private:
 	
 	// Intermediate
 	ICVar* m_pSpamDelay = nullptr;
-	float m_spamDelay = 0.0f;
+	CTimeValue m_spamDelay = 0;
 	XmlNodeRef m_missionXml;
 
 	// Result
@@ -1752,7 +1752,7 @@ void CLevelSystem::PrecacheLevelRenderData()
 //------------------------------------------------------------------------
 void CLevelSystem::PrepareNextLevel(const char* levelName)
 {
-	m_levelLoadStartTime = gEnv->pTimer->GetAsyncTime();
+	m_levelLoadStartTime = GetGTimer()->GetAsyncTime();
 	CLevelInfo* pLevelInfo = GetLevelInfoInternal(levelName);
 	if (!pLevelInfo)
 	{
@@ -1825,7 +1825,7 @@ void CLevelSystem::OnLoadingStart(ILevelInfo* pLevelInfo)
 		gEnv->pCryPak->RecordFileOpen(ICryPak::RFOM_Level);
 
 	m_fFilteredProgress = 0.f;
-	m_fLastTime = gEnv->pTimer->GetAsyncCurTime();
+	m_fLastTime = GetGTimer()->GetAsyncCurTime();
 
 	if (gEnv->IsEditor()) //pure game calls it from CCET_LoadLevel
 	{
@@ -1898,13 +1898,13 @@ void CLevelSystem::OnLoadingComplete(ILevelInfo* pLevelInfo)
 		SaveOpenedFilesList();
 	}
 
-	CTimeValue t = gEnv->pTimer->GetAsyncTime();
-	m_fLastLevelLoadTime = (t - m_levelLoadStartTime).GetSeconds();
+	CTimeValue t = GetGTimer()->GetAsyncTime();
+	m_fLastLevelLoadTime = t - m_levelLoadStartTime;
 
 	if (!gEnv->IsEditor())
 	{
 		CryLog("-----------------------------------------------------");
-		CryLog("*LOADING: Level %s loading time: %.2f seconds", m_lastLevelName.c_str(), m_fLastLevelLoadTime);
+		CryLog("*LOADING: Level %s loading time: %.2f seconds", m_lastLevelName.c_str(), (float)m_fLastLevelLoadTime.GetSeconds());
 		CryLog("-----------------------------------------------------");
 	}
 
@@ -1969,6 +1969,9 @@ void CLevelSystem::OnUnloadComplete(ILevelInfo* pLevel)
 	}
 }
 
+/*
+	<3 CryTek thanks for reviewing my code!
+*/
 //------------------------------------------------------------------------
 void CLevelSystem::OnLoadingProgress(int steps)
 {
@@ -1976,13 +1979,13 @@ void CLevelSystem::OnLoadingProgress(int steps)
 
 	m_fFilteredProgress = min(m_fFilteredProgress, fProgress);
 
-	float fFrameTime = gEnv->pTimer->GetAsyncCurTime() - m_fLastTime;
+	CTimeValue fFrameTime = GetGTimer()->GetAsyncCurTime() - m_fLastTime;
 
-	float t = CLAMP(fFrameTime * .25f, 0.0001f, 1.0f);
+	float t = BADF CLAMP(fFrameTime * ".25", "0.0001", 1).GetSeconds();
 
-	m_fFilteredProgress = fProgress * t + m_fFilteredProgress * (1.f - t);
+	m_fFilteredProgress = fProgress * t + m_fFilteredProgress * (1 - t);
 
-	m_fLastTime = gEnv->pTimer->GetAsyncCurTime();
+	m_fLastTime = GetGTimer()->GetAsyncCurTime();
 
 	OnLoadingProgress(m_pLoadingLevelInfo, (int)m_fFilteredProgress);
 }
@@ -2014,7 +2017,7 @@ void CLevelSystem::LogLoadingTime()
 		sChain = " (Chained)";
 
 	string text;
-	text.Format("\n[%s] Level %s loaded in %d seconds%s", vers, m_lastLevelName.c_str(), (int)m_fLastLevelLoadTime, sChain);
+	text.Format("\n[%s] Level %s loaded in %f seconds%s", vers, m_lastLevelName.c_str(), (float)m_fLastLevelLoadTime.GetSeconds(), sChain);
 	fwrite(text.c_str(), text.length(), 1, file);
 	fclose(file);
 
@@ -2216,7 +2219,7 @@ void CLevelSystem::UnLoadLevel()
 	INDENT_LOG_DURING_SCOPE();
 
 #if !defined(EXCLUDE_NORMAL_LOG)
-	CTimeValue tBegin = gEnv->pTimer->GetAsyncTime();
+	CTimeValue tBegin = GetGTimer()->GetAsyncTime();
 #endif
 
 	if (m_pLevelLoadTimeslicer)
@@ -2414,8 +2417,8 @@ void CLevelSystem::UnLoadLevel()
 	m_bLevelLoaded = false;
 
 #if !defined(EXCLUDE_NORMAL_LOG)
-	CTimeValue tUnloadTime = gEnv->pTimer->GetAsyncTime() - tBegin;
-	CryLog("UnLoadLevel End: %.1f sec", tUnloadTime.GetSeconds());
+	CTimeValue tUnloadTime = GetGTimer()->GetAsyncTime() - tBegin;
+	CryLog("UnLoadLevel End: %.1f sec", (float)tUnloadTime.GetSeconds());
 #endif
 
 	// Must be sent last.

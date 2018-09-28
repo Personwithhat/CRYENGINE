@@ -618,7 +618,7 @@ void CBreakableManager::BreakIntoPieces(GeomRef& geoOrig, const Matrix34& mxSrcT
 						ParticleParams params;
 						params.fCount = 0;
 						params.ePhysicsType = params.ePhysicsType.RigidBody;
-						params.fParticleLifeTime.Set(Breakage.fParticleLifeTime * CVar::pDebrisLifetimeScale->GetFVal(), 0.25f);
+						params.fParticleLifeTime.Set((Breakage.fParticleLifeTime * CVar::pDebrisLifetimeScale->GetMPVal()).BADGetSeconds(), 0.25f);
 						params.bRemainWhileVisible = true;
 						pEmitter = gEnv->pParticleManager->CreateEmitter(mxSrcTM, params);
 						if (!pEmitter)
@@ -1140,7 +1140,7 @@ bool CBreakableManager::CheckForPieces(IStatObj* pSrcStatObj, IStatObj::SSubObje
 		Breakage.bMaterialEffects = true;
 		Breakage.bForceEntity = true;
 		Breakage.fExplodeImpulse = 0;
-		Breakage.fParticleLifeTime = 30.f;
+		Breakage.fParticleLifeTime.SetSeconds(30);
 		Breakage.nGenericCount = 0;
 		Breakage.vHitImpulse = Vec3(ZERO); // pCreateEvent->breakImpulse; maybe use real impulse here?
 		Breakage.vHitPoint = worldTM.GetTranslation();
@@ -1602,7 +1602,7 @@ public:
 			else
 			{
 				// Wait some more to see if still rendered.
-				SetTimer(0, m_timeoutMillis);
+				SetTimer(0, m_timeout);
 			}
 		}
 	}
@@ -1615,25 +1615,25 @@ public:
 
 	virtual void GameSerialize(TSerialize ser) final {}
 
-	void         SetTimeout(int timeoutMillis)
+	void         SetTimeout(const CTimeValue& timeout)
 	{
-		m_timeoutMillis = timeoutMillis;
-		SetTimer(0, m_timeoutMillis);
+		m_timeout = timeout;
+		SetTimer(0, m_timeout);
 	}
 
 private:
-	int m_timeoutMillis = 0;
+	CTimeValue m_timeout = 0;
 };
 
 void SetEntityLifetime(CEntity* pEntity, const char* props, bool visible)
 {
-	float timeout = -1, timeoutInvis = -1;
+	CTimeValue timeout = -1, timeoutInvis = -1;
 	if (const char* ptr = strstr(props, "timeout"))
-		timeout = (float)atof(ptr + 8);
+		timeout = CTimeValue(ptr + 8);
 	if (const char* ptr = strstr(props, "invis"))
-		timeoutInvis = (float)atof(ptr + 6);
+		timeoutInvis = CTimeValue(ptr + 6);
 
-	if (timeout == 0.0f || timeoutInvis == 0.0f && !visible)
+	if (timeout == 0 || timeoutInvis == 0 && !visible)
 	{
 		g_pIEntitySystem->RemoveEntity(pEntity->GetId());
 		return;
@@ -1641,7 +1641,7 @@ void SetEntityLifetime(CEntity* pEntity, const char* props, bool visible)
 	if (timeout > 0 || timeoutInvis >= 0)
 	{
 		auto pTimeout = pEntity->GetOrCreateComponent<CTimeoutKillComponent>();
-		pTimeout->SetTimeout(static_cast<int>(1000 * std::max(timeout, timeoutInvis)));
+		pTimeout->SetTimeout(max(timeout, timeoutInvis));
 	}
 }
 

@@ -47,7 +47,7 @@ private:
 
 	void         OnExportSequence();
 	void         OnImportSequence();
-	void         OnUnitsChanged(SAnimTime::EDisplayMode mode);
+	void         OnUnitsChanged(SAnimData::EDisplayMode mode);
 	void         OnRender();
 	void         OnDeleteSequence();
 	void         OnSequenceProperties();

@@ -8,6 +8,7 @@
 #include "../CryCore/Platform/platform.h"
 #include "../CryCore/CryEnumMacro.h"
 #include "../CryCore/CryCrc32.h"
+#include "../CrySystem/TimeValue.h"
 
 #define CRY_AUDIO_DATA_ROOT "audio"
 

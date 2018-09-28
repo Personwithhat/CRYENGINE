@@ -17,8 +17,8 @@ CMNMUpdatesManager::CMNMUpdatesManager(NavigationSystem* pNavSystem)
 	, m_updateMode(INavigationUpdatesManager::EUpdateMode::Continuous)
 	, m_wasRegenerationRequestedThisUpdateCycle(false)
 	, m_explicitRegenerationToggle(false)
-	, m_frameStartTime(0.0f)
-	, m_frameDeltaTime(0.0f)
+	, m_frameStartTime(0)
+	, m_frameDeltaTime(0)
 {
 }
 
@@ -39,7 +39,7 @@ void CMNMUpdatesManager::Clear()
 }
 
 //------------------------------------------------------------------------
-void CMNMUpdatesManager::Update(const CTimeValue frameStartTime, const float frameDeltaTime)
+void CMNMUpdatesManager::Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI);
 
@@ -55,7 +55,7 @@ void CMNMUpdatesManager::UpdatePostponedChanges()
 	if (m_updateMode == INavigationUpdatesManager::EUpdateMode::AfterStabilization)
 	{
 		// Uses global timer instead of AI timer because this has to work in Editor mode as well (AI timer only runs in Game and Physics/AI Mode)
-		if (m_frameStartTime.GetDifferenceInSeconds(m_lastUpdateTime) < gAIEnv.CVars.NavmeshStabilizationTimeToUpdate)
+		if (m_frameStartTime - m_lastUpdateTime < gAIEnv.CVars.NavmeshStabilizationTimeToUpdate)
 		{
 			return;
 		}
@@ -193,7 +193,7 @@ void CMNMUpdatesManager::EntityChanged(int physicalEntityId, const AABB& aabb)
 	}
 
 	// Uses global timer instead of AI timer because this has to work in Editor mode as well (AI timer only runs in Game and Physics/AI Mode)
-	m_lastUpdateTime = gEnv->pTimer->GetFrameStartTime();
+	m_lastUpdateTime = GetGTimer()->GetFrameStartTime();
 
 	auto it = m_postponedEntityUpdatesMap.find(physicalEntityId);
 	if (it != m_postponedEntityUpdatesMap.end())
@@ -218,7 +218,7 @@ void CMNMUpdatesManager::WorldChanged(const AABB& aabb)
 	CRY_PROFILE_FUNCTION(PROFILE_AI);
 
 	// Uses global timer instead of AI timer because this has to work in Editor mode as well (AI timer only runs in Game and Physics/AI Mode)
-	m_lastUpdateTime = gEnv->pTimer->GetFrameStartTime();
+	m_lastUpdateTime = GetGTimer()->GetFrameStartTime();
 
 	SRequestParams queueAndState = GetRequestParams(false);
 	RequestQueueWorldUpdate(queueAndState, aabb);
@@ -264,7 +264,7 @@ CMNMUpdatesManager::EUpdateRequestStatus CMNMUpdatesManager::RequestMeshUpdate(N
 	if (!bImmediateUpdate)
 	{
 		// Uses global timer instead of AI timer because this has to work in Editor mode as well (AI timer only runs in Game and Physics/AI Mode)
-		m_lastUpdateTime = gEnv->pTimer->GetFrameStartTime();
+		m_lastUpdateTime = GetGTimer()->GetFrameStartTime();
 	}
 
 	SRequestParams requestParams = GetRequestParams(m_explicitRegenerationToggle);
@@ -287,7 +287,7 @@ CMNMUpdatesManager::EUpdateRequestStatus CMNMUpdatesManager::RequestMeshDifferen
 	CRY_PROFILE_FUNCTION(PROFILE_AI);
 	
 	// Uses global timer instead of AI timer because this has to work in Editor mode as well (AI timer only runs in Game and Physics/AI Mode)
-	m_lastUpdateTime = gEnv->pTimer->GetFrameStartTime();
+	m_lastUpdateTime = GetGTimer()->GetFrameStartTime();
 	
 	SRequestParams queueAndState = GetRequestParams(m_explicitRegenerationToggle);
 	if (!RequestQueueMeshDifferenceUpdate(queueAndState, meshID, oldVolume, newVolume))

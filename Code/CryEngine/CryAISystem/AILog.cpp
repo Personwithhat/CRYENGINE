@@ -49,7 +49,7 @@ static int savedMsgIndex = 0;
 //====================================================================
 // DebugDrawLabel
 //====================================================================
-static void DebugDrawLabel(ESavedMsgType type, float timeFrac, int col, int row, const char* szText)
+static void DebugDrawLabel(ESavedMsgType type, const nTime& timeFrac, int col, int row, const char* szText)
 {
 	float ColumnSize = 11;
 	float RowSize = 11;
@@ -60,9 +60,9 @@ static void DebugDrawLabel(ESavedMsgType type, float timeFrac, int col, int row,
 	CDebugDrawContext dc;
 
 	float alpha = 1.0f;
-	static float fadeFrac = 0.5f;
-	if (timeFrac < fadeFrac && fadeFrac > 0.0f)
-		alpha = timeFrac / fadeFrac;
+	static nTime fadeFrac = "0.5";
+	if (timeFrac < fadeFrac && fadeFrac > 0)
+		alpha = (float)(timeFrac / fadeFrac);
 	color.a = static_cast<uint8>(255 * alpha);
 
 	float actualCol = ColumnSize * static_cast<float>(col);
@@ -80,14 +80,14 @@ static void DebugDrawLabel(ESavedMsgType type, float timeFrac, int col, int row,
 //====================================================================
 void AILogDisplaySavedMsgs()
 {
-	float savedMsgDuration = gAIEnv.CVars.OverlayMessageDuration;
-	if (savedMsgDuration < 0.01f)
+	CTimeValue savedMsgDuration = gAIEnv.CVars.OverlayMessageDuration;
+	if (savedMsgDuration < "0.01")
 		return;
 	static int col = 1;
 
 	int row = -1;
 	CTimeValue currentTime = GetAISystem()->GetFrameStartTime();
-	CTimeValue time = currentTime - CTimeValue(savedMsgDuration);
+	CTimeValue time = currentTime - savedMsgDuration;
 	for (int i = 0; i < maxSavedMsgs; ++i)
 	{
 		int index = (maxSavedMsgs + savedMsgIndex - i) % maxSavedMsgs;
@@ -98,7 +98,7 @@ void AILogDisplaySavedMsgs()
 			savedMsgs[index].time = time;
 		//      savedMsgIndex = (maxSavedMsgs + savedMsgIndex - 1) % maxSavedMsgs;
 
-		float timeFrac = (savedMsgs[index].time - time).GetSeconds() / savedMsgDuration;
+		nTime timeFrac = (savedMsgs[index].time - time) / savedMsgDuration;
 		DebugDrawLabel(savedMsgs[index].savedMsgType, timeFrac, col, row, savedMsgs[index].savedMsg);
 		--row;
 	}
@@ -124,7 +124,7 @@ void AIInitLog(ISystem* system)
 	{
 		savedMsgs[i].savedMsg[0] = '\0';
 		savedMsgs[i].savedMsgType = SMT_WARNING;
-		savedMsgs[i].time = CTimeValue(0.0f);
+		savedMsgs[i].time = CTimeValue(0);
 		savedMsgIndex = 0;
 	}
 }

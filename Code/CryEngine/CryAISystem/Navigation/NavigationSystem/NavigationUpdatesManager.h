@@ -132,7 +132,7 @@ public:
 
 	virtual ~CMNMUpdatesManager() override {}
 
-	virtual void Update(const CTimeValue frameStartTime, const float frameDeltaTime) override;
+	virtual void Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime) override;
 
 	virtual void EntityChanged(int physicalEntityId, const AABB& aabb) override;
 	virtual void WorldChanged(const AABB& aabb) override;
@@ -246,7 +246,7 @@ private:
 
 	CTimeValue        m_lastUpdateTime;
 	CTimeValue        m_frameStartTime;
-	float             m_frameDeltaTime;
+	CTimeValue        m_frameDeltaTime;
 };
 
 namespace MNMUtils

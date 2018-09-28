@@ -253,16 +253,16 @@ struct SmartObjectCondition
 	bool        bHorizLimitOnly;
 	float       fOrientationToTargetLimit;
 
-	float       fMinDelay;
-	float       fMaxDelay;
-	float       fMemory;
+	CTimeValue  fMinDelay;
+	CTimeValue  fMaxDelay;
+	CTimeValue  fMemory;
 
 	float       fProximityFactor;
 	float       fOrientationFactor;
 	float       fVisibilityFactor;
 	float       fRandomnessFactor;
 
-	float       fLookAtOnPerc;
+	mpfloat     fLookAtOnPerc;
 	string      sUserPreActionState;
 	string      sObjectPreActionState;
 	EActionType eActionType;
@@ -609,9 +609,9 @@ struct IAISystem
 	virtual bool IsEnabled() const = 0;
 
 	//! Every frame (multiple time steps per frame possible?)
-	//! \param currentTime AI time since game start in seconds (GetCurrentTime).
+	//! \param currentTime AI time since game start (GetFrameStartTime)
 	//! \param frameTime AI time since last update (GetFrameTime).
-	virtual void                                  Update(const CTimeValue currentTime, const float frameTime) = 0;
+	virtual void                                  Update(const CTimeValue& currentTime, const CTimeValue& frameTime) = 0;
 
 	//! Updates only a specific subsystem specified by the provided flag
 	//! Such subsystem MUST be enabled by setting the right flag calling GetUpdateOverrideFlags() before executing of this function
@@ -620,7 +620,7 @@ struct IAISystem
 	//! \param currentTime AI time since game start in seconds (GetCurrentTime).
 	//! \param frameTime AI time since last update (GetFrameTime).
 	//! \param subsystemUpdateFlag Subsystem to update
-	virtual void                                  UpdateSubsystem(const CTimeValue currentTime, const float frameTime, const ESubsystemUpdateFlag subsystemUpdateFlag) = 0;
+	virtual void                                  UpdateSubsystem(const CTimeValue& currentTime, const CTimeValue& frameTime, const ESubsystemUpdateFlag subsystemUpdateFlag) = 0;
 
 	virtual bool                                  RegisterSystemComponent(IAISystemComponent* pComponent) = 0;
 	virtual bool                                  UnregisterSystemComponent(IAISystemComponent* pComponent) = 0;
@@ -637,7 +637,7 @@ struct IAISystem
 	virtual bool GetUpdateAllAlways() const = 0;
 
 	//! \return The basic AI system update interval.
-	virtual float GetUpdateInterval() const = 0;
+	virtual CTimeValue GetUpdateInterval() const = 0;
 
 	//! Used for profiling.
 	virtual int GetAITickCount() = 0;
@@ -690,8 +690,8 @@ struct IAISystem
 	virtual bool IsRecording(const IAIObject* pTarget, IAIRecordable::e_AIDbgEvent event) const = 0;
 	virtual void Record(const IAIObject* pTarget, IAIRecordable::e_AIDbgEvent event, const char* pString) const = 0;
 	virtual void GetRecorderDebugContext(SAIRecorderDebugContext*& pContext) = 0;
-	virtual void AddDebugLine(const Vec3& start, const Vec3& end, uint8 r, uint8 g, uint8 b, float time) = 0;
-	virtual void AddDebugSphere(const Vec3& pos, float radius, uint8 r, uint8 g, uint8 b, float time) = 0;
+	virtual void AddDebugLine(const Vec3& start, const Vec3& end, uint8 r, uint8 g, uint8 b, const CTimeValue& time) = 0;
+	virtual void AddDebugSphere(const Vec3& pos, float radius, uint8 r, uint8 g, uint8 b, const CTimeValue& time) = 0;
 
 	virtual void DebugReportHitDamage(IEntity* pVictim, IEntity* pShooter, float damage, const char* material) = 0;
 	virtual void DebugReportDeath(IAIObject* pVictim) = 0;
@@ -798,8 +798,8 @@ struct IAISystem
 	// Fills the array with possible dangers, returns number of dangers.
 	virtual unsigned int GetDangerSpots(const IAIObject* requester, float range, Vec3* positions, unsigned int* types, unsigned int n, unsigned int flags) = 0;
 
-	virtual void         DynOmniLightEvent(const Vec3& pos, float radius, EAILightEventType type, EntityId shooterId, float time = 5.0f) = 0;
-	virtual void         DynSpotLightEvent(const Vec3& pos, const Vec3& dir, float radius, float fov, EAILightEventType type, EntityId shooterId, float time = 5.0f) = 0;
+	virtual void         DynOmniLightEvent(const Vec3& pos, float radius, EAILightEventType type, EntityId shooterId, const CTimeValue& time = 5) = 0;
+	virtual void         DynSpotLightEvent(const Vec3& pos, const Vec3& dir, float radius, float fov, EAILightEventType type, EntityId shooterId, const CTimeValue& time = 5) = 0;
 
 	virtual IAuditionMap*  GetAuditionMap() = 0;
 	virtual IVisionMap*  GetVisionMap() = 0;
@@ -812,9 +812,6 @@ struct IAISystem
 	virtual void       UpdateBeacon(unsigned short nGroupID, const Vec3& vPos, IAIObject* pOwner = 0) = 0;
 
 	virtual bool       ParseTables(int firstTable, bool parseMovementAbility, IFunctionHandler* pH, AIObjectParams& aiParams, bool& updateAlways) = 0;
-
-	// Added to resolve merge conflict: to be removed in dev/c2!
-	virtual float GetFrameStartTimeSecondsVirtual() const = 0;
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//! Light frame profiler for AI support.

@@ -82,7 +82,7 @@ public:
 	virtual void                    UpdateStreamingPriority(const SUpdateStreamingPriorityContext& streamingContext) override;
 
 	// Streaming
-	float GetStreamingTime() const { return std::max(m_streamingTime, m_playbackTime); }
+	const CTimeValue GetStreamingTime() const { return BADTIME(std::max(m_streamingTime, m_playbackTime)); }
 
 	// Called for starting the update job in CGeomCacheManager
 	void StartAsyncUpdate();
@@ -106,15 +106,15 @@ public:
 	// IGeomCacheRenderNode
 	virtual bool        LoadGeomCache(const char* sGeomCacheFileName) override;
 
-	virtual void        SetPlaybackTime(const float time) override;
-	virtual float       GetPlaybackTime() const override { return m_playbackTime; }
+	virtual void        SetPlaybackTime(const CTimeValue& time) override;
+	virtual const CTimeValue GetPlaybackTime() const override { return BADTIME(m_playbackTime); }
 
 	virtual bool        IsStreaming() const override;
-	virtual void        StartStreaming(const float time) override;
+	virtual void        StartStreaming(const CTimeValue& time) override;
 	virtual void        StopStreaming() override;
 	virtual bool        IsLooping() const override;
 	virtual void        SetLooping(const bool bEnable) override;
-	virtual float       GetPrecachedTime() const override;
+	virtual const CTimeValue GetPrecachedTime() const override;
 
 	virtual IGeomCache* GetGeomCache() const override { return m_pGeomCache; }
 
@@ -217,6 +217,8 @@ private:
 	// World space matrix
 	Matrix34 m_matrix;
 
+	// PERSONAL IMPROVE: Setting up Volatile CTimeValue() => MPFloat is not volatile compatible.
+	// Tricky to implement....postponed for now but threading won't work accurately otherwise!
 	// Playback
 	volatile float m_playbackTime;
 

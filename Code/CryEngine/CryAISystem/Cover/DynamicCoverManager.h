@@ -58,7 +58,7 @@ public:
 	void Reset();
 	void Clear();
 	void ClearValidationSegments();
-	void Update(const CTimeValue frameStartTime, const float frameDeltaTime);
+	void Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime);
 
 	void BreakEvent(const Vec3& position, float radius);
 	void MoveEvent(EntityId entityID, const Matrix34& worldTM);
@@ -169,7 +169,7 @@ private:
 	EntityCoverSampler m_entityCoverSampler;
 
 	CTimeValue m_frameStartTime;
-	float      m_frameDeltaTime;
+	CTimeValue m_frameDeltaTime;
 };
 
 #endif

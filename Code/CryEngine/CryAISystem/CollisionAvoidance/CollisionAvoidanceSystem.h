@@ -20,7 +20,7 @@ public:
 
     void Reset();
 	void Clear();
-    void Update(float updateTime);
+    void Update(const CTimeValue& updateTime);
 
     virtual void RegisterAgent(IAgent* pAgent) override;
     virtual void UnregisterAgent(IAgent* pAgent) override;
@@ -33,7 +33,7 @@ private:
     typedef size_t ObstacleID;
 
     void                  PopulateState();
-    void                  ApplyResults(float updateTime);
+    void                  ApplyResults(const CTimeValue& updateTime);
 
     AgentID               CreateAgent(NavigationAgentTypeID navigationTypeID, const INavMeshQueryFilter* pFilter);
     ObstacleID            CreateObstable();

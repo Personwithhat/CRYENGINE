@@ -77,7 +77,7 @@ public:
 		return *reinterpret_cast<T*>(addr);
 	}
 
-	void                      GetMaxParticleCounts(int& total, int& perFrame, float minFPS = 4.0f, float maxFPS = 120.0f) const;
+	void                      GetMaxParticleCounts(int& total, int& perFrame, const rTime& minFPS = 4, const rTime& maxFPS = 120) const;
 	void                      GetEmitLocations(TVarArray<QuatTS> locations, uint firstInstance) const;
 	void                      EmitParticle();
 
@@ -117,7 +117,7 @@ private:
 	AABB                           m_bounds;
 	bool                           m_alive;
 	bool                           m_isPreRunning;
-	float                          m_deltaTime;
+	CTimeValue                     m_deltaTime;
 	SChaosKey mutable              m_chaos;
 	SChaosKeyV mutable             m_chaosV;
 

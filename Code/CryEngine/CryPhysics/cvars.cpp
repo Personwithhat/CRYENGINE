@@ -29,11 +29,12 @@ namespace PhysicsCVars
 			"Usage: p_do_step 1\n"
 			"Default is 0 (off). Each 'p_do_step 1' instruction allows\n"
 			"the physics system to advance a single step.");
+		// PERSONAL NOTE: The description on this cVar was WRONG! This is the forced timestep for physics, it's not 0 or 1!
 		REGISTER_CVAR2("p_fixed_timestep", &pVars->fixedTimestep, pVars->fixedTimestep, VF_CHEAT,
 			"Toggles fixed time step mode."
-			"Usage: p_fixed_timestep [0/1]\n"
-			"Forces fixed time step when set to 1. When set to 0, the\n"
-			"time step is variable, based on the frame rate.");
+			"Usage: p_fixed_timestep 0=>Disabled, otherwise enforced\n"
+			"This is the forced timestep for physics. Capped to maxWorldStep\n"
+			"PhysicsTime will progress normally but StartStep() etc. will assume this much time has passed.\n");
 		REGISTER_CVAR2("p_draw_helpers_num", &pVars->iDrawHelpers, pVars->iDrawHelpers, VF_CHEAT,
 			"Toggles display of various physical helpers. The value is a bitmask:\n"
 			"bit 0  - show contact points\n"
@@ -90,10 +91,6 @@ namespace PhysicsCVars
 			"Usage: p_break_on_validation [0/1]\n"
 			"Default is 0 (off). Issues CryDebugBreak() call in case of\n"
 			"a physics parameter validation error.");
-		REGISTER_CVAR2("p_time_granularity", &pVars->timeGranularity, pVars->timeGranularity, 0,
-			"Sets physical time step granularity.\n"
-			"Usage: p_time_granularity [0..0.1]\n"
-			"Used for internal tweaking only.");
 		REGISTER_CVAR2("p_list_active_objects", &pVars->bLogActiveObjects, pVars->bLogActiveObjects, VF_NULL, "1 - list normal objects, 2 - list independent objects, 3 - both");
 		REGISTER_CVAR2("p_profile_entities", &pVars->bProfileEntities, pVars->bProfileEntities, 0,
 			"Enables per-entity time step profiling");
@@ -256,7 +253,6 @@ namespace PhysicsCVars
 
 		pVars->flagsColliderDebris = geom_colltype_debris;
 		pVars->flagsANDDebris = ~(geom_colltype_vehicle | geom_colltype6);
-		pVars->ticksPerSecond = gEnv->pTimer->GetTicksPerSecond();
 
 		if (gEnv->IsEditor())
 		{

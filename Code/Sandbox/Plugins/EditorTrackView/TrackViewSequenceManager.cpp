@@ -122,7 +122,7 @@ CTrackViewSequence* CTrackViewSequenceManager::CreateSequence(const string& name
 
 			if (pAnimationContext)
 			{
-				TRange<SAnimTime> playbackRange;
+				TRange<CTimeValue> playbackRange;
 				playbackRange.start = pSequence->GetTimeRange().start;
 				playbackRange.end = pSequence->GetTimeRange().end;
 				pSequence->SetPlaybackRange(pSequence->GetTimeRange());
@@ -377,7 +377,7 @@ void CTrackViewSequenceManager::HandleAttachmentChange(const CBaseObject* pObjec
 
 	CAnimationContext* pAnimationContext = CTrackViewPlugin::GetAnimationContext();
 	CTrackViewSequence* pActiveSequence = pAnimationContext->GetSequence();
-	const SAnimTime time = pAnimationContext->GetTime();
+	const CTimeValue time = pAnimationContext->GetTime();
 
 	for (auto iter = affectedSequences.begin(); iter != affectedSequences.end(); ++iter)
 	{

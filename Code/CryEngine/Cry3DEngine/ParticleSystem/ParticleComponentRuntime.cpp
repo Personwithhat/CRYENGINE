@@ -20,7 +20,7 @@ CParticleComponentRuntime::CParticleComponentRuntime(CParticleEmitter* pEmitter,
 	, m_pComponent(pComponent)
 	, m_bounds(AABB::RESET)
 	, m_alive(true)
-	, m_deltaTime(-1.0f)
+	, m_deltaTime(-1)
 	, m_isPreRunning(false)
 	, m_chaos(0)
 	, m_chaosV(0)
@@ -100,7 +100,7 @@ void CParticleComponentRuntime::Clear()
 {
 	m_container.Clear();
 	RemoveAllSubInstances();
-	m_deltaTime = -1.0f;
+	m_deltaTime.SetSeconds(-1);
 }
 
 void CParticleComponentRuntime::PreRun()
@@ -129,7 +129,7 @@ void CParticleComponentRuntime::PreRun()
 
 	m_pComponent->OnPreRun(*this);
 
-	m_deltaTime = -1.0f;
+	m_deltaTime.SetSeconds(-1);
 }
 
 void CParticleComponentRuntime::UpdateAll()
@@ -329,7 +329,7 @@ void CParticleComponentRuntime::AddParticles(TConstArray<SSpawnEntry> spawnEntri
 	{
 		gpu_pfx2::SUpdateParams params;
 
-		params.deltaTime          = DeltaTime();
+		params.deltaTime          = BADTIME(DeltaTime());
 		params.emitterPosition    = m_pEmitter->GetLocation().t;
 		params.emitterOrientation = m_pEmitter->GetLocation().q;
 		params.physAccel          = m_pEmitter->GetPhysicsEnv().m_UniformForces.vAccel;
@@ -585,7 +585,7 @@ void CParticleComponentRuntime::InitParticles()
 	if (ComponentParams().m_isPreAged)
 		GetComponent()->PastUpdateParticles(*this);
 	if (!m_isPreRunning)
-		m_deltaTime = -1.0f;
+		m_deltaTime.SetSeconds(-1);
 
 	m_container.ResetSpawnedParticles();
 }
@@ -654,17 +654,17 @@ void CParticleComponentRuntime::AgeUpdate()
 	}
 }
 
-void CParticleComponentRuntime::GetMaxParticleCounts(int& total, int& perFrame, float minFPS, float maxFPS) const
+void CParticleComponentRuntime::GetMaxParticleCounts(int& total, int& perFrame, const rTime& minFPS, const rTime& maxFPS) const
 {
 	SMaxParticleCounts counts;
 	m_pComponent->GetDynamicData(*this, ESDT_ParticleCounts, &counts, EDD_None, SUpdateRange(0,1));
 
 	total = counts.burst;
-	const float rate = counts.rate + counts.perFrame * maxFPS;
-	const float extendedLife = ComponentParams().m_maxParticleLife + rcp(minFPS); // Particles stay 1 frame after death
-	if (rate > 0.0f && std::isfinite(extendedLife))
-		total += int_ceil(rate * extendedLife);
-	perFrame = int(counts.burst + counts.perFrame) + int_ceil(counts.rate / minFPS);
+	const rTime rate = BADrT(counts.rate) + counts.perFrame * maxFPS;
+	const CTimeValue extendedLife = ComponentParams().m_maxParticleLife + mpfloat(1)/minFPS; // Particles stay 1 frame after death
+	if (rate > 0 && IsValid(extendedLife))
+		total += (int)int_ceil(rate * extendedLife);
+	perFrame = int(counts.burst + counts.perFrame) + (int)int_ceil(BADrT(counts.rate) / minFPS);
 
 	if (auto parent = ParentRuntime())
 	{
@@ -752,7 +752,7 @@ pfx2::TParticleHeap& CParticleComponentRuntime::MemHeap()
 
 float CParticleComponentRuntime::DeltaTime() const
 {
-	return m_deltaTime >= 0.0f ? m_deltaTime : m_pEmitter->GetDeltaTime();
+	return (m_deltaTime >= 0? m_deltaTime : m_pEmitter->GetDeltaTime()).BADGetSeconds();
 }
 
 }

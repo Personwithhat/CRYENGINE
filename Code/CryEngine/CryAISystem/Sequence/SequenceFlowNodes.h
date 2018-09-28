@@ -291,7 +291,7 @@ public:
 
 	CFlowNode_AISequenceActionWait(SActivationInfo* pActInfo)
 		: m_actInfo(*pActInfo)
-		, m_waitTimeMs(0)
+		, m_waitTime(0)
 	{}
 
 	virtual IFlowNodePtr Clone(SActivationInfo* pActInfo) { return new CFlowNode_AISequenceActionWait(pActInfo); }
@@ -304,7 +304,7 @@ public:
 private:
 	SActivationInfo m_actInfo;
 	CTimeValue m_startTime;
-	int m_waitTimeMs;
+	CTimeValue m_waitTime;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -328,7 +328,7 @@ public:
 
 	CFlowNode_AISequenceActionShoot(SActivationInfo* pActInfo)
 		: m_actInfo(*pActInfo)
-		, m_fireTimeMS(0)
+		, m_fireTime(0)
 	{
 	}
 
@@ -344,7 +344,7 @@ private:
 	SActivationInfo m_actInfo;
 
 	CTimeValue m_startTime;
-	int m_fireTimeMS;
+	CTimeValue m_fireTime;
 };
 
 //////////////////////////////////////////////////////////////////////////

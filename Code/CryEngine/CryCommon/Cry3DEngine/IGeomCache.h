@@ -39,7 +39,7 @@ struct IGeomCache : public IStreamable
 
 	//! Returns the duration of the geom cache animation
 	//! \return float value in seconds
-	virtual float GetDuration() const = 0;
+	virtual const CTimeValue GetDuration() const = 0;
 
 	//! Reloads the cache. Need to call this when cache file changed.
 	virtual void Reload() = 0;
@@ -47,7 +47,7 @@ struct IGeomCache : public IStreamable
 	struct SStatistics
 	{
 		bool  m_bPlaybackFromMemory;
-		float m_averageAnimationDataRate;
+		rTime m_averageAnimationDataRate;
 		uint  m_numStaticMeshes;
 		uint  m_numStaticVertices;
 		uint  m_numStaticTriangles;

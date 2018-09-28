@@ -215,7 +215,7 @@ void CXMLProcessor::ParseControlsData(char const* const szFolderPath, EDataScope
 	CryFixedStringT<MaxFilePathLength> sRootFolderPath(szFolderPath);
 
 #if defined(CRY_AUDIO_USE_PRODUCTION_CODE)
-	CTimeValue const startTime(gEnv->pTimer->GetAsyncTime());
+	CTimeValue const startTime(GetGTimer()->GetAsyncTime());
 #endif // CRY_AUDIO_USE_PRODUCTION_CODE
 
 	if (g_pIImpl != nullptr)
@@ -279,8 +279,8 @@ void CXMLProcessor::ParseControlsData(char const* const szFolderPath, EDataScope
 		}
 	}
 
-	float const duration = (gEnv->pTimer->GetAsyncTime() - startTime).GetMilliSeconds();
-	Cry::Audio::Log(ELogType::Comment, R"(Parsed controls data in "%s" for data scope "%s" in %.3f ms!)", szFolderPath, szDataScope, duration);
+	CTimeValue const duration = GetGTimer()->GetAsyncTime() - startTime;
+	Cry::Audio::Log(ELogType::Comment, R"(Parsed controls data in "%s" for data scope "%s" in %.3f ms!)", szFolderPath, szDataScope, (float)duration.GetMilliSeconds());
 #endif // CRY_AUDIO_USE_PRODUCTION_CODE
 }
 
@@ -376,7 +376,7 @@ void CXMLProcessor::ParsePreloadsData(char const* const szFolderPath, EDataScope
 	CryFixedStringT<MaxFilePathLength> rootFolderPath(szFolderPath);
 
 #if defined(CRY_AUDIO_USE_PRODUCTION_CODE)
-	CTimeValue const startTime(gEnv->pTimer->GetAsyncTime());
+	CTimeValue const startTime(GetGTimer()->GetAsyncTime());
 #endif // CRY_AUDIO_USE_PRODUCTION_CODE
 
 	if (g_pIImpl != nullptr)
@@ -475,8 +475,8 @@ void CXMLProcessor::ParsePreloadsData(char const* const szFolderPath, EDataScope
 		}
 	}
 
-	float const duration = (gEnv->pTimer->GetAsyncTime() - startTime).GetMilliSeconds();
-	Cry::Audio::Log(ELogType::Comment, R"(Parsed preloads data in "%s" for data scope "%s" in %.3f ms!)", szFolderPath, szDataScope, duration);
+	CTimeValue const duration = GetGTimer()->GetAsyncTime() - startTime;
+	Cry::Audio::Log(ELogType::Comment, R"(Parsed preloads data in "%s" for data scope "%s" in %.3f ms!)", szFolderPath, szDataScope, (float)duration.GetMilliSeconds());
 #endif // CRY_AUDIO_USE_PRODUCTION_CODE
 }
 

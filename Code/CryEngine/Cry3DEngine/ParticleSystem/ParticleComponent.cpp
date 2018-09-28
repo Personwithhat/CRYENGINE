@@ -248,14 +248,14 @@ pfx2::CParticleComponent::TComponents& CParticleComponent::GetParentChildren()
 
 void CParticleComponent::UpdateTimings()
 {
-	m_params.m_maxTotalLIfe += m_params.m_maxParticleLife;
-	m_params.m_equilibriumTime += FiniteOr(m_params.m_maxParticleLife, 0.0f);
-	m_params.m_stableTime += FiniteOr(m_params.m_maxParticleLife, 0.0f);
+	m_params.m_maxTotalLife += m_params.m_maxParticleLife;
+	m_params.m_equilibriumTime += (IsValid(m_params.m_maxParticleLife) ? m_params.m_maxParticleLife : 0);
+	m_params.m_stableTime += (IsValid(m_params.m_maxParticleLife) ? m_params.m_maxParticleLife : 0);
 
 	// Adjust parent lifetimes to include child lifetimes
 	if (m_children.size())
 	{
-		float maxChildEq = 0.0f, maxChildLife = 0.0f;
+		CTimeValue maxChildEq = 0, maxChildLife = 0;
 		for (auto& pChild : m_children)
 		{
 			if (!pChild->IsEnabled())
@@ -263,19 +263,19 @@ void CParticleComponent::UpdateTimings()
 			pChild->UpdateTimings();
 			const STimingParams& timingsChild = pChild->ComponentParams();
 			SetMax(maxChildEq, timingsChild.m_equilibriumTime);
-			SetMax(maxChildLife, timingsChild.m_maxTotalLIfe);
+			SetMax(maxChildLife, timingsChild.m_maxTotalLife);
 		}
 
-		const float moreEq = maxChildEq - FiniteOr(m_params.m_maxParticleLife, 0.0f);
-		if (moreEq > 0.0f)
+		const CTimeValue moreEq = maxChildEq - (IsValid(m_params.m_maxParticleLife) ? m_params.m_maxParticleLife : 0);
+		if (moreEq > 0)
 		{
 			m_params.m_stableTime += moreEq;
 			m_params.m_equilibriumTime += moreEq;
 		}
-		const float moreLife = maxChildLife - FiniteOr(m_params.m_maxParticleLife, 0.0f);
-		if (moreLife > 0.0f)
+		const CTimeValue moreLife = maxChildLife - (IsValid(m_params.m_maxParticleLife) ? m_params.m_maxParticleLife : 0);
+		if (moreLife > 0)
 		{
-			m_params.m_maxTotalLIfe += moreLife;
+			m_params.m_maxTotalLife += moreLife;
 		}
 	}
 }

@@ -63,7 +63,7 @@ bool CVoxelSegment::m_bExportAbortRequested = false;
 PodArray<C3DEngine::SLayerActivityInfo> CVoxelSegment::m_arrObjectLayersInfo;
 uint CVoxelSegment::m_arrObjectLayersInfoVersion = 0;
 
-std::map<CStatObj*, float> CVoxelSegment::m_cgfTimeStats;
+std::map<CStatObj*, CTimeValue> CVoxelSegment::m_cgfTimeStats;
 CryReadModifyLock CVoxelSegment::m_cgfTimeStatsLock;
 
 CLockedMap<ITexture*, _smart_ptr<ITexture>> CVoxelSegment::m_arrLockedTextures;
@@ -1008,7 +1008,7 @@ bool CVoxelSegment::UpdateBrickRenderData()
 	if (m_pBlockInfo == 0)
 	{
 		Cry3DEngineBase::PrintMessage("UpdateBrickRenderData postponed %d", GetCurrPassMainFrameID());
-		gSvoEnv->m_svoFreezeTime = -1; // prevent hang in case of full sync update
+		gSvoEnv->m_svoFreezeTime.SetSeconds(-1); // prevent hang in case of full sync update
 		CVoxelSegment::m_bUpdateBrickRenderDataPostponed = 1;
 		return false;
 	}
@@ -2103,7 +2103,7 @@ void CVoxelSegment::FindTrianglesForVoxelization(PodArray<int>*& rpNodeTrisXYZ)
 	{
 		// get tris from real level geometry
 
-		//float startTimeAll = GetCurAsyncTimeSec();
+		//CTimeValue startTimeAll = GetGTimer()->GetAsyncTime();
 		//		PrintMessage("VoxelizeMeshes: starting triangle search for node id %d (size=%d)", m_nId, (int)GetBoxSize());
 
 		SSuperMesh superMesh;
@@ -2278,7 +2278,7 @@ void CVoxelSegment::FindTrianglesForVoxelization(PodArray<int>*& rpNodeTrisXYZ)
 			nodeHitInfo.fMinHitOpacity = GetCVars()->e_svoTI_MinVoxelOpacity;
 			int minVoxelOpacity = (int)(GetCVars()->e_svoTI_MinVoxelOpacity * 255.f);
 
-			float timeRayIntersection = Cry3DEngineBase::GetTimer()->GetAsyncCurTime();
+			CTimeValue timeRayIntersection = GTimer(render)->GetAsyncCurTime();
 
 			info.pStatObj->RayIntersection(nodeHitInfo, info.pMat);
 
@@ -2398,7 +2398,7 @@ void CVoxelSegment::FindTrianglesForVoxelization(PodArray<int>*& rpNodeTrisXYZ)
 				}
 			}
 
-			timeRayIntersection = Cry3DEngineBase::GetTimer()->GetAsyncCurTime() - timeRayIntersection;
+			timeRayIntersection = GTimer(render)->GetAsyncCurTime() - timeRayIntersection;
 
 			if (GetCVars()->e_svoDebug)
 			{

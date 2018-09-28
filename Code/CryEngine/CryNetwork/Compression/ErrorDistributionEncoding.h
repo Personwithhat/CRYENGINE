@@ -28,7 +28,7 @@ class CErrorDistribution
 
 	friend class CErrorDistributionTest;
 
-	static int64 m_totalTime[eOpType_Num];
+	static CTimeValue m_totalTime[eOpType_Num];
 
 	void OnOpEnd(EOpType type) const;
 

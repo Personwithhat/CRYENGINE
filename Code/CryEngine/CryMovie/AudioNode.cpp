@@ -70,14 +70,14 @@ void CAudioNode::Animate(SAnimContext& animContext)
 					m_audioTriggerTracks.resize(numAudioTriggerTracks);
 				}
 
-				if (!animContext.bResetting && !bMuted && animContext.time > SAnimTime(0))
+				if (!animContext.bResetting && !bMuted && animContext.time > 0)
 				{
 					SAudioTriggerKey audioTriggerKey;
 					SAudioInfo& audioTriggerInfo = m_audioTriggerTracks[numAudioTriggerTracks - 1];
 					const int audioTriggerKeyNum = static_cast<CAudioTriggerTrack*>(pTrack)->GetActiveKey(animContext.time, &audioTriggerKey);
 					if (audioTriggerKeyNum >= 0)
 					{
-						const SAnimTime audioTriggerKeyTime = (animContext.time - audioTriggerKey.m_time);
+						const CTimeValue audioTriggerKeyTime = (animContext.time - audioTriggerKey.m_time);
 
 						if (audioTriggerInfo.audioKeyStart < audioTriggerKeyNum)
 						{
@@ -92,7 +92,7 @@ void CAudioNode::Animate(SAnimContext& animContext)
 
 						audioTriggerInfo.audioKeyStart = audioTriggerKeyNum;
 
-						if (audioTriggerKey.m_duration > SAnimTime(0) && audioTriggerKeyTime >= audioTriggerKey.m_duration)
+						if (audioTriggerKey.m_duration > 0 && audioTriggerKeyTime >= audioTriggerKey.m_duration)
 						{
 							if (audioTriggerInfo.audioKeyStop < audioTriggerKeyNum)
 							{

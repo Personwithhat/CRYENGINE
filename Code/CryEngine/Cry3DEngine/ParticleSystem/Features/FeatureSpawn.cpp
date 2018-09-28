@@ -20,7 +20,7 @@ struct SSpawnData
 	{
 		float dT = runtime.DeltaTime();
 		const float endTime = min(dT, m_duration - m_timer);
-		const float startTime = max(0.0f, endTime - runtime.ComponentParams().m_stableTime);
+		const float startTime = max(0.0f, endTime - runtime.ComponentParams().m_stableTime.BADGetSeconds());
 		return Range(startTime, endTime);
 	}
 };
@@ -52,23 +52,23 @@ public:
 
 		// Compute equilibrium and full life times
 		CParticleComponent* pParent = pComponent->GetParentComponent();
-		const float parentParticleLife = pParent ? pParent->ComponentParams().m_maxParticleLife : gInfinity;
-		const float preDelay = pParams->m_maxTotalLIfe;
-		const float delay = preDelay + m_delay.GetValueRange().end;
+		const CTimeValue parentParticleLife = pParent ? pParent->ComponentParams().m_maxParticleLife : mpfloat::limits::quiet_NaN().backend();
+		const CTimeValue preDelay = pParams->m_maxTotalLife;
+		const CTimeValue delay = preDelay + BADTIME(m_delay.GetValueRange().end);
 
 		STimingParams timings;
 		timings.m_equilibriumTime = delay;
-		timings.m_maxTotalLIfe = min(delay + m_duration.GetValueRange().end, parentParticleLife);
+		timings.m_maxTotalLife = min(delay + BADTIME(m_duration.GetValueRange().end), parentParticleLife);
 
 		if (m_restart.IsEnabled())
 		{
-			timings.m_stableTime = timings.m_maxTotalLIfe;
-			timings.m_equilibriumTime = timings.m_maxTotalLIfe;
-			timings.m_maxTotalLIfe = parentParticleLife;
+			timings.m_stableTime = timings.m_maxTotalLife;
+			timings.m_equilibriumTime = timings.m_maxTotalLife;
+			timings.m_maxTotalLife = parentParticleLife;
 		}
 		SetMax(pParams->m_stableTime, timings.m_stableTime);
 		SetMax(pParams->m_equilibriumTime, timings.m_equilibriumTime);
-		SetMax(pParams->m_maxTotalLIfe, timings.m_maxTotalLIfe);
+		SetMax(pParams->m_maxTotalLife, timings.m_maxTotalLife);
 
 		if (m_duration.GetBaseValue() == 0.0f)
 		{
@@ -167,8 +167,8 @@ protected:
 		if (isIndependent)
 		{
 			// Skip spawning immortal independent effects
-			float maxLifetime = m_delay.GetValueRange().end + m_duration.GetValueRange().end + runtime.ComponentParams().m_maxParticleLife;
-			if (!std::isfinite(maxLifetime))
+			CTimeValue maxLifetime = BADTIME(m_delay.GetValueRange().end + m_duration.GetValueRange().end) + runtime.ComponentParams().m_maxParticleLife;
+			if (!IsValid(maxLifetime))
 				numInstances = 0;
 		}
 		else if (m_restart.IsEnabled())
@@ -332,7 +332,7 @@ public:
 			{
 				const float amount = amounts[i].end * scale;
 				const float spawnTime = m_mode == ESpawnCountMode::TotalParticles ? durations[i].start
-					: min(runtime.ComponentParams().m_maxParticleLife, durations[i].start);
+					: min(runtime.ComponentParams().m_maxParticleLife.BADGetSeconds(), durations[i].start);
 				if (spawnTime > 0.0f)
 					counts[i].rate += amount / spawnTime;
 				else
@@ -349,7 +349,7 @@ public:
 			const float dt = spawnData.SpawnTimes(runtime).Length();
 			if (dt < 0.0f)
 				continue;
-			if (m_mode == ESpawnCountMode::TotalParticles || spawnData.m_duration <= runtime.ComponentParams().m_maxParticleLife)
+			if (m_mode == ESpawnCountMode::TotalParticles || spawnData.m_duration <= runtime.ComponentParams().m_maxParticleLife.BADGetSeconds())
 			{
 				if (spawnData.m_duration > dt)
 					amounts[i] *= dt * rcp(spawnData.m_duration);
@@ -358,7 +358,7 @@ public:
 			}
 			else
 			{
-				amounts[i] *= dt * rcp(runtime.ComponentParams().m_maxParticleLife);
+				amounts[i] *= dt * rcp(runtime.ComponentParams().m_maxParticleLife.BADGetSeconds());
 			}
 		}
 	}

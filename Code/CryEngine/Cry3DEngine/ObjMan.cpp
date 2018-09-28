@@ -192,7 +192,7 @@ public:
 		: m_owner(owner)
 	{}
 
-	I3DEngine::ELevelLoadStatus DoStep(const float fTimeslicingLimitSec);
+	I3DEngine::ELevelLoadStatus DoStep(const CTimeValue& fTimeslicingLimi);
 
 	void OnFound(CStatObj* pObject, IStatObj::SSubObject* pSubObject) override
 	{
@@ -227,14 +227,14 @@ private:
 	EStep m_currentStep = EStep::Init;
 
 	// intermediate
-	float m_startTime = 0;
+	CTimeValue m_startTime = 0;
 	bool m_isCgfCacheExist = false;
 	int m_loadedCgfCounter = 0;
 	int m_inLevelCacheCount = 0;
 	bool m_isVerboseLogging = GetCVars()->e_StatObjPreload > 1;
 };
 
-I3DEngine::ELevelLoadStatus CObjManager::CPreloadTimeslicer::DoStep(const float timeSlicingLimitSec)
+I3DEngine::ELevelLoadStatus CObjManager::CPreloadTimeslicer::DoStep(const CTimeValue& timeSlicingLimit)
 {
 #define NEXT_STEP(step) return SetInProgress(step); case step: 
 
@@ -252,7 +252,7 @@ I3DEngine::ELevelLoadStatus CObjManager::CPreloadTimeslicer::DoStep(const float 
 			m_owner.PrintMessage("Starting loading level CGF's ...");
 
 
-			m_startTime = GetCurAsyncTimeSec();
+			m_startTime = GetGTimer()->GetAsyncTime();
 
 			m_isCgfCacheExist = false;
 			if (GetCVars()->e_StreamCgf != 0)
@@ -348,8 +348,8 @@ I3DEngine::ELevelLoadStatus CObjManager::CPreloadTimeslicer::DoStep(const float 
 				//GetISystem()->GetIResourceManager()->UnloadLevelCachePak( CGF_LEVEL_CACHE_PAK );
 			}
 
-			float dt = GetCurAsyncTimeSec() - m_startTime;
-			PrintMessage("Finished loading level CGF's: %d objects loaded (%d from LevelCache) in %.1f sec", m_loadedCgfCounter, m_inLevelCacheCount, dt);
+			CTimeValue dt = GetGTimer()->GetAsyncTime() - m_startTime;
+			PrintMessage("Finished loading level CGF's: %d objects loaded (%d from LevelCache) in %.1f sec", m_loadedCgfCounter, m_inLevelCacheCount, (float)dt.GetSeconds());
 		}
 
 	case EStep::Done:
@@ -366,7 +366,7 @@ void CObjManager::PreloadLevelObjects()
 {
 	CPreloadTimeslicer slicer(*this);
 	I3DEngine::ELevelLoadStatus result = I3DEngine::ELevelLoadStatus::InProgress;
-	const float infiniteTimeSlicingLimit = -1.0f;
+	const CTimeValue infiniteTimeSlicingLimit = -1;
 	do
 	{
 		result = slicer.DoStep(infiniteTimeSlicingLimit);
@@ -392,8 +392,7 @@ I3DEngine::ELevelLoadStatus CObjManager::UpdatePreloadLevelObjects()
 
 	LOADING_TIME_PROFILE_SECTION;
 
-	const float timeSlicingLimitSec = 1.0f;
-
+	const CTimeValue timeSlicingLimitSec = 1;
 	switch (m_pPreloadTimeSlicer->DoStep(timeSlicingLimitSec))
 	{
 	case I3DEngine::ELevelLoadStatus::InProgress:
@@ -779,14 +778,14 @@ CObjManager::CObjManager() :
 	m_statObjPool = new stl::PoolAllocator<sizeof(CStatObj), stl::PSyncMultiThread, alignof(CStatObj)>(stl::FHeap().PageSize(64)); // 20Kb per page
 #endif
 
-	m_vStreamPreCachePointDefs.Add(SObjManPrecachePoint());
+	m_vStreamPreCachePointDefs.push_back(new SObjManPrecachePoint());
 	m_vStreamPreCacheCameras.Add(SObjManPrecacheCamera());
 	m_nNextPrecachePointId = 0;
 	m_bCameraPrecacheOverridden = false;
 
 	m_pObjManager = this;
 
-	m_fCurrTime = 0.0f;
+	m_CurrTime.SetSeconds(0);
 
 	m_vSkyColor.Set(0, 0, 0);
 	m_fSunSkyRel = 0;
@@ -911,19 +910,19 @@ int CObjManager::ComputeDissolve(const CLodValue &lodValueIn, SRenderNodeTempDat
 	int nLodMin = std::max(nLodMain - 1, 0);
 	int nLodMax = std::min(nLodMain + 1, MAX_STATOBJ_LODS_NUM - 1);
 
-	float prevLodLastTimeUsed = 0;
-	float* arrLodLastTimeUsed = pTempData->userData.arrLodLastTimeUsed;
+	CTimeValue prevLodLastTimeUsed;
+	CTimeValue* arrLodLastTimeUsed = pTempData->userData.arrLodLastTimeUsed;
 
 	// Find when previous lod was used as primary lod last time and update last time used for current primary lod
-	arrLodLastTimeUsed[nLodMain] = GetCurTimeSec();
+	arrLodLastTimeUsed[nLodMain] = GetGTimer()->GetFrameTime();
 	for (int nLO = nLodMin; nLO <= nLodMax; nLO++)
 	{
 		if (nLO != nLodMain)
 			prevLodLastTimeUsed = std::max(prevLodLastTimeUsed, arrLodLastTimeUsed[nLO]);
 	}
 
-	float fDissolveRef = 1.f - SATURATE((GetCurTimeSec() - prevLodLastTimeUsed) / GetCVars()->e_LodTransitionTime);
-	prevLodLastTimeUsed = std::max(prevLodLastTimeUsed, GetCurTimeSec() - GetCVars()->e_LodTransitionTime);
+	nTime fDissolveRef = 1 - SATURATE((GetGTimer()->GetFrameTime() - prevLodLastTimeUsed) / GetCVars()->e_LodTransitionTime);
+	prevLodLastTimeUsed = std::max(prevLodLastTimeUsed, GetGTimer()->GetFrameTime() - GetCVars()->e_LodTransitionTime);
 
 	// Compute also max view distance fading
 	const float fDistFadeInterval = 2.f;
@@ -941,13 +940,13 @@ int CObjManager::ComputeDissolve(const CLodValue &lodValueIn, SRenderNodeTempDat
 		if (nLodMain == nLO)
 		{
 			// Incoming LOD
-			float fDissolveMaxDistRef = std::max(fDissolveRef, fDistFadeRef);
+			float fDissolveMaxDistRef = std::max(BADF fDissolveRef, fDistFadeRef);
 			lodSubValue = CLodValue(nLO, int(fDissolveMaxDistRef * 255.f), -1);
 		}
 		else
 		{
 			// Outgoing LOD
-			float fDissolveMaxDistRef = std::min(fDissolveRef, 1.f - fDistFadeRef);
+			float fDissolveMaxDistRef = std::min(BADF fDissolveRef, 1.f - fDistFadeRef);
 			lodSubValue = CLodValue(-1, int(fDissolveMaxDistRef * 255.f), nLO);
 		}
 
@@ -1029,12 +1028,12 @@ void CObjManager::GetMemoryUsage(class ICrySizer* pSizer) const
 }
 
 // retrieves the bandwidth calculations for the audio streaming
-void CObjManager::GetBandwidthStats(float* fBandwidthRequested)
+void CObjManager::GetBandwidthStats(rTime* fBandwidthRequested)
 {
 #if !defined (_RELEASE) || defined(ENABLE_STATOSCOPE_RELEASE)
-	if (fBandwidthRequested && CStatObj::s_fStreamingTime != 0.0f)
+	if (fBandwidthRequested && CStatObj::s_fStreamingTime != 0)
 	{
-		*fBandwidthRequested = (CStatObj::s_nBandwidth / CStatObj::s_fStreamingTime) / 1024.0f;
+		*fBandwidthRequested = (CStatObj::s_nBandwidth / CStatObj::s_fStreamingTime) / 1024;
 	}
 #endif
 }

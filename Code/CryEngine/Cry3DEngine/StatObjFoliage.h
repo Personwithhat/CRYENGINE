@@ -25,7 +25,7 @@ public:
 	void                     ComputeSkinningTransformations(uint32 nList);
 
 	void                     OnHit(struct EventPhysCollision* pHit);
-	void                     Update(float dt, const CCamera& rCamera);
+	void                     Update(const CTimeValue& dt, const CCamera& rCamera);
 	void                     BreakBranch(int idx);
 
 	CStatObjFoliage*  m_next;
@@ -34,18 +34,18 @@ public:
 	uint              m_flags;
 	CStatObj*         m_pStatObj;
 	IPhysicalEntity** m_pRopes;
-	float*            m_pRopesActiveTime;
+	CTimeValue*       m_pRopesActiveTime;
 	IPhysicalEntity*  m_pTrunk;
 	int16             m_nRopes;
 	int16             m_bEnabled;
-	float             m_timeIdle, m_lifeTime;
+	CTimeValue        m_timeIdle, m_lifeTime;
 	IFoliage**        m_ppThis;
 	QuatTS*           m_pSkinningTransformations[2];
 	int               m_iActivationSource;
 	int               m_bGeomRemoved;
 	IRenderNode*      m_pVegInst;
 	CRenderObject*    m_pRenderObject;
-	float             m_timeInvisible;
+	CTimeValue        m_timeInvisible;
 	float             m_minEnergy;
 	float             m_stiffness;
 	int               m_bDelete;

@@ -53,8 +53,8 @@ AllocateConstIntCVar(CRendererCVars, CV_r_profiler);
 
 int CRendererCVars::CV_r_HDRDithering;
 
-float CRendererCVars::CV_r_profilerTargetFPS;
-float CRendererCVars::CV_r_profilerSmoothingWeight;
+rTime CRendererCVars::CV_r_profilerTargetFPS;
+mpfloat CRendererCVars::CV_r_profilerSmoothingWeight;
 AllocateConstIntCVar(CRendererCVars, CV_r_log);
 AllocateConstIntCVar(CRendererCVars, CV_r_logTexStreaming);
 AllocateConstIntCVar(CRendererCVars, CV_r_logShaders);
@@ -409,7 +409,7 @@ AllocateConstIntCVar(CRendererCVars, CV_r_PostProcessParamsBlending);
 int CRendererCVars::CV_r_PostProcessReset;
 int CRendererCVars::CV_r_PostProcessFilters;
 AllocateConstIntCVar(CRendererCVars, CV_r_PostProcessGameFx);
-float CRendererCVars::CV_r_PostprocessParamsBlendingTimeScale;
+mpfloat CRendererCVars::CV_r_PostprocessParamsBlendingTimeScale;
 AllocateConstIntCVar(CRendererCVars, CV_r_PostProcessHUD3D);
 AllocateConstIntCVar(CRendererCVars, CV_r_PostProcessHUD3DDebugView);
 int CRendererCVars::CV_r_PostProcessHUD3DCache;
@@ -458,7 +458,7 @@ int CRendererCVars::CV_r_envcmresolution;
 int CRendererCVars::CV_r_envtexresolution;
 float CRendererCVars::CV_r_waterupdateFactor;
 float CRendererCVars::CV_r_waterupdateDistance;
-float CRendererCVars::CV_r_envtexupdateinterval;
+CTimeValue CRendererCVars::CV_r_envtexupdateinterval;
 int CRendererCVars::CV_r_waterreflections;
 AllocateConstIntCVar(CRendererCVars, CV_r_waterreflections_mgpu);
 AllocateConstIntCVar(CRendererCVars, CV_r_waterreflections_quality);
@@ -1928,10 +1928,10 @@ void CRendererCVars::InitCVars()
 	                    "Usage: r_PostProcessEffectsParamsBlending [0/1]\n"
 	                    "Default is 1 (enabled).");
 
-	REGISTER_CVAR3("r_PostprocessParamsBlendingTimeScale", CV_r_PostprocessParamsBlendingTimeScale, 12.0f, VF_NULL,
+	REGISTER_CVAR3("r_PostprocessParamsBlendingTimeScale", CV_r_PostprocessParamsBlendingTimeScale, mpfloat(12), VF_NULL,
 	               "Sets post processing effects parameters smooth blending time scale\n"
 	               "Usage: r_PostprocessParamsBlendingTimeScale [scale]\n"
-	               "Default is 12.0f.");
+	               "Default is 12.");
 
 	REGISTER_CVAR3("r_PostProcessFilters", CV_r_PostProcessFilters, 1, VF_NULL,
 	                    "Enables post processing special effects filters.\n"
@@ -2454,7 +2454,7 @@ void CRendererCVars::InitCVars()
 	               "Usage: r_WaterUpdateFactor 0.01\n"
 	               "Default is 0.01. 0 means update every frame");
 
-	REGISTER_CVAR3("r_EnvTexUpdateInterval", CV_r_envtexupdateinterval, 0.001f, VF_DUMPTODISK,
+	REGISTER_CVAR3("r_EnvTexUpdateInterval", CV_r_envtexupdateinterval, CTimeValue("0.001"), VF_DUMPTODISK,
 	               "Sets the interval between environmental 2d texture updates.\n"
 	               "Usage: r_EnvTexUpdateInterval 0.001\n"
 	               "Default is 0.001.");
@@ -2699,10 +2699,10 @@ void CRendererCVars::InitCVars()
 					"  0: disabled\n"
 					"  1: enabled\n");
 
-	REGISTER_CVAR3("r_profilerTargetFPS", CV_r_profilerTargetFPS, 30.0f, VF_NULL,
+	REGISTER_CVAR3("r_profilerTargetFPS", CV_r_profilerTargetFPS, rTime(30), VF_NULL,
 	               "Target framerate for application.");
 
-	REGISTER_CVAR3("r_profilerSmoothingWeight", CV_r_profilerSmoothingWeight, 0.1f, VF_NULL,
+	REGISTER_CVAR3("r_profilerSmoothingWeight", CV_r_profilerSmoothingWeight, mpfloat("0.1"), VF_NULL,
 		"Set how much the current time measurement weights into the previous one.\n"
 		"  Single Exponential Smoothing -> (1-a)*oldVal + a*newVal\n"
 		"  Range: [0.0, 1.0]");
@@ -3178,7 +3178,9 @@ CCVarUpdateRecorder::SUpdateRecord::SUpdateRecord(ICVar* pCVar)
 		case ECVarType::Int:    intValue = pCVar->GetIVal();                 break;
 		case ECVarType::Int64:  int64Value = pCVar->GetI64Val();             break;
 		case ECVarType::Float:  floatValue = pCVar->GetFVal();               break;
-		case ECVarType::String: cry_strcpy(stringValue, pCVar->GetString()); break;
+		case ECVarType::String:
+		case ECVarType::MPFloat:
+		case ECVarType::TimeVal: cry_strcpy(stringValue, pCVar->GetString()); break;
 		default: assert(false);
 	};
 }

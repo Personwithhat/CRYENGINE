@@ -48,7 +48,7 @@ private:
 	CNavPath                                   m_upcomingPath;
 	MovementStyle                              m_upcomingStyle;
 	const PathPointDescriptor::OffMeshLinkData m_smartObjectMNMData;
-	float m_timeSpentWaitingForSmartObjectToBecomeFree;
+	CTimeValue m_timeSpentWaitingForSmartObjectToBecomeFree;
 };
 }
 }

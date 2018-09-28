@@ -24,74 +24,110 @@ struct ITimer
 	// <interfuscator:shuffle>
 	virtual ~ITimer() {};
 
-	//! Resets the timer
-	//! \note Only needed because float precision wasn't last that long - can be removed if 64bit is used everywhere.
+public: //** Lifecycle
+
+	//! Create a new timer of the same type.
+	virtual ITimer* CreateNewTimer() = 0;
+
+	//! Resets the timer (ATM the only timer Reset() call is at system boot, CSystem::Initialize())
+	//! \note Kept as a just-in-case, for out of memory constraints or tests, long running servers etc.
 	virtual void ResetTimer() = 0;
-
-	//! Updates the timer every frame, needs to be called by the system.
-	virtual void UpdateOnFrameStart() = 0;
-
-	// todo: Remove, use GetFrameStartTime() instead.
-	//! Returns the absolute time at the last UpdateOnFrameStart() call.
-	virtual float GetCurrTime(ETimer which = ETIMER_GAME) const = 0;
-
-	//! Returns the absolute time at the last UpdateOnFrameStart() call.
-	virtual const CTimeValue& GetFrameStartTime(ETimer which = ETIMER_GAME) const = 0;
-
-	//! Returns the absolute current time.
-	//! \note The value continuously changes, slower than GetFrameStartTime().
-	virtual CTimeValue GetAsyncTime() const = 0;
-
-	//! Returns the absolute current time at the moment of the call.
-	virtual float GetAsyncCurTime() = 0;
-
-	//! Returns sum of relative time passed at each frame.
-	virtual float GetReplicationTime() const = 0;
-
-	//! Returns the relative time passed from the last UpdateOnFrameStart() in seconds.
-	virtual float GetFrameTime(ETimer which = ETIMER_GAME) const = 0;
-
-	//! Returns the relative time passed from the last UpdateOnFrameStart() in seconds without any dilation, smoothing, clamping, etc...
-	virtual float GetRealFrameTime() const = 0;
-
-	//! Returns the time scale applied to time values.
-	virtual float GetTimeScale() const = 0;
-
-	//! Returns the time scale factor for the given channel
-	virtual float GetTimeScale(uint32 channel) const = 0;
-
-	//! Clears all current time scale requests
-	virtual void ClearTimeScales() = 0;
-
-	//! Sets the time scale applied to time values.
-	virtual void SetTimeScale(float s, uint32 channel = 0) = 0;
-
-	//! Enables/disables timer.
-	virtual void EnableTimer(const bool bEnable) = 0;
-
-	//! \return True if timer is enabled
-	virtual bool IsTimerEnabled() const = 0;
-
-	//! Returns the current framerate in frames/second.
-	virtual float GetFrameRate() = 0;
-
-	//! Returns the fraction to blend current frame in profiling stats.
-	virtual float GetProfileFrameBlending(float* pfBlendTime = 0, int* piBlendMode = 0) = 0;
 
 	//! Serialization.
 	virtual void Serialize(TSerialize ser) = 0;
 
-	//! Tries to pause/unpause a timer.
+	//! Updates the timer once per frame. ATM called during the start of System::Update() & CActionGame::BlockingConnect()
+	virtual void UpdateOnFrameStart() = 0;
+
+	//! Tries to set a timer.
+	//! \return true if successful, false otherwise.
+	virtual bool SetTimer(ETimer which, const CTimeValue& timeInSeconds) = 0;
+
+	//! Pauses simulation time. GetFrameTime() will return 0, GetFrameStartTime(ETIMER_GAME) will not progress.
 	//! \return true if successfully paused/unpaused, false otherwise.
-	virtual bool PauseTimer(ETimer which, bool bPause) = 0;
+	virtual bool PauseSimulation(bool bPause) = 0;
 
 	//! Determines if a timer is paused.
 	//! \return true if paused, false otherwise.
 	virtual bool IsTimerPaused(ETimer which) = 0;
 
-	//! Tries to set a timer.
-	//! \return true if successful, false otherwise.
-	virtual bool SetTimer(ETimer which, float timeInSeconds) = 0;
+	//! Enables/disables timer. ATM not used anywhere.
+	virtual void EnableTimer(const bool bEnable) = 0;
+
+	//! \return True if timer is enabled
+	virtual bool IsTimerEnabled() const = 0;
+
+
+public: //** Time Getters
+	/*
+		2 types of times:
+			Async or ServerTime == At moment of function call
+			Everything else: Cached during UpdateOnFrameStart()
+	*/
+
+	//! Returns simulation time since the last UpdateOnFrameStart(), clamped/smoothed/scaled etc.
+	//! \note Pass true to ignore pauses
+	virtual CTimeValue GetFrameTime(bool ignorePause = false) const = 0;
+
+	//! Returns real-time since the last UpdateOnFrameStart(), no dilation/smoothing/clamping etc
+	virtual CTimeValue GetRealFrameTime() const = 0;
+
+	// PERSONAL IMPROVE: The lack of a 'real start time' thats not relative to Reset() might be an issue, can easily be added in.
+	// Resets are finicky.
+
+	//! Returns Real (UI) or Simulation (Game) time since last timer Reset().
+	//! UI time is monotonic, it always moves forward at a constant rate until the timer is Reset().
+	//! Game time can be affected by loading, pausing, time smoothing, time dilation and time clamping, as well as SetTimer(). 
+	//! UI time = real-start time
+	//! PERSONAL CRYTEK: NOPE! See comments in timer.cpp on ACTUAL game-time, not just game-frame-time...
+	virtual const CTimeValue& GetFrameStartTime(ETimer which = ETIMER_GAME) const = 0;
+
+	//! Returns sum of simulation frame-time's. Used for networking.
+	virtual const CTimeValue& GetReplicationTime() const = 0;
+
+	//! Returns the (synched) absolute real-time of the server at moment of call. (So use this for timed events, such as MP round times)
+	//! Not to be confused with CServerTimer
+	virtual const CTimeValue GetServerTime() const = 0;
+
+	//! Returns recent simulation frame-time's averaged over a time period (e.g. 0.25 seconds)
+	virtual const CTimeValue& GetAverageFrameTime() const = 0;
+
+	//! Returns absolute real-time at moment of call.
+	virtual CTimeValue GetAsyncTime() const = 0;
+
+	//! Returns elapsed time (at moment of call) since the last timer Reset()
+	virtual CTimeValue GetAsyncCurTime() const = 0;
+
+
+public: //** Timescales
+
+	// PERSONAL CRYTEK: As noted elsewhere, only affects simulation-frame-time!!!! and also replication time.... 
+	//! Returns the time scale applied on simulation time.
+	virtual mpfloat GetTimeScale() const = 0;
+
+	//! Returns the time scale factor for the given channel
+	virtual mpfloat GetTimeScale(uint32 channel) const = 0;
+
+	//! Clears all current time scales
+	virtual void ClearTimeScales() = 0;
+
+	//! Sets the time scale applied on simulation time.
+	virtual void SetTimeScale(const mpfloat& s, uint32 channel = 0) = 0;
+
+
+public: //** Other misc.
+
+  //! Get number of CPU ticks per second.
+	virtual int64 GetTicksPerSecond() const = 0;
+
+	//! Convert from CPU ticks (e.g. CryGetTicks()) to CTimeValue
+	virtual CTimeValue TicksToTime(int64 ticks) const = 0;
+
+	//! Returns the current real framerate in frames/second.
+	virtual rTime GetFrameRate() = 0;
+
+	//! Returns the fraction to blend current frame in profiling stats. DEBUG ONLY
+	virtual mpfloat GetProfileFrameBlending(CTimeValue* pfBlendTime = 0, int* piBlendMode = 0) = 0;
 
 	//! Makes a tm struct from a time_t in UTC
 	//! Example: Like gmtime.
@@ -100,18 +136,5 @@ struct ITimer
 	//! Makes a UTC time from a tm.
 	//! Example: Like timegm, but not available on all platforms.
 	virtual time_t DateToSecondsUTC(struct tm& timePtr) = 0;
-
-	// Summary:
-	//	Force fixed frame time. Passing time <= 0 will disable fixed frame time
-	virtual void SetFixedFrameTime(float time) {};
-
-	//! Convert from ticks (CryGetTicks()) to seconds.
-	virtual float TicksToSeconds(int64 ticks) const = 0;
-
-	//! Get number of ticks per second.
-	virtual int64 GetTicksPerSecond() = 0;
-
-	//! Create a new timer of the same type.
-	virtual ITimer* CreateNewTimer() = 0;
 	// </interfuscator:shuffle>
 };

@@ -72,8 +72,8 @@ NodeFactory::BehaviorTreeBucketAllocator NodeFactory::s_bucketAllocator;
 #endif
 
 BehaviorTreeManager::BehaviorTreeManager()
-	: m_frameStartTime(0.0f)
-	, m_frameDeltaTime(0.0f)
+	: m_frameStartTime(0)
+	, m_frameDeltaTime(0)
 #if defined(DEBUG_MODULAR_BEHAVIOR_TREE_WEB)
 	, m_bRegisteredAsDebugChannel(false)
 #endif
@@ -446,7 +446,7 @@ void BehaviorTreeManager::StopModularBehaviorTree(const EntityId entityId)
 #endif // DEBUG_MODULAR_BEHAVIOR_TREE
 }
 
-void BehaviorTreeManager::Update(const CTimeValue frameStartTime, const float frameDeltaTime)
+void BehaviorTreeManager::Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime)
 {
 	m_frameStartTime = frameStartTime;
 	m_frameDeltaTime = frameDeltaTime;
