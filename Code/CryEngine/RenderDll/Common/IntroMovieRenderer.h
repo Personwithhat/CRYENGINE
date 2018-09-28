@@ -26,7 +26,7 @@ public:
 	void WaitForCompletion();
 
 	// ILoadtimeCallback
-	virtual void LoadtimeUpdate(float deltaTime);
+	virtual void LoadtimeUpdate(const CTimeValue& deltaTime);
 	virtual void LoadtimeRender();
 	// ~ILoadtimeCallback
 

@@ -21,10 +21,10 @@ struct SAIConsoleVarsCollisionAvoidance
 	float       CollisionAvoidanceTargetCutoffRange;
 	float       CollisionAvoidancePathEndCutoffRange;
 	float       CollisionAvoidanceSmartObjectCutoffRange;
-	float       CollisionAvoidanceTimeStep;
+	CTimeValue  CollisionAvoidanceTimeStep;
 	float       CollisionAvoidanceMinSpeed;
-	float       CollisionAvoidanceAgentTimeHorizon;
-	float       CollisionAvoidanceObstacleTimeHorizon;
+	CTimeValue  CollisionAvoidanceAgentTimeHorizon;
+	CTimeValue  CollisionAvoidanceObstacleTimeHorizon;
 	float       DebugCollisionAvoidanceForceSpeed;
 	const char* DebugDrawCollisionAvoidanceAgentName;
 };

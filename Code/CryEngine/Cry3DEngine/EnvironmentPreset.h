@@ -5,19 +5,20 @@
 #include "TimeOfDayConstants.h"
 #include <CryMath/Bezier.h>
 
+// PERSONAL NOTE: The "Time" here used to be 'Animation ticks' but was converted to CTimeValue & seconds instead.
 class CBezierSpline
 {
 public:
 	CBezierSpline();
 
 	void              Init(float fDefaultValue);
-	float             Evaluate(float t) const;
+	float             Evaluate(const CTimeValue& t) const;
 
-	void              SetKeys(const SBezierKey* keysArray, unsigned int keysArraySize) { m_keys.resize(keysArraySize); memcpy(&m_keys[0], keysArray, keysArraySize * sizeof(SBezierKey)); }
-	void              GetKeys(SBezierKey* keys) const                                  { memcpy(keys, &m_keys[0], m_keys.size() * sizeof(SBezierKey)); }
+	void              SetKeys(const SBezierKey* keysArray, unsigned int keysArraySize) { m_keys.resize(keysArraySize); std::copy(keysArray, keysArray + keysArraySize, &m_keys[0]); }
+	void              GetKeys(SBezierKey* keys) const                                  { std::copy(&m_keys[0], &m_keys[0] + m_keys.size(), keys); }
 
-	void              InsertKey(SAnimTime time, float value);
-	void              UpdateKeyForTime(float fTime, float value);
+	void              InsertKey(const CTimeValue& time, float value);
+	void              UpdateKeyForTime(const CTimeValue& fTime, float value);
 
 	void              Resize(size_t nSize)        { m_keys.resize(nSize); }
 
@@ -33,8 +34,8 @@ private:
 	struct SCompKeyTime
 	{
 		bool operator()(const TKeyContainer::value_type& l, const TKeyContainer::value_type& r) const { return l.m_time < r.m_time; }
-		bool operator()(SAnimTime l, const TKeyContainer::value_type& r) const                        { return l < r.m_time; }
-		bool operator()(const TKeyContainer::value_type& l, SAnimTime r) const                        { return l.m_time < r; }
+		bool operator()(const CTimeValue& l, const TKeyContainer::value_type& r) const                { return l < r.m_time; }
+		bool operator()(const TKeyContainer::value_type& l, const CTimeValue& r) const                { return l.m_time < r; }
 	};
 };
 
@@ -45,9 +46,9 @@ public:
 	CTimeOfDayVariable();
 
 	void                          Init(const char* group, const char* displayName, const char* name, ITimeOfDay::ETimeOfDayParamID nParamId, ITimeOfDay::EVariableType type, float defVal0, float defVal1, float defVal2);
-	void                          Update(float time);
+	void                          Update(const CTimeValue& time);
 
-	Vec3                          GetInterpolatedAt(float t) const;
+	Vec3                          GetInterpolatedAt(const CTimeValue& t) const;
 
 	ITimeOfDay::ETimeOfDayParamID GetId() const                  { return m_id; }
 	ITimeOfDay::EVariableType     GetType() const                { return m_type; }
@@ -79,7 +80,7 @@ public:
 	size_t GetSplineKeyCount(int nSpline) const;
 	bool   GetSplineKeys(int nSpline, SBezierKey* keysArray, unsigned int keysArraySize) const;
 	bool   SetSplineKeys(int nSpline, const SBezierKey* keysArray, unsigned int keysArraySize);
-	bool   UpdateSplineKeyForTime(int nSpline, float fTime, float newKey);
+	bool   UpdateSplineKeyForTime(int nSpline, const CTimeValue& fTime, float newKey);
 
 	void   Serialize(Serialization::IArchive& ar);
 
@@ -107,17 +108,17 @@ public:
 	virtual void              Reset() override;
 	virtual int               GetVariableCount() override;
 	virtual bool              GetVariableInfo(int nIndex, ITimeOfDay::SVariableInfo& varInfo) override;
-	virtual bool              InterpolateVarInRange(int nIndex, float fMin, float fMax, unsigned int nCount, Vec3* resultArray) const override;
+	virtual bool              InterpolateVarInRange(int nIndex, const CTimeValue& fMin, const CTimeValue& fMax, unsigned int nCount, Vec3* resultArray) const override;
 	virtual uint              GetSplineKeysCount(int nIndex, int nSpline) const override;
 	virtual bool              GetSplineKeysForVar(int nIndex, int nSpline, SBezierKey* keysArray, unsigned int keysArraySize) const override;
 	virtual bool              SetSplineKeysForVar(int nIndex, int nSpline, const SBezierKey* keysArray, unsigned int keysArraySize) override;
-	virtual bool              UpdateSplineKeyForVar(int nIndex, int nSpline, float fTime, float newValue) override;
+	virtual bool              UpdateSplineKeyForVar(int nIndex, int nSpline, const CTimeValue& fTime, float newValue) override;
 
 	const CTimeOfDayVariable* GetVar(ITimeOfDay::ETimeOfDayParamID id) const { return &m_vars[id]; }
 	CTimeOfDayVariable*       GetVar(ITimeOfDay::ETimeOfDayParamID id)       { return &m_vars[id]; }
 	CTimeOfDayVariable*       GetVar(const char* varName);
-	void                      Update(float t);
-	bool                      InterpolateVarInRange(ITimeOfDay::ETimeOfDayParamID id, float fMin, float fMax, unsigned int nCount, Vec3* resultArray) const;
+	void                      Update(const CTimeValue& t);
+	bool                      InterpolateVarInRange(ITimeOfDay::ETimeOfDayParamID id, const CTimeValue& fMin, const CTimeValue& fMax, unsigned int nCount, Vec3* resultArray) const;
 
 private:
 	void AddVar(const char* group, const char* displayName, const char* name, ITimeOfDay::ETimeOfDayParamID nParamId, ITimeOfDay::EVariableType type, float defVal0, float defVal1, float defVal2);
@@ -134,12 +135,12 @@ public:
 	const CTimeOfDayVariable*       GetVar(ITimeOfDay::ETimeOfDayParamID id) const { return m_variables.GetVar(id); }
 	CTimeOfDayVariable*             GetVar(ITimeOfDay::ETimeOfDayParamID id)       { return m_variables.GetVar(id); }
 	CTimeOfDayVariable*             GetVar(const char* varName)                    { return m_variables.GetVar(varName); }
-	void                            Update(float normalizedTime);
+	void                            Update(const CTimeValue& normalizedTime);
 
 	void                            Serialize(Serialization::IArchive& ar);
 	void                            ReadVariablesFromXML(Serialization::IArchive& ar, CTimeOfDayVariables& variables, const bool bConvertLegacyVersion);
 
-	static const float              GetAnimTimeSecondsIn24h();
+	static const int                GetAnimTimeSecondsIn24h();
 
 private:
 	CTimeOfDayVariables m_variables;

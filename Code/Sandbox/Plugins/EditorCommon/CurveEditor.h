@@ -21,10 +21,10 @@ public:
 	void                 SetContent(SCurveEditorContent* pContent);
 	SCurveEditorContent* Content() const { return m_pContent; }
 
-	SAnimTime            Time() const    { return m_time; }
-	void                 SetTime(const SAnimTime time);
+	const CTimeValue&    Time() const    { return m_time; }
+	void                 SetTime(const CTimeValue& time);
 
-	void                 SelectKeysWidthTimes(const std::set<SAnimTime>& times);
+	void                 SelectKeysWidthTimes(const std::set<CTimeValue>& times);
 
 	enum class ELimit : uint
 	{
@@ -35,10 +35,10 @@ public:
 
 	// The background in the time and value range will be drawn a bit brighter to indicate where keys
 	// should be placed. The curve editor does not enforce that the curves actually stay in those ranges.
-	void  SetTimeRange(const SAnimTime start, const SAnimTime end, ELimit limit = ELimit::None);
+	void  SetTimeRange(const CTimeValue& start, const CTimeValue& end, ELimit limit = ELimit::None);
 	void  SetValueRange(const float min, const float max, ELimit limit = ELimit::None);
 
-	void  ZoomToTimeRange(const float start, const float end);
+	void  ZoomToTimeRange(const CTimeValue& start, const CTimeValue& end);
 	void  ZoomToValueRange(const float min, const float max);
 	void  SetFitMargin(float margin);
 
@@ -51,7 +51,7 @@ public:
 	void  SetRulerTicksYOffset(int offset);
 	void  SetTimeSliderVisible(bool bVisible);
 	void  SetGridVisible(bool bVisible);
-	void  SetFrameRate(SAnimTime::EFrameRate frameRate) { m_frameRate = frameRate; }
+	void  SetFrameRate(SAnimData::EFrameRate frameRate) { m_frameRate = frameRate; }
 	void  SetTimeSnapping(bool snapTime)                {}
 	void  SetKeySnapping(bool snapKeys)                 {}
 	void  SetAllowDiscontinuous(bool allow)             { m_bAllowDiscontinuous = allow; }
@@ -149,7 +149,7 @@ private:
 	int                            m_curveFocusIndex;
 	std::unique_ptr<SMouseHandler> m_pMouseHandler;
 
-	SAnimTime::EFrameRate          m_frameRate;
+	SAnimData::EFrameRate          m_frameRate;
 
 	bool                           m_bHandlesVisible     : 1;
 	bool                           m_bRulerVisible       : 1;
@@ -161,10 +161,10 @@ private:
 	bool                           m_bKeysSelected       : 1;
 	bool                           m_bMoveAxisLocked     : 1;
 
-	SAnimTime                      m_time;
+	CTimeValue                     m_time;
 	Vec2                           m_zoom;
 	Vec2                           m_translation;
-	TRange<SAnimTime>              m_timeRange;
+	TRange<CTimeValue>             m_timeRange;
 	Range                          m_valueRange;
 
 	int                            m_rulerHeight;

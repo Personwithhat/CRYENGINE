@@ -37,7 +37,7 @@ struct SBatchUpdateValidator : pe_action_batch_parts_update::Validator
 CSkeletonPhysics::CSkeletonPhysics()
 	: m_pCharPhysics(nullptr)
 	, m_ppBonePhysics(nullptr)
-	, m_timeStandingUp(0.0f)
+	, m_timeStandingUp(0)
 	, m_bBlendFromRagdollFlip(false)
 	, m_bHasPhysics(false)
 	, m_bHasPhysicsProxies(false)
@@ -58,9 +58,9 @@ CSkeletonPhysics::CSkeletonPhysics()
 	, m_nSpineBones(0)
 	, m_nAuxPhys(0)
 	, m_iSurfaceIdx(0)
-	, m_fPhysBlendTime(0.0f)
-	, m_fPhysBlendMaxTime(0.0f)
-	, m_frPhysBlendMaxTime(0.0f)
+	, m_fPhysBlendTime(0)
+	, m_fPhysBlendMaxTime(0)
+	, m_frPhysBlendMaxTime(0)
 	, m_stiffnessScale(0.0f)
 	, m_fMass(0.0f)
 	, m_prevPosPivot(ZERO)
@@ -102,7 +102,7 @@ bool CSkeletonPhysics::Initialize(CSkeletonPose& skeletonPose)
 	m_pInstance = NULL;
 
 	m_ppBonePhysics = NULL;
-	m_timeStandingUp = -1.0f;
+	m_timeStandingUp.SetSeconds(-1);
 
 	m_pCharPhysics = NULL;
 	m_pPrevCharHost = NULL;
@@ -121,9 +121,9 @@ bool CSkeletonPhysics::Initialize(CSkeletonPose& skeletonPose)
 	m_nSpineBones = 0;
 	m_nAuxPhys = 0;
 	m_iSurfaceIdx = 0;
-	m_fPhysBlendTime = 1E6f;
-	m_fPhysBlendMaxTime = 1.0f;
-	m_frPhysBlendMaxTime = 1.0f;
+	m_fPhysBlendTime.SetSeconds(1'000'000); // MP_SCIFI
+	m_fPhysBlendMaxTime.SetSeconds(1);
+	m_frPhysBlendMaxTime = 1;
 	m_stiffnessScale = 0.0f;
 	m_fMass = 0.0f;
 	m_prevPosPivot.zero();
@@ -271,7 +271,7 @@ void CSkeletonPhysics::DestroyPhysics()
 	}
 	m_nAuxPhys = 0;
 	m_bPhysicsRelinquished = false;
-	m_timeStandingUp = -1;
+	m_timeStandingUp.SetSeconds(-1);
 	SetPrevHost();
 }
 
@@ -755,7 +755,7 @@ void CSkeletonPhysics::DestroyCharacterPhysics(int iModeOrg)
 	{
 		m_pCharPhysics = 0;
 		m_bPhysicsRelinquished = false;
-		m_timeStandingUp = -1;
+		m_timeStandingUp.SetSeconds(-1);
 		if (m_ppBonePhysics)
 		{
 			uint32 numJoints = rDefaultSkeleton.GetJointCount();
@@ -824,7 +824,7 @@ IPhysicalEntity* CSkeletonPhysics::CreateCharacterPhysics(
 		g_pIPhysicalWorld->DestroyPhysicalEntity(m_pCharPhysics);
 		m_pCharPhysics = 0;
 		m_bPhysicsRelinquished = false;
-		m_timeStandingUp = -1;
+		m_timeStandingUp.SetSeconds(-1);
 		for (i = 0; i < m_nAuxPhys; i++)
 		{
 			g_pIPhysicalWorld->DestroyPhysicalEntity(m_auxPhys[i].pPhysEnt);
@@ -858,7 +858,7 @@ IPhysicalEntity* CSkeletonPhysics::CreateCharacterPhysics(
 
 		pe_params_pos pp;
 		pp.iSimClass = 6;
-		m_pCharPhysics = g_pIPhysicalWorld->CreatePhysicalEntity(PE_ARTICULATED, 5.0f, &pp, pfd.pForeignData, pfd.iForeignData);
+		m_pCharPhysics = g_pIPhysicalWorld->CreatePhysicalEntity(PE_ARTICULATED, 5, &pp, pfd.pForeignData, pfd.iForeignData);
 
 #if !defined(_RELEASE)
 		pe_params_flags pf;
@@ -906,7 +906,7 @@ IPhysicalEntity* CSkeletonPhysics::CreateCharacterPhysics(
 	m_stiffnessScale = stiffness_scale;
 	SetPrevHost(pHost);
 	m_bPhysicsRelinquished = 0;
-	m_timeStandingUp = -1.0f;
+	m_timeStandingUp.SetSeconds(-1);
 
 	/*IAttachmentObject* pAttachment;
 	   for(int i=m_AttachmentManager.GetAttachmentCount()-1; i>=0; i--)
@@ -1014,9 +1014,9 @@ void ParsePhysInfoProps(const CryBonePhysics& physInfo, int nLod, pe_params_rope
 		pr.mass = fabs_tpl(RAD2DEG(physInfo.min[1]));
 	if (physInfo.min[2] != 0)
 		pr.collDist = fabs_tpl(RAD2DEG(physInfo.min[2]));
-	simp.maxTimeStep = physInfo.spring_tension[1];
+	simp.maxTimeStep = BADTIME(physInfo.spring_tension[1]);
 	if (simp.maxTimeStep <= 0 || simp.maxTimeStep >= 1)
-		simp.maxTimeStep = 0.02f;
+		simp.maxTimeStep.SetSeconds("0.02");
 	pr.stiffnessAnim = max(0.001f, RAD2DEG(physInfo.max[0]));
 	pr.stiffnessDecayAnim = RAD2DEG(physInfo.max[1]);
 	pr.dampingAnim = RAD2DEG(physInfo.max[2]);
@@ -1061,9 +1061,9 @@ void ParsePhysInfoPropsCloth(const CryBonePhysics& physInfo, int nLod, pe_params
 		psb.collTypes |= ent_terrain | ent_static | ent_rigid | ent_sleeping_rigid | ent_living;
 	if ((physInfo.flags & 3) == 0)
 		psb.collTypes |= ent_independent;
-	if (!(simp.maxTimeStep = physInfo.damping[0]))
+	if ((simp.maxTimeStep = BADTIME(physInfo.damping[0])) != 0)
 		MARK_UNUSED simp.maxTimeStep;
-	psb.maxSafeStep = physInfo.damping[1];
+	psb.maxSafeStep = BADTIME(physInfo.damping[1]);
 	if (!(psb.ks = RAD2DEG(physInfo.max[2])))
 		MARK_UNUSED psb.ks;
 	psb.friction = physInfo.spring_tension[2];
@@ -1764,18 +1764,18 @@ IPhysicalEntity* CSkeletonPhysics::RelinquishCharacterPhysics(const Matrix34& mt
 	}
 
 	m_fPhysBlendMaxTime = Console::GetInst().ca_DeathBlendTime;
-	if (m_fPhysBlendMaxTime > 0.001f)
+	if (m_fPhysBlendMaxTime > "0.001")
 	{
-		m_frPhysBlendMaxTime = 1.0f / m_fPhysBlendMaxTime;
+		m_frPhysBlendMaxTime = 1 / m_fPhysBlendMaxTime;
 	}
 	else
 	{
-		m_fPhysBlendMaxTime = 0.0f;
-		m_frPhysBlendMaxTime = 1.0f;
+		m_fPhysBlendMaxTime.SetSeconds(0);
+		m_frPhysBlendMaxTime = 1;
 	}
 
 	// No blending if this ragdoll is caused by loading a checkpoint
-	m_fPhysBlendTime = !gEnv->pSystem->IsSerializingFile() ? 0.0f : m_fPhysBlendMaxTime;
+	m_fPhysBlendTime = !gEnv->pSystem->IsSerializingFile() ? 0 : m_fPhysBlendMaxTime;
 
 	ResetNonphysicalBoneRotations(poseDataWriteable, nLod, 0.0f);        // restore death pose matRel from m_pqTransform
 	UnconvertBoneGlobalFromRelativeForm(poseDataWriteable, false, nLod); // build matGlobals from matRelativeToParents
@@ -1792,7 +1792,7 @@ IPhysicalEntity* CSkeletonPhysics::RelinquishCharacterPhysics(const Matrix34& mt
 	pe_simulation_params spr;
 	pe_params_outer_entity poe;
 	pr.bLocalPtTied = 1;
-	pto.maxTimeIdle = 4.0f;
+	pto.maxTimeIdle.SetSeconds(4);
 	poe.pOuterEntity = res;
 	int nAuxPhys = 0;
 	for (int i = 0; i < m_nAuxPhys; i++)
@@ -1978,7 +1978,7 @@ IPhysicalEntity* CSkeletonPhysics::RelinquishCharacterPhysics(const Matrix34& mt
 	m_bPhysicsRelinquished = 1;
 	m_nSpineBones = 0;
 	m_bLimpRagdoll = 0;
-	m_timeStandingUp = -1;
+	m_timeStandingUp.SetSeconds(-1);
 
 	sp.iSimClass = 2;
 	res->SetParams(&sp);
@@ -2273,7 +2273,7 @@ void CSkeletonPhysics::Physics_SynchronizeToAux(const Skeleton::CPoseData& poseD
 	}
 }
 
-void CSkeletonPhysics::Physics_SynchronizeToImpact(float timeDelta)
+void CSkeletonPhysics::Physics_SynchronizeToImpact(const CTimeValue& timeDelta)
 {
 	if (!m_pPhysImpactBuffer)
 		return;
@@ -2284,7 +2284,7 @@ void CSkeletonPhysics::Physics_SynchronizeToImpact(float timeDelta)
 	if (timeDelta > 0)
 	{
 		physicsParamsJoint.animationTimeStep = timeDelta;
-		physicsParamsJoint.ranimationTimeStep = 1.0f / timeDelta;
+		physicsParamsJoint.ranimationTimeStep = 1 / timeDelta;
 	}
 
 	const int nLod = m_physLod;
@@ -2355,7 +2355,7 @@ void CSkeletonPhysics::Physics_SynchronizeToImpact(float timeDelta)
 	}
 }
 
-void CSkeletonPhysics::ProcessPhysics(Skeleton::CPoseData& poseData, float timeDelta)
+void CSkeletonPhysics::ProcessPhysics(Skeleton::CPoseData& poseData, const CTimeValue& timeDelta)
 {
 	if (Console::GetInst().ca_UsePhysics == 0)
 		return;
@@ -2507,7 +2507,7 @@ void CSkeletonPhysics::Physics_SynchronizeToEntity(IPhysicalEntity& physicalEnti
 		}
 
 		pe_params_part partpos;
-		partpos.invTimeStep = 1.0f / max(0.001f, m_pInstance->m_fOriginalDeltaTime);
+		partpos.invTimeStep = 1 / max(CTimeValue("0.001"), m_pInstance->m_fOriginalDeltaTime);
 		for (uint32 i = 0; i < jointCount; ++i)
 		{
 			if (GetModelJointPointer(i)->m_PhysInfoRef[nLod].pPhysGeom)
@@ -2540,7 +2540,7 @@ void CSkeletonPhysics::Physics_SynchronizeToEntity(IPhysicalEntity& physicalEnti
 	}
 }
 
-void CSkeletonPhysics::Physics_SynchronizeToEntityArticulated(float timeDelta)
+void CSkeletonPhysics::Physics_SynchronizeToEntityArticulated(const CTimeValue& timeDelta)
 {
 	if (!m_bPhysicsRelinquished)
 	{
@@ -2553,7 +2553,7 @@ void CSkeletonPhysics::Physics_SynchronizeToEntityArticulated(float timeDelta)
 		pab.posHostPivot = m_offset * poseData.GetJointAbsolute(GetPhysRoot(m_physLod)).t;
 		pab.qHostPivot = m_offset.q;
 		pab.bRecalcJoints = m_bPhysicsAwake;
-		m_velPivot = (pab.posHostPivot - m_prevPosPivot) / max(0.001f, m_pInstance->m_fOriginalDeltaTime);
+		m_velPivot = (pab.posHostPivot - m_prevPosPivot) / max(CTimeValue("0.001"), m_pInstance->m_fOriginalDeltaTime).BADGetSeconds();
 		m_velPivot *= (float)isneg(m_velPivot.len2() - sqr(30.0f));
 		m_prevPosPivot = pab.posHostPivot;
 		m_pCharPhysics->SetParams(&pab);
@@ -2639,7 +2639,7 @@ ILINE void InitializePoseAbsolute(const CDefaultSkeleton& skeleton, QuatT* pResu
 		pResult[i] = pJointsAbsolute[i];
 }
 
-ILINE void SamplePoseAbsolute(const CDefaultSkeleton& skeleton, const GlobalAnimationHeaderCAF& animation, f32 t, QuatT* pResult)
+ILINE void SamplePoseAbsolute(const CDefaultSkeleton& skeleton, const GlobalAnimationHeaderCAF& animation, const kTime& t, QuatT* pResult)
 {
 	const Skeleton::CPoseData& poseData = skeleton.GetPoseData();
 	const QuatT* pJointsRelativeDefault = poseData.GetJointsRelative();
@@ -2659,7 +2659,7 @@ ILINE void SamplePoseAbsolute(const CDefaultSkeleton& skeleton, const GlobalAnim
 	}
 }
 
-ILINE bool SamplePoseAbsolute(const CDefaultSkeleton& rDefaultSkeleton, int32 animationId, f32 t, QuatT* pResult)
+ILINE bool SamplePoseAbsolute(const CDefaultSkeleton& rDefaultSkeleton, int32 animationId, const kTime& t, QuatT* pResult)
 {
 	const CAnimationSet& animationSet = *rDefaultSkeleton.m_pAnimationSet;
 
@@ -2714,7 +2714,7 @@ bool CSkeletonPhysics::BlendFromRagdoll(QuatTS& location, IPhysicalEntity*& pPhy
 
 	QuatT joints[MAX_JOINT_AMOUNT];
 	int animationId = m_pSkeletonAnim->GetAnimFromFIFO(0, 0).GetAnimationId();
-	SamplePoseAbsolute(*m_pInstance->m_pDefaultSkeleton, animationId, 0.0f, joints);
+	SamplePoseAbsolute(*m_pInstance->m_pDefaultSkeleton, animationId, 0, joints);
 
 	//
 
@@ -2768,7 +2768,7 @@ bool CSkeletonPhysics::BlendFromRagdoll(QuatTS& location, IPhysicalEntity*& pPhy
 
 	//
 
-	m_timeStandingUp = 0;
+	m_timeStandingUp.SetSeconds(0);
 	m_bBlendFromRagdollFlip = false;
 	return true;
 }

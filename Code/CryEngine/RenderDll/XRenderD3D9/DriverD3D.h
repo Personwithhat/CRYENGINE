@@ -551,7 +551,7 @@ public:
 	// Performance queries
 	//=======================================================================
 
-	virtual float GetGPUFrameTime() final;
+	virtual CTimeValue GetGPUFrameTime() final;
 	virtual void  GetRenderTimes(SRenderTimes& outTimes) final;
 #endif
 

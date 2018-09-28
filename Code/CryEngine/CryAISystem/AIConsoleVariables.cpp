@@ -137,10 +137,10 @@ void SAIConsoleVars::Init()
 		"Usage: ai_SystemUpdate [0/1]\n"
 		"Default is 1 (on). Set to 0 to disable ai system updating.");
 
-	REGISTER_CVAR2("ai_OverlayMessageDuration", &OverlayMessageDuration, 5.0f, VF_DUMPTODISK, "How long (seconds) to overlay AI warnings/errors");
+	REGISTER_CVAR2("ai_OverlayMessageDuration", &OverlayMessageDuration, CTimeValue(5), VF_DUMPTODISK, "How long (seconds) to overlay AI warnings/errors");
 
 	// is not cheat protected because it changes during game, depending on your settings
-	REGISTER_CVAR2("ai_UpdateInterval", &AIUpdateInterval, 0.13f, VF_NULL,
+	REGISTER_CVAR2("ai_UpdateInterval", &AIUpdateInterval, CTimeValue("0.13"), VF_NULL,
 		"In seconds the amount of time between two full updates for AI  \n"
 		"Usage: ai_UpdateInterval <number>\n"
 		"Default is 0.1. Number is time in seconds");

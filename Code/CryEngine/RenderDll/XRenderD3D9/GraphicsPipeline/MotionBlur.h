@@ -28,7 +28,7 @@ public:
 	void Execute();
 
 private:
-	float ComputeMotionScale();
+	nTime ComputeMotionScale();
 
 private:
 	CFullscreenPass  m_passPacking;

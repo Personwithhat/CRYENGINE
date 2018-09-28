@@ -955,7 +955,7 @@ bool CTargetTrackManager::TranslateSoundStimulusIfCanBeHandled(TargetTrackHelper
 
 		float fEventRadius = pAIEvent->fThreat;
 		float fSoundThreatLevel = 0.0f;
-		float fSoundTime = 0.0f;
+		CTimeValue fSoundTime;
 		const float fDistanceToEvent = Distance::Point_Point(pAIEvent->vPosition, pPuppet->GetPos());
 
 		// Check minimum distance
@@ -1065,7 +1065,7 @@ void CTargetTrackManager::ShareFreshestTargetData()
 					if (invocation.m_eStimulusType == TargetTrackHelpers::eEST_Visual)
 					{
 						FreshData& data = m_dataPerTarget[track->GetAIObject().GetObjectID()];
-						const float invokeTime = invocation.m_envelopeData.m_fLastInvokeTime;
+						const CTimeValue invokeTime = invocation.m_envelopeData.m_fLastInvokeTime;
 						if (invokeTime > data.timeOfFreshestVisualStimulus)
 						{
 							data.timeOfFreshestVisualStimulus = invokeTime;
@@ -1548,11 +1548,11 @@ bool CTargetTrackManager::LoadConfigStimuli(TargetTrackHelpers::STargetTrackConf
 		if (pStimulusElement->getAttr("name", szName) && !szName.empty())
 		{
 			float fPeak = 0.0f;
-			float fAttack = 0.0f;
-			float fDecay = 0.0f;
+			CTimeValue fAttack;
+			CTimeValue fDecay;
 			float fSustainRatio = 0.0f;
-			float fRelease = 0.0f;
-			float fIgnore = 0.0f;
+			CTimeValue fRelease;
+			CTimeValue fIgnore;
 			bool bHostileOnly = false;
 
 			bool bIsValid = pStimulusElement->getAttr("peak", fPeak);
@@ -1561,7 +1561,7 @@ bool CTargetTrackManager::LoadConfigStimuli(TargetTrackHelpers::STargetTrackConf
 				// Can only be invalid if we inherit from our template
 				if (bHasTemplate)
 				{
-					fPeak = TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE;
+					fPeak = (float)TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE;
 					bIsValid = true;
 				}
 				else
@@ -1573,15 +1573,15 @@ bool CTargetTrackManager::LoadConfigStimuli(TargetTrackHelpers::STargetTrackConf
 			if (bIsValid)
 			{
 				if (!pStimulusElement->getAttr("attack", fAttack))
-					fAttack = TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE;
+					fAttack = CTimeValue(TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE);
 				if (!pStimulusElement->getAttr("decay", fDecay))
-					fDecay = TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE;
+					fDecay = CTimeValue(TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE);
 				if (!pStimulusElement->getAttr("sustain", fSustainRatio))
-					fSustainRatio = TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE;
+					fSustainRatio = (float)TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE;
 				if (!pStimulusElement->getAttr("release", fRelease))
-					fRelease = TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE;
+					fRelease = CTimeValue(TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE);
 				if (!pStimulusElement->getAttr("ignore", fIgnore))
-					fIgnore = TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE;
+					fIgnore = CTimeValue(TargetTrackHelpers::STargetTrackStimulusConfig::INVALID_VALUE);
 				pStimulusElement->getAttr("hostileOnly", bHostileOnly);
 
 				// Add to container using hash
@@ -1725,7 +1725,7 @@ bool CTargetTrackManager::LoadConfigPulses(TargetTrackHelpers::STargetTrackStimu
 		if (pPulseElement->getAttr("name", szName) && !szName.empty())
 		{
 			float fValue = 0.0f;
-			float fDuration = 0.0f;
+			CTimeValue fDuration;
 
 			pPulseElement->getAttr("value", fValue);
 			pPulseElement->getAttr("duration", fDuration);

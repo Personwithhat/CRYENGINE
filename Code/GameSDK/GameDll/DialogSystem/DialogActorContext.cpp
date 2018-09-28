@@ -18,10 +18,10 @@
 #include <IMovementController.h>
 #include <IActorSystem.h>
 
-static const float LOOKAT_TIMEOUT = 1.0f;
-static const float ANIM_TIMEOUT = 1.0f;
-static const float SOUND_TIMEOUT = 1.0f;
-static const float PLAYER_CHECKTIME = 0.2f;    // check the player every 0.2 seconds
+static const CTimeValue LOOKAT_TIMEOUT = 1;
+static const CTimeValue ANIM_TIMEOUT   = 1;
+static const CTimeValue SOUND_TIMEOUT  = 1;
+static const CTimeValue PLAYER_CHECKTIME = "0.2";    // check the player every 0.2 seconds
 
 static const uint32 INVALID_FACIAL_CHANNEL_ID = ~0;
 
@@ -144,7 +144,7 @@ void CDialogActorContext::ResetState()
 	m_bIsAwareLooking = true;
 	m_bIsAwareInRange = true;
 	m_bSoundStopsAnim = false;
-	m_checkPlayerTimeOut = 0.0f;                                      // start to check player on start
+	m_checkPlayerTimeOut.SetSeconds(0);                                      // start to check player on start
 	m_playerAwareTimeOut = m_pSession->GetPlayerAwarenessGraceTime(); // set timeout
 	m_currentEffectorChannelID = INVALID_FACIAL_CHANNEL_ID;
 	m_bNeedsCancel = false; // no cancel on start
@@ -188,8 +188,10 @@ void CDialogActorContext::EndSession()
 }
 
 ////////////////////////////////////////////////////////////////////////////
-bool CDialogActorContext::Update(float dt)
+bool CDialogActorContext::Update(const CTimeValue& dtIn)
 {
+	CTimeValue dt = dtIn;
+
 	if (IsAborted())
 		return true;
 
@@ -221,7 +223,7 @@ bool CDialogActorContext::Update(float dt)
 		}
 	}
 
-	float now = m_pSession->GetCurTime();
+	CTimeValue now = m_pSession->GetCurTime();
 
 	if (!CheckActorFlags(CDialogSession::eDACF_NoActorDeadAbort) && m_pIActor && m_pIActor->IsDead())
 	{
@@ -276,8 +278,8 @@ bool CDialogActorContext::Update(float dt)
 			{
 				m_bHasScheduled = false;
 				m_lookAtTimeOut = LOOKAT_TIMEOUT;
-				m_animTimeOut = ANIM_TIMEOUT;
-				m_soundTimeOut = SOUND_TIMEOUT;  // wait one second until sound is timed out
+				m_animTimeOut   = ANIM_TIMEOUT;
+				m_soundTimeOut  = SOUND_TIMEOUT;  // wait one second until sound is timed out
 				m_bAnimScheduled = false;
 				m_bAnimStarted = false;
 				m_bSoundScheduled = false;
@@ -347,7 +349,7 @@ bool CDialogActorContext::Update(float dt)
 						//DiaLOG::Log(DiaLOG::eDebugA, "[DIALOG] CDialogActorContext::Update: %s now=%f actorID=%d phase=eDAC_LookAt %d",
 						//	m_pSession->GetDebugName(), now, m_actorID, bTargetReached);
 
-						if (/* bSuccess == false || */ bTargetReached || m_lookAtTimeOut <= 0.0f)
+						if (/* bSuccess == false || */ bTargetReached || m_lookAtTimeOut <= 0)
 						{
 							DiaLOG::Log(DiaLOG::eAlways, "[DIALOG] CDialogActorContext::Update: %s now=%f actorID=%d phase=eDAC_LookAt %s",
 							            m_pSession->GetDebugName(), now, m_actorID, bTargetReached ? "Target Reached" : "Timed Out");
@@ -373,7 +375,7 @@ bool CDialogActorContext::Update(float dt)
 						bool bTargetReached;
 						//bool bSuccess = DoLookAt(pActorEntity, pLookAtEntity, bTargetReached);
 						DoLookAt(pActorEntity, pLookAtEntity, bTargetReached);
-						if (/* bSuccess == false || */ bTargetReached || m_lookAtTimeOut <= 0.0f)
+						if (/* bSuccess == false || */ bTargetReached || m_lookAtTimeOut <= 0)
 						{
 							DiaLOG::Log(DiaLOG::eAlways, "[DIALOG] CDialogActorContext::Update: %s now=%f actorID=%d phase=eDAC_Anim %s",
 							            m_pSession->GetDebugName(), now, m_actorID, bTargetReached ? "Target Reached" : "Timed Out");
@@ -405,7 +407,7 @@ bool CDialogActorContext::Update(float dt)
 						// we scheduled it already
 						// wait until it starts or timeout
 						m_animTimeOut -= dt;
-						bAdvance = m_animTimeOut <= 0.0f || m_bAnimStarted;
+						bAdvance = m_animTimeOut <= 0 || m_bAnimStarted;
 						if (bAdvance)
 						{
 							DiaLOG::Log(DiaLOG::eAlways, "[DIALOG] CDialogActorContext::Update: %s Now=%f actorID=%d phase=eDAC_Anim %s",
@@ -445,7 +447,7 @@ bool CDialogActorContext::Update(float dt)
 						{
 							m_bSoundStarted = false;
 							m_bHasScheduled = false;
-							m_pSession->ScheduleNextLine(2.0f);
+							m_pSession->ScheduleNextLine(2);
 						}
 						else
 						{
@@ -461,7 +463,7 @@ bool CDialogActorContext::Update(float dt)
 						// sound has been scheduled
 						// wait for sound start or timeout
 						m_soundTimeOut -= dt;
-						const bool bTimedOut = m_soundTimeOut <= 0.0f;
+						const bool bTimedOut = m_soundTimeOut <= 0;
 						bAdvance = bTimedOut || m_bSoundStarted;
 						if (bAdvance)
 						{
@@ -527,7 +529,7 @@ bool CDialogActorContext::Update(float dt)
 		if (bAdvance)
 		{
 			AdvancePhase();
-			dt = 0.0f;
+			dt.SetSeconds(0);
 			++loop;
 			assert(loop <= eDAC_EndLine + 1);
 			if (loop > eDAC_EndLine + 1)
@@ -740,7 +742,7 @@ bool CDialogActorContext::DoAnimActionEP(IEntity* pEntity, const char* sAction)
 }
 
 ////////////////////////////////////////////////////////////////////////////
-bool CDialogActorContext::DoFacialExpression(IEntity* pEntity, const string& expression, float weight, float fadeTime)
+bool CDialogActorContext::DoFacialExpression(IEntity* pEntity, const string& expression, float weight, const CTimeValue& fadeTime)
 {
 	ICharacterInstance* pCharacter = pEntity->GetCharacter(0);
 	if (!pCharacter)
@@ -899,7 +901,7 @@ void CDialogActorContext::CancelCurrent(bool bResetStates)
 		IEntity* pActorEntity = m_pSession->GetActorEntity(m_actorID);
 		if (pActorEntity)
 		{
-			DoFacialExpression(pActorEntity, "", 1.0f, 0.0f);
+			DoFacialExpression(pActorEntity, "", 1.0f, 0);
 		}
 	}
 
@@ -1108,11 +1110,11 @@ void CDialogActorContext::StopSound(bool bUnregisterOnly)
 	}
 }
 
-bool CDialogActorContext::DoLocalPlayerChecks(const float dt)
+bool CDialogActorContext::DoLocalPlayerChecks(const CTimeValue& dt)
 {
 	// don't check this every frame, but only every .2 secs
 	m_checkPlayerTimeOut -= dt;
-	if (m_checkPlayerTimeOut <= 0.0f)
+	if (m_checkPlayerTimeOut <= 0)
 	{
 		do // a dummy loop to use break
 		{
@@ -1318,7 +1320,7 @@ void CDialogActorContext::OnAudioTriggerFinished(CryAudio::SRequestInfo const* c
 	if (dialogContext)
 	{
 		//hd-todo: for now we schedule the next line, as soon as the current line has finished. replace this with the old manual delay system, as soon as we have a way to figure out the length of the audio-lines
-		dialogContext->m_pSession->ScheduleNextLine(0.2f);
+		dialogContext->m_pSession->ScheduleNextLine("0.2");
 		//mark as finished
 		dialogContext->m_bSoundStarted = false;
 	}

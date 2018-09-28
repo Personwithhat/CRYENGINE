@@ -1916,10 +1916,10 @@ namespace Schematyc2
 					outputs[iOutput] = stack[iOutput];
 				}
 			}
-			if(CVars::sc2_FunctionTimeLimit)
+			if(CVars::sc2_FunctionTimeLimit != 0)
 			{
 				const int64	endTicks = CryGetTicks();
-				const float	time = gEnv->pTimer->TicksToSeconds(endTicks - startTicks);
+				const CTimeValue time = GetGTimer()->TicksToTime(endTicks - startTicks);
 				if(time > CVars::sc2_FunctionTimeLimit)
 				{
 					SCHEMATYC2_SYSTEM_ERROR("Function took more than %f(s) to process: class = %s, function = %s, time = %f(s)", CVars::sc2_FunctionTimeLimit, m_pLibClass->GetName(), pFunction->GetName(), time);

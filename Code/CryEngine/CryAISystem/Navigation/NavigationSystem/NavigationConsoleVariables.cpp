@@ -99,7 +99,7 @@ void SAIConsoleVarsNavigation::Init()
 		"Usage: ai_NavmeshTileDistanceDraw [0.0-...]\n"
 		"Default is 200.0\n");
 
-	REGISTER_CVAR2("ai_NavmeshStabilizationTimeToUpdate", &NavmeshStabilizationTimeToUpdate, 0.3f, VF_CHEAT | VF_CHEAT_NOCHECK,
+	REGISTER_CVAR2("ai_NavmeshStabilizationTimeToUpdate", &NavmeshStabilizationTimeToUpdate, CTimeValue("0.3"), VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Time that navmesh needs to be without any new updates to apply the latest changes.\n"
 		"Usage: ai_NavmeshStabilizationTimeToUpdate [0.0-...]\n"
 		"Default is 0.3\n");

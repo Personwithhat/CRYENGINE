@@ -58,7 +58,7 @@ protected:
 	CPoint           m_lastMousePos;
 	Vec3             m_lastAttachPos, m_locAttachPos;
 	int              m_partid;
-	float            m_timeMove, m_timeHit, m_timeBullet;
+	CTimeValue       m_timeMove, m_timeHit, m_timeBullet;
 	float            m_attachDist;
 	int              m_nAttachPoints;
 	uint64           m_maskConstr = 0;

@@ -41,23 +41,23 @@ namespace Cry
 				{
 					desc.SetGUID("{7D8FCF81-67FE-4A53-B6F9-0F765EF6F04D}"_cry_guid);
 					desc.SetLabel("Simulation Parameters");
-					desc.AddMember(&CClothComponent::SSimulationParameters::maxTimeStep, 'maxt', "MaxTimeStep", "Maximum Time Step", "The largest time step the entity can make before splitting. Smaller time steps increase stability (can be required for long and thin objects, for instance), but are more expensive.", 0.02f);
+					desc.AddMember(&CClothComponent::SSimulationParameters::maxTimeStep, 'maxt', "MaxTimeStep", "Maximum Time Step", "The largest time step the entity can make before splitting. Smaller time steps increase stability (can be required for long and thin objects, for instance), but are more expensive.", CTimeValue("0.02"));
 					desc.AddMember(&CClothComponent::SSimulationParameters::sleepSpeed, 'slps', "SleepSpeed", "Sleep Speed", "If the object's kinetic energy falls below some limit over several frames, the object is considered sleeping. This limit is proportional to the square of the sleep speed value.", 0.01f);
 					desc.AddMember(&CClothComponent::SSimulationParameters::damping, 'damp', "Damping", "Damping", "Strength of damping.", 0.3f);
 					desc.AddMember(&CClothComponent::SSimulationParameters::hardness, 'hard', "Hardness", "Hardness", "Strength of connections between cloth's vertices", 20.0f);
 					desc.AddMember(&CClothComponent::SSimulationParameters::maxIters, 'mxit', "MaxIters", "Max Iters", "Amount of iterations to solve cloth's constraints (affects the cloth solver speed)", 20);
 					desc.AddMember(&CClothComponent::SSimulationParameters::accuracy, 'accu', "Accuracy", "Accuracy", "Accuracy (allowed velocity error per frame) of the cloth solver", 0.05f);
 					desc.AddMember(&CClothComponent::SSimulationParameters::maxStretch, 'stch', "MaxStretch", "Max Stretch", "Maximum allowed streching before positional enforcement is activated, in fractions of 1 (i.e. 0.05=5%)\
-Smaller values to be used to remove stretching even with low Max Iters. It's a cheaper, but less physically accurate way.", 0.3f);
+Smaller values to be used to remove stretching even with low Max Iters. It's a cheaper, but less physically accurate way.", CTimeValue("0.2"));
 				}
 
-				float maxTimeStep = 0.02f;
+				CTimeValue maxTimeStep = "0.02";
 				float sleepSpeed = 0.01f;
 				float damping = 0.3f;
 				float hardness = 20.0f;
 				int   maxIters = 20;
 				float accuracy = 0.05f;
-				float maxStretch = 0.2f;
+				CTimeValue maxStretch = "0.2";
 			};
 
 			static void ReflectType(Schematyc::CTypeDesc<CClothComponent>& desc)

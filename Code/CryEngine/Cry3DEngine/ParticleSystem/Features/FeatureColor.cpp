@@ -174,7 +174,7 @@ public:
 		for (uint i = 0; i < samples.size(); ++i)
 		{
 			Vec3& color = samples[i];
-			Vec3 curve = m_spline.Interpolate(i * scale);
+			Vec3 curve = m_spline.Interpolate(i * BADMP(scale));
 			VecMul(color, curve);
 		}
 	}

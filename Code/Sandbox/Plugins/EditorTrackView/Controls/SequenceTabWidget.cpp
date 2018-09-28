@@ -301,7 +301,7 @@ CTrackViewSequenceTabWidget::CTrackViewSequenceTabWidget(CTrackViewCore* pTrackV
 	, m_timelineLink(true)
 	, m_showKeyText(true)
 	, m_syncSelection(false)
-	, m_timeUnit(SAnimTime::EDisplayMode::Time)
+	, m_timeUnit(SAnimData::EDisplayMode::Time)
 	, m_invertScrubberSnappingBehavior(false)
 {
 	GetIEditor()->RegisterNotifyListener(this);
@@ -558,7 +558,7 @@ void CTrackViewSequenceTabWidget::OpenSequenceTab(const CryGUID sequenceGUID)
 	pDopeSheet->SetDrawSelectionIndicators(true);
 	pDopeSheet->SetVerticalScrollbarVisible(true);
 	pDopeSheet->SetDrawTrackTimeMarkers(true);
-	pDopeSheet->SetVisibleDistance((sequenceData.m_endTime - sequenceData.m_startTime).ToFloat());
+	pDopeSheet->SetVisibleDistance((sequenceData.m_endTime - sequenceData.m_startTime));
 	pDopeSheet->SetKeySnapping(GetTrackViewCore()->GetCurrentSnapMode() == eSnapMode_KeySnapping);
 	pDopeSheet->SetInvertScrubberSnapping(m_invertScrubberSnappingBehavior);
 	pDopeSheet->SetTimeSnapping(GetTrackViewCore()->GetCurrentSnapMode() == eSnapMode_TimeSnapping);
@@ -1074,7 +1074,7 @@ size_t CTrackViewSequenceTabWidget::GetSelectedElementsCount(STimelineTrack* pTi
 	return selectedElementCount;
 }
 
-void CTrackViewSequenceTabWidget::SetSequenceTime(const CryGUID sequenceGUID, SAnimTime newTime)
+void CTrackViewSequenceTabWidget::SetSequenceTime(const CryGUID sequenceGUID, const CTimeValue& newTime)
 {
 	CTimeline* pDopeSheet = GetDopeSheetFromSequenceGUID(sequenceGUID);
 	if (pDopeSheet)
@@ -1151,10 +1151,10 @@ void CTrackViewSequenceTabWidget::UpdatePlaybackRangeMarkers()
 		auto playbackRange = pSequence->GetPlaybackRange();
 
 		elements[0].time = playbackRange.start;
-		elements[0].visible = playbackRange.start >= SAnimTime(0);
+		elements[0].visible = playbackRange.start >= 0;
 
 		elements[1].time = playbackRange.end;
-		elements[1].visible = playbackRange.end >= SAnimTime(0);
+		elements[1].visible = playbackRange.end >= 0;
 	}
 }
 
@@ -1184,7 +1184,7 @@ void CTrackViewSequenceTabWidget::UpdateCurveEditorSelection()
 {
 	if (m_pCurrentSelectionCurveEditor)
 	{
-		std::set<SAnimTime> selectedTimes;
+		std::set<CTimeValue> selectedTimes;
 		for (const SSelectedKey& selectedKey : m_currentKeySelection)
 		{
 			selectedTimes.insert(selectedKey.m_key->GetTime());
@@ -1758,7 +1758,7 @@ void CTrackViewSequenceTabWidget::OnDopesheetZoom()
 		CTimeline* pDopesheet = GetActiveDopeSheet();
 		if (pCurveEditor && pDopesheet)
 		{
-			Range visibleTimeRange = pDopesheet->GetVisibleTimeRangeFull();
+			TRange<CTimeValue> visibleTimeRange = pDopesheet->GetVisibleTimeRangeFull();
 			pCurveEditor->ZoomToTimeRange(visibleTimeRange.start, visibleTimeRange.end);
 			pCurveEditor->update();
 		}
@@ -1791,7 +1791,7 @@ void CTrackViewSequenceTabWidget::OnDopesheetPan()
 		CTimeline* pDopesheet = GetActiveDopeSheet();
 		if (pCurveEditor && pDopesheet)
 		{
-			Range visibleTimeRange = pDopesheet->GetVisibleTimeRangeFull();
+			TRange<CTimeValue> visibleTimeRange = pDopesheet->GetVisibleTimeRangeFull();
 			pCurveEditor->ZoomToTimeRange(visibleTimeRange.start, visibleTimeRange.end);
 			pCurveEditor->update();
 		}
@@ -1845,10 +1845,10 @@ void CTrackViewSequenceTabWidget::OnCurveEditorContentChanged()
 				{
 					if (!iter->m_bDeleted)
 					{
-						CTrackViewKeyHandle handle = pTrack->CreateKey(SAnimTime(iter->m_time));
+						CTrackViewKeyHandle handle = pTrack->CreateKey(iter->m_time);
 
 						S2DBezierKey bezierKey;
-						bezierKey.m_time = SAnimTime(iter->m_time);
+						bezierKey.m_time = iter->m_time;
 						bezierKey.m_controlPoint = iter->m_controlPoint;
 						handle.SetKey(&bezierKey);
 						handle.Select(iter->m_bSelected);
@@ -1868,7 +1868,7 @@ void CTrackViewSequenceTabWidget::OnDopesheetScrub()
 	CTimeline* pDopeSheet = static_cast<CTimeline*>(QObject::sender());
 	if (pDopeSheet)
 	{
-		const SAnimTime newTime = pDopeSheet->Time();
+		const CTimeValue newTime = pDopeSheet->Time();
 
 		CTrackViewSequence* pSequence = GetActiveSequence();
 		CAnimationContext* pAnimationContext = CTrackViewPlugin::GetAnimationContext();
@@ -1890,7 +1890,7 @@ void CTrackViewSequenceTabWidget::OnCurveEditorScrub()
 	CCurveEditor* pCurveEditor = static_cast<CCurveEditor*>(QObject::sender());
 	if (pCurveEditor)
 	{
-		const SAnimTime newTime = pCurveEditor->Time();
+		const CTimeValue newTime = pCurveEditor->Time();
 
 		CTrackViewSequence* pSequence = GetActiveSequence();
 		CAnimationContext* pAnimationContext = CTrackViewPlugin::GetAnimationContext();
@@ -1919,7 +1919,7 @@ void CTrackViewSequenceTabWidget::EnableTimelineLink(bool enable)
 			CCurveEditor* pCurveEditor = GetActiveCurveEditor();
 			if (enable && pCurveEditor)
 			{
-				Range visibleTimeRange = pDopesheet->GetVisibleTimeRangeFull();
+				TRange<CTimeValue> visibleTimeRange = pDopesheet->GetVisibleTimeRangeFull();
 				pCurveEditor->ZoomToTimeRange(visibleTimeRange.start, visibleTimeRange.end);
 				pCurveEditor->update();
 			}
@@ -2032,7 +2032,7 @@ void CTrackViewSequenceTabWidget::UpdateTrackViewTrack(CTrackViewTrack* pTrack)
 					continue;
 				}
 
-				const SAnimTime time(iter->start);
+				const CTimeValue time(iter->start);
 				CTrackViewKeyHandle handle = pTrack->CreateKey(time);
 
 				if (handle.IsValid())
@@ -2049,7 +2049,7 @@ void CTrackViewSequenceTabWidget::UpdateTrackViewTrack(CTrackViewTrack* pTrack)
 					}
 					// ~TODO
 
-					handle.SetDuration(SAnimTime(iter->end - iter->start));
+					handle.SetDuration(iter->end - iter->start);
 					handle.Select(iter->selected);
 
 					Serialization::SaveBinaryBuffer(iter->userSideLoad, *handle.GetWrappedKey());
@@ -2130,7 +2130,7 @@ void CTrackViewSequenceTabWidget::AddNodeToDopeSheet(CTrackViewNode* pNode)
 	case eTVNT_Sequence:
 		{
 			const CTrackViewSequence* pSequence = static_cast<const CTrackViewSequence*>(pNode);
-			const TRange<SAnimTime> timeRange = pSequence->GetTimeRange();
+			const TRange<CTimeValue> timeRange = pSequence->GetTimeRange();
 			sequenceData.m_uIdToTimelineTrackMap[nodeGUID] = &sequenceData.m_timelineContent.track;
 			sequenceData.m_startTime = timeRange.start;
 			sequenceData.m_endTime = timeRange.end;
@@ -2332,7 +2332,7 @@ void CTrackViewSequenceTabWidget::UpdateDopeSheetNode(CTrackViewNode* pNode)
 
 				STimelineElement element = pDopeSheetTrack->defaultElement;
 				element.start = keyHandle.GetTime();
-				element.end = element.start + max(SAnimTime(0), keyHandle.GetDuration());
+				element.end = element.start + max(CTimeValue(0), keyHandle.GetDuration());
 				element.selected = keyHandle.IsSelected();
 				element.description = keyHandle.GetDescription();
 				element.type = keyType;
@@ -2591,7 +2591,7 @@ _smart_ptr<IAnimKeyWrapper> CTrackViewSequenceTabWidget::GetWrappedKeyFromElemen
 	return nullptr;
 }
 
-void CTrackViewSequenceTabWidget::OnTimeChanged(SAnimTime newTime)
+void CTrackViewSequenceTabWidget::OnTimeChanged(const CTimeValue& newTime)
 {
 	if (newTime == m_time)
 	{
@@ -2637,7 +2637,7 @@ void CTrackViewSequenceTabWidget::OnSequenceSettingsChanged(CTrackViewSequence* 
 {
 	UpdatePlaybackRangeMarkers();
 
-	TRange<SAnimTime> newTimeRange = pSequence->GetTimeRange();
+	TRange<CTimeValue> newTimeRange = pSequence->GetTimeRange();
 
 	SSequenceData& sequenceData = m_idToSequenceDataMap[pSequence->GetGUID()];
 	if (sequenceData.m_startTime != newTimeRange.start || sequenceData.m_endTime != newTimeRange.end)
@@ -2822,7 +2822,7 @@ void CTrackViewSequenceTabWidget::OnTrackViewEditorEvent(ETrackViewEditorEvent e
 
 	case eTrackViewEditorEvent_OnFramerateChanged:
 		{
-			SAnimTime::EFrameRate newFramerate = GetTrackViewCore()->GetCurrentFramerate();
+			SAnimData::EFrameRate newFramerate = GetTrackViewCore()->GetCurrentFramerate();
 			CTimeline* pTimeline = GetActiveDopeSheet();
 			if (pTimeline)
 			{
@@ -2839,7 +2839,7 @@ void CTrackViewSequenceTabWidget::OnTrackViewEditorEvent(ETrackViewEditorEvent e
 
 	case eTrackViewEditorEvent_OnDisplayModeChanged:
 		{
-			SAnimTime::EDisplayMode newDisplayMode = GetTrackViewCore()->GetCurrentDisplayMode();
+			SAnimData::EDisplayMode newDisplayMode = GetTrackViewCore()->GetCurrentDisplayMode();
 			CTimeline* pTimeline = GetActiveDopeSheet();
 			if (pTimeline)
 			{
@@ -2945,7 +2945,7 @@ void CTrackViewSequenceTabWidget::OnPasteKeys()
 		}
 
 		CTrackViewTrack* pTrack = static_cast<CTrackViewTrack*>(m_pContextMenuNode);
-		pTrack->PasteKeys(trackKeysRoot, SAnimTime(0));
+		pTrack->PasteKeys(trackKeysRoot, 0);
 	}
 }
 
@@ -2960,7 +2960,7 @@ void CTrackViewSequenceTabWidget::OnCopyNode()
 
 void CTrackViewSequenceTabWidget::OnPasteNode()
 {
-	OnDopesheetPaste(SAnimTime(0), nullptr);
+	OnDopesheetPaste(0, nullptr);
 }
 
 void CTrackViewSequenceTabWidget::OnDopesheetPlayPause()
@@ -2984,7 +2984,7 @@ void CTrackViewSequenceTabWidget::OnDopesheetCopy()
 	}
 }
 
-void CTrackViewSequenceTabWidget::OnDopesheetPaste(SAnimTime time, STimelineTrack* pTrack)
+void CTrackViewSequenceTabWidget::OnDopesheetPaste(const CTimeValue& time, STimelineTrack* pTrack)
 {
 	CClipboard clip;
 	if (!strcmp("Track view entity nodes", clip.GetTitle()))

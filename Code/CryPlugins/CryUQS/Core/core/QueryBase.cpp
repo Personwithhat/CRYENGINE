@@ -119,7 +119,7 @@ namespace UQS
 			, m_pQueryBlueprint(ctorContext.pQueryBlueprint)
 			, m_pOptionalShuttledItems(ctorContext.pOptionalResultingItemsFromPreviousQuery)
 			, m_queryCreatedFrame(gEnv->nMainFrameID)
-			, m_queryCreatedTimestamp(gEnv->pTimer->GetAsyncTime())
+			, m_queryCreatedTimestamp(GetGTimer()->GetAsyncTime())
 			, m_totalConsumedFrames(0)
 			, m_queryContext(*m_pQueryBlueprint.get(), m_querierName.c_str(), m_queryID, m_globalParams, m_pOptionalShuttledItems.get(), m_timeBudgetForCurrentUpdate, ctorContext.pOptionalHistoryToWriteTo ? &ctorContext.pOptionalHistoryToWriteTo->GetDebugRenderWorldPersistent() : nullptr, ctorContext.pOptionalHistoryToWriteTo ? &ctorContext.pOptionalHistoryToWriteTo->GetDebugMessageCollection() : nullptr)
 		{
@@ -272,7 +272,7 @@ namespace UQS
 
 			m_timeBudgetForCurrentUpdate.Restart(amountOfGrantedTime);
 
-			const CTimeValue startTime = gEnv->pTimer->GetAsyncTime();
+			const CTimeValue startTime = GetGTimer()->GetAsyncTime();
 
 			++m_totalConsumedFrames;
 
@@ -320,7 +320,7 @@ namespace UQS
 			// finish timings
 			//
 
-			const CTimeValue timeSpent = gEnv->pTimer->GetAsyncTime() - startTime;
+			const CTimeValue timeSpent = GetGTimer()->GetAsyncTime() - startTime;
 			m_totalConsumedTime += timeSpent;
 			m_grantedAndUsedTimePerFrame.emplace_back(amountOfGrantedTime, timeSpent);
 

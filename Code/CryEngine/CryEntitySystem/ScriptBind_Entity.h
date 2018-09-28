@@ -125,7 +125,7 @@ protected:
 	//!		<param name="nSlot">nSlot identifier.</param></param>
 	//!		<param name="fadeTime">.</param>
 	//!		<param name="newGlobalDensity">.</param>
-	int FadeGlobalDensity(IFunctionHandler* pH, int nSlot, float fadeTime, float newGlobalDensity);
+	int FadeGlobalDensity(IFunctionHandler* pH, int nSlot, const CTimeValue fadeTime, float newGlobalDensity);
 
 	//! <code>Entity.LoadParticleEffect( nSlot, sEffectName, fPulsePeriod, bPrime, fScale )</code>
 	//! <description>Loads CGF geometry into the entity slot.</description>
@@ -860,7 +860,7 @@ protected:
 
 	//! <code> Entity.SetGeomCachePlaybackTime()</code>
 	//! <description>Sets the playback time.</description>
-	int SetGeomCachePlaybackTime(IFunctionHandler* pH, float time);
+	int SetGeomCachePlaybackTime(IFunctionHandler* pH, const CTimeValue time);
 
 	//! <code> Entity.SetGeomCacheParams()</code>
 	//! <description>Sets geometry cache parameters.</description>
@@ -868,7 +868,7 @@ protected:
 	                       const char* firstFrameStandInMaterial, const char* lastFrameStandIn, const char* lastFrameStandInMaterial, float standInDistance, float streamInDistance);
 	//! <code> Entity.SetGeomCacheStreaming()</code>
 	//! <description>Activates/deactivates geom cache streaming.</description>
-	int SetGeomCacheStreaming(IFunctionHandler* pH, bool active, float time);
+	int SetGeomCacheStreaming(IFunctionHandler* pH, bool active, const CTimeValue time);
 
 	//! <code> Entity.IsGeomCacheStreaming()</code>
 	//! <returns>true if geom cache is streaming.</returns>
@@ -919,10 +919,10 @@ protected:
 	int DisableAnimationEvent(IFunctionHandler* pH, int nSlot, const char* sAnimation);
 
 	//! <code> Entity.SetAnimationSpeed( characterSlot, layer, speed )</code>
-	int SetAnimationSpeed(IFunctionHandler* pH, int characterSlot, int layer, float speed);
+	int SetAnimationSpeed(IFunctionHandler* pH, int characterSlot, int layer, const mpfloat speed);
 
 	//! <code> Entity.SetAnimationTime( nSlot, nLayer, fTime )</code>
-	int SetAnimationTime(IFunctionHandler* pH, int nSlot, int nLayer, float fTime);
+	int SetAnimationTime(IFunctionHandler* pH, int nSlot, int nLayer, const nTime fTime);
 
 	//! <code> Entity.GetAnimationTime( nSlot, nLayer )</code>
 	int GetAnimationTime(IFunctionHandler* pH, int nSlot, int nLayer);
@@ -942,8 +942,8 @@ protected:
 	//! <code> Entity.KillTimer()</code>
 	int KillTimer(IFunctionHandler* pH);
 
-	//! <code> Entity.SetScriptUpdateRate( nMillis )</code>
-	int SetScriptUpdateRate(IFunctionHandler* pH, int nMillis);
+	//! <code> Entity.SetScriptUpdateRate( nTime )</code>
+	int SetScriptUpdateRate(IFunctionHandler* pH, const CTimeValue updateRate);
 
 	//////////////////////////////////////////////////////////////////////////
 	// State management.
@@ -1348,7 +1348,7 @@ protected:
 
 	//! <code>Entity.BreakToPieces()</code>
 	//! <description>Breaks static geometry in slot 0 into sub objects and spawn them as particles or entities.</description>
-	int BreakToPieces(IFunctionHandler* pH, int nSlot, int nPiecesSlot, float fExplodeImp, Vec3 vHitPt, Vec3 vHitImp, float fLifeTime, bool bSurfaceEffects);
+	int BreakToPieces(IFunctionHandler* pH, int nSlot, int nPiecesSlot, float fExplodeImp, Vec3 vHitPt, Vec3 vHitImp, const CTimeValue fLifeTime, bool bSurfaceEffects);
 
 	//! <code>Entity.AttachSurfaceEffect( nSlot, effect, countPerUnit, form, typ, countScale, sizeScale )</code>
 	int AttachSurfaceEffect(IFunctionHandler* pH, int nSlot, const char* effect, bool countPerUnit, const char* form, const char* typ, float countScale, float sizeScale);

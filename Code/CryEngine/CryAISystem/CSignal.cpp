@@ -373,10 +373,10 @@ namespace AISignals
 
 		for (const auto& signalDebug : m_debugSignalsHistory)
 		{
-			const float timeBeforeSignalSwitchesToDifferentColor = 5.0f;
+			const CTimeValue timeBeforeSignalSwitchesToDifferentColor = 5;
 			const CTimeValue now = GetAISystem()->GetFrameStartTime();
-			const float elapsedTime = now.GetDifferenceInSeconds(signalDebug.timestamp);
-			const float blendFactor = fmin(elapsedTime, timeBeforeSignalSwitchesToDifferentColor) / timeBeforeSignalSwitchesToDifferentColor;
+			const CTimeValue elapsedTime = now - signalDebug.timestamp;
+			const float blendFactor = (float)(min(elapsedTime, timeBeforeSignalSwitchesToDifferentColor) / timeBeforeSignalSwitchesToDifferentColor);
 
 			const ColorF blendedColor = ((1.0f - blendFactor) * newSignalColor) + ( blendFactor * oldSignalColor);
 			IRenderAuxText::Draw2dLabel(
@@ -1011,7 +1011,7 @@ namespace AISignals
 		{
 			m_debugSignalsHistory.pop_back();
 		}
-		m_debugSignalsHistory.emplace_front(signal, GetAISystem()->GetFrameStartTimeSeconds());
+		m_debugSignalsHistory.emplace_front(signal, GetAISystem()->GetFrameStartTime());
 	}
 #endif //SIGNAL_MANAGER_DEBUG
 

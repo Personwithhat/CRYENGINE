@@ -14,7 +14,7 @@ struct SAIConsoleVarsLegacyBubblesSystem
 
 	int         EnableBubblesSystem;
 	float       BubblesSystemFontSize;
-	float       BubblesSystemDecayTime;
+	CTimeValue  BubblesSystemDecayTime;
 	const char* BubblesSystemNameFilter;
 
 	static void AIBubblesNameFilterCallback(ICVar* pCvar);

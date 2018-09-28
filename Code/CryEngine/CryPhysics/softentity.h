@@ -84,13 +84,13 @@ class CSoftEntity : public CPhysicalEntity {
 	virtual int IsAwake(int ipart=-1) const { return m_bPermanent; }
 	virtual void AlertNeighbourhoodND(int mode);
 
-	virtual void StartStep(float time_interval);
-	virtual float GetMaxTimeStep(float time_interval);
-	virtual int Step(float time_interval);
+	virtual void StartStep(const CTimeValue& time_interval);
+	virtual CTimeValue GetMaxTimeStep(const CTimeValue& time_interval);
+	virtual int Step(const CTimeValue& time_interval);
 	virtual int RayTrace(SRayTraceRes&);
 	virtual void ApplyVolumetricPressure(const Vec3 &epicenter, float kr, float rmin);
 	virtual float GetMass(int ipart) { return m_parts[0].mass/m_nVtx; }
-	void StepInner(float time_interval, int bCollMode, check_part *checkParts,int nCheckParts, 
+	void StepInner(const CTimeValue& time_interval, int bCollMode, check_part *checkParts,int nCheckParts, 
 		const plane &waterPlane,const Vec3 &waterFlow,float waterDensity, float airDensity, const Vec3 &lastposHost, const quaternionf &lastqHost, se_vertex *pvtx);
 
 	void BakeCurrentPose();
@@ -98,9 +98,9 @@ class CSoftEntity : public CPhysicalEntity {
 	void SyncMeshVtx(bool recalcNormal=false);
 
 	enum snapver { SNAPSHOT_VERSION = 10 };
-	virtual int GetStateSnapshot(CStream &stm, float time_back=0,int flags=0);
+	virtual int GetStateSnapshot(CStream &stm, const CTimeValue& time_back=0,int flags=0);
 	virtual int SetStateFromSnapshot(CStream &stm, int flags);
-	virtual int GetStateSnapshot(TSerialize ser, float time_back=0, int flags=0);
+	virtual int GetStateSnapshot(TSerialize ser, const CTimeValue& time_back=0, int flags=0);
 	virtual int SetStateFromSnapshot(TSerialize ser, int flags=0);
 
 	virtual void DrawHelperInformation(IPhysRenderer *pRenderer, int flags);
@@ -123,25 +123,25 @@ class CSoftEntity : public CPhysicalEntity {
 	int *m_pTetrQueue;
 	Vec3 m_lastPos;
 
-	float m_timeStepFull;
-	float m_timeStepPerformed;
-	float m_timeStepSurplus;
+	CTimeValue m_timeStepFull;
+	CTimeValue m_timeStepPerformed;
+	CTimeValue m_timeStepSurplus;
 
 	Vec3 m_gravity;
 	float m_Emin;
-	float m_maxAllowedStep;
+	CTimeValue m_maxAllowedStep;
 	int m_nSlowFrames;
 	float m_damping;
 	float m_accuracy;
 	int m_nMaxIters;
-	float m_prevTimeInterval;
+	CTimeValue m_prevTimeInterval;
 	int m_bSkinReady;
 	float m_maxMove;
 	float m_maxAllowedDist;
 
 	float m_thickness;
 	float m_ks;
-	float m_maxSafeStep;
+	CTimeValue m_maxSafeStep;
 	float m_density;
 	float m_coverage;
 	float m_friction;
@@ -161,7 +161,7 @@ class CSoftEntity : public CPhysicalEntity {
 	float m_airResistance;
 	Vec3 m_wind;
 	Vec3 m_wind0,m_wind1;
-	float m_windTimer;
+	CTimeValue m_windTimer;
 	float m_windVariance;
 
 	float m_V0 = 0;

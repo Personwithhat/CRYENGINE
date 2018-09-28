@@ -587,11 +587,10 @@ CRY_TEST_SUITE(EntityTestsSuit)
 
 			if (m_isCalled)
 			{
-				const CTimeValue duration = gEnv->pTimer->GetFrameStartTime() - m_startTime;
+				const CTimeValue duration = GetGTimer()->GetFrameStartTime() - m_startTime;
 
-				//To be replaced with direct CTimeValue multiplication after it is supported
-				CRY_TEST_ASSERT(duration.GetSeconds() > m_expectedDuration.GetSeconds() * 0.8f && duration.GetSeconds() < m_expectedDuration.GetSeconds() * 1.2f,
-					"duration: %f, expected: %f", duration.GetSeconds(), m_expectedDuration.GetSeconds());
+				CRY_TEST_ASSERT(duration > m_expectedDuration * "0.8" && duration < m_expectedDuration * "1.2",
+					"duration: %f, expected: %f", (float)duration.GetSeconds(), (float)m_expectedDuration.GetSeconds());
 			}
 			return m_isCalled;
 		}
@@ -605,8 +604,8 @@ CRY_TEST_SUITE(EntityTestsSuit)
 		{
 			SEntitySpawnParams spawnParams;
 			m_pTimerEntity = gEnv->pEntitySystem->SpawnEntity(spawnParams);
-			m_pTimerEntity->SetTimer(this, m_pTimerEntity->GetId(), CryGUID(), 0, static_cast<int>(m_expectedDuration.GetMilliSeconds()));
-			m_startTime = gEnv->pTimer->GetFrameStartTime();
+			m_pTimerEntity->SetTimer(this, m_pTimerEntity->GetId(), CryGUID(), 0, m_expectedDuration);
+			m_startTime = GetGTimer()->GetFrameStartTime();
 		}
 	};
 
@@ -800,9 +799,9 @@ CRY_TEST_SUITE(EntityTestsSuit)
 			CryTest::CCommandLoadLevel("woodland"),
 			CryTest::CCommandFunction(this, &CTestComponentEventPriority::Start),
 			CryTest::CCommandFunction(this, &CTestComponentEventPriority::RemoveAndReAddComponents),
-			CryTest::CCommandWait(4.f),
+			CryTest::CCommandWait(4),
 			CryTest::CCommandFunction(this, &CTestComponentEventPriority::RemoveAndReAddComponents),
-			CryTest::CCommandWait(4.f),
+			CryTest::CCommandWait(4),
 		};
 	}
 
@@ -836,7 +835,7 @@ CRY_TEST_SUITE(EntityTestsSuit)
 		{
 			CryTest::CCommandLoadLevel("EntityFeatureTests"),
 			// Give time for flowgraph controlled layer activation to be invoked
-			CryTest::CCommandWait(4.f),
+			CryTest::CCommandWait(4),
 			// Now check if the correct layers (and the entities inside them) were activated
 			CryTest::CCommand(CheckLoadedEntities),
 		};

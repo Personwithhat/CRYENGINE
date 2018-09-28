@@ -7,15 +7,15 @@ struct IColorGradingCtrl
 {
 	virtual ~IColorGradingCtrl() {}
 
-	//! Sets a new main color grading texture. It will be fully opaque in timeToFadeInSeconds
-	// In [0; timeToFadeInSeconds] all existing textures will be blended together.
-	// After timeToFadeInSeconds texture from this command will be the only one
+	//! Sets a new main color grading texture. It will be fully opaque in timeToFade
+	// In [0; timeToFade] all existing textures will be blended together.
+	// After timeToFade texture from this command will be the only one
 	// Commands are stored in LILO manner: one frame will issue only one command to the renderer
 	
 	// If texture is empty or == '0', neutral color chart will be used
-	// If timeToFadeInSeconds == 0, texture will be switched without blending transition between current state and new texture
+	// If timeToFade == 0, texture will be switched without blending transition between current state and new texture
 	// Condition when Color Grading Stage is not running at all is here: CColorGradingStage::IsStageActive()
-	virtual void SetColorGradingLut(const char* szTexture, float timeToFadeInSeconds) = 0;
+	virtual void SetColorGradingLut(const char* szTexture, const CTimeValue& timeToFade) = 0;
 
 	virtual void Serialize(TSerialize& ar) = 0;
 

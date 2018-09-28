@@ -803,7 +803,7 @@ BOOL CCryEditDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 BOOL CCryEditDoc::BeforeOpenDocument(LPCTSTR lpszPathName, TOpenDocContext& context)
 {
-	CTimeValue loading_start_time = gEnv->pTimer->GetAsyncTime();
+	CTimeValue loading_start_time = GetGTimer()->GetAsyncTime();
 	//ensure we close any open packs
 	if (!GetIEditorImpl()->GetLevelFolder().IsEmpty())
 	{
@@ -852,11 +852,11 @@ BOOL CCryEditDoc::DoOpenDocument(LPCTSTR lpszPathName, TOpenDocContext& context)
 
 	StartStreamingLoad();
 
-	CTimeValue loading_end_time = gEnv->pTimer->GetAsyncTime();
+	CTimeValue loading_end_time = GetGTimer()->GetAsyncTime();
 
 	CryLog("-----------------------------------------------------------");
 	CryLog("Successfully opened document %s", (const char*)levelPath);
-	CryLog("Level loading time: %.2f seconds", (loading_end_time - loading_start_time).GetSeconds());
+	CryLog("Level loading time: %.2f seconds", (float)(loading_end_time - loading_start_time).GetSeconds());
 	CryLog("-----------------------------------------------------------");
 
 	// It assumes loaded levels have already been exported. Can be a big fat lie, though.
@@ -1464,7 +1464,7 @@ void CCryEditDoc::InitEmptyLevel(int resolution, float unitSize, bool bUseTerrai
 		// Default time of day.
 		ITimeOfDay* const pTimeOfDay = gEnv->p3DEngine->GetTimeOfDay();
 		pTimeOfDay->LoadPreset(ITimeOfDay::GetDefaultPresetFilepath());
-		pTimeOfDay->SetTime(12.0f, true);
+		pTimeOfDay->SetTime(12, true);
 	}
 
 	auto* pObjectLayerManager = GetIEditorImpl()->GetObjectManager()->GetLayersManager();

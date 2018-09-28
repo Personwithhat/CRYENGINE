@@ -92,7 +92,7 @@ void CProfilingRenderer::OnFrameEnd(TTime timestamp, ILegacyProfiler* pProfSyste
 {
 	if (CProfilingRenderer::profile_log)
 	{
-		CryLogAlways("==================== Start Profiler Frame %d, Time %.2f ======================", gEnv->nMainFrameID, gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME) * 1000);
+		CryLogAlways("==================== Start Profiler Frame %d, Time %.2f ======================", gEnv->nMainFrameID, BADF GetGTimer()->GetFrameTime(ITimer::ETIMER_GAME).GetMilliSeconds());
 		CryLogAlways("|\tCount\t|\tSelf\t|\tTotal\t|\tModule\t|");
 		CryLogAlways("|\t____\t|\t_____\t|\t_____\t|\t_____\t|");
 
@@ -400,7 +400,7 @@ void CProfilingRenderer::RenderMainHeader(CCryProfilingSystem* pProfSystem)
 	DrawLabel(0, row, (m_isCollectionPaused ? PausedColor : MainHeaderColor), 0, szText);
 	++row;
 
-	cry_sprintf(szText, "%6.2fms", gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME) * 1000);
+	cry_sprintf(szText, "%6.2fms", BADF GetGTimer()->GetFrameTime(ITimer::ETIMER_GAME).GetMilliSeconds());
 	DrawLabel(0, row, ValueColor, 0, szText);
 	DrawLabel(7, row, TextColor, 0, "Frame time");
 
@@ -566,7 +566,7 @@ void CProfilingRenderer::RenderPeaks(ILegacyProfiler* pProfSystem)
 
 	char szText[32];
 
-	float currTimeSec = gEnv->pTimer->GetAsyncTime().GetSeconds();
+	float currTimeSec = GetGTimer()->GetAsyncTime().BADGetSeconds();
 
 	const auto& peaks = *pProfSystem->GetPeakRecords();
 	for (int i = 0; i < peaks.size(); i++)
@@ -619,7 +619,7 @@ void CProfilingRenderer::RenderSubSystems(CCryProfilingSystem* pProfSystem)
 			times[pTracker->pDescription->subsystem] += pTracker->selfValue.Average();
 	}
 
-	const float frameTime = gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME) * 1000;
+	const float frameTime = BADF GetGTimer()->GetFrameTime(ITimer::ETIMER_GAME).GetMilliSeconds();
 	for (int subsystem = 0; subsystem < EProfiledSubsystem::PROFILE_LAST_SUBSYSTEM; ++subsystem)
 	{
 		cry_sprintf(szText, "%6.2f", times[subsystem]);
@@ -673,7 +673,7 @@ void CProfilingRenderer::RenderThreadInfo(ILegacyProfiler* pProfSystem)
 			info.activeValue += pTracker->selfValue.Latest();
 	}
 
-	const float frameTime = gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME) * 1000;
+	const float frameTime = BADF GetGTimer()->GetFrameTime(ITimer::ETIMER_GAME).GetMilliSeconds();
 	for (const auto& infoPair : threadInfoMap)
 	{
 		const SThreadProfileInfo& info = infoPair.second;

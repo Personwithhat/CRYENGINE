@@ -43,7 +43,7 @@ public:
 	virtual void OnSingleTestStart(const STestInfo& testInfo) override;
 
 	//! Notify reporter one test finished, along with necessary results
-	virtual void OnSingleTestFinish(const STestInfo& testInfo, float fRunTimeInMs, bool bSuccess, const std::vector<SError>& failures) override;
+	virtual void OnSingleTestFinish(const STestInfo& testInfo, const CTimeValue& fRunTime, bool bSuccess, const std::vector<SError>& failures) override;
 
 	//! Save the test instance to prepare for possible time out or other unrecoverable errors
 	virtual void SaveTemporaryReport() override;
@@ -60,14 +60,14 @@ private:
 	struct STestResult
 	{
 		STestInfo           testInfo;
-		float               runTimeInMs;
+		CTimeValue          runTime;
 		bool                isSuccessful;
 		std::vector<SError> failures;
 
 		void                Serialize(Serialization::IArchive& ar)
 		{
 			ar(testInfo, "testInfo");
-			ar(runTimeInMs, "runTimeInMs");
+			ar(runTime, "runTime");
 			ar(isSuccessful, "isSuccessful");
 			ar(failures, "failures");
 		}

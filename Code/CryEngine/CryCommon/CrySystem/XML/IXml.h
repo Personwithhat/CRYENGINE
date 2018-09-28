@@ -8,6 +8,10 @@
 
 class ICrySizer;
 struct CryGUID;
+class CTimeValue;
+
+// For multi-precision float definition.
+#include <CrySystem\MPFloat.h>
 
 #if defined(_AFX) && !defined(RESOURCE_COMPILER)
 #include <CryCore/ToolsHelpers/GuidUtil.h>
@@ -245,6 +249,12 @@ public:
 	virtual void setAttr(const char* key, const Vec4& value) = 0;
 	virtual void setAttr(const char* key, const Vec3d& value) = 0;
 	virtual void setAttr(const char* key, const Quat& value) = 0;
+	
+	virtual void setAttr(const char* key, const CTimeValue& value) = 0;
+	#define MP_FUNCTION(T) virtual void setAttr(const char* key, const T& value) = 0;
+	#include <CrySystem\mpfloat.types>
+	#undef MP_FUNCTION
+
 #if CRY_PLATFORM_LINUX || CRY_PLATFORM_APPLE
 	//! Compatability functions, on Linux and Mac long int is the default int64_t.
 	ILINE void setAttr(const char* key, unsigned long int value, bool useHexFormat = true)
@@ -283,6 +293,12 @@ public:
 	virtual bool getAttr(const char* key, bool& value) const = 0;
 	virtual bool getAttr(const char* key, XmlString& value) const = 0;
 	virtual bool getAttr(const char* key, ColorB& value) const = 0;
+
+	virtual bool getAttr(const char* key, CTimeValue& value) const = 0;
+	#define MP_FUNCTION(T)\
+	virtual bool getAttr(const char* key, T& value) const = 0;
+	#include <CrySystem\mpfloat.types>
+	#undef MP_FUNCTION
 
 #if CRY_PLATFORM_LINUX || CRY_PLATFORM_APPLE
 	//! Compatability functions, on Linux and Mac long int is the default int64_t.

@@ -163,7 +163,7 @@ namespace Schematyc2
 		virtual bool Connect(CUpdateScope& scope, const UpdateCallback& callback, UpdateFrequency frequency = EUpdateFrequency::EveryFrame, UpdatePriority priority = EUpdatePriority::Default, const UpdateFilter& filter = UpdateFilter()) override;
 		virtual void Disconnect(CUpdateScope& scope) override;
 		virtual bool InFrame() const override;
-		virtual bool BeginFrame(float frameTime) override;
+		virtual bool BeginFrame(const CTimeValue& frameTime) override;
 		virtual bool Update(UpdatePriority beginPriority = EUpdateStage::PrePhysics | EUpdateDistribution::Earliest, UpdatePriority endPriority = EUpdateStage::Post | EUpdateDistribution::End, CUpdateRelevanceContext* pRelevanceContext = nullptr) override;
 		virtual bool EndFrame() override;
 		virtual void VerifyCleanup() override;
@@ -296,7 +296,7 @@ namespace Schematyc2
 		CBucket           m_buckets[EUpdateFrequency::Count];
 		TUpdateSlots      m_updateOrder;
 		size_t            m_updatePosition;
-		float             m_frameTimes[s_maxFrameStride];
+		CTimeValue        m_frameTimes[s_maxFrameStride];
 		uint32            m_frameIdx;
 		bool              m_bInFrame;
 

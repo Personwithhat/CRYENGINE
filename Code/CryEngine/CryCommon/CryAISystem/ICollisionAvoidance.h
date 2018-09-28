@@ -50,7 +50,7 @@ struct IAgent
 	//! Function called after Collision Avoidance finished its updating adjusted velocity is available.
 	//! \param avoidanceVelocity Resulting velocity of the agent after collision avoidance update.
 	//! \param updateTime Last update tick duration.
-	virtual void                  ApplyComputedVelocity(const Vec2& avoidanceVelocity, float updateTime) = 0;
+	virtual void                  ApplyComputedVelocity(const Vec2& avoidanceVelocity, const CTimeValue& updateTime) = 0;
 
 	//! Returns pointer to the navigation query filter.
 	//! \return Pointer to the navigation query filter, which needs to remain valid while the collision avoidance is being computed.

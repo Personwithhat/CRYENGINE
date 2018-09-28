@@ -23,8 +23,8 @@ inline bool Serialize(Serialization::IArchive& ar, std::vector<SBezierKey>& valu
 				const SBezierKey& key = value[i];
 				const SBezierControlPoint& cp = key.m_controlPoint;
 
-				keystr.Format("%d:%g:%g:%g:%g:%g:%d:%d:%d,",
-				              key.m_time.GetTicks(), cp.m_value,
+				keystr.Format("%s:%g:%g:%g:%g:%g:%d:%d:%d,",
+				              key.m_time.GetSeconds().str(), cp.m_value,
 				              cp.m_inTangent.x, cp.m_inTangent.y,
 				              cp.m_outTangent.x, cp.m_outTangent.y,
 				              int(cp.m_inTangentType), int(cp.m_outTangentType), int(cp.m_bBreakTangents));
@@ -52,13 +52,12 @@ inline bool Serialize(Serialization::IArchive& ar, std::vector<SBezierKey>& valu
 			key = str.Tokenize(",", curPos);
 			while (!key.empty())
 			{
-				int32 keyTime;
+				char keyTime[MP_SIZE];
 				float keyValue;
 				Vec2 keyInTan;
 				Vec2 keyOutTan;
 				int keyInTanType, keyOutTanType, keyBreakTan;
-
-				int res = sscanf(key, "%d:%g:%g:%g:%g:%g:%d:%d:%d",
+				int res = sscanf(key, "%[^:]:%g:%g:%g:%g:%g:%d:%d:%d",
 				                 &keyTime, &keyValue,
 				                 &keyInTan.x, &keyInTan.y,
 				                 &keyOutTan.x, &keyOutTan.y,
@@ -69,7 +68,7 @@ inline bool Serialize(Serialization::IArchive& ar, std::vector<SBezierKey>& valu
 				}
 
 				SBezierKey& bezierKey = value[nKeys];
-				bezierKey.m_time = SAnimTime(keyTime);
+				bezierKey.m_time = CTimeValue(keyTime);
 
 				SBezierControlPoint& cp = bezierKey.m_controlPoint;
 				cp.m_value = keyValue;
@@ -229,13 +228,13 @@ inline SBezierKey ApplyInTangent(const SBezierKey& key, const SBezierKey& leftKe
 	}
 	else if (key.m_controlPoint.m_inTangentType != SBezierControlPoint::ETangentType::Step)
 	{
-		const SAnimTime leftTime = leftKey.m_time;
-		const SAnimTime rightTime = pRightKey ? pRightKey->m_time : key.m_time;
+		const CTimeValue leftTime = leftKey.m_time;
+		const CTimeValue rightTime = pRightKey ? pRightKey->m_time : key.m_time;
 
 		// Rebase to [0, rightTime - leftTime] to increase float precision
-		const float floatTime = (key.m_time - leftTime).ToFloat();
+		const float floatTime = BADF (key.m_time - leftTime).GetSeconds();
 		const float floatLeftTime = 0.0f;
-		const float floatRightTime = (rightTime - leftTime).ToFloat();
+		const float floatRightTime = BADF (rightTime - leftTime).GetSeconds();
 
 		newKey.m_controlPoint = Bezier::CalculateInTangent(floatTime, key.m_controlPoint,
 		                                                   floatLeftTime, &leftKey.m_controlPoint,
@@ -261,13 +260,13 @@ inline SBezierKey ApplyOutTangent(const SBezierKey& key, const SBezierKey* pLeft
 	}
 	else if (key.m_controlPoint.m_outTangentType != SBezierControlPoint::ETangentType::Step)
 	{
-		const SAnimTime leftTime = pLeftKey ? pLeftKey->m_time : key.m_time;
-		const SAnimTime rightTime = rightKey.m_time;
+		const CTimeValue leftTime = pLeftKey ? pLeftKey->m_time : key.m_time;
+		const CTimeValue rightTime = rightKey.m_time;
 
 		// Rebase to [0, rightTime - leftTime] to increase float precision
-		const float floatTime = (key.m_time - leftTime).ToFloat();
+		const float floatTime = BADF (key.m_time - leftTime).GetSeconds();
 		const float floatLeftTime = 0.0f;
-		const float floatRightTime = (rightTime - leftTime).ToFloat();
+		const float floatRightTime = BADF (rightTime - leftTime).GetSeconds();
 
 		newKey.m_controlPoint = Bezier::CalculateOutTangent(floatTime, key.m_controlPoint,
 		                                                    floatLeftTime, pLeftKey ? &pLeftKey->m_controlPoint : NULL,

@@ -27,7 +27,7 @@ public:
 	void Clear();
 	void Queue(EntityId entityID, const Callback& callback);
 	void Cancel(EntityId entityID);
-	void Update(const CTimeValue frameStartTime, const float updateTime);
+	void Update(const CTimeValue& frameStartTime, const CTimeValue& updateTime);
 	void DebugDraw();
 
 private:

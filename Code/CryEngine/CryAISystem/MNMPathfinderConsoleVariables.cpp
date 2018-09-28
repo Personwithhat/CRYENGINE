@@ -24,10 +24,10 @@ void SAIConsoleVarsMNMPathfinder::Init()
 
 	DefineConstIntCVarName("ai_MNMPathfinderConcurrentRequests", MNMPathfinderConcurrentRequests, 4, VF_CHEAT | VF_CHEAT_NOCHECK, "Defines the amount of concurrent pathfinder requests that can be served at the same time.");
 
-	REGISTER_CVAR2("ai_MNMPathFinderQuota", &MNMPathFinderQuota, 0.001f, VF_CHEAT | VF_CHEAT_NOCHECK,
+	REGISTER_CVAR2("ai_MNMPathFinderQuota", &MNMPathFinderQuota, CTimeValue("0.001"), VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Set path finding frame time quota in seconds (Set to 0 for no limit)");
 
-	REGISTER_CVAR2("ai_PathfindTimeLimit", &AllowedTimeForPathfinding, 0.08f, VF_NULL,
+	REGISTER_CVAR2("ai_PathfindTimeLimit", &AllowedTimeForPathfinding, CTimeValue("0.08"), VF_NULL,
 		"Specifies how many seconds an individual AI can hold the pathfinder blocked\n"
 		"Usage: ai_PathfindTimeLimit 0.15\n"
 		"Default is 0.08. A lower value will result in more path requests that end in NOPATH -\n"

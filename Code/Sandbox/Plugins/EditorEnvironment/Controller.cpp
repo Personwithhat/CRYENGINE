@@ -264,8 +264,8 @@ void CController::InterpolateVarTreeChanges(STodParameter& param, const Vec3& ne
 	ITimeOfDay::IPreset* const pPreset = m_editor.GetPreset();
 	CRY_ASSERT(pPreset);
 
-	const float time = m_editor.GetTimeOfDay()->GetTime();
-	const float currTime = (time / 24.0f) * m_editor.GetTimeOfDay()->GetAnimTimeSecondsIn24h();
+	const CTimeValue time = m_editor.GetTimeOfDay()->GetTime();
+	const CTimeValue currTime = (time / 24) * m_editor.GetTimeOfDay()->GetAnimTimeSecondsIn24h();
 
 	bool changed = false;
 
@@ -437,7 +437,7 @@ void CController::RedoVariableChange(ITimeOfDay::IPreset* pPreset, int paramId, 
 	RebuildCurveContentFromPreset();
 }
 
-void CController::SetCurrentTime(QWidget* pSender, float time)
+void CController::SetCurrentTime(QWidget* pSender, const CTimeValue& time)
 {
 	ITimeOfDay* const pTimeOfDay = m_editor.GetTimeOfDay();
 	pTimeOfDay->SetTime(time, true);
@@ -460,7 +460,7 @@ void CController::SetCurrentTime(QWidget* pSender, float time)
 	signalCurrentTimeChanged(pSender, time);
 }
 
-void CController::GetEnginePlaybackParams(float& startTime, float& endTime, float& speed) const
+void CController::GetEnginePlaybackParams(CTimeValue& startTime, CTimeValue& endTime, mpfloat& speed) const
 {
 	ITimeOfDay* const pTimeOfDay = m_editor.GetTimeOfDay();
 
@@ -472,13 +472,13 @@ void CController::GetEnginePlaybackParams(float& startTime, float& endTime, floa
 	speed = info.fAnimSpeed;
 }
 
-float CController::GetCurrentTime() const
+CTimeValue CController::GetCurrentTime() const
 {
 	ITimeOfDay* const pTimeOfDay = m_editor.GetTimeOfDay();
 	return pTimeOfDay->GetTime();
 }
 
-void CController::SetEnginePlaybackParams(float startTime, float endTime, float speed) const
+void CController::SetEnginePlaybackParams(const CTimeValue& startTime, const CTimeValue& endTime, const mpfloat& speed) const
 {
 	ITimeOfDay::SAdvancedInfo info;
 	info.fStartTime = startTime;
@@ -518,11 +518,11 @@ void CController::AnimateTime()
 {
 	ITimeOfDay* const pTimeOfDay = m_editor.GetTimeOfDay();
 
-	const float hour = pTimeOfDay->GetTime();
+	const CTimeValue hour = pTimeOfDay->GetTime();
 
 	ITimeOfDay::SAdvancedInfo advInfo;
 	pTimeOfDay->GetAdvancedInfo(advInfo);
-	float time = hour + gEnv->pTimer->GetFrameTime() * advInfo.fAnimSpeed;
+	CTimeValue time = hour + GetGTimer()->GetFrameTime() * advInfo.fAnimSpeed;
 	if (time > advInfo.fEndTime)
 		time = advInfo.fStartTime;
 	if (time < advInfo.fStartTime)

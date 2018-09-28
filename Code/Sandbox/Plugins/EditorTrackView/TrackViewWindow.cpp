@@ -104,7 +104,7 @@ void CTrackViewWindow::SetLayout(const QVariantMap& state)
 	QVariant unitVar = state.value("unit");
 	if (unitVar.isValid())
 	{
-		m_pTrackViewCore->SetDisplayMode((SAnimTime::EDisplayMode)unitVar.toInt());
+		m_pTrackViewCore->SetDisplayMode((SAnimData::EDisplayMode)unitVar.toInt());
 	}
 
 	auto tabWidget = m_pTrackViewCore->GetComponentsManager()->GetTrackViewSequenceTabWidget();
@@ -562,22 +562,22 @@ void CTrackViewWindow::InitMenu()
 
 		action = pViewMenu->CreateAction(tr("Ticks"), sec);
 		action->setCheckable(true);
-		action->setChecked(m_pTrackViewCore->GetCurrentDisplayMode() == SAnimTime::EDisplayMode::Ticks);
+		action->setChecked(m_pTrackViewCore->GetCurrentDisplayMode() == SAnimData::EDisplayMode::Ticks);
 		action->connect(action, &QAction::triggered, this, &CTrackViewWindow::OnSetUnitsTicks);
 
 		action = pViewMenu->CreateAction(tr("Time"), sec);
 		action->setCheckable(true);
-		action->setChecked(m_pTrackViewCore->GetCurrentDisplayMode() == SAnimTime::EDisplayMode::Time);
+		action->setChecked(m_pTrackViewCore->GetCurrentDisplayMode() == SAnimData::EDisplayMode::Time);
 		action->connect(action, &QAction::triggered, this, &CTrackViewWindow::OnSetUnitsTime);
 
 		action = pViewMenu->CreateAction(tr("Timecode"), sec);
 		action->setCheckable(true);
-		action->setChecked(m_pTrackViewCore->GetCurrentDisplayMode() == SAnimTime::EDisplayMode::Timecode);
+		action->setChecked(m_pTrackViewCore->GetCurrentDisplayMode() == SAnimData::EDisplayMode::Timecode);
 		action->connect(action, &QAction::triggered, this, &CTrackViewWindow::OnSetUnitsFramecode);
 
 		action = pViewMenu->CreateAction(tr("Frames"), sec);
 		action->setCheckable(true);
-		action->setChecked(m_pTrackViewCore->GetCurrentDisplayMode() == SAnimTime::EDisplayMode::Frames);
+		action->setChecked(m_pTrackViewCore->GetCurrentDisplayMode() == SAnimData::EDisplayMode::Frames);
 		action->connect(action, &QAction::triggered, this, &CTrackViewWindow::OnSetUnitsFrames);
 	});
 
@@ -780,7 +780,7 @@ bool CTrackViewWindow::OnImportSequence()
 	return true;
 }
 
-bool CTrackViewWindow::OnUnitsChanged(SAnimTime::EDisplayMode mode)
+bool CTrackViewWindow::OnUnitsChanged(SAnimData::EDisplayMode mode)
 {
 	m_pTrackViewCore->SetDisplayMode(mode);
 	m_pTrackViewCore->UpdateProperties();
@@ -932,22 +932,22 @@ bool CTrackViewWindow::OnToggleSyncSelection()
 
 bool CTrackViewWindow::OnSetUnitsTicks()
 {
-	return OnUnitsChanged(SAnimTime::EDisplayMode::Ticks);
+	return OnUnitsChanged(SAnimData::EDisplayMode::Ticks);
 }
 
 bool CTrackViewWindow::OnSetUnitsTime()
 {
-	return OnUnitsChanged(SAnimTime::EDisplayMode::Time);
+	return OnUnitsChanged(SAnimData::EDisplayMode::Time);
 }
 
 bool CTrackViewWindow::OnSetUnitsFramecode()
 {
-	return OnUnitsChanged(SAnimTime::EDisplayMode::Timecode);
+	return OnUnitsChanged(SAnimData::EDisplayMode::Timecode);
 }
 
 bool CTrackViewWindow::OnSetUnitsFrames()
 {
-	return OnUnitsChanged(SAnimTime::EDisplayMode::Frames);
+	return OnUnitsChanged(SAnimData::EDisplayMode::Frames);
 }
 
 bool CTrackViewWindow::OnGoToStart()

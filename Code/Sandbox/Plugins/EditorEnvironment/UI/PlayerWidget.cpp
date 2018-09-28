@@ -131,34 +131,35 @@ void CPlayerWidget::ResetState()
 
 void CPlayerWidget::ResetPlaybackEdits()
 {
-	float start, end, speed;
+	CTimeValue start, end; mpfloat speed;
 	m_controller.GetEnginePlaybackParams(start, end, speed);
 
 	blockSignals(true);
 
-	m_pStartTimeEdit->setTime(FloatToQTime(start));
-	m_pEndTimeEdit->setTime(FloatToQTime(end));
-	m_pPlaySpeedEdit->setText(QString::number(speed));
+	m_pStartTimeEdit->setTime(TimeToQTime(start));
+	m_pEndTimeEdit->setTime(TimeToQTime(end));
+	m_pPlaySpeedEdit->setText(QString::number(BADF speed));
 
-	const float currTime = m_controller.GetCurrentTime();
-	m_pCurrentTimeEdit->setTime(FloatToQTime(currTime));
+	const CTimeValue currTime = m_controller.GetCurrentTime();
+	m_pCurrentTimeEdit->setTime(TimeToQTime(currTime));
 
 	blockSignals(false);
 }
 
-float CPlayerWidget::GetTimeAsFloat(CTimeEditControl* pTimeCtrl) const
+CTimeValue CPlayerWidget::GetTime(CTimeEditControl* pTimeCtrl) const
 {
 	const int nSeconds = QTime(0, 0, 0).secsTo(pTimeCtrl->time());
-	const float time = nSeconds / 3600.0f;
+	const CTimeValue time = nSeconds / 3600;
 	return time;
 }
 
-QTime CPlayerWidget::FloatToQTime(float time) const
+QTime CPlayerWidget::TimeToQTime(const CTimeValue& time) const
 {
-	unsigned int hour = floor(time);
+	mpfloat tSec = time.GetSeconds();
+	unsigned int hour = (int)floor(tSec);
 
-	static const float nTimeLineMinutesScale = 60.0f;
-	unsigned int minute = floor((time - floor(time)) * nTimeLineMinutesScale);
+	static const CTimeValue nTimeLineMinutesScale = 60;
+	unsigned int minute = (int)floor((time - floor(tSec)) * nTimeLineMinutesScale);
 	if (hour > 23)
 	{
 		hour = 23;
@@ -170,16 +171,16 @@ QTime CPlayerWidget::FloatToQTime(float time) const
 
 void CPlayerWidget::OnPlaybackParamsChanged()
 {
-	const float start = GetTimeAsFloat(m_pStartTimeEdit);
-	const float end = GetTimeAsFloat(m_pEndTimeEdit);
-	const float speed = m_pPlaySpeedEdit->text().toFloat();
+	const CTimeValue start = GetTime(m_pStartTimeEdit);
+	const CTimeValue end = GetTime(m_pEndTimeEdit);
+	const mpfloat speed = BADMP(m_pPlaySpeedEdit->text().toFloat());
 
 	m_controller.SetEnginePlaybackParams(start, end, speed);
 }
 
 void CPlayerWidget::CurrentTimeEdited()
 {
-	const float time = GetTimeAsFloat(m_pCurrentTimeEdit);
+	const CTimeValue time = GetTime(m_pCurrentTimeEdit);
 	m_controller.SetCurrentTime(this, time);
 }
 
@@ -204,14 +205,14 @@ void CPlayerWidget::OnPlaybackModeChanged(PlaybackMode newMode)
 	blockSignals(false);
 }
 
-void CPlayerWidget::OnCurrentTimeChanged(QWidget* pSender, float newTime)
+void CPlayerWidget::OnCurrentTimeChanged(QWidget* pSender, const CTimeValue& newTime)
 {
 	if (this == pSender)
 	{
 		return;
 	}
 
-	QTime qTime = FloatToQTime(newTime);
+	QTime qTime = TimeToQTime(newTime);
 
 	m_pCurrentTimeEdit->blockSignals(true);
 	m_pCurrentTimeEdit->setTime(qTime);

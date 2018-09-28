@@ -600,7 +600,7 @@ struct SCryEngineStats
 		float        variance;
 		int          pageFaults; // Number of page faults at this frame.
 		int          count;      // Number of times called for peak.
-		float        when;       // when it added.
+		CTimeValue   when;       // when it added.
 	};
 
 	struct SModuleProfilerInfo
@@ -634,7 +634,7 @@ struct SCryEngineStats
 		, nChar_SummaryTextureSize(0)
 		, nChar_NumInstances(0)
 
-		, fLevelLoadTime(0.0f)
+		, fLevelLoadTime(0)
 		, nSummary_TexturesPoolSize(0)
 	{
 		ISystem* pSystem = GetISystem();
@@ -664,7 +664,7 @@ struct SCryEngineStats
 		nWin32_PeakPagefileUsage = procMeminfo.PeakPagefileUsage;
 		nWin32_PageFaultCount = procMeminfo.PageFaultCount;
 
-		fLevelLoadTime = gEnv->pSystem->GetIResourceManager()->GetLastLevelLoadTime().GetSeconds();
+		fLevelLoadTime = gEnv->pSystem->GetIResourceManager()->GetLastLevelLoadTime();
 
 		if (p3DEngine)
 		{
@@ -704,7 +704,7 @@ struct SCryEngineStats
 	uint32                            nChar_NumInstances;
 	SAnimMemoryTracker                m_AnimMemoryTracking;
 
-	float                             fLevelLoadTime;
+	CTimeValue                        fLevelLoadTime;
 	SDebugFPSInfo                     infoFPS;
 
 	std::vector<StatObjInfo>          objects;
@@ -1590,9 +1590,9 @@ void CEngineStats::CollectProfileStatistics()
 		m_stats.peaks[i].peakValue = pPeak->peakValue;
 		m_stats.peaks[i].averageValue = pPeak->averageValue;
 		m_stats.peaks[i].variance = pPeak->variance;
-		m_stats.peaks[i].pageFaults = pPeak->pageFaults;   // Number of page faults at this frame.
-		m_stats.peaks[i].count = pPeak->count;             // Number of times called for peak.
-		m_stats.peaks[i].when = pPeak->timeSeconds;        // when it added.
+		m_stats.peaks[i].pageFaults = pPeak->pageFaults;	 // Number of page faults at this frame.
+		m_stats.peaks[i].count = pPeak->count;				 // Number of times called for peak.
+		m_stats.peaks[i].when = BADTIME(pPeak->timeSeconds); // when it added.
 
 		m_stats.peaks[i].profiler.m_count = pos_round(pTracker->count.Average());
 		m_stats.peaks[i].profiler.m_displayedValue = pTracker->selfValue.Average();
@@ -2102,7 +2102,7 @@ void CStatsToExcelExporter::ExportSummary(SCryEngineStats& stats)
 	#endif
 	AddRow();
 	AddCell("Level Load Time (sec):");
-	AddCell((int)stats.fLevelLoadTime);
+	AddCell((int)stats.fLevelLoadTime.GetSeconds());
 	AddRow();
 	AddRow();
 	AddCell("Average\\Min\\Max (fps):");
@@ -3476,7 +3476,7 @@ void CStatsToExcelExporter::ExportStreamingInfo(
 	// overal stats
 	AddRow();
 	AddCell("Average Completion Time (ms):", CELL_BOLD);
-	AddCell(stats.fAverageCompletionTime);
+	AddCell((float)stats.fAverageCompletionTime.GetMilliSeconds());
 	AddRow();
 	AddCell("Session Read Bandwidth (KB):", CELL_BOLD);
 	AddCell(stats.nTotalSessionReadBandwidth / (1024.f));
@@ -3520,10 +3520,10 @@ void CStatsToExcelExporter::ExportStreamingInfo(
 	// texture stats
 	AddRow();
 	AddCell("Texture - Average Completion Time (ms):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeTexture].fAverageCompletionTime);
+	AddCell((float)stats.typeInfo[eStreamTaskTypeTexture].fAverageCompletionTime.GetMilliSeconds());
 	AddRow();
 	AddCell("Texture - Session Read Bandwidth (KB):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeTexture].nSessionReadBandwidth / (1024.f));
+	AddCell((float)stats.typeInfo[eStreamTaskTypeTexture].nSessionReadBandwidth / (1024));
 	AddRow();
 	AddCell("Texture - Request Count:", CELL_BOLD);
 	AddCell(stats.typeInfo[eStreamTaskTypeTexture].nTotalRequestCount);
@@ -3547,10 +3547,10 @@ void CStatsToExcelExporter::ExportStreamingInfo(
 	// geometry stats
 	AddRow();
 	AddCell("Geometry - Average Completion Time (ms):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeGeometry].fAverageCompletionTime);
+	AddCell((float)stats.typeInfo[eStreamTaskTypeGeometry].fAverageCompletionTime.GetMilliSeconds());
 	AddRow();
 	AddCell("Geometry - Session Read Bandwidth (KB):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeGeometry].nSessionReadBandwidth / (1024.f));
+	AddCell((float)stats.typeInfo[eStreamTaskTypeGeometry].nSessionReadBandwidth / (1024));
 	AddRow();
 	AddCell("Geometry - Request Count:", CELL_BOLD);
 	AddCell(stats.typeInfo[eStreamTaskTypeGeometry].nTotalRequestCount);
@@ -3574,10 +3574,10 @@ void CStatsToExcelExporter::ExportStreamingInfo(
 	// terrain stats
 	AddRow();
 	AddCell("Terrain - Average Completion Time (ms):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeTerrain].fAverageCompletionTime);
+	AddCell((float)stats.typeInfo[eStreamTaskTypeTerrain].fAverageCompletionTime.GetMilliSeconds());
 	AddRow();
 	AddCell("Terrain - Session Read Bandwidth (KB):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeTerrain].nSessionReadBandwidth / (1024.f));
+	AddCell((float)stats.typeInfo[eStreamTaskTypeTerrain].nSessionReadBandwidth / (1024));
 	AddRow();
 	AddCell("Terrain - Request Count:", CELL_BOLD);
 	AddCell(stats.typeInfo[eStreamTaskTypeTerrain].nTotalRequestCount);
@@ -3601,10 +3601,10 @@ void CStatsToExcelExporter::ExportStreamingInfo(
 	// Animation stats
 	AddRow();
 	AddCell("Animation - Average Completion Time (ms):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeAnimation].fAverageCompletionTime);
+	AddCell((float)stats.typeInfo[eStreamTaskTypeAnimation].fAverageCompletionTime.GetMilliSeconds());
 	AddRow();
 	AddCell("Animation - Session Read Bandwidth (KB):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeAnimation].nSessionReadBandwidth / (1024.f));
+	AddCell((float)stats.typeInfo[eStreamTaskTypeAnimation].nSessionReadBandwidth / (1024));
 	AddRow();
 	AddCell("Animation - Request Count:", CELL_BOLD);
 	AddCell(stats.typeInfo[eStreamTaskTypeAnimation].nTotalRequestCount);
@@ -3628,10 +3628,10 @@ void CStatsToExcelExporter::ExportStreamingInfo(
 	// Sound stats
 	AddRow();
 	AddCell("Sound - Average Completion Time (ms):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeSound].fAverageCompletionTime);
+	AddCell((float)stats.typeInfo[eStreamTaskTypeSound].fAverageCompletionTime.GetMilliSeconds());
 	AddRow();
 	AddCell("Sound - Session Read Bandwidth (KB):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeSound].nSessionReadBandwidth / (1024.f));
+	AddCell((float)stats.typeInfo[eStreamTaskTypeSound].nSessionReadBandwidth / (1024));
 	AddRow();
 	AddCell("Sound - Request Count:", CELL_BOLD);
 	AddCell(stats.typeInfo[eStreamTaskTypeSound].nTotalRequestCount);
@@ -3655,10 +3655,10 @@ void CStatsToExcelExporter::ExportStreamingInfo(
 	// Shader stats
 	AddRow();
 	AddCell("Shader - Average Completion Time (ms):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeShader].fAverageCompletionTime);
+	AddCell((float)stats.typeInfo[eStreamTaskTypeShader].fAverageCompletionTime.GetMilliSeconds());
 	AddRow();
 	AddCell("Shader - Session Read Bandwidth (KB):", CELL_BOLD);
-	AddCell(stats.typeInfo[eStreamTaskTypeShader].nSessionReadBandwidth / (1024.f));
+	AddCell((float)stats.typeInfo[eStreamTaskTypeShader].nSessionReadBandwidth / (1024));
 	AddRow();
 	AddCell("Shader - Request Count:", CELL_BOLD);
 	AddCell(stats.typeInfo[eStreamTaskTypeShader].nTotalRequestCount);
@@ -3859,15 +3859,16 @@ void CStatsToExcelExporter::ExportTimeDemoInfo()
 	Column = m_CurrTable->newChild("Column");
 	Column->setAttr("ss:Width", 80);
 
+	// Float inaccuracy is fine, debug/profiling. Float only had 3 digit's output here anyway.
 	AddRow();
 	AddCell("Play Time:", CELL_BOLD);
-	AddCell(pTD->lastPlayedTotalTime);
+	AddCell((float)pTD->lastPlayedTotalTime.GetSeconds());
 	AddRow();
 	AddCell("Num Frames:", CELL_BOLD);
 	AddCell((int)pTD->frames.size());
 	AddRow();
 	AddCell("Average FPS:", CELL_BOLD);
-	AddCell(pTD->lastAveFrameRate);
+	AddCell((float)pTD->lastAveFrameRate);
 	AddRow();
 	AddCell("Min FPS:", CELL_BOLD);
 	AddCell(pTD->minFPS);
@@ -3880,7 +3881,7 @@ void CStatsToExcelExporter::ExportTimeDemoInfo()
 	AddCell(pTD->maxFPS_Frame);
 	AddRow();
 	AddCell("Average Tri/Sec:", CELL_BOLD);
-	AddCell((uint32)((float)pTD->nTotalPolysPlayed / pTD->lastPlayedTotalTime));
+	AddCell((uint32)(pTD->nTotalPolysPlayed / pTD->lastPlayedTotalTime));
 	AddRow();
 	AddCell("Average Tri/Frame:", CELL_BOLD);
 	AddCell((uint32)((float)pTD->nTotalPolysPlayed / pTD->frames.size()));
@@ -3924,10 +3925,10 @@ void CStatsToExcelExporter::ExportFPSBuckets()
 
 	if (perfHUD)
 	{
-		float totalTime = 0;
+		CTimeValue totalTime = 0;
 		const std::vector<ICryPerfHUD::PerfBucket>* fpsBuckets = perfHUD->GetFpsBuckets(totalTime);
 
-		if (fpsBuckets && totalTime > 0.f)
+		if (fpsBuckets && totalTime > 0)
 		{
 			int numBuckets = fpsBuckets->size();
 
@@ -3946,7 +3947,7 @@ void CStatsToExcelExporter::ExportFPSBuckets()
 				cry_sprintf(buf, ">=%.1f FPS", fpsBuckets->at(i).target);
 				AddCell(buf);
 
-				float percentAtTarget = 100.f * (fpsBuckets->at(i).timeAtTarget / totalTime);
+				float percentAtTarget = 100.f * BADF(fpsBuckets->at(i).timeAtTarget / totalTime);
 				AddCell(percentAtTarget);
 			}
 		}

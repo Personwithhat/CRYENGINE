@@ -183,8 +183,8 @@ SContext::EState SFinishAnimationComputations::operator()(const SContext& ctx)
 			// [*DavidR | 24/Jan/2011] ToDo: We may want to update more timers (e.g., lying timer) the
 			// same way
 			ctx.pInstance->m_SkeletonPose.m_physics.m_timeStandingUp +=
-			  static_cast<float>(__fsel(ctx.pInstance->m_SkeletonPose.m_physics.m_timeStandingUp,
-			                            ctx.pInstance->m_fOriginalDeltaTime, 0.0f));
+			  __fsel(ctx.pInstance->m_SkeletonPose.m_physics.m_timeStandingUp,
+			         ctx.pInstance->m_fOriginalDeltaTime, CTimeValue(0));
 			ctx.pInstance->m_AttachmentManager.UpdateAttachedObjects();
 			ctx.pInstance->m_SkeletonAnim.PoseModifiersSwapBuffersAndClearActive();
 		}

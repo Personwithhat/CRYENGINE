@@ -34,7 +34,7 @@ void SAIConsoleVarsLegacyBubblesSystem::Init()
 	REGISTER_CVAR2("ai_BubblesSystem", &EnableBubblesSystem, 1, VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Enables/disables bubble notifier.");
 
-	REGISTER_CVAR2("ai_BubblesSystemDecayTime", &BubblesSystemDecayTime, 15.0f, VF_CHEAT | VF_CHEAT_NOCHECK,
+	REGISTER_CVAR2("ai_BubblesSystemDecayTime", &BubblesSystemDecayTime, CTimeValue(15), VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Specifies the decay time for the bubbles drawn on screen.");
 }
 

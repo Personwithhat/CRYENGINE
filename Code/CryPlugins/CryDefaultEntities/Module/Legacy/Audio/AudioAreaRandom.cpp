@@ -220,7 +220,7 @@ void CAudioAreaRandom::Play()
 
 		m_currentlyPlayingTriggerId = m_playTriggerId;
 
-		SetTimer(m_timerId, static_cast<int>(cry_random(m_minDelay, m_maxDelay)));
+		SetTimer(m_timerId, cry_random(m_minDelay, m_maxDelay));
 		m_bPlaying = true;
 	}
 }

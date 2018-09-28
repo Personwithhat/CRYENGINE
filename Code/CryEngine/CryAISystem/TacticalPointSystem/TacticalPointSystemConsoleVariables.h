@@ -10,5 +10,5 @@ struct SAIConsoleVarsLegacyTacticalPointSystem
 
 	DeclareConstIntCVar(TacticalPointSystem, 1);
 
-	float TacticalPointUpdateTime;
+	CTimeValue TacticalPointUpdateTime;
 };

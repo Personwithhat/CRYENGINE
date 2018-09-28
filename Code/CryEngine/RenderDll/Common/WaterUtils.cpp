@@ -37,10 +37,11 @@ static int gaussian_use_last = 0;
 struct SWaterUpdateThreadInfo
 {
 	int   nFrameID;
-	float fTime;
+	CTimeValue fTime;
 	bool  bOnlyHeight;
 };
 
+// PERSONAL NOTE: Job creation depends on POD-type parameter's. Hence update can't handle CTimeValue and needs to have float passed in/out!!
 void WaterAsyncUpdate(CWaterSim*, int, float, bool, void*);
 DECLARE_JOB("WaterUpdate", TWaterUpdateJob, WaterAsyncUpdate);
 
@@ -434,7 +435,7 @@ public:
 	// Update simulation
 	void Update(SWaterUpdateThreadInfo& pThreadInfo)
 	{
-		float fTime = pThreadInfo.fTime;
+		CTimeValue fTime = pThreadInfo.fTime;
 		bool bOnlyHeight = pThreadInfo.bOnlyHeight;
 
 		PROFILE_FRAME(CWaterSim::Update);
@@ -452,7 +453,7 @@ public:
 				Vec4 pK = m_pLUTK[offset];
 
 				float fKLen = pK.z;                //pK.GetLength();
-				float fAngularFreq = pK.w * fTime; //GetTermAngularFreq(fKLen)
+				float fAngularFreq = pK.w * fTime.BADGetSeconds(); //GetTermAngularFreq(fKLen)
 
 				float fAngularFreqSin = 0, fAngularFreqCos = 0;
 #if CRY_PLATFORM_ORBIS // Workaround for bug in Orbis maths library which means sinf becomes orders of magnitude slower for big numbers
@@ -523,7 +524,7 @@ public:
 		}
 	}
 
-	void Update(int nFrameID, float fTime, bool bOnlyHeight)
+	void Update(int nFrameID, const CTimeValue& fTime, bool bOnlyHeight)
 	{
 		m_nFillThreadID = m_nWorkerThreadID = 0;
 
@@ -568,7 +569,7 @@ public:
 		pSizer->AddObject(this, sizeof(*this));
 	}
 
-	void SpawnUpdateJob(int nFrameID, float fTime, bool bOnlyHeight, void* pRawPtr)
+	void SpawnUpdateJob(int nFrameID, const CTimeValue& fTime, bool bOnlyHeight, void* pRawPtr)
 	{
 		if (nFrameID != m_nFrameID)
 			m_nFrameID = nFrameID;
@@ -576,7 +577,7 @@ public:
 			return;
 
 		WaitForJob();
-		TWaterUpdateJob job(this, nFrameID, fTime, bOnlyHeight, pRawPtr);
+		TWaterUpdateJob job(this, nFrameID, fTime.BADGetSeconds(), bOnlyHeight, pRawPtr);
 		job.RegisterJobState(&m_JobState);
 		job.Run();
 	}
@@ -625,7 +626,7 @@ void WaterAsyncUpdate(CWaterSim* pWaterSim, int nFrameID, float fTime, bool bOnl
 	if (pWaterSim == NULL)
 		return;
 
-	pWaterSim->Update(nFrameID, fTime, bOnlyHeight);
+	pWaterSim->Update(nFrameID, BADTIME(fTime), bOnlyHeight);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -660,7 +661,7 @@ void CWater::SaveToDisk(const char* pszFileName)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-void CWater::Update(int nFrameID, float fTime, bool bOnlyHeight, void* pRawPtr)
+void CWater::Update(int nFrameID, const CTimeValue& fTime, bool bOnlyHeight, void* pRawPtr)
 {
 	if (m_pWaterSim)
 		m_pWaterSim->SpawnUpdateJob(nFrameID, fTime, bOnlyHeight, pRawPtr);

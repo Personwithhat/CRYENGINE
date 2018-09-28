@@ -420,7 +420,7 @@ bool CDialogSystem::RemoveSession(CDialogSession* pSession)
 }
 
 ////////////////////////////////////////////////////////////////////////////
-void CDialogSystem::Update(const float dt)
+void CDialogSystem::Update(const CTimeValue& dt)
 {
 	CRY_PROFILE_FUNCTION(PROFILE_ACTION);
 

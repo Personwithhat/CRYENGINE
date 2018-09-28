@@ -93,7 +93,7 @@ protected:
 	virtual const char* GetComponentTitle() const override { return "Sequence Explorer"; }
 
 	// IAnimationContextListener
-	virtual void OnTimeChanged(SAnimTime newTime) override;
+	virtual void OnTimeChanged(const CTimeValue& newTime) override;
 	virtual void OnSequenceChanged(CTrackViewSequence* pSequence) override;
 	// ~IAnimationContextListener
 
@@ -158,7 +158,7 @@ private slots:
 	void OnPasteNode();
 
 	void OnDopesheetCopy();
-	void OnDopesheetPaste(SAnimTime time, STimelineTrack* pTrack);
+	void OnDopesheetPaste(const CTimeValue& time, STimelineTrack* pTrack);
 
 private:
 	void ClearData();
@@ -171,15 +171,15 @@ private:
 	struct SSequenceData
 	{
 		SSequenceData()
-			: m_startTime(0.0f)
-			, m_endTime(0.0f)
+			: m_startTime(0)
+			, m_endTime(0)
 			, m_bPlaying(false)
 			, m_pDopeSheet(nullptr)
 			, m_pCurveEditor(nullptr)
 		{}
 
-		SAnimTime                          m_startTime;
-		SAnimTime                          m_endTime;
+		CTimeValue                         m_startTime;
+		CTimeValue                         m_endTime;
 		bool                               m_bPlaying;
 
 		CTimeline*                         m_pDopeSheet;
@@ -199,7 +199,7 @@ private:
 	void            SetSelection(CTrackViewNode* pNode);
 	CTrackViewNode* GetSelectedNode() const;
 	size_t          GetSelectedElementsCount(STimelineTrack* pTimelineTrack = nullptr) const;
-	void            SetSequenceTime(const CryGUID sequenceGUID, SAnimTime newTime);
+	void            SetSequenceTime(const CryGUID sequenceGUID, const CTimeValue& newTime);
 
 	QWidget*        GetCurrentDopeSheetContainer() const;
 	QWidget*        GetCurrentCurveEditorContainer() const;
@@ -262,7 +262,7 @@ private:
 	bool                    m_syncSelection;
 	bool                    m_invertScrubberSnappingBehavior;
 
-	SAnimTime::EDisplayMode m_timeUnit;
+	SAnimData::EDisplayMode m_timeUnit;
 
 	// Node context menu
 	CTrackViewNode* m_pContextMenuNode;
@@ -275,5 +275,5 @@ private:
 	size_t          m_currentKeySelectionCount;
 
 	QTimer*         m_refreshTimer;
-	SAnimTime       m_time;
+	CTimeValue      m_time;
 };

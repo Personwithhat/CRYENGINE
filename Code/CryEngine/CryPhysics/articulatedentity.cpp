@@ -37,8 +37,8 @@ CArticulatedEntity::CArticulatedEntity(CPhysicalWorld *pWorld, IGeneralMemoryHea
 	, m_offsPivot(ZERO)
 	, m_acc(ZERO)
 	, m_wacc(ZERO)
-	, m_simTime(0.0f)
-	, m_simTimeAux(10.0f)
+	, m_simTime(0)
+	, m_simTimeAux(10)
 	, m_scaleBounceResponse(1.0f)
 	, m_bGrounded(0)
 	, m_nRoots(0)
@@ -69,7 +69,7 @@ CArticulatedEntity::CArticulatedEntity(CPhysicalWorld *pWorld, IGeneralMemoryHea
 	, m_dampingLyingMode(0.2f)
 	, m_EminLyingMode (sqr(0.12f))
 	, m_nBodyContacts(0)
-	, m_rhistTime(0.0f)
+	, m_rhistTime(0)
 	, m_lockJoints(0)
 	, m_pCollEntList(nullptr)
 	, m_nCollEnts(0)
@@ -615,9 +615,9 @@ int CArticulatedEntity::SetParams(pe_params *_params, int bThreadSafe)
 					m_joints[iJoint].quat = m_parts[i].q*!m_infos[i].q0;
 					m_joints[iJoint].body.q = m_pHost->m_qrot*m_joints[iJoint].quat*!m_joints[iJoint].body.qfb;
 					m_joints[iJoint].body.pos = m_pHost->m_qrot*(m_parts[i].pos-m_joints[iJoint].quat*m_infos[i].pos0)+m_pos;
-					m_joints[iJoint].prev_v=m_joints[iJoint].body.v = (m_joints[iJoint].body.pos-prevpos)*params->invTimeStep;
+					m_joints[iJoint].prev_v=m_joints[iJoint].body.v = (m_joints[iJoint].body.pos-prevpos)* BADF params->invTimeStep;
 					Quat qdiff = !prevq*m_joints[iJoint].body.q;
-					m_joints[iJoint].prev_w=m_joints[iJoint].body.w = qdiff.v*(qdiff.w*2*params->invTimeStep);
+					m_joints[iJoint].prev_w=m_joints[iJoint].body.w = qdiff.v*(qdiff.w*2* BADF params->invTimeStep);
 				}
 				if (i0<i) {
 					quaternionf qrot = m_bGrounded && m_bAwake ? m_joints[0].quat0 : m_qrot;
@@ -685,8 +685,8 @@ int CArticulatedEntity::SetParams(pe_params *_params, int bThreadSafe)
 				m_joints[op[1]].selfCollMask |= getmask(i);
 		}
 
-		float rdt = !is_unused(params->ranimationTimeStep) ? params->ranimationTimeStep : 
-							 (!is_unused(params->animationTimeStep) ? 1.0f/params->animationTimeStep : 0);
+		rTime rdt = !is_unused(params->ranimationTimeStep) ? params->ranimationTimeStep : 
+							 (!is_unused(params->animationTimeStep) ? 1/params->animationTimeStep : 0);
 		for(i=0;i<3;i++) {
 			if (!is_unused(params->limits[0][i])) m_joints[op[1]].limits[0][i] = params->limits[0][i];
 			if (!is_unused(params->limits[1][i])) m_joints[op[1]].limits[1][i] = params->limits[1][i];
@@ -704,7 +704,7 @@ int CArticulatedEntity::SetParams(pe_params *_params, int bThreadSafe)
 				int sgnDelta = sgnnz(delta); delta = fabs_tpl(delta);
 				delta -= isneg(fabs_tpl(delta-gf_PI2)-delta)*gf_PI2; // try to detect pi <-> -pi and pi/2 <-> -pi/2 euler flips
 				delta -= isneg(fabs_tpl(delta-gf_PI)-delta)*gf_PI;
-				m_joints[op[1]].dqext[i] = sgnDelta*(delta*rdt);
+				m_joints[op[1]].dqext[i] = sgnDelta*(delta* BADF rdt);
 				m_joints[op[1]].qext[i] = params->qext[i]; nChanges++; 
 				if (!(m_joints[op[1]].flags & angle0_locked<<i) && 
 						isneg(m_joints[op[1]].limits[0][i]-m_joints[op[1]].qext[i]) + isneg(m_joints[op[1]].qext[i]-m_joints[op[1]].limits[1][i]) + 
@@ -814,10 +814,10 @@ int CArticulatedEntity::SetParams(pe_params *_params, int bThreadSafe)
 					m_acc.Set(0,0,0); m_body.w.Set(0,0,0); m_wacc.Set(0,0,0);
 				}
 			}
-			m_bIaReady = 0; m_simTime = 0; m_bAwake = 1;
+			m_bIaReady = 0; m_simTime.SetSeconds(0); m_bAwake = 1;
 		}
-		if (!is_unused(params->v) && (params->v-m_body.v).len2()>0) { m_body.v = params->v; m_simTime = 0; m_bAwake = 1; }
-		if (!is_unused(params->a) && (params->a-m_acc).len2()>0) { m_acc = params->a; m_simTime = 0; m_bAwake = 1; }
+		if (!is_unused(params->v) && (params->v-m_body.v).len2()>0) { m_body.v = params->v; m_simTime.SetSeconds(0); m_bAwake = 1; }
+		if (!is_unused(params->a) && (params->a-m_acc).len2()>0) { m_acc = params->a; m_simTime.SetSeconds(0); m_bAwake = 1; }
 		if (!is_unused(params->w) && (params->w-m_body.w).len2()>0) { 
 			if (m_bGrounded)
 				m_body.w = params->w; 
@@ -825,9 +825,9 @@ int CArticulatedEntity::SetParams(pe_params *_params, int bThreadSafe)
 				Matrix33 basis_inv = GetMtxFromBasis(m_joints[0].rotaxes);
 				basis_inv.Invert(); m_joints[0].dq = basis_inv*m_body.w;
 			}
-			m_simTime = 0; m_bAwake = 1;
+			m_simTime.SetSeconds(0); m_bAwake = 1;
 		}
-		if (!is_unused(params->wa) && (params->wa-m_wacc).len2()>0) { m_wacc = params->wa; m_simTime = 0; }
+		if (!is_unused(params->wa) && (params->wa-m_wacc).len2()>0) { m_wacc = params->wa; m_simTime.SetSeconds(0); }
 		if (!is_unused(params->scaleBounceResponse)) m_scaleBounceResponse = params->scaleBounceResponse;
 		if (params->bApply_dqext) {
 			for(int i=0;i<m_nJoints;i++)
@@ -835,7 +835,7 @@ int CArticulatedEntity::SetParams(pe_params *_params, int bThreadSafe)
 		}
 		if (!is_unused(params->bAwake))
 			if (!(m_bAwake = params->bAwake))
-				m_simTime = 10.0f;
+				m_simTime.SetSeconds(10);
 		int bRecalcPos = 0;
 		if (!is_unused(params->pHost)) { 
 			if (m_pHost) {
@@ -1127,7 +1127,7 @@ int CArticulatedEntity::Action(pe_action *_action, int bThreadSafe)
 				if (!m_pWorld->OnEvent(m_flags,&event))
 					return 1;
 			}*/
-			m_timeIdle = 0;
+			m_timeIdle.SetSeconds(0);
 		}
 
 		Vec3 P(ZERO),L(ZERO);
@@ -1161,7 +1161,7 @@ int CArticulatedEntity::Action(pe_action *_action, int bThreadSafe)
 		}
 
 		if (action->iSource!=1) {
-			m_bAwake = 1; m_simTime = 0;
+			m_bAwake = 1; m_simTime.SetSeconds(0);
 			if (m_iSimClass==1) {
 				m_iSimClass = 2;	m_pWorld->RepositionEntity(this, 2);
 			}
@@ -1252,7 +1252,7 @@ int CArticulatedEntity::Action(pe_action *_action, int bThreadSafe)
 		int i,bBounced,iCaller=get_iCaller(), bFeatherstone=m_bFeatherstone, flags=m_flags;
 		unsigned int awake=m_bAwake;
 		iCaller &= iCaller-MAX_PHYS_THREADS >> 31;
-		float dt=0, invHardness=1/action->stepHardness, e=0.005f;
+		CTimeValue dt = 0; float invHardness = 1 / action->stepHardness, e = 0.005f;
 		m_bFloating = 1; // disable individual joint sleeping
 		m_bFeatherstone = 1; // don't register joint links as constraints
 		m_iSimTypeCur = 0;
@@ -1299,12 +1299,12 @@ int CArticulatedEntity::Action(pe_action *_action, int bThreadSafe)
 						!(pcont[j]->bConstraint && m_pConstraintInfos[pcont[j]->iConstraint-1].flags & constraint_instant))
 					pcont[i++] = pcont[j];
 			ncont = i;
-			float dtback = 0;
+			CTimeValue dtback = 0;
 			for(i=nconstr=ncoll=0;i<ncont;i++) if (!(pcont[i]->flags & (contact_angular|contact_constraint))) {
 				nconstr += pcont[i]->bProcessed=1; ncoll++;
 				if (action->stopOnContact) {
 					float vn = pcont[i]->n*(pcont[i]->pbody[0]->v+(pcont[i]->pbody[0]->w ^ pcont[i]->pt[0]-pcont[i]->pbody[0]->pos));
-					dtback = max(dtback,min(dt,pcont[i]->penetration/-vn));
+					dtback = max(dtback,min(dt,BADTIME(pcont[i]->penetration/-vn)));
 				}
 			} else switch (pcont[i]->flags & contact_constraint) {
 				case contact_constraint_3dof: nconstr += pcont[i]->bProcessed=3; break;
@@ -1313,7 +1313,7 @@ int CArticulatedEntity::Action(pe_action *_action, int bThreadSafe)
 			}
 			if (dtback>0) {
 				if (!m_bGrounded)
-					m_joints[0].body.pos = (m_posPivot -= m_body.v*dt);
+					m_joints[0].body.pos = (m_posPivot -= m_body.v*dt.BADGetSeconds());
 				for(i=0;i<m_nJoints;i++) m_joints[i].q=m_joints[i].prev_q;
 				dt -= dtback;
 				iter = action->maxIters+1;
@@ -1326,9 +1326,9 @@ int CArticulatedEntity::Action(pe_action *_action, int bThreadSafe)
 				maxDrift = pcont[i=j]->vreq.len2();
 			if (i<0 || !pcont[i]->bConstraint)
 				break;
-			float rdt=m_pConstraintInfos[pcont[i]->iConstraint-1].hardness; dt=1/rdt;
-			if (maxDrift*sqr(dt) > sqr(action->lastDist)) {
-				dt *= action->stepHardness;	rdt *= invHardness;	// time step to resolve the maximum constraint error * stepHardness
+			rTime rdt=BADrT(m_pConstraintInfos[pcont[i]->iConstraint-1].hardness); dt=mpfloat(1)/rdt;
+			if (maxDrift*sqr(dt).BADGetSeconds() > sqr(action->lastDist)) {
+				dt *= BADMP(action->stepHardness);	rdt *= BADrT(invHardness);	// time step to resolve the maximum constraint error * stepHardness
 			}	else
 				iter = action->maxIters-1; // when close enough, assume stepHardness=1, only make one step
 
@@ -1399,7 +1399,7 @@ int CArticulatedEntity::Action(pe_action *_action, int bThreadSafe)
 						}
 					}
 					float q = m_joints[j].q[ang]+m_joints[j].qext[ang], lmin=m_joints[j].limits[0][ang], lmax=m_joints[j].limits[1][ang];
-					lb[i] = (lmin-q)*rdt; ub[i] = (lmax-q)*rdt;
+					lb[i] = (lmin-q)*BADF rdt; ub[i] = (lmax-q)* BADF rdt;
 					if (action->mode) {
 						float E=0; for(int c=0;c<=m_joints[j].nChildrenTree;c++)
 							E += w*(m_joints[j+c].I*w) + (w^m_joints[j+c].body.pos-pivot).len2()*m_joints[j+c].body.M;
@@ -1469,7 +1469,7 @@ int CArticulatedEntity::Action(pe_action *_action, int bThreadSafe)
 }
 
 
-int CArticulatedEntity::GetPotentialColliders(CPhysicalEntity **&pentlist, float dt)
+int CArticulatedEntity::GetPotentialColliders(CPhysicalEntity **&pentlist, const CTimeValue& dt)
 {
 	pentlist = m_pCollEntList; return m_nCollEnts;
 }
@@ -1493,8 +1493,8 @@ RigidBody *CArticulatedEntity::GetRigidBodyData(RigidBody *pbody, int ipart)
 		Vec3 pos0=m_posHist[0]+m_qHist[0]*m_infos[ipart].posHist[0], pos1=m_posHist[1]+m_qHist[1]*m_infos[ipart].posHist[1];
 		quaternionf q0=m_qHist[0]*m_infos[ipart].qHist[0], q1=m_qHist[1]*m_infos[ipart].qHist[1], dq=q1*!q0;
 		pbody->pos = pos1;
-		pbody->v = (pos1-pos0)*m_rhistTime;
-		pbody->w = dq.v*(dq.w*2*m_rhistTime);
+		pbody->v = (pos1-pos0)*BADF m_rhistTime;
+		pbody->w = dq.v*(dq.w*2*BADF m_rhistTime);
 		if (pbody->v.len2()>sqr(m_pWorld->m_vars.maxVelBones)) {
 			float scale = m_pWorld->m_vars.maxVelBones*isqrt_fast_tpl(pbody->v.len2());
 			pbody->v*=scale; pbody->w*=scale;
@@ -1503,8 +1503,9 @@ RigidBody *CArticulatedEntity::GetRigidBodyData(RigidBody *pbody, int ipart)
 	return pbody;
 }
 Quat qlerp(const Quat &qlast,const Quat &q0,const Quat q1,float k) { return Quat::CreateNlerp(q1,q0,k)*!q1*qlast; }
-void CArticulatedEntity::GetLocTransformLerped(int ipart, Vec3 &offs, quaternionf &q, float &scale, float k, const CPhysicalPlaceholder *trg) const 
+void CArticulatedEntity::GetLocTransformLerped(int ipart, Vec3 &offs, quaternionf &q, float &scale, const nTime& kIn, const CPhysicalPlaceholder *trg) const 
 {
+	float k = BADF kIn;
 	if ((unsigned int)ipart<(unsigned int)m_nParts) {
 		Vec3 pos=m_pos-(m_posHist[1]-m_posHist[0])*k, posPart=m_parts[ipart].pos-(m_infos[ipart].posHist[1]-m_infos[ipart].posHist[0])*k;
 		quaternionf qrot=qlerp(m_qrot,m_qHist[0],m_qHist[1],k), qpart=qlerp(m_infos[ipart].q,m_infos[ipart].qHist[0],m_infos[ipart].qHist[1],k);
@@ -1553,7 +1554,7 @@ void CArticulatedEntity::OnHostSync(CPhysicalEntity *pHost)
 	}
 }
 
-int CArticulatedEntity::SyncWithHost(int bRecalcJoints, float time_interval)
+int CArticulatedEntity::SyncWithHost(int bRecalcJoints, const CTimeValue& time_interval)
 {
 	if (m_pHost) {
 		if (m_pHost->m_iSimClass==7) {
@@ -1582,9 +1583,9 @@ int CArticulatedEntity::SyncWithHost(int bRecalcJoints, float time_interval)
 			m_pHost->GetStatus(&sd);
 			m_velHost = sd.v;
 			if (m_bInheritVel) {
-				float rdt = 1.0f/time_interval;
-				m_acc = (sd.v-m_body.v)*rdt;
-				m_wacc = (sd.w-m_body.w)*rdt;
+				rTime rdt = 1/time_interval;
+				m_acc = (sd.v-m_body.v)* BADF rdt;
+				m_wacc = (sd.w-m_body.w)*BADF rdt;
 				m_body.v = sd.v;
 				m_body.w = sd.w;
 			}
@@ -1604,11 +1605,11 @@ int CArticulatedEntity::SyncWithHost(int bRecalcJoints, float time_interval)
 	return 0; 
 }
 
-float CArticulatedEntity::GetDamping(float time_interval)
+float CArticulatedEntity::GetDamping(const CTimeValue& time_interval)
 {
 	float damping = CRigidEntity::GetDamping(time_interval);
 	if (m_nBodyContacts>=m_nCollLyingMode)
-		damping = min(1.0f-m_dampingLyingMode*time_interval, damping);
+		damping = min(1.0f-m_dampingLyingMode*time_interval.BADGetSeconds(), damping);
 	return damping;
 }
 
@@ -1634,12 +1635,12 @@ int CArticulatedEntity::GetUnprojAxis(int idx, Vec3 &axis)
 	return 0;
 }
 
-float CArticulatedEntity::GetMaxTimeStep(float time_interval)
+CTimeValue CArticulatedEntity::GetMaxTimeStep(const CTimeValue& time_interval)
 {
 	return CRigidEntity::GetMaxTimeStep(time_interval);
 }
 
-int CArticulatedEntity::Step(float time_interval)
+int CArticulatedEntity::Step(const CTimeValue& time_interval)
 {
 	int i,j,bboxUpdated,bBounced=0;
 	Vec3 gravity;
@@ -1668,7 +1669,7 @@ int CArticulatedEntity::Step(float time_interval)
 	m_bUpdateBodies = 0;
 	m_iLastLog = max(1,m_iLastLog);
 
-	if (m_timeStepPerformed > m_timeStepFull-0.001f || m_flags & pef_disabled)
+	if (m_timeStepPerformed > m_timeStepFull-"0.001" || m_flags & pef_disabled)
 		return UpdateHistory(1);
 	m_timeStepPerformed += time_interval;
 	m_lastTimeStep = time_interval;
@@ -1716,13 +1717,14 @@ int CArticulatedEntity::Step(float time_interval)
 	CRY_PROFILE_FUNCTION(PROFILE_PHYSICS );
 	PHYS_ENTITY_PROFILER
 
+	const float tSeconds = time_interval.BADGetSeconds();
 	int iCaller = get_iCaller_int();
 	if (!bboxUpdated) ComputeBBox(m_BBoxNew);
 	if (m_bCheckCollisions) {
 		Vec3 sz = m_BBoxNew[1]-m_BBoxNew[0];
 		float szmax = max(max(sz.x,sz.y),sz.z)*0.3f;
-		if (m_body.v.len2()*sqr(time_interval) > szmax)
-			szmax = m_body.v.len()*time_interval;
+		if (m_body.v.len2()*sqr(tSeconds) > szmax)
+			szmax = m_body.v.len()*tSeconds;
 		sz.Set(szmax,szmax,szmax);
 		masktype constrMask = MaskIgnoredColliders(iCaller,1);
 		m_nCollEnts = m_pWorld->GetEntitiesAround(m_BBox[0]-sz,m_BBox[1]+sz, m_pCollEntList, m_collTypes|ent_sort_by_mass|ent_triggers, this, 0,iCaller);
@@ -1748,7 +1750,7 @@ int CArticulatedEntity::Step(float time_interval)
 		m_nCollEnts = 0;
 
 	for(i=m_bFastLimbs=0; i<m_nJoints; i++) 
-		m_bFastLimbs |= isneg(sqr(0.9f)-m_joints[i].body.w.len2()*sqr(time_interval));
+		m_bFastLimbs |= isneg(sqr(0.9f)-m_joints[i].body.w.len2()*sqr(tSeconds));
 	/*{
 		m_parts[m_joints[i].iStartPart].pPhysGeomProxy->pGeom->GetBBox(&bbox);
 		r = sqr(max(max(bbox.size.x,bbox.size.y),bbox.size.z)*m_parts[m_joints[i].iStartPart].scale);
@@ -1785,11 +1787,11 @@ int CArticulatedEntity::Step(float time_interval)
 	m_prev_vel = m_body.v;
 	if (!m_bGrounded && m_iSimTypeCur)
 		m_posPivot = m_joints[0].body.pos;
-	// m_posPivot += m_body.v*time_interval;
+	// m_posPivot += m_body.v*tSeconds;
 	m_body.pos = m_posPivot;
 	m_posNew = m_posPivot - m_offsPivot;
 	m_body.offsfb = (m_body.pos-m_posNew)*m_qrot;
-	m_bAwake = isneg(m_simTime-2.5f) | (iszero(m_nBodyContacts) & (m_bGrounded^1) & (m_bFloating^1));
+	m_bAwake = isneg(m_simTime-"2.5") | (iszero(m_nBodyContacts) & (m_bGrounded^1) & (m_bFloating^1));
 	m_simTime += time_interval;
 	m_simTimeAux += time_interval;
 	m_maxPenetrationCur = 0;
@@ -1801,7 +1803,7 @@ int CArticulatedEntity::Step(float time_interval)
 	}
 	if (!m_iSimTypeCur) for(i=0,m_constrInfoFlags=0;i<NMASKBITS && getmask(i)<=m_constraintMask;i++) if (m_constraintMask & getmask(i))
 		m_constrInfoFlags |= m_pConstraintInfos[i].flags;
-	for(i=0; i<m_nJoints; i=StepJoint(i, time_interval, bBounced, iszero(m_nBodyContacts) & isneg(sqr(m_pWorld->m_vars.maxContactGap)-m_body.v.len2()*sqr(time_interval)), get_iCaller_int()));
+	for(i=0; i<m_nJoints; i=StepJoint(i, time_interval, bBounced, iszero(m_nBodyContacts) & isneg(sqr(m_pWorld->m_vars.maxContactGap)-m_body.v.len2()*sqr(time_interval).BADGetSeconds()), get_iCaller_int()));
 	m_bAwake = isneg(-(int)m_bAwake);
 	m_nBodyContacts = m_nDynContacts = 0;
 	for(i=0;i<m_nJoints;i++) m_joints[i].bHasExtContacts = 0;
@@ -1809,7 +1811,7 @@ int CArticulatedEntity::Step(float time_interval)
 	if (!m_bFeatherstone)	{
 		VerifyExistingContacts(m_pWorld->m_vars.maxContactGap);
 		for(i=0;i<m_nJoints;i++) 
-			m_joints[i].body.P = (m_joints[i].body.v+=gravity*time_interval)*m_joints[i].body.M;
+			m_joints[i].body.P = (m_joints[i].body.v+=gravity* tSeconds)*m_joints[i].body.M;
 		/*m_joints[i].body.w -= m_joints[i].dw_body;
 			m_joints[i].body.v -= m_joints[i].dv_body-gravity*time_interval;
 			m_joints[i].body.P = m_joints[i].body.v*m_joints[i].body.M;
@@ -1836,7 +1838,7 @@ int CArticulatedEntity::Step(float time_interval)
 		// do not request step back if we were in deep penetration state initially
 		i = 1;//m_iSimTypeCur | isneg(m_maxPenetrationCur-0.07f) | isneg(0.07f-maxPenetrationPrev);
 		if (!i)
-			m_simTimeAux = 0;
+			m_simTimeAux.SetSeconds(0);
 		return UpdateHistory(i | isneg(3-(int)m_nStepBackCount));
 	}
 
@@ -1869,7 +1871,7 @@ int CArticulatedEntity::Step(float time_interval)
 	if ((m_gravity-gravity).len2()>0)
 		m_gravityLyingMode = m_gravity;
 
-	int bDone = UpdateHistory(isneg(m_timeStepFull-m_timeStepPerformed-0.001f));
+	int bDone = UpdateHistory(isneg(m_timeStepFull-m_timeStepPerformed-"0.001"));
 	return bDone | isneg(m_pWorld->m_bWorldStep-2);
 }
 
@@ -2002,7 +2004,7 @@ void CArticulatedEntity::SyncJointWithBody(int idx, int flags)
 }
 
 
-float CArticulatedEntity::CalcEnergy(float time_interval)
+float CArticulatedEntity::CalcEnergy(const CTimeValue& time_interval)
 {
   float maxVel = m_pWorld->m_vars.maxVel; 
 	float E=m_Ejoints,vmax=0,Emax=m_body.M*sqr(maxVel)*2; 
@@ -2043,7 +2045,7 @@ float CArticulatedEntity::CalcEnergy(float time_interval)
 	return E;
 }
 
-int CArticulatedEntity::CalcBodyZa(int idx, float time_interval, vectornf &Za_change)
+int CArticulatedEntity::CalcBodyZa(int idx, const CTimeValue& time_interval, vectornf &Za_change)
 {
 	int i,j,curidx,nextidx,idir;
 	float kd,tlim,qdashpot,dq_dashpot,k,qbuf[3]; 
@@ -2061,11 +2063,12 @@ int CArticulatedEntity::CalcBodyZa(int idx, float time_interval, vectornf &Za_ch
 	d = m_joints[idx].body.pos - (pos_parent + q_parent*m_joints[idx].pivot[0]);
 	r = m_joints[idx].body.pos - pos_parent;
 
+	float tSeconds = time_interval.BADGetSeconds();
 	if (m_joints[idx].flags & joint_no_gravity)
 		Za_vec[0].zero();
 	else
-		Za_vec[0] = m_gravity*-m_joints[idx].body.M*time_interval;
-	Za_vec[1] = (m_joints[idx].body.w^m_joints[idx].I*m_joints[idx].body.w)*time_interval;
+		Za_vec[0] = m_gravity*-m_joints[idx].body.M*tSeconds;
+	Za_vec[1] = (m_joints[idx].body.w^m_joints[idx].I*m_joints[idx].body.w)*tSeconds;
 	Za_vec[0] += m_joints[idx].dv_body*m_joints[idx].body.M;
 	Za_vec[1] += m_joints[idx].I*m_joints[idx].dw_body;
 	m_joints[idx].fs->Q.zero();
@@ -2079,7 +2082,7 @@ int CArticulatedEntity::CalcBodyZa(int idx, float time_interval, vectornf &Za_ch
 	for(j=0;j<m_joints[idx].nPotentialAngles;j++) {
 		i = m_joints[idx].fs->axidx2qidx[j];
 		kd = fabsf(m_joints[idx].dq[i])>15.0f ? 0 : m_joints[idx].kd[i];
-		k = time_interval*Qscale[j];
+		k = tSeconds *Qscale[j];
 		Q[j] = (m_joints[idx].ks[i]*m_joints[idx].q[i] + kd*m_joints[idx].dq[i])*-k;
 		// if the joint is approaching limit (but haven't breached it yet) and is in dashpot area, damp the velocity
 		if (fabsf(m_joints[idx].dq[i])>0.5f) {
@@ -2312,7 +2315,7 @@ void CArticulatedEntity::PropagateImpulses(const Vec3 &dv, int bLockLimits, int 
 }
 
 
-void CArticulatedEntity::CalcVelocityChanges(float time_interval, const Vec3 &dv,const Vec3 &dw)
+void CArticulatedEntity::CalcVelocityChanges(const CTimeValue& time_interval, const Vec3 &dv,const Vec3 &dw)
 {
 	int idx,i,j;
 	Vec3 pos_parent;
@@ -2425,7 +2428,7 @@ void CArticulatedEntity::CalcBodiesIinv(int bLockLimits)
 	}
 }
 
-int CArticulatedEntity::StepJoint(int idx, float time_interval,int &bBounced,int bFlying, int iCaller)
+int CArticulatedEntity::StepJoint(int idx, const CTimeValue& time_interval,int &bBounced,int bFlying, int iCaller)
 {
 	int i,j,idxpivot,ncont,itmax,curidx,sgq,bSelfColl,bFreeFall=isneg(-m_nBodyContacts)^1;
 	float qlim[2],dq,curq,e,diff[2],tdiff, minEnergy = m_nBodyContacts>=m_nCollLyingMode ? m_EminLyingMode : m_Emin, maxVel=m_pWorld->m_vars.maxVel;
@@ -2439,6 +2442,7 @@ int CArticulatedEntity::StepJoint(int idx, float time_interval,int &bBounced,int
 	box bbox;
 	minEnergy *= 0.1f;
 
+	float tSeconds = time_interval.BADGetSeconds();
 	{ WriteLock lock(m_lockJoints); 
 		m_joints[idx].prev_q = m_joints[idx].q;
 		m_joints[idx].prev_dq = m_joints[idx].dq;
@@ -2505,7 +2509,7 @@ int CArticulatedEntity::StepJoint(int idx, float time_interval,int &bBounced,int
 				qlim[sgq+1>>1] += sgq*2*g_PI;
 			}
 			m_joints[idx].flags &= ~joint_dashpot_reached;
-			dq = m_joints[idx].dq[i]*time_interval;	sgq = sgn(dq);
+			dq = m_joints[idx].dq[i]* tSeconds;	sgq = sgn(dq);
 			curq = m_joints[idx].q[i]+m_joints[idx].qext[i];
 			if ((curq + dq - qlim[sgq+1>>1])*sgq > 0)	{	// we'll breach the limit that lies ahead along movement (ignore the other one)
 				dq = qlim[sgq+1>>1]-curq-sgq*0.01f;
@@ -2531,7 +2535,7 @@ int CArticulatedEntity::StepJoint(int idx, float time_interval,int &bBounced,int
 			//while(m_joints[idx].q[i]<-g_PI) m_joints[idx].q[i]+=2*g_PI;
 		}	else if (m_joints[idx].flags & angle0_locked<<i) {
 			m_joints[idx].dq[i] = 0;
-			m_joints[idx].q[i] += (m_joints[idx].q0[i]-m_joints[idx].q[i])*isneg(-m_joints[idx].ks[i])*time_interval*10*(1-isneg(m_joints[idx].iParent));
+			m_joints[idx].q[i] += (m_joints[idx].q0[i]-m_joints[idx].q[i])*isneg(-m_joints[idx].ks[i])*time_interval.BADGetSeconds()*10*(1-isneg(m_joints[idx].iParent));
 		}
 
 		m_joints[idx].body.Step(time_interval);
@@ -2593,8 +2597,8 @@ int CArticulatedEntity::StepJoint(int idx, float time_interval,int &bBounced,int
 		// check for new contacts; unproject if necessary; register new contacts
 		Vec3 sweep(0);
 		if (/*m_iSimTypeCur==0 &&*/ bFlying) {
-			ip.iUnprojectionMode = 0; ip.time_interval = time_interval*1.6f;
-			gwd.v = m_body.v; gwd.w.zero();	sweep = m_body.v*time_interval;
+			ip.iUnprojectionMode = 0; ip.time_interval = tSeconds*1.6f;
+			gwd.v = m_body.v; gwd.w.zero();	sweep = m_body.v*tSeconds;
 			n = m_BBox[1]-m_BBox[0];
 			ip.maxUnproj = max(max(n.x,n.y),n.z);
 			ip.vrel_min = ip.maxUnproj/ip.time_interval*0.1f;
@@ -2704,13 +2708,15 @@ int CArticulatedEntity::StepJoint(int idx, float time_interval,int &bBounced,int
 	return curidx;
 }
 
-void CArticulatedEntity::StepFeatherstone(float time_interval, int bBounced, Matrix33 &M0host, float *Zabuf)
+void CArticulatedEntity::StepFeatherstone(const CTimeValue& time_interval, int bBounced, Matrix33 &M0host, float *Zabuf)
 {
 	int i;
 	Vec3 Y_vec[2]; vectornf Y(6,Y_vec[0]);
 	float Iabuf[39]; matrixf Ia(6,6,0,_align16(Iabuf)); 
 	Vec3 Za_vec[2]; vectornf Za(6,Za_vec[0]);
 	Vec3 dv,dw;
+
+	float tSeconds = time_interval.BADGetSeconds();
 
 	if (m_bCheckCollisions)
 		VerifyExistingContacts(m_pWorld->m_vars.maxContactGap);
@@ -2748,7 +2754,7 @@ void CArticulatedEntity::StepFeatherstone(float time_interval, int bBounced, Mat
 
 	dv = m_M0inv*(-Za_vec[0]-m_Ya_vec[0]); dw.zero(); 
 	if (m_bGrounded) {
-		dv += m_acc*time_interval; dw += m_wacc*time_interval;
+		dv += m_acc* tSeconds; dw += m_wacc* tSeconds;
 	}
 	CalcVelocityChanges(time_interval, dv,dw);
 	if (!m_bGrounded)	{
@@ -2765,7 +2771,7 @@ void CArticulatedEntity::StepFeatherstone(float time_interval, int bBounced, Mat
 		ai.point = m_posPivot;
 		m_pHost->Action(&ai,1);
 		pe_player_dynamics pd;
-		pd.timeImpulseRecover = 4;
+		pd.timeImpulseRecover.SetSeconds(4);
 		m_pHost->SetParams(&pd);
 	}
 
@@ -2787,9 +2793,9 @@ void CArticulatedEntity::StepFeatherstone(float time_interval, int bBounced, Mat
 		for(i=0; i<nContacts; i++) for(int j=0;j<2;j++) 
 			if (pContacts[i]->pent[j]->m_parts[pContacts[i]->ipart[j]].flags & geom_monitor_contacts)
 				pContacts[i]->pent[j]->OnContactResolved(pContacts[i],j,-1);
-		Eafter = CalcEnergy(0.0f);
+		Eafter = CalcEnergy(0);
 		for(i=0;i<m_nColliders;i++)	if (m_pColliders[i]!=this)
-			Eafter += m_pColliders[i]->CalcEnergy(0.0f);
+			Eafter += m_pColliders[i]->CalcEnergy(0);
 		if (Eafter>Ebefore)
 			damping = sqrt_tpl(Ebefore/Eafter);
 		Update(time_interval,damping);
@@ -2800,7 +2806,7 @@ void CArticulatedEntity::StepFeatherstone(float time_interval, int bBounced, Mat
 		memcpy(Zabuf, Za_vec, sizeof(Za_vec));
 }
 
-void CArticulatedEntity::StepBack(float time_interval)
+void CArticulatedEntity::StepBack(const CTimeValue& time_interval)
 {
 	if (m_simTime>0) {
 		Matrix33 R;
@@ -2884,7 +2890,7 @@ void CArticulatedEntity::DrawHelperInformation(IPhysRenderer *pRenderer, int fla
 	}
 }
 
-int CArticulatedEntity::GetStateSnapshot(CStream &stm,float time_back,int flags)
+int CArticulatedEntity::GetStateSnapshot(CStream &stm,const CTimeValue& time_back,int flags)
 {
 	stm.WriteNumberInBits(SNAPSHOT_VERSION,4);
 	stm.Write((unsigned char)m_nJoints);
@@ -3025,7 +3031,7 @@ stm.Seek(stm.GetReadPos()+sizeof(quaternionf)*8+m_nParts*(sizeof(quaternionf)+si
 }
 
 
-int CArticulatedEntity::GetStateSnapshot(TSerialize ser, float time_back, int flags)
+int CArticulatedEntity::GetStateSnapshot(TSerialize ser, const CTimeValue& time_back, int flags)
 {
 	if (ser.GetSerializationTarget() == eST_Network)
 	{	
@@ -3426,7 +3432,7 @@ void CArticulatedEntity::AssignContactsToJoints()
 	}
 }
 
-int CArticulatedEntity::RegisterContacts(float time_interval,int nMaxPlaneContacts)
+int CArticulatedEntity::RegisterContacts(const CTimeValue& time_interval,int nMaxPlaneContacts)
 {
 	m_Ejoints = 0;
 	int flags = 0;
@@ -3463,6 +3469,7 @@ __ae_step++;
 	m_bContactsAssigned = 0;
 	AssignContactsToJoints();
 
+	float tSeconds = time_interval.BADGetSeconds();
 	for(idx=0;idx<m_nJoints;idx++) {
 		(m_joints[idx].body.flags &= ~rb_articulated) |= flags;
 		if (m_joints[idx].pContact)
@@ -3531,7 +3538,7 @@ __ae_step++;
 					Quat qdst = qparent*m_joints[idx].quat0*Quat(m_joints[idx].q0), qdiff = qdst*!m_joints[idx].quat;
 					pContact->n = (pContact->vreq = qdiff.v*sgnnz(qdiff.w)*20.0f).normalized(); dw.zero(); 
 					if ((ks=max(max(m_joints[idx].ks.x,m_joints[idx].ks.y),m_joints[idx].ks.z))>0) {
-						pContact->Pspare = (K.GetInverted()*pContact->n).len()*ks*time_interval;
+						pContact->Pspare = (K.GetInverted()*pContact->n).len()*ks*tSeconds;
 						pContact->flags |= contact_preserve_Pspare; ks=0;
 					}
 				}
@@ -3541,7 +3548,7 @@ __ae_step++;
 					(pContact->vreq.GetLengthFast() + (pContact->pbody[0]->w-pContact->pbody[1]->w).GetLengthFast()*2);
 			}	else 
 				ks = 0;
-			dL = K.GetInverted()*(dw*-min(1.0f,time_interval*kd)+axisTens*(time_interval*ks));
+			dL = K.GetInverted()*(dw*-min(1.0f, tSeconds*kd)+axisTens*(tSeconds*ks));
 			pContact->pbody[0]->L += dL; pContact->pbody[1]->L -= dL; 
 			pContact->pbody[0]->w = pContact->pbody[0]->Iinv*pContact->pbody[0]->L;
 			pContact->pbody[1]->w = pContact->pbody[1]->Iinv*pContact->pbody[1]->L;
@@ -3566,7 +3573,7 @@ __ae_step++;
 
 float __maxdiff = 0;
 
-int CArticulatedEntity::Update(float time_interval, float damping)
+int CArticulatedEntity::Update(const CTimeValue& time_interval, float damping)
 {
 	if (m_bFeatherstone && m_nJoints>0) {
 		int active = 1;
@@ -3589,7 +3596,7 @@ int CArticulatedEntity::Update(float time_interval, float damping)
 			}
 		}
 		if (active) {
-			m_timeIdle=0; m_bAwake=1;	m_simTime=0;
+			m_timeIdle = m_simTime.SetSeconds(0); m_bAwake=1;
 		}
 		if (m_iSimClass>2)
 		 return 1;
@@ -3598,8 +3605,9 @@ int CArticulatedEntity::Update(float time_interval, float damping)
 	int i,j,nCollJoints=0,bPosChanged=0, bFloating=m_bFloating|iszero(m_gravity.len2()); 
 	int iCaller = get_iCaller();
 	entity_contact *pContact;
-	float dt,e,minEnergy = m_nBodyContacts>=m_nCollLyingMode ? m_EminLyingMode : m_Emin;
-	m_bAwake = (iszero(m_nBodyContacts) & (bFloating^1)) | isneg(m_simTimeAux-0.5f) | isneg(-m_minAwakeTime);
+	float e,minEnergy = m_nBodyContacts>=m_nCollLyingMode ? m_EminLyingMode : m_Emin;
+	CTimeValue dt;
+	m_bAwake = (iszero(m_nBodyContacts) & (bFloating^1)) | isneg(m_simTimeAux-"0.5") | isneg(-m_minAwakeTime);
 	m_bUsingUnproj = 0;
 	m_nStepBackCount = (m_nStepBackCount&-(int)m_bSteppedBack)+m_bSteppedBack;
 
@@ -3651,7 +3659,7 @@ int CArticulatedEntity::Update(float time_interval, float damping)
 		m_nSleepFrames = (m_nSleepFrames&~-(int)m_bAwake) + (m_bAwake^1);
 		m_bAwake |= isneg((int)m_nSleepFrames-4) & isneg(nCollJoints-3);
 		m_timeIdle *= isneg(-m_nColliders-m_nPrevColliders-m_submergedFraction) & m_pWorld->m_threadData[iCaller].bGroupInvisible;
-		i = isneg(0.0001f-m_maxTimeIdle); // forceful deactivation is turned on
+		i = isneg(CTimeValue("0.0001")-m_maxTimeIdle); // forceful deactivation is turned on
 		dt = time_interval+(m_timeStepFull-time_interval)*m_pWorld->m_threadData[iCaller].bGroupInvisible;
 		m_bAwake &= i^1 | isneg((m_timeIdle+=dt*i)-m_maxTimeIdle);
 		if (!m_bGrounded)
@@ -3686,9 +3694,9 @@ int CArticulatedEntity::Update(float time_interval, float damping)
 		}
 		UpdateJointDyn();
 	}
-	m_minAwakeTime = max(m_minAwakeTime,0.0f)-time_interval;
+	m_minAwakeTime = max(m_minAwakeTime,CTimeValue(0))-time_interval;
 
-	return (m_bAwake^1) | isneg(m_timeStepFull-m_timeStepPerformed-0.001f) | m_pWorld->m_threadData[iCaller].bGroupInvisible;
+	return (m_bAwake^1) | isneg(m_timeStepFull-m_timeStepPerformed-"0.001") | m_pWorld->m_threadData[iCaller].bGroupInvisible;
 }
 
 

@@ -7,21 +7,21 @@
 
 namespace
 {
-	float CalculateDurationUsingCVars(const float suggestedDuration)
+	CTimeValue CalculateDurationUsingCVars(const CTimeValue& suggestedDuration)
 	{
-		float finalDuration = suggestedDuration;
-		if (Cry::UDR::SCvars::debugDrawDuration > 0.0f)
+		CTimeValue finalDuration = suggestedDuration;
+		if (Cry::UDR::SCvars::debugDrawDuration > 0)
 		{
 			finalDuration = Cry::UDR::SCvars::debugDrawDuration;
 		}
 		else
 		{
-			if (Cry::UDR::SCvars::debugDrawMinimumDuration > 0.0f)
+			if (Cry::UDR::SCvars::debugDrawMinimumDuration > 0)
 			{
 				finalDuration = suggestedDuration < Cry::UDR::SCvars::debugDrawMinimumDuration ? Cry::UDR::SCvars::debugDrawMinimumDuration : suggestedDuration;
 			}
 
-			if (Cry::UDR::SCvars::debugDrawMaximumDuration > 0.0f)
+			if (Cry::UDR::SCvars::debugDrawMaximumDuration > 0)
 			{
 				finalDuration = suggestedDuration > Cry::UDR::SCvars::debugDrawMaximumDuration ? Cry::UDR::SCvars::debugDrawMaximumDuration : suggestedDuration;
 			}
@@ -78,8 +78,8 @@ namespace Cry
 				m_timeMetadataBase.Initialize();
 			}
 		}
-
-		void CUDRSystem::Update(const CTimeValue frameStartTime, const float frameDeltaTime)
+				
+		void CUDRSystem::Update(const CTimeValue frameStartTime, const CTimeValue& frameDeltaTime)
 		{
 			m_frameStartTime = frameStartTime;
 			m_frameDeltaTime = frameDeltaTime;
@@ -107,14 +107,14 @@ namespace Cry
 		CTimeValue CUDRSystem::GetElapsedTime() const
 		{
 			// TODO: Add Operator - or function to calculate diff to CTimeMetada.
-			return gEnv->pTimer->GetAsyncTime() - m_timeMetadataBase.GetTimestamp();
+			return GetGTimer()->GetAsyncTime() - m_timeMetadataBase.GetTimestamp();
 		}
 		
-		void CUDRSystem::DebugDraw(const std::shared_ptr<CRenderPrimitiveBase>& pPrimitive, const float duration)
+		void CUDRSystem::DebugDraw(const std::shared_ptr<CRenderPrimitiveBase>& pPrimitive, const CTimeValue& duration)
 		{
 			CRecursiveSyncObjectAutoLock lock;
 
-			CRY_ASSERT_MESSAGE(duration >= 0.0f, "Parameter 'duration' must be >= 0.0f.");
+			CRY_ASSERT_MESSAGE(duration >= 0, "Parameter 'duration' must be >= 0");
 			m_primitivesQueue.emplace_back(pPrimitive, CalculateDurationUsingCVars(duration));
 		}
 
@@ -144,7 +144,7 @@ namespace Cry
 				currPrimitiveWithDuration.primitive->Draw();
 				currPrimitiveWithDuration.duration -= m_frameDeltaTime;
 
-				if (currPrimitiveWithDuration.duration <= 0.0f)
+				if (currPrimitiveWithDuration.duration <= 0)
 				{
 					currPrimitiveWithDuration = std::move(m_primitivesQueue[m_primitivesQueue.size() - 1]);
 					m_primitivesQueue.pop_back();

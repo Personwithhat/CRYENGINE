@@ -26,7 +26,7 @@ namespace Cry
 				switch (event.event)
 				{
 					case ENTITY_EVENT_COMPONENT_PROPERTY_CHANGED: m_pEntity->UpdateComponentEventMask(this); break;
-					case ENTITY_EVENT_PHYS_POSTSTEP: OnPostStep(event.fParam[0]); break;
+					case ENTITY_EVENT_PHYS_POSTSTEP: OnPostStep(event.tVal); break;
 				}
 			}
 
@@ -73,7 +73,7 @@ namespace Cry
 			void Physicalize();
 			void SetupLegs(bool immediately = false);
 			void OnInput();
-			int  OnPostStep(float deltaTime);
+			int  OnPostStep(const CTimeValue& deltaTime);
 
 			float m_friction     = 1.0f;
 			float m_minMass      = 1.0f;
@@ -82,7 +82,7 @@ namespace Cry
 		protected:
 			Vec3  m_velMove = Vec3(ZERO);
 			Vec3  m_velJump = Vec3(ZERO);
-			float m_timeFly = 0.0f;
+			CTimeValue m_timeFly = 0;
 		};
 	}
 }

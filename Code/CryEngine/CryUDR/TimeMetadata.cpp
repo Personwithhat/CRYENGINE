@@ -11,7 +11,7 @@ namespace Cry
 		bool CTimeMetadata::Initialize()
 		{
 			// We cannot assert here because the default constructor is used by yasli serialization.
-			if (gEnv && gEnv->pTimer)
+			if (gEnv && GetGTimer())
 			{
 				m_timestamp = CUDRSystem::GetInstance().GetElapsedTime();
 				m_frameID = gEnv->nMainFrameID;
@@ -54,23 +54,23 @@ namespace Cry
 
 		bool CTimeMetadata::IsValid() const
 		{
-			return m_timestamp.IsValid() && m_frameID != 0;
+			return m_timestamp != 0 && m_frameID != 0;
 		}
 
 		void CTimeMetadata::Serialize(Serialization::IArchive& ar)
 		{
 			ar(m_frameID, "m_frameID");
 
-			int64 timestampValue;
+			CTimeValue timestampValue;
 
 			if (ar.isInput())
 			{
 				ar(timestampValue, "m_timestamp");
-				m_timestamp.SetValue(timestampValue);
+				m_timestamp = timestampValue;
 			}
 			else if (ar.isOutput())
 			{
-				timestampValue = m_timestamp.GetValue();
+				timestampValue = m_timestamp;
 				ar(timestampValue, "m_timestamp");
 			}
 		}

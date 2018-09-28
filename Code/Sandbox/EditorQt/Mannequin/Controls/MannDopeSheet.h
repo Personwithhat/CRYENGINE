@@ -15,7 +15,7 @@ public:
 		return m_mouseMode == 4;
 	}
 
-	float GetTime() const
+	const CTimeValue& GetTime() const
 	{
 		return m_currentTime;
 	}

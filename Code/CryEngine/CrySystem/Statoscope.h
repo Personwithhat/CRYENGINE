@@ -26,9 +26,9 @@ struct SPerfStatProfilerRecord
 {
 	CryFixedStringT<128> m_name;
 	int             m_count;
-	float           m_selfTime;
+	CTimeValue      m_selfTime;
 	float           m_variance;
-	float           m_peak;
+	CTimeValue      m_peak;
 };
 
 struct SPerfTexturePoolAllocationRecord
@@ -46,7 +46,7 @@ struct SParticleInfo
 struct SPhysInfo
 {
 	string name;
-	float  time;
+	CTimeValue time;
 	int    nCalls;
 	Vec3   pos;
 };
@@ -86,6 +86,12 @@ public:
 		, m_nWrittenElements(0)
 	{
 	}
+
+	#define MP_FUNCTION(T)\
+	virtual void AddValue(const T& mpvalue);
+	#include <CrySystem\mpfloat.types>
+	#undef MP_FUNCTION
+	virtual void AddValue(const CTimeValue& tValue);
 
 	virtual void AddValue(float f);
 	virtual void AddValue(const char* s);
@@ -426,7 +432,7 @@ class CDataWriter
 {
 public:
 
-	CDataWriter(bool bUseStringPool, float writeTimeout);
+	CDataWriter(bool bUseStringPool, const CTimeValue& writeTimeout);
 	virtual ~CDataWriter() {}
 
 	virtual bool Open() = 0;
@@ -483,7 +489,7 @@ public:
 		return m_bTimedOut;
 	}
 
-	float GetWriteTimeout()
+	const CTimeValue& GetWriteTimeout()
 	{
 		return m_writeTimeout;
 	}
@@ -515,7 +521,7 @@ protected:
 
 	std::set<uint32> m_GlobalStringPoolHashes;
 
-	float            m_writeTimeout;
+	CTimeValue       m_writeTimeout;
 	bool             m_bUseStringPool;
 	volatile bool    m_bTimedOut;
 };
@@ -523,7 +529,7 @@ protected:
 class CFileDataWriter : public CDataWriter
 {
 public:
-	CFileDataWriter(const string& fileName, float writeTimeout);
+	CFileDataWriter(const string& fileName, const CTimeValue& writeTimeout);
 	~CFileDataWriter();
 
 	virtual bool Open();
@@ -546,7 +552,7 @@ protected:
 class CSocketDataWriter : public CDataWriter
 {
 public:
-	CSocketDataWriter(CStatoscopeServer* pStatoscopeServer, float writeTimeout);
+	CSocketDataWriter(CStatoscopeServer* pStatoscopeServer, const CTimeValue& writeTimeout);
 	~CSocketDataWriter() { Close(); }
 
 	virtual bool Open();
@@ -564,8 +570,8 @@ public:
 	void BeginBlock()
 	{
 		m_eventStreamLock.Lock();
-		CTimeValue tv = gEnv->pTimer->GetAsyncTime();
-		uint64 timeStamp = (uint64)tv.GetMicroSecondsAsInt64();
+		CTimeValue tv = GetGTimer()->GetAsyncTime();
+		uint64 timeStamp = (uint64)tv.GetMicroSeconds();
 		if (timeStamp < m_lastTimestampUs)
 			__debugbreak();
 		m_lastTimestampUs = timeStamp;
@@ -625,7 +631,7 @@ private:
 class CTelemetryDataWriter : public CDataWriter
 {
 public:
-	CTelemetryDataWriter(const char* postHeader, const char* hostname, int port, float writeTimeout, float connectTimeout);
+	CTelemetryDataWriter(const char* postHeader, const char* hostname, int port, const CTimeValue& writeTimeout, const CTimeValue& connectTimeout);
 	~CTelemetryDataWriter() { Close(); }
 
 	virtual bool Open();
@@ -640,7 +646,7 @@ private:
 
 	CryStringLocal m_postHeader;
 	CryStringLocal m_hostname;
-	float          m_connectTimeout;
+	CTimeValue     m_connectTimeout;
 	int            m_port;
 	CRYSOCKET      m_socket;
 	bool           m_hasSentHeader;
@@ -781,8 +787,8 @@ public:
 
 	string                                         m_currentMap;
 
-	float                                          m_lastDumpTime;
-	float                                          m_screenshotLastCaptureTime;
+	CTimeValue                                     m_lastDumpTime;
+	CTimeValue                                     m_screenshotLastCaptureTime;
 	int                                            m_lastScreenWidth;
 	int                                            m_lastScreenHeight;
 	bool                                           m_groupMaskInitialized;

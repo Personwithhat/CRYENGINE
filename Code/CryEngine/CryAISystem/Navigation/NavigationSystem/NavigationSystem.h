@@ -57,12 +57,12 @@ class NavigationSystemDebugDraw
 		NavigationSystemWorkingProgress()
 			: m_initialQueueSize(0)
 			, m_currentQueueSize(0)
-			, m_timeUpdating(0.0f)
+			, m_timeUpdating(0)
 		{
 
 		}
 
-		void Update(const float frameTime, const size_t queueSize);
+		void Update(const CTimeValue& frameTime, const size_t queueSize);
 		void Draw();
 
 	private:
@@ -71,7 +71,7 @@ class NavigationSystemDebugDraw
 		void EndDraw();
 		void DrawQuad(const Vec2& origin, const Vec2& size, const ColorB& color);
 
-		float               m_timeUpdating;
+		CTimeValue          m_timeUpdating;
 		size_t              m_initialQueueSize;
 		size_t              m_currentQueueSize;
 		SAuxGeomRenderFlags m_oldRenderFlags;
@@ -119,7 +119,7 @@ public:
 	}
 
 	void DebugDraw(NavigationSystem& navigationSystem);
-	void UpdateWorkingProgress(const float frameTime, const size_t queueSize);
+	void UpdateWorkingProgress(const CTimeValue& frameTime, const size_t queueSize);
 
 private:
 
@@ -504,7 +504,7 @@ public:
 	virtual void                  SetMeshName(NavigationMeshID meshID, const char* name) override;
 
 	virtual EWorkingState         GetState() const override;
-	virtual EWorkingState         Update(const CTimeValue frameStartTime, const float frameTime, bool blocking) override;
+	virtual EWorkingState         Update(const CTimeValue& frameStartTime, const CTimeValue& frameTime, bool blocking) override;
 	virtual void                  PauseNavigationUpdate() override;
 	virtual void                  RestartNavigationUpdate() override;
 
@@ -721,7 +721,7 @@ private:
 	};
 
 #if NAV_MESH_REGENERATION_ENABLED
-	void UpdateMeshes(const CTimeValue frameStartTime, const float frameTime, const bool blocking, const bool multiThreaded, const bool bBackground);
+	void UpdateMeshes(const CTimeValue& frameStartTime, const CTimeValue& frameTime, const bool blocking, const bool multiThreaded, const bool bBackground);
 	void UpdateMeshesFromEditor(const bool blocking, const bool multiThreaded, const bool bBackground);
 	void SetupGenerator(const NavigationMeshID meshID, const MNM::CNavMesh::SGridParams& paramsGrid,
 	                    uint16 x, uint16 y, uint16 z, MNM::CTileGenerator::Params& params, const VolumeDefCopy& pDef, bool bMarkupUpdate);
@@ -841,7 +841,7 @@ private:
 	MNM::CNavMeshQueryManager*             m_pNavMeshQueryManager;
 
 	CTimeValue                             m_frameStartTime;
-	float                                  m_frameDeltaTime;
+	CTimeValue                             m_frameDeltaTime;
 };
 
 namespace NavigationSystemUtils

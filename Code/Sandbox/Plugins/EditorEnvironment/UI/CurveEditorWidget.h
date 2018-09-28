@@ -35,14 +35,14 @@ private:
 
 	void         OnNewVariableSelected();
 	void         OnPlaybackModeChanged(PlaybackMode newMode);
-	void         OnTimeChanged(QWidget* pSender, float newTime);
+	void         OnTimeChanged(QWidget* pSender, const CTimeValue& newTime);
 
 	void         UpdateCurveContent();
 
 	void         SetEngineTime();
 
 	CController&  m_controller;
-	const float   m_animTimeSecondsIn24h;
+	const int     m_animTimeSecondsIn24h;
 	CCurveEditor* m_pCurveEdit;
 	QToolBar*     m_pCurveEditToolbar;
 };

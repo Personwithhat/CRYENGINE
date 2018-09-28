@@ -183,8 +183,8 @@ void CParamFloat::SyncMainWithRender()
 			pFillData->nFrameSetCount = 0;
 		}
 
-		float fFrameTime = clamp_tpl<float>(gEnv->pTimer->GetFrameTime() * CRenderer::CV_r_PostprocessParamsBlendingTimeScale, 0.0f, 1.0f);
-		pFillData->fParam += (pFillData->fFrameParamAcc - pFillData->fParam) * fFrameTime;
+		CTimeValue fFrameTime = CLAMP(GetGTimer()->GetFrameTime() * CRenderer::CV_r_PostprocessParamsBlendingTimeScale, 0, 1);
+		pFillData->fParam += (pFillData->fFrameParamAcc - pFillData->fParam) * fFrameTime.BADGetSeconds();
 	}
 
 	// Reset forced value
@@ -286,8 +286,8 @@ void CParamVec4::SyncMainWithRender()
 			pFillData->nFrameSetCount = 0;
 		}
 
-		float fFrameTime = clamp_tpl<float>(gEnv->pTimer->GetFrameTime() * CRenderer::CV_r_PostprocessParamsBlendingTimeScale, 0.0f, 1.0f);
-		pFillData->vParam += (pFillData->vFrameParamAcc - pFillData->vParam) * fFrameTime;
+		CTimeValue fFrameTime = CLAMP(GetGTimer()->GetFrameTime() * CRenderer::CV_r_PostprocessParamsBlendingTimeScale, 0, 1);
+		pFillData->vParam += (pFillData->vFrameParamAcc - pFillData->vParam) * fFrameTime.BADGetSeconds();
 	}
 
 	// Reset forced value

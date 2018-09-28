@@ -481,7 +481,7 @@ void CCryProfilingSystem::EndFrame()
 		return;
 	AutoTimer timer(this);
 
-	const float blendFactor = gEnv->pTimer->GetProfileFrameBlending();
+	const float blendFactor = BADF GetGTimer()->GetProfileFrameBlending();
 
 #if CRY_PLATFORM_WINDOWS
 	typedef BOOL(WINAPI * TGetProcessMemoryInfo)(HANDLE, PPROCESS_MEMORY_COUNTERS, DWORD);
@@ -658,7 +658,7 @@ void CCryProfilingSystem::ReapplyTrackerFilter()
 				excludedTrackers.push_back(pTracker);
 		}
 
-		const float blendFactor = gEnv->pTimer->GetProfileFrameBlending();
+		const float blendFactor = BADF GetGTimer()->GetProfileFrameBlending();
 		for (SProfilingSectionTracker* pTracker : m_excludedTrackers)
 		{
 			pTracker->isActive = !IsExcludedByFilter(pTracker);

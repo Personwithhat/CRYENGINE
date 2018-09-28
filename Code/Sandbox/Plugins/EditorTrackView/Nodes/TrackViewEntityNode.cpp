@@ -128,7 +128,7 @@ void CTrackViewEntityNode::SetEntityGuidSource(const EntityGUID& guid)
 
 void CTrackViewEntityNode::SetPos(const Vec3& position, bool ignoreSelection)
 {
-	const SAnimTime time = GetSequence()->GetTime();
+	const CTimeValue time = GetSequence()->GetTime();
 	CTrackViewTrack* pTrack = GetTrackForParameter(eAnimParamType_Position);
 
 	if (pTrack)
@@ -169,7 +169,7 @@ void CTrackViewEntityNode::SetScale(const Vec3& scale, bool ignoreSelection)
 
 	if (pTrack)
 	{
-		const SAnimTime time = GetSequence()->GetTime();
+		const CTimeValue time = GetSequence()->GetTime();
 		if (!CTrackViewPlugin::GetAnimationContext()->IsRecording())
 		{
 			// Offset all keys by move amount.
@@ -198,7 +198,7 @@ void CTrackViewEntityNode::SetRotation(const Quat& rotation, bool ignoreSelectio
 
 	if (pTrack)
 	{
-		const SAnimTime time = GetSequence()->GetTime();
+		const CTimeValue time = GetSequence()->GetTime();
 		if (!CTrackViewPlugin::GetAnimationContext()->IsRecording())
 		{
 			Quat prevRotation = stl::get<Quat>(pTrack->GetValue(time));
@@ -257,7 +257,7 @@ void CTrackViewEntityNode::SetPosRotScaleTracksDefaultValues()
 
 	if (pOwner && IsBoundToEditorObjects())
 	{
-		const SAnimTime time = GetSequence()->GetTime();
+		const CTimeValue time = GetSequence()->GetTime();
 		if (pPosTrack)
 		{
 			pPosTrack->SetDefaultValue(TMovieSystemValue(pOwner->GetPos()));
