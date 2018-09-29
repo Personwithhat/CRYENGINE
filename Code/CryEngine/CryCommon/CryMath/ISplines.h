@@ -116,7 +116,7 @@ struct  SplineKey
 {
 	typedef T value_type;
 
-	mpfloat	  time;      //!< Key time.
+	mpfloat	  time;      //!< Key time, not necessarily 'time' e.g. wind-strength
 	Flags      flags;     //!< Key flags.
 	value_type value;     //!< Key value.
 	value_type ds;        //!< Incoming tangent.
@@ -742,8 +742,6 @@ struct BezierKey : public SplineKey<T>
 	{
 		if (prev || next)
 		{
-			//const mpfloat oneThird(1 / 3.0);
-			// WARNING: Float inaccuracy
 			const f32 oneThird	(1 / 3.0);
 
 			if (!prev)
@@ -778,7 +776,6 @@ struct BezierKey : public SplineKey<T>
 				}
 				else
 				{
-					// WARNING: Float inaccuracy Vector*mpfloat undef so....
 					const mpfloat relTime = (this->time - prev->time) / deltaTime;
 					const T deltaValue = next->value - prev->value;
 					this->ds = oneThird * deltaValue * BADF relTime;

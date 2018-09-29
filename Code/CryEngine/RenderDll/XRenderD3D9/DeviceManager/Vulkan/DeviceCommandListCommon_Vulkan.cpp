@@ -103,7 +103,7 @@ bool CDeviceTimestampGroup::ResolveTimestamps()
 	return m_measured = true;
 }
 
-// PERSONAL IMPROVE: Another timestamp setup
+// PERSONAL IMPROVE: Another timestamp setup that can be remade to CTimeValue
 CTimeValue CDeviceTimestampGroup::GetTime(uint32 timestamp0, uint32 timestamp1)
 {
 	const float ticksToNanoseconds = GetDevice()->GetPhysicalDeviceInfo()->deviceProperties.limits.timestampPeriod;

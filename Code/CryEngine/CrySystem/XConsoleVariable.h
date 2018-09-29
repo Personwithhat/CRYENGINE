@@ -504,6 +504,12 @@ protected:
 	std::vector<base_type> m_allowedValues;
 };
 
+/*
+	PERSONAL TODO: MPFloat part of this was bugged out UGH
+	template<class mpType>
+	class CXConsoleVariableMPFloatRef : public CXConsoleVariableBase
+	{
+*/
 template<class T>
 class CXStringConsoleVariable : public CXConsoleVariableBase
 {

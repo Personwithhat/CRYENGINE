@@ -5,7 +5,7 @@
 #include "TimeOfDayConstants.h"
 #include <CryMath/Bezier.h>
 
-// PERSONAL NOTE: Looks like the 'time' here is actual time, not a pseudo-time value e.g. 'wind strength' and so on.
+// PERSONAL NOTE: The "Time" here is actual time, not a pseudo-time value e.g. 'wind strength' and so on.
 class CBezierSpline
 {
 public:

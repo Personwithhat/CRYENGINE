@@ -251,8 +251,8 @@ void CSkeletonAnim::UpdateParameters(CAnimation* arrAnimFiFo, uint32 nMaxActiveI
 				const ModelAnimationHeader* pAnimPS = pAnimationSet->GetModelAnimationHeader(nAnimIDPS);
 				GlobalAnimationHeaderCAF& rCAF = g_AnimationManager.m_arrGlobalCAF[pAnimPS->m_nGlobalAnimId];
 				int32 segcount = pParametric->m_nSegmentCounter[0][i];
-				f32 fSegDuration = rCAF.GetSegmentDuration(segcount);
-				fSegDuration = max(fSegDuration, 1.0f / ANIMATION_30Hz);
+				CTimeValue fSegDuration = rCAF.GetSegmentDuration(segcount);
+				fSegDuration = max(fSegDuration, ANIMATION_FSTEP);
 				fTWDuration += pParametric->m_fBlendWeight[i] * fSegDuration;
 
 				const uint32 totSegs = rCAF.GetTotalSegments();
@@ -267,10 +267,10 @@ void CSkeletonAnim::UpdateParameters(CAnimation* arrAnimFiFo, uint32 nMaxActiveI
 			{
 				totalTime *= (fFrameDeltaTime / (rCurAnim.m_fCurrentDeltaTime.conv<mpfloat>() * fTWDuration)).conv<mpfloat>();
 			}
-			const float expectedSegmentDuration = max(0.0001f, fTWDuration);
-			rCurAnim.SetCurrentSegmentExpectedDurationSeconds(expectedSegmentDuration);
-			const float expectedTotalDuration = max(0.0001f, totalTime);
-			rCurAnim.SetExpectedTotalDurationSeconds(expectedTotalDuration);
+			const CTimeValue expectedSegmentDuration = max(CTimeValue("0.0001"), fTWDuration);  // PERSONAL CRYTEK: Clamping time
+			rCurAnim.SetCurrentSegmentExpectedDuration(expectedSegmentDuration);
+			const CTimeValue expectedTotalDuration = max(CTimeValue("0.0001"), totalTime);
+			rCurAnim.SetExpectedTotalDuration(expectedTotalDuration);
 
 		}
 		else

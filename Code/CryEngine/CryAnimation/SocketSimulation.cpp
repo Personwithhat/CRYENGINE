@@ -83,12 +83,12 @@ void CSimulation::UpdatePendulumSimulation(const CAttachmentManager* pAttachment
 		return;
 
 	const CCharInstance* pSkelInstance = pAttachmentManager->m_pSkelInstance;
-	const f32 fIPlaybackScale = pSkelInstance->GetPlaybackScale();
-	const f32 fLPlaybackScale = pSkelInstance->m_SkeletonAnim.GetLayerPlaybackScale(0);
-	const f32 fAverageFrameTime = g_AverageFrameTime * fIPlaybackScale * fLPlaybackScale ? g_AverageFrameTime * fIPlaybackScale * fLPlaybackScale : g_AverageFrameTime;
-	const f32 ps = fabs(fAverageFrameTime) > 0.00001f ? clamp_tpl(fAverageFrameTime, 0.001f, 0.1f) : 0.0f;
-	const f32 fTS = clamp_tpl(ceilf(ps * f32(m_nSimFPS)), 1.0f, 15.0f);
-	const f32 dt = ps / fTS;  //delta-time per time-step;
+	const mpfloat fIPlaybackScale = pSkelInstance->GetPlaybackScale();
+	const mpfloat fLPlaybackScale = pSkelInstance->m_SkeletonAnim.GetLayerPlaybackScale(0);
+	const CTimeValue fAverageFrameTime = (g_AverageFrameTime * fIPlaybackScale * fLPlaybackScale != 0) ? g_AverageFrameTime * fIPlaybackScale * fLPlaybackScale : g_AverageFrameTime;
+	const CTimeValue ps = abs(fAverageFrameTime) > CTimeValue("0.00001") ? CLAMP(fAverageFrameTime, "0.001", "0.1") : 0;  // PERSONAL CRYTEK: Clamping time
+	const CTimeValue fTS = CLAMP(ceil(ps * m_nSimFPS), 1, 15);
+	const nTime dt = ps / fTS;  //delta-time per time-step;
 
 	const QuatTS& rPhysLocation = pSkelInstance->m_location;
 	const QuatTS AttLocation = rPhysLocation * rAttModelRelative;
@@ -430,12 +430,12 @@ void CSimulation::UpdateSpringSimulation(const CAttachmentManager* pAttachmentMa
 	const CCharInstance* pSkelInstance = pAttachmentManager->m_pSkelInstance;
 
 	// Determine timestep dt & timesteps per frame (fTS)
-	const f32 fIPlaybackScale = pSkelInstance->GetPlaybackScale();
-	const f32 fLPlaybackScale = pSkelInstance->m_SkeletonAnim.GetLayerPlaybackScale(0);
-	const f32 fAverageFrameTime = g_AverageFrameTime * fIPlaybackScale * fLPlaybackScale ? g_AverageFrameTime * fIPlaybackScale * fLPlaybackScale : g_AverageFrameTime;
-	const f32 ps = fabs(fAverageFrameTime) > 0.00001f ? clamp_tpl(fAverageFrameTime, 0.001f, 0.1f) : 0.0f;
-	const f32 fTS = clamp_tpl(ceilf(ps * f32(m_nSimFPS)), 1.0f, 15.0f);
-	const f32 dt = ps / fTS; // Delta-time per time-step;
+	const mpfloat fIPlaybackScale = pSkelInstance->GetPlaybackScale();
+	const mpfloat fLPlaybackScale = pSkelInstance->m_SkeletonAnim.GetLayerPlaybackScale(0);
+	const CTimeValue fAverageFrameTime = (g_AverageFrameTime * fIPlaybackScale * fLPlaybackScale != 0)? g_AverageFrameTime * fIPlaybackScale * fLPlaybackScale : g_AverageFrameTime;
+	const CTimeValue ps = abs(fAverageFrameTime) > CTimeValue("0.00001") ? CLAMP(fAverageFrameTime, "0.001", "0.1") : 0;  // PERSONAL CRYTEK: Clamping time
+	const CTimeValue fTS = CLAMP(ceil(ps * m_nSimFPS), 1, 15);
+	const nTime dt = ps / fTS;  //delta-time per time-step;
 
 	const QuatTS& rPhysLocationWS = pSkelInstance->m_location;        // Actual node in world-space
 	const QuatTS AttLocationWS = rPhysLocationWS * rAttModelRelative; // Attachments location in world-space
