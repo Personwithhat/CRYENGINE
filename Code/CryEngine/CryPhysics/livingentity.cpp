@@ -839,7 +839,8 @@ int CLivingEntity::GetStateSnapshot(TSerialize ser, const CTimeValue& time_back,
 		m_velRequested,
 		m_bFlying,
 		m_bJumpRequested,
-		m_dh, m_dhSpeed, m_stablehTime,
+		m_dh, m_dhSpeed, 
+		m_stablehTime,
 		m_pWorld->GetPhysicalEntityId(m_pLastGroundCollider), m_iLastGroundColliderPart, m_posLastGroundColl
 	};
 	helper.Serialize( ser );

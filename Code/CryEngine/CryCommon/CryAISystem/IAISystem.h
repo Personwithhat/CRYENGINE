@@ -584,10 +584,7 @@ struct IAISystem
 	//! Every frame (multiple time steps per frame possible?)
 	//! \param currentTime AI time since game start (GetFrameStartTime)
 	//! \param frameTime AI time since last update (GetFrameTime).
-	virtual void                Update(CTimeValue currentTime, const CTimeValue& frameTime) = 0;
-
-	virtual bool                RegisterSystemComponent(IAISystemComponent* pComponent) = 0;
-	virtual bool                UnregisterSystemComponent(IAISystemComponent* pComponent) = 0;
+	virtual void                Update(const CTimeValue& currentTime, const CTimeValue& frameTime) = 0;
 
 	virtual bool                                  RegisterSystemComponent(IAISystemComponent* pComponent) = 0;
 	virtual bool                                  UnregisterSystemComponent(IAISystemComponent* pComponent) = 0;

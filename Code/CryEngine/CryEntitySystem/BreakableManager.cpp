@@ -614,7 +614,7 @@ void CBreakableManager::BreakIntoPieces(GeomRef& geoOrig, const Matrix34& mxSrcT
 						ParticleParams params;
 						params.fCount = 0;
 						params.ePhysicsType = params.ePhysicsType.RigidBody;
-						params.fParticleLifeTime.Set((Breakage.fParticleLifeTime * CVar::debrisLifetimeScale->GetMPVal()).BADGetSeconds(), 0.25f);
+						params.fParticleLifeTime.Set((Breakage.fParticleLifeTime * CVar::pDebrisLifetimeScale->GetMPVal()).BADGetSeconds(), 0.25f);
 						params.bRemainWhileVisible = true;
 						pEmitter = gEnv->pParticleManager->CreateEmitter(mxSrcTM, params);
 						if (!pEmitter)

@@ -840,7 +840,7 @@ struct SSystemUpdateStats
 	CTimeValue avgUpdateTime;
 	CTimeValue minUpdateTime;
 	CTimeValue maxUpdateTime;
-	CTimeValue avgUpdateRate;
+	rTime avgUpdateRate;
 };
 
 //! Union to handle communication between the AsycDIP jobs and the general job system.
@@ -864,8 +864,8 @@ namespace GTimers {
 	enum {
 		system = 0,
 		action,
-		render,
-		d3d,
+		render,	// CryD3DEngine code
+		d3d,		// D3D11, D3D12, etc. the RenderDLL. PERSONAL IMPROVE: Too confusing but I can't think of a better shorthand.
 		particle,
 		animation,
 		peffects,

@@ -1348,7 +1348,7 @@ REGISTER_ONLY_PYTHON_COMMAND_WITH_EXAMPLE(PyIdleWait, general, idle_wait,
                                           "Waits idling for a given seconds. Primarily used for auto-testing.",
                                           "general.idle_wait(double time)");
 
-CRY_TEST(EditorCreateLevelTest, editor = true, game = false, timeout = 60.f)
+CRY_TEST(EditorCreateLevelTest, editor = true, game = false, timeout = 60)
 {
 	auto KillLevel = []
 	{
@@ -1365,7 +1365,7 @@ CRY_TEST(EditorCreateLevelTest, editor = true, game = false, timeout = 60.f)
 		[] {
 			GetIEditor()->ExecuteCommand("general.create_level 'examplelevel' '1024' '1.0f' 'true'");
 		},
-		CryTest::CCommandWait(3.0f),
+		CryTest::CCommandWait(3),
 		[] {
 			CHeightmap* heightMap = GetIEditorImpl()->GetTerrainManager()->GetHeightmap();
 			CRY_TEST_ASSERT(heightMap);

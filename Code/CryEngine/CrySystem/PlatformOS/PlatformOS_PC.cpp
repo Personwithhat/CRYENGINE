@@ -57,7 +57,7 @@ CPlatformOS_PC::~CPlatformOS_PC()
 	gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 }
 
-void CPlatformOS_PC::Tick(CTimeValue& realFrameTime)
+void CPlatformOS_PC::Tick(const CTimeValue& realFrameTime)
 {
 	if (m_delayLevelStartIcon.GetSeconds())
 	{
@@ -655,10 +655,17 @@ bool CPlatformOS_PC::SxmlMissingFromHDD(ZipDir::FileEntryTree* pZipRoot, const c
 	}
 }
 
-// PERSONAL TODO: More large edits
 void SetTimerResolution(bool setToBackgroundMode)
 	{
-#if CRY_PLATFORM_WINDOWS
+	// PERSONAL NOTE: 
+	// This might affect accuracy of certain processes when alt-tabbing, until this is tested disabling this section.
+	// At least should be off for networking.
+	// How it's setup currently, with 'high resolution' timers separate, also doesn't make sense.
+	// Keeping timer-resolution control as a one-off thing at system launch/stop.
+	// (Also changed sys_system_timer_resolution to be in units of nanoseconds)
+	return;
+
+#if CRY_PLATFORM_WINDOWS && BOGUS_DEF
 		// Handle system timer resolution
 		// The smaller the resolution, the more accurate a thread will wake up from a suspension 
 		// Example: 

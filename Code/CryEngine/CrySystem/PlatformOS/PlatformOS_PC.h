@@ -37,7 +37,7 @@ public:
 	// ~IPlatformOS
 
 	// Called each frame to update the platform listener
-	virtual void        Tick(CTimeValue& realFrameTime);
+	virtual void        Tick(const CTimeValue& realFrameTime);
 
 	virtual const char* GetPlatformName() const { return "PC"; };
 

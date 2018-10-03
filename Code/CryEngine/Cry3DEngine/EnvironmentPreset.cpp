@@ -14,7 +14,9 @@
 
 namespace
 {
-const unsigned int sCurrentPresetVersion = 3;
+const unsigned int sCurrentPresetVersion = 4;
+unsigned int sCurrentLoadingVersion;
+
 const int sAnimTimeSecondsIn24h = 24;   // 24 hours = (sAnimTimeSecondsIn24h * SAnimTime::numTicksPerSecond) ticks
 
 const mpfloat sBezierSplineKeyValueEpsilon = "0.001";
@@ -119,6 +121,14 @@ void CBezierSpline::UpdateKeyForTime(const CTimeValue& fTime, float value)
 void CBezierSpline::Serialize(Serialization::IArchive& ar)
 {
 	ar(m_keys, "keys");
+	
+	// Convert from animation ticks to actual time if was stored in ticks, earlier versions.
+	if(sCurrentLoadingVersion < 4){
+		for (auto &key : m_keys)
+		{
+			key.m_time /= SAnimData::numTicksPerSecond;
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -407,19 +417,20 @@ void CEnvironmentPreset::Serialize(Serialization::IArchive& ar)
 {
 	if (ar.isInput())
 	{
-		unsigned int version = 0;
-		const bool bReadResult = ar(version, "version");
-		if (bReadResult && (sCurrentPresetVersion == version))
+		sCurrentLoadingVersion = 0;
+		const bool bReadResult = ar(sCurrentLoadingVersion, "version");
+		if (bReadResult && (sCurrentLoadingVersion > 2))
 		{
-			// read directly
+			// Read directly
 			for (size_t i = 0; i < ITimeOfDay::PARAM_TOTAL; ++i)
 			{
 				ar(m_vars[i], "var");
 			}
+
 			//Root node is for XML-header only. PropertyTree will have no root node
 			ar(m_consts, "Constants");
 		}
-		else if (bReadResult && (2 == version))
+		else if (bReadResult && (2 == sCurrentLoadingVersion))
 		{
 			for (size_t i = 0; i < ITimeOfDay::PARAM_TOTAL; ++i)
 			{

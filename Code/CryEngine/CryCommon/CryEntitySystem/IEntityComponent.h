@@ -488,8 +488,8 @@ public:
 	//! will override old timer, and old timer will not send finish event.
 	//! The timer will automatically be serialized to disk and restored for save games, assuming that a component with the same instance GUID exists at deserialization time.
 	//! \param timerId Timer ID, multiple timers with different IDs are possible.
-	//! \param timeInMilliseconds Timer timeout time in milliseconds.
-	void SetTimer(uint8 timerId, int timeInMilliseconds);
+	//! \param timeInMilliseconds Timer timeout time.
+	void SetTimer(uint8 timerId, const CTimeValue& time);
 	//! Stops the specified timer for this component instance
 	//! \see ENTITY_EVENT_TIMER
 	void KillTimer(uint8 timerId);

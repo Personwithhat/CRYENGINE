@@ -364,7 +364,8 @@ public:
 	unused_marker&                     operator,(int& x) CRY_GCC48_AVOID_OPTIMIZE;
 	unused_marker&                     operator,(unsigned int& x) CRY_GCC48_AVOID_OPTIMIZE;
 	unused_marker&                     operator,(bool& x) CRY_GCC48_AVOID_OPTIMIZE;
-	template<class T> unused_marker&   operator,(T& x) = delete; // prevent accidental use with unimplemented type
+	template <class T, typename boost::disable_if_c<isMP || isTV>::type* = 0> 
+	unused_marker&   operator,(T& x) = delete; // Prevent accidental use with unimplemented type
 	template<class ref> unused_marker& operator,(ref*& x)                        { x = (ref*)-1; return *this; }
 	template<class F>   unused_marker& operator,(Vec3_tpl<F>& x)                 { return *this, x.x; }
 	template<class F>   unused_marker& operator,(Quat_tpl<F>& x)                 { return *this, x.w; }
@@ -381,13 +382,14 @@ inline unused_marker& unused_marker::operator,(unsigned int& x) { x = 1u << 31; 
 inline unused_marker& unused_marker::operator,(bool& x)         { *alias_cast<char*>(&x) = 0x77; return *this; }
 
 #undef CRY_GCC48_AVOID_OPTIMIZE
+template <class T, typename boost::disable_if_c<isMP || isTV>::type* = 0>  
+bool  is_unused(T x) = delete;          // prevent accidental use with unimplemented type
 
 inline bool              is_unused(const float& x)         { unused_marker::f2i u; u.f = x; return (u.i & 0xFFA00000) == 0xFFA00000; }
 
 inline bool              is_unused(int x)                  { return x == 1 << 31; }
 inline bool              is_unused(unsigned int x)         { return x == 1u << 31; }
 inline bool              is_unused(const bool& x)          { return *alias_cast<uint8*>(&x) == 0x77; }
-template <class T> bool  is_unused(T x) = delete;          // prevent accidental use with unimplemented type
 template<class ref> bool is_unused(ref* x)                 { return x == (ref*)-1; }
 template<class ref> bool is_unused(strided_pointer<ref> x) { return is_unused(x.data); }
 template<class F> bool   is_unused(const Ang3_tpl<F>& x)   { return is_unused(x.x); }
@@ -3293,7 +3295,7 @@ struct EventPhysWorldStepStart : EventPhys
 {
 	enum entype { id = 16, flagsCall = 0, flagsLog = 0 };
 	EventPhysWorldStepStart() { idval = id; }
-	float dt;
+	CTimeValue dt;
 };
 
 struct EventPhysBBoxChange : EventPhysMono

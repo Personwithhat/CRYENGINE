@@ -2140,10 +2140,10 @@ void CTimeDemoRecorder::LogEndOfLoop()
 
 	int numFrames = GetNumberOfFrames();//m_records.size();
 	LogInfo(" Run Finished.");
-	LogInfo("    Play Time: %.2fs, Average FPS: %.2f", m_lastPlayedTotalTime, m_lastAveFrameRate);
+	LogInfo("    Play Time: %.2fs, Average FPS: %.2f", (float)m_lastPlayedTotalTime.GetSeconds(), (float)m_lastAveFrameRate);
 	LogInfo("    Min FPS: %.2f at frame %d, Max FPS: %.2f at frame %d", m_minFPS, m_minFPS_Frame, m_maxFPS, m_maxFPS_Frame);
 	if (m_lastPlayedTotalTime * numFrames > 0)
-		LogInfo("    Average Tri/Sec: %d, Tri/Frame: %d", (int)(m_nTotalPolysPlayed / m_lastPlayedTotalTime), m_nTotalPolysPlayed / numFrames);
+		LogInfo("    Average Tri/Sec: %d, Tri/Frame: %d", (int)(m_nTotalPolysPlayed / m_lastPlayedTotalTime.GetSeconds()), m_nTotalPolysPlayed / numFrames);
 	if (m_nTotalPolysPlayed)
 		LogInfo("    Recorded/Played Tris ratio: %.2f", (float)m_nTotalPolysRecorded / m_nTotalPolysPlayed);
 

@@ -232,7 +232,7 @@ public:
 		: m_owner(owner)
 	{}
 
-	I3DEngine::ELevelLoadStatus DoStep(const float fTimeslicingLimitSec);
+	I3DEngine::ELevelLoadStatus DoStep(const CTimeValue& fTimeslicingLimi);
 
 
 private:
@@ -262,7 +262,7 @@ private:
 	EStep m_currentStep = EStep::Init;
 
 	// intermediate
-	float m_startTime = 0;
+	CTimeValue m_startTime = 0;
 	bool m_isCgfCacheExist = false;
 	CLevelStatObjLoader m_cgfStreamer;
 	int m_loadedCgfCounter = 0;
@@ -280,7 +280,7 @@ private:
 
 
 
-I3DEngine::ELevelLoadStatus CObjManager::CPreloadTimeslicer::DoStep(const float timeSlicingLimitSec)
+I3DEngine::ELevelLoadStatus CObjManager::CPreloadTimeslicer::DoStep(const CTimeValue& timeSlicingLimit)
 {
 #define NEXT_STEP(step) return SetInProgress(step); case step: 
 
@@ -365,7 +365,7 @@ I3DEngine::ELevelLoadStatus CObjManager::CPreloadTimeslicer::DoStep(const float 
 
 		NEXT_STEP(EStep::BrushListLoad)
 		{
-			const float fStartTime = GetCurAsyncTimeSec();
+			const CTimeValue fStartTime = GetGTimer()->GetAsyncTime();
 			while (m_brushesIter != m_brushes.end())
 			{
 				if (m_isVerboseLogging)
@@ -382,7 +382,7 @@ I3DEngine::ELevelLoadStatus CObjManager::CPreloadTimeslicer::DoStep(const float 
 				//This loop can take a few seconds, so we should refresh the loading screen and call the loading tick functions to ensure that no big gaps in coverage occur.
 				SYNCHRONOUS_LOADING_TICK();
 
-				if (timeSlicingLimitSec > 0.0f && GetCurAsyncTimeSec() - fStartTime > timeSlicingLimitSec)
+				if (timeSlicingLimit > 0 && GetGTimer()->GetAsyncTime() - fStartTime > timeSlicingLimit)
 				{
 					return SetInProgress(m_currentStep);
 				}
@@ -401,7 +401,7 @@ I3DEngine::ELevelLoadStatus CObjManager::CPreloadTimeslicer::DoStep(const float 
 			}
 
 			CryPathString cgfFilename;
-			const float fStartTime = GetCurAsyncTimeSec();
+			const CTimeValue fStartTime = GetGTimer()->GetAsyncTime();
 
 			// Request objects loading from Streaming System.
 			if (m_szResFileName)
@@ -444,7 +444,7 @@ I3DEngine::ELevelLoadStatus CObjManager::CPreloadTimeslicer::DoStep(const float 
 
 					m_szResFileName = m_pResList->GetNext();
 
-					if (timeSlicingLimitSec > 0.0f && GetCurAsyncTimeSec() - fStartTime > timeSlicingLimitSec)
+					if (timeSlicingLimit > 0 && GetGTimer()->GetAsyncTime() - fStartTime > timeSlicingLimit)
 					{
 						return SetInProgress(m_currentStep);
 					}
@@ -486,7 +486,7 @@ void CObjManager::PreloadLevelObjects()
 {
 	CPreloadTimeslicer slicer(*this);
 	I3DEngine::ELevelLoadStatus result = I3DEngine::ELevelLoadStatus::InProgress;
-	const float infiniteTimeSlicingLimit = -1.0f;
+	const CTimeValue infiniteTimeSlicingLimit = -1;
 	do
 	{
 		result = slicer.DoStep(infiniteTimeSlicingLimit);
@@ -512,8 +512,7 @@ I3DEngine::ELevelLoadStatus CObjManager::UpdatePreloadLevelObjects()
 
 	LOADING_TIME_PROFILE_SECTION;
 
-	const float timeSlicingLimitSec = 1.0f;
-
+	const CTimeValue timeSlicingLimitSec = 1;
 	switch (m_pPreloadTimeSlicer->DoStep(timeSlicingLimitSec))
 	{
 	case I3DEngine::ELevelLoadStatus::InProgress:

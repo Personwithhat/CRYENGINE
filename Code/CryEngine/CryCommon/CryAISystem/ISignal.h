@@ -76,6 +76,7 @@ namespace AISignals
 
 		IAISignalExtraData() : string1(NULL), string2(NULL) {}
 
+		CTimeValue	 tVal;
 		Vec3         point;
 		Vec3         point2;
 		ScriptHandle nID;

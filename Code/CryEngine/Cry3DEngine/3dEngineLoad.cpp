@@ -939,11 +939,11 @@ I3DEngine::ELevelLoadStatus C3DEngineLevelLoadTimeslicer::DoStep()
 			{
 				m_owner.PrintMessage("Starting loading level characters ...");
 				INDENT_LOG_DURING_SCOPE();
-				CTimeValue fStartTime = m_owner.GetCurAsyncTimeSec();
+				CTimeValue fStartTime = GTimer(d3d)->GetAsyncTime();
 
 				gEnv->pCharacterManager->PreloadLevelModels();
 
-				CTimeValue dt = m_owner.GetCurAsyncTimeSec() - fStartTime;
+				CTimeValue dt = GTimer(d3d)->GetAsyncTime() - fStartTime;
 				m_owner.PrintMessage("Finished loading level characters (%.1f sec)", (float)dt.GetSeconds());
 			}
 		}

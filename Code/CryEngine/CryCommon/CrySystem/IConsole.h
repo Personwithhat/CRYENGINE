@@ -607,15 +607,12 @@ struct ICVar
 	//! \return The float value of the variable.
 	virtual float GetFVal() const = 0;
 
-	/*
-		PERSONAL IMPROVE: CVar's are some of the messiest implementations regarding multi-strongtype setups.
-		Honestly all the multi-data type serialization/etc. systems should be cleaned up/standerdized.
-	*/
+	//! Only works with 'mpfloat', no other strong-type. As such it's best to use a 'ref' cvar for strongtype'd values.
 	//! \return The MPFloat value of the variable.
-	virtual mpfloat GetMPVal()   const { assert(false && "Invalid get!"); return 0;} 
+	virtual mpfloat GetMPVal()		const { assert(false && "Invalid get!"); return 0; }
 
-	//! \return The CTimeValue value of the variable.  [For Readability]
-	virtual CTimeValue GetTime() const { assert(false && "Invalid get!"); return 0; }
+	//! \return The CTimeValue value of the variable.
+	virtual CTimeValue GetTime()  const { assert(false && "Invalid get!"); return 0; }
 
 	//! \note Don't store pointer as multiple calls to this function might return same memory ptr.
 	//! \return The string value of the variable.
@@ -644,13 +641,13 @@ struct ICVar
 	//! Set the MPFloat-type value of the variable.
 	//! \param s MPFloat representation the value.
 	#define MP_FUNCTION(T)\
-	virtual void Set(const T& mpvalue)	  { assert(false && "Invalid set!"); }
+	virtual void Set(const T& mpvalue)		{ assert(false && "Invalid set!"); }
 	#include "mpfloat.types"
 	#undef MP_FUNCTION
 
-	//! Set the time-value of the variable. [For Readability]
+	//! Set the time-value of the variable.
 	//! \param s CTimeValue representation the value.
-	virtual void Set(const CTimeValue& f) { assert(false && "Invalid set!"); }
+	virtual void Set(const CTimeValue& f)  { assert(false && "Invalid set!"); }
 
 	//! Set the integer value of the variable.
 	//! \param s integer representation the value.
@@ -733,6 +730,17 @@ struct ICVar
 	virtual void SetAllowedValues(std::initializer_list<int64> values) = 0;
 	virtual void SetAllowedValues(std::initializer_list<float> values) = 0;
 	virtual void SetAllowedValues(std::initializer_list<string> values) = 0;
+
+	virtual void SetMinValue(const CTimeValue& min) { assert(false && "Invalid set!"); }
+	virtual void SetMaxValue(const CTimeValue& min) { assert(false && "Invalid set!"); }
+	virtual void SetAllowedValues(std::initializer_list<CTimeValue> min) { assert(false && "Invalid set!"); }
+
+	#define MP_FUNCTION(T)\
+	virtual void SetMinValue(const T& min)	{ assert(false && "Invalid set!"); }\
+	virtual void SetMaxValue(const T& min) { assert(false && "Invalid set!"); }\
+	virtual void SetAllowedValues(std::initializer_list<T> min) { assert(false && "Invalid set!"); }
+	#include "mpfloat.types"
+	#undef MP_FUNCTION
 
 	//! Indicates whether the console owns the CVar and should delete it
 	virtual bool IsOwnedByConsole() const = 0;

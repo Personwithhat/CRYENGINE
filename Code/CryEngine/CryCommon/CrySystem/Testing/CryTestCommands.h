@@ -128,7 +128,7 @@ private:
 class CCommandWait
 {
 public:
-	constexpr explicit CCommandWait(float timeOut)
+	constexpr explicit CCommandWait(const CTimeValue& timeOut)
 		: m_timeOut(timeOut)
 	{
 	}
@@ -138,11 +138,11 @@ public:
 		if (!m_bStarted)
 		{
 			m_bStarted = true;
-			m_startTime = gEnv->pTimer->GetFrameStartTime().GetSeconds();
+			m_startTime = GetGTimer()->GetFrameStartTime();
 		}
 		else
 		{
-			if (gEnv->pTimer->GetFrameStartTime().GetSeconds() - m_startTime >= m_timeOut)
+			if (GetGTimer()->GetFrameStartTime() - m_startTime >= m_timeOut)
 			{
 				m_bStarted = false;
 				return true;
@@ -155,8 +155,8 @@ public:
 private:
 
 	bool  m_bStarted = false;
-	float m_startTime = 0.f;
-	float m_timeOut;
+	CTimeValue m_startTime = 0;
+	CTimeValue m_timeOut;
 };
 
 class CCommandRepeat

@@ -747,7 +747,7 @@ public:
 #if defined(TEXSTRM_COMMIT_COOLDOWN)
 	int           m_nStallFrames;
 #endif
-	float         m_fStartTime;
+	CTimeValue    m_fStartTime;
 
 #if defined(TEXSTRM_DEFERRED_UPLOAD)
 	ID3D11CommandList* m_pCmdList;

@@ -850,7 +850,7 @@ BOOL CCryEditDoc::DoOpenDocument(LPCTSTR lpszPathName, TOpenDocContext& context)
 
 	CryLog("-----------------------------------------------------------");
 	CryLog("Successfully opened document %s", (const char*)levelPath);
-	CryLog("Level loading time: %.2f seconds", (loading_end_time - loading_start_time).GetSeconds());
+	CryLog("Level loading time: %.2f seconds", (float)(loading_end_time - loading_start_time).GetSeconds());
 	CryLog("-----------------------------------------------------------");
 
 	// It assumes loaded levels have already been exported. Can be a big fat lie, though.

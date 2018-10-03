@@ -2815,7 +2815,10 @@ int CRigidEntity::Step(const CTimeValue& time_intervalIn)
 				m_body.pos = m_prevPos - pcontacts[itmax0].dir*max(0.0f,(float)pcontacts[itmax0].t+m_sweepGap);
 				m_posNew = m_body.pos-qrot*m_body.offsfb;
 				bWasUnproj = m_alwaysSweep^1;
-				if (OnSweepHit(pcontacts[itmax0], itmax0, BADTIME(ip.time_interval), gwd.v, nsweeps))
+				CTimeValue tmp = BADTIME(ip.time_interval); // Because passed by reference
+				bool res = OnSweepHit(pcontacts[itmax0], itmax0, tmp, gwd.v, nsweeps);
+				ip.time_interval = tmp.BADGetSeconds();
+				if (res)
 					goto SweepAgain;
 				if (m_bCollisionCulling || m_nParts==1 && m_parts[0].pPhysGeomProxy->pGeom->IsConvex(0.02f)) 
 					ip.ptOutsidePivot[0] = m_body.pos;

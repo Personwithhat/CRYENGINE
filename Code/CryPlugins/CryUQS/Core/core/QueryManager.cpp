@@ -203,7 +203,7 @@ namespace UQS
 					nullptr,
 					id,
 					parentQueryID,
-					gEnv->pTimer->GetAsyncTime(),
+					GetGTimer()->GetAsyncTime(),
 					false,
 					error.c_str());
 				NotifyCallbacksOfFinishedQuery(finishedQueryInfo);
@@ -285,7 +285,7 @@ namespace UQS
 				{}
 
 				std::list<SRunningQueryInfo>::iterator itInQueries;   // points into m_queries
-				float usedFractionOfTimeBudget = 0.0f;                // fraction of the time budget that was used in the last update cycle of .itInQueries
+				mpfloat usedFractionOfTimeBudget = 0;                 // fraction of the time budget that was used in the last update cycle of .itInQueries
 			};
 
 			if (!m_queries.empty())
@@ -439,7 +439,7 @@ namespace UQS
 						// keep track of the potentially worst performing query (this one may get skipped in upcoming updates, depending on whether the overall time budget will get exceeded by the extra threshold)
 						//
 
-						const float usedFractionOfTimeBudget = (timeBudgetForThisQuery.GetValue() > 0) ? (timeUsedByThisQuery.GetMilliSeconds() / timeBudgetForThisQuery.GetMilliSeconds()) : 1.0f;
+						const mpfloat usedFractionOfTimeBudget = (timeBudgetForThisQuery > 0) ? (timeUsedByThisQuery / timeBudgetForThisQuery).conv<mpfloat>() : 1;
 
 						if (worstPerformingQuery.itInQueries == m_queries.end() || worstPerformingQuery.usedFractionOfTimeBudget < usedFractionOfTimeBudget)
 						{
@@ -475,7 +475,7 @@ namespace UQS
 										NotifyOfQueryPerformanceWarning(*worstPerformingQuery.itInQueries, "system frame #%i: query may get flagged as a performance offender after %i more chances to recover (consumed %.1f%% of its granted time: %fms vs %fms)",
 											(int)gEnv->nMainFrameID,
 											worstPerformingQuery.itInQueries->performanceOffenderMercyCountdown,
-											worstPerformingQuery.usedFractionOfTimeBudget * 100.0f,
+											(float)worstPerformingQuery.usedFractionOfTimeBudget * 100.0f,
 											timeUsedByThisQuery.GetMilliSeconds(),
 											timeBudgetForThisQuery.GetMilliSeconds());
 									}
@@ -484,7 +484,7 @@ namespace UQS
 										// this query had enough chances to prevent excessive time consumption => now it's a performance offender
 										NotifyOfQueryPerformanceWarning(*worstPerformingQuery.itInQueries, "system frame #%i: query has just been flagged as a performance offender (consumed %.1f%% of its granted time: %fms vs %fms)",
 											(int)gEnv->nMainFrameID,
-											worstPerformingQuery.usedFractionOfTimeBudget * 100.0f,
+											(float)worstPerformingQuery.usedFractionOfTimeBudget * 100.0f,
 											timeUsedByThisQuery.GetMilliSeconds(),
 											timeBudgetForThisQuery.GetMilliSeconds());
 

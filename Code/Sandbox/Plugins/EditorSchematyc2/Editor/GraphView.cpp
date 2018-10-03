@@ -536,7 +536,7 @@ namespace Schematyc2
 		// Animate color?
 		if(highlight)
 		{
-			const float	time = gEnv->pTimer->GetAsyncTime().GetSeconds();
+			const float	time = GetGTimer()->GetAsyncTime().BADGetSeconds();
 			const float	sinA = sin_tpl(time * ALPHA_HIGHLIGHT_SPEED * gf_PI2);
 			const float	alpha = ALPHA_HIGHLIGHT_MIN + clamp_tpl(ALPHA_HIGHLIGHT_MIN + (sinA * ((ALPHA_HIGHLIGHT_MAX - ALPHA_HIGHLIGHT_MIN) * 0.5f)), 0.0f, 1.0f);
 			color = Gdiplus::Color::MakeARGB(static_cast<BYTE>(alpha * 255.0f), color.GetRed(), color.GetGreen(), color.GetBlue());
@@ -782,7 +782,7 @@ namespace Schematyc2
 		Gdiplus::Color outlineColor = NODE_BODY_OUTLINE_COLOR;
 		if(node.IsSelected())
 		{
-			const float time = gEnv->pTimer->GetAsyncTime().GetSeconds();
+			const float time = GetGTimer()->GetAsyncTime().BADGetSeconds();
 			const float sinA = sin_tpl(time * ALPHA_HIGHLIGHT_SPEED * gf_PI2);
 			const float alpha = ALPHA_HIGHLIGHT_MIN + clamp_tpl(ALPHA_HIGHLIGHT_MIN + (sinA * ((ALPHA_HIGHLIGHT_MAX - ALPHA_HIGHLIGHT_MIN) * 0.5f)), 0.0f, 1.0f);
 			outlineColor = Gdiplus::Color::MakeARGB(static_cast<BYTE>(alpha * 255.0f), NODE_BODY_OUTLINE_COLOR_HIGHLIGHT.GetRed(), NODE_BODY_OUTLINE_COLOR_HIGHLIGHT.GetGreen(), NODE_BODY_OUTLINE_COLOR_HIGHLIGHT.GetBlue());

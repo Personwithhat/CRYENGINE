@@ -117,7 +117,7 @@ namespace UQS
 			, m_pQueryBlueprint(ctorContext.pQueryBlueprint)
 			, m_pOptionalShuttledItems(ctorContext.pOptionalResultingItemsFromPreviousQuery)
 			, m_queryCreatedFrame(gEnv->nMainFrameID)
-			, m_queryCreatedTimestamp(gEnv->pTimer->GetAsyncTime())
+			, m_queryCreatedTimestamp(GetGTimer()->GetAsyncTime())
 			, m_totalConsumedFrames(0)
 			, m_bRequiresSomeTimeBudgetForExecution(bRequiresSomeTimeBudgetForExecution)
 			, m_queryContext(*m_pQueryBlueprint.get(), m_querierName.c_str(), m_queryID, m_globalParams, m_pOptionalShuttledItems.get(), m_timeBudgetForCurrentUpdate, ctorContext.pOptionalHistoryToWriteTo ? &ctorContext.pOptionalHistoryToWriteTo->GetDebugRenderWorldPersistent() : nullptr, ctorContext.pOptionalHistoryToWriteTo ? &ctorContext.pOptionalHistoryToWriteTo->GetDebugMessageCollection() : nullptr)

@@ -17,6 +17,7 @@
 #include <CrySerialization/yasli/KeyValue.h>
 #include <CrySerialization/yasli/KeyValueDictionary.h>
 #include <CrySerialization/yasli/TypeID.h>
+#include <CrySystem\MPFloat.h>
 
 #define YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(type) template <> struct IsDefaultSerializaeble<type> { static const bool value = true; };
 

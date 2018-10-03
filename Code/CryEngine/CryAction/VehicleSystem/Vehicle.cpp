@@ -4767,10 +4767,10 @@ void CVehicle::StartAbandonedTimer(bool force, const CTimeValue& timeIn)
 	const CTimeValue mintime = 5;
 
 	IEntityComponent::KillTimer(eVT_Abandoned);
-	IEntityComponent::SetTimer(eVT_Abandoned, max(mintime + "0.5", timer));
+	IEntityComponent::SetTimer(eVT_Abandoned, max(mintime + "0.5", time));
 
 	IEntityComponent::KillTimer(eVT_AbandonedSound);
-	IEntityComponent::SetTimer(eVT_AbandonedSound, max(CTimeValue(0), (timer + "0.5") - mintime)); // warn sound
+	IEntityComponent::SetTimer(eVT_AbandonedSound, max(CTimeValue(0), (time + "0.5") - mintime)); // warn sound
 }
 
 //------------------------------------------------------------------------

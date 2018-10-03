@@ -99,14 +99,6 @@ enum class EEvent : uint64
 	//! This is useful since the TransformChanged event will be continuously fired as the user is dragging the entity around.
 	TransformChangeFinishedInEditor = BIT64(1),
 
-	//! Sent when the specified entity timer (added via IEntity::SetTimer) expired
-	//! Entity timers are processed once a frame and expired timers are notified in the order of registration
-	//! The timer is automatically removed from the timer map before this event is sent.
-	//! nParam[0] = TimerId
-	//! nParam[1] = Initial duration in milliseconds
-	//! nParam[2] = EntityId
-	TimerExpired,
-
 	//! Sent at the very end of CEntity::Init, called by IEntitySystem::InitEntity
 	//! This indicates that the entity has finished initializing, and that custom logic can start
 	//! Note that this only applies for components that are part of the entity before initialization occurs.

@@ -1304,12 +1304,12 @@ namespace UQS
 			{
 				if (m_serializationMutex.TryLock())
 				{
-					const CTimeValue timestampBefore = gEnv->pTimer->GetAsyncTime();
+					const CTimeValue timestampBefore = GetGTimer()->GetAsyncTime();
 					Serialization::IArchiveHost* pArchiveHost = gEnv->pSystem->GetArchiveHost();
 					if (pArchiveHost->SaveXmlFile(xmlFilePath.c_str(), Serialization::SStruct(snapshot), "UQSQueryHistory"))
 					{
-						const CTimeValue timestampAfter = gEnv->pTimer->GetAsyncTime();
-						const float elapsedSeconds = (timestampAfter - timestampBefore).GetSeconds();
+						const CTimeValue timestampAfter = GetGTimer()->GetAsyncTime();
+						const float elapsedSeconds = (float)(timestampAfter - timestampBefore).GetSeconds();
 						CryLogAlways("[UQS] Successfully dumped query history containing %i queries to '%s' in %.2f seconds", (int)snapshot.historicQueries.size(), xmlFilePath.c_str(), elapsedSeconds);
 					}
 					else

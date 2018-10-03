@@ -79,7 +79,8 @@ struct SLivingEntityNetSerialize {
 	Vec3 velRequested;
 	bool bFlying;
 	bool bJumpRequested;
-	float dh, dhSpeed, stablehTime;
+	float dh, dhSpeed;
+	CTimeValue stablehTime;
 	int idEntGroundCollider;
 	int ipartGroundCollider;
 	Vec3 posOnGroundCollider;

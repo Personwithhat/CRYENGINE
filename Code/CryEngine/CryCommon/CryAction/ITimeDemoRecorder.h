@@ -19,8 +19,8 @@ struct STimeDemoInfo
 {
 	std::vector<STimeDemoFrameInfo> frames;
 
-	float               lastPlayedTotalTime = 0.0f;
-	float               lastAveFrameRate = 0.0f;
+	CTimeValue          lastPlayedTotalTime = 0;
+	rTime               lastAveFrameRate = 0;
 	float               minFPS = 0.0f;
 	float               maxFPS = 0.0f;
 	uint32              minFPS_Frame = 0;

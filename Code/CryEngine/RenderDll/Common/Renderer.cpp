@@ -3280,7 +3280,7 @@ void SRenderStatistics::Finish()
 {
 	// Finish filling the current frame's global timings
 	{
-		m_Summary.frameTime = iTimer->GetRealFrameTime();
+		m_Summary.frameTime = GTimer(d3d)->GetRealFrameTime();
 		m_Summary.renderTime += m_Summary.miscTime;
 		m_Summary.renderTime += m_Summary.flashTime;
 

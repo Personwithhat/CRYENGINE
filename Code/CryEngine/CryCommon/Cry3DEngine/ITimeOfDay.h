@@ -240,7 +240,7 @@ struct ITimeOfDay
 		bool     breezeGenerationEnabled;
 		float    breezeStrength;
 		float    breezeVariance;
-		float    breezeLifeTime;
+		CTimeValue breezeLifeTime;
 		unsigned breezeCount;
 		float    breezeRadius;
 		float    breezeSpawnRadius;

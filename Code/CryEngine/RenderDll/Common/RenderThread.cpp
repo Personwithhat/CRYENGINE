@@ -626,14 +626,14 @@ void SRenderThread::Process()
 
 		if (m_eVideoThreadMode == eVTM_Disabled)
 		{
-			CTimeValue TimeAfterWait = iTimer->GetAsyncTime();
+			CTimeValue TimeAfterWait = GTimer(d3d)->GetAsyncTime();
 			if (gRenDev->m_bStartLevelLoading)
 				SRenderStatistics::Write().m_Summary.idleLoading += (TimeAfterWait - Time);
 
 			ProcessCommands();
 			SignalFlushFinishedCond();
 
-			float fT = iTimer->GetAsyncTime().GetDifferenceInSeconds(TimeAfterWait);
+			CTimeValue fT = GTimer(d3d)->GetAsyncTime() - TimeAfterWait;
 			if (gRenDev->m_bStartLevelLoading)
 				SRenderStatistics::Write().m_Summary.busyLoading += fT;
 		}

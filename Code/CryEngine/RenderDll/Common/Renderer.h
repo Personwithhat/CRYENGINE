@@ -569,22 +569,22 @@ struct CRY_ALIGN(128) SRenderStatistics
 
 	struct SFrameSummary
 	{
-		float idleLoading = 0;
-		float busyLoading = 0;
+		CTimeValue idleLoading = 0;
+		CTimeValue busyLoading = 0;
 
-		float waitForMain = 0;
-		float waitForRender = 0;
-		float waitForGPU = 0;
+		CTimeValue waitForMain = 0;
+		CTimeValue waitForRender = 0;
+		CTimeValue waitForGPU = 0;
 		float gpuIdlePerc = 0;
 
-		float gpuFrameTime = 0.0166667f;
-		float frameTime = 0.0166667f;
-		float renderTime = 0.0166667f;
+		CTimeValue gpuFrameTime = "0.0166667";
+		CTimeValue frameTime = "0.0166667";
+		CTimeValue renderTime = "0.0166667";
 
-		float sceneTime = 0;
-		float flashTime = 0;
-		float miscTime = 0;
-		float endTime = 0;
+		CTimeValue sceneTime = 0;
+		CTimeValue flashTime = 0;
+		CTimeValue miscTime = 0;
+		CTimeValue endTime = 0;
 	}
 	m_Summary;
 

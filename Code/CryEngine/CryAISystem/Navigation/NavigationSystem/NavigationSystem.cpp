@@ -1138,7 +1138,7 @@ uint32 NavigationSystem::GetWorkingQueueSize() const
 	return (uint32)m_updatesManager.GetRequestQueueSize();
 }
 
-#if NAVIGATION_SYSTEM_PC_ONLY
+#if NAV_MESH_REGENERATION_ENABLED
 void NavigationSystem::UpdateMeshes(const CTimeValue& frameTime, const bool blocking, const bool multiThreaded, const bool bBackground)
 {
 	m_updatesManager.Update();

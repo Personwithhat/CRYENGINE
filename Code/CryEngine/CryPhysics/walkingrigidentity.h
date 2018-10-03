@@ -22,7 +22,7 @@ public:
 	virtual int Step(const CTimeValue& dt);
 	virtual float CalcEnergy(const CTimeValue& dt) { return m_Eaux + CRigidEntity::CalcEnergy(dt); }
 	virtual int GetPotentialColliders(CPhysicalEntity **&pentlist, const CTimeValue& dt=0);
-	virtual bool OnSweepHit(geom_contact &cnt, int icnt, CTimeValue&dt, Vec3 &vel, int &nsweeps);
+	virtual bool OnSweepHit(geom_contact &cnt, int icnt, CTimeValue& dt, Vec3 &vel, int &nsweeps);
 	virtual void CheckAdditionalGeometry(const CTimeValue& dt);
 	virtual int RegisterContacts(const CTimeValue& dt,int nMaxPlaneContacts);
 	virtual void GetMemoryStatistics(ICrySizer *pSizer) const;

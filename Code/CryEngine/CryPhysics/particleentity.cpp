@@ -541,6 +541,8 @@ int CParticleEntity::DoStep(const CTimeValue& time_intervalIn, int iCaller)
 		time_interval.SetSeconds("0.0001");
 	m_timeStepPerformed += time_interval;
 
+	float tSeconds = time_interval.BADGetSeconds();
+
 	if (m_pColliderToIgnore && m_pColliderToIgnore->m_iSimClass==7)
 		m_pColliderToIgnore = 0;
 

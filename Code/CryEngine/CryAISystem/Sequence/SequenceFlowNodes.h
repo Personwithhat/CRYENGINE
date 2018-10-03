@@ -328,7 +328,7 @@ public:
 
 	CFlowNode_AISequenceActionShoot(SActivationInfo* pActInfo)
 		: m_actInfo(*pActInfo)
-		, m_fireTimeMS(0)
+		, m_fireTime(0)
 	{
 	}
 

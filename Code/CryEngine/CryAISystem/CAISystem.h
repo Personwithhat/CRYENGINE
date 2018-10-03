@@ -184,7 +184,7 @@ public:
 	//Every frame (multiple time steps per frame possible?)		//TODO find out
 	//	currentTime - AI time since game start in seconds (GetCurrentTime)
 	//	frameTime - since last update (GetFrameTime)
-	virtual void                                  Update(CTimeValue currentTime, const CTimeValue& frameTime);
+	virtual void                                  Update(const CTimeValue& currentTime, const CTimeValue& frameTime);
 												  
 	virtual bool                                  RegisterSystemComponent(IAISystemComponent* pComponent);
 	virtual bool                                  UnregisterSystemComponent(IAISystemComponent* pComponent);

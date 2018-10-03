@@ -7,9 +7,9 @@ void CCryTestRunnerReporter::OnSingleTestStart(const CryTest::STestInfo& testInf
 	m_system.OnSingleTestStart(testInfo);
 }
 
-void CCryTestRunnerReporter::OnSingleTestFinish(const CryTest::STestInfo& testInfo, float fRunTimeInMs, bool bSuccess, const std::vector<CryTest::SError>& failures)
+void CCryTestRunnerReporter::OnSingleTestFinish(const CryTest::STestInfo& testInfo, const CTimeValue& fRunTime, bool bSuccess, const std::vector<CryTest::SError>& failures)
 {
-	m_system.OnSingleTestFinish(testInfo, fRunTimeInMs, bSuccess, failures);
+	m_system.OnSingleTestFinish(testInfo, fRunTime, bSuccess, failures);
 }
 
 CCryTestRunnerReporter::CCryTestRunnerReporter(CCryTestRunnerSystem& system) : m_system(system)
@@ -71,11 +71,11 @@ void CCryTestRunnerSystem::OnSingleTestStart(const CryTest::STestInfo& testInfo)
 	pTestEntry->OnStart();
 }
 
-void CCryTestRunnerSystem::OnSingleTestFinish(const CryTest::STestInfo& testInfo, float fRunTimeInMs, bool bSuccess, const std::vector<CryTest::SError>& failures)
+void CCryTestRunnerSystem::OnSingleTestFinish(const CryTest::STestInfo& testInfo, const CTimeValue& fRunTime, bool bSuccess, const std::vector<CryTest::SError>& failures)
 {
 	CCryTestEntry* pTestEntry = GetTestFromTestInfo(testInfo);
 	CRY_ASSERT(pTestEntry);
-	pTestEntry->OnFinish(bSuccess, fRunTimeInMs, failures);
+	pTestEntry->OnFinish(bSuccess, fRunTime, failures);
 }
 
 CCryTestEntry* CCryTestRunnerSystem::GetTestFromTestInfo(const CryTest::STestInfo& info)
@@ -163,16 +163,16 @@ void CCryTestEntry::Run()
 void CCryTestEntry::OnStart()
 {
 	m_result = ECryTestState::Running;
-	m_duration = 0;
+	m_duration.SetSeconds(0);
 	m_message = "";
 	m_pParent->RequireRefresh();
 }
 
-void CCryTestEntry::OnFinish(bool success, float durationMs, const std::vector<CryTest::SError>& failures)
+void CCryTestEntry::OnFinish(bool success, const CTimeValue& duration, const std::vector<CryTest::SError>& failures)
 {
 	m_result = success ? ECryTestState::Success : ECryTestState::Failure;
-	m_duration = durationMs;
-	m_message = QString("Duration: %1ms").arg(m_duration);
+	m_duration = duration;
+	m_message = QString("Duration: %1ms").arg((float)m_duration.GetMilliSeconds());
 	if (!failures.empty())
 	{
 		m_message += "\n";

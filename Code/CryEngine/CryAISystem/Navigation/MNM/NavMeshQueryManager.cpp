@@ -114,13 +114,13 @@ namespace MNM
 				const INavMeshQueryDebug& queryDebug = activeQuery->GetQueryDebug();
 				const INavMeshQueryDebug::SQueryDebugData& debugData = queryDebug.GetDebugData();
 
-				IRenderAuxText::Draw2dLabel(screenPosition.x, screenPosition.y, textQuerySize, queryColor, false, "ID: %u \tBATCHES: %zu \tTRIANGLES: %zu \tTIME(RUNNING): %f ms \tTIME(ALIVE): %f ms \tCALLER: %s", activeQuery->GetId(), debugData.batchHistory.size(), debugData.trianglesCount, debugData.elapsedTimeRunningInMs, debugData.elapsedTimeTotalInMs, activeQuery->GetQueryConfig().szCallerName);
+				IRenderAuxText::Draw2dLabel(screenPosition.x, screenPosition.y, textQuerySize, queryColor, false, "ID: %u \tBATCHES: %zu \tTRIANGLES: %zu \tTIME(RUNNING): %f ms \tTIME(ALIVE): %f ms \tCALLER: %s", activeQuery->GetId(), debugData.batchHistory.size(), debugData.trianglesCount, (float)debugData.elapsedTimeRunning.GetMilliSeconds(), (float)debugData.elapsedTimeTotal.GetMilliSeconds(), activeQuery->GetQueryConfig().szCallerName);
 
 				// Draw queries batches
 				for (const INavMeshQueryDebug::SBatchData& batchData : debugData.batchHistory)
 				{
 					screenPosition.y += spacingBatch;
-					IRenderAuxText::Draw2dLabel(screenPosition.x, screenPosition.y, textBatchSize, batchColor, false, "\t- N: %u \tSIZE: %zu \tTRIANGLES: %zu \tTIME (RUNNING): %f ms", batchData.batchNumber, batchData.batchSize, batchData.triangleDataArray.size(), batchData.elapsedTimeInMs);
+					IRenderAuxText::Draw2dLabel(screenPosition.x, screenPosition.y, textBatchSize, batchColor, false, "\t- N: %u \tSIZE: %zu \tTRIANGLES: %zu \tTIME (RUNNING): %f ms", batchData.batchNumber, batchData.batchSize, batchData.triangleDataArray.size(), (float)batchData.elapsedTime.GetMilliSeconds());
 				}
 			}
 		}

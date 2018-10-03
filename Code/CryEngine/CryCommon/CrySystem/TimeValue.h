@@ -268,12 +268,41 @@ public:
 		}
 	}
 
+	//! Splits the time value into hours, minutes, seconds, milliseconds.
+	//! All output parameters are optional (can be nullptr).
+	void Split(mpfloat* pHours, mpfloat* pMinutes, mpfloat* pSeconds, mpfloat* pMilliseconds) const
+	{
+		if (pHours)
+		{
+			*pHours = GetSeconds() / (60 * 60);
+		}
+
+		if (pMinutes)
+		{
+			*pMinutes = GetSeconds() / 60;
+		}
+
+		if (pSeconds)
+		{
+			*pSeconds = GetSeconds();
+		}
+
+		if (pMilliseconds)
+		{
+			*pMilliseconds = GetMilliSeconds();
+		}
+	}
+
 	// Type-Info generation
 	AUTO_STRUCT_INFO;
 
 public:
 	mpfloat m_lValue;     //!< Time in Seconds. Storage limited to 'least-accurate number', in this case 'Seconds'.
 };
+
+// TypeInfo related conversions
+TVOnly string ToString(T const& val)			 { return val.str(); }
+TVOnly bool FromString(T& val, const char* s) { val = T(s); return true; }
 
 //** 
 //** Other operators

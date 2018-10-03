@@ -270,7 +270,7 @@ void CNavMeshQuery::OnNavMeshChanged(NavigationAgentTypeID navAgentId, Navigatio
 	}
 
 #ifdef NAV_MESH_QUERY_DEBUG
-	const CTimeValue now = gEnv->pTimer->GetAsyncCurTime();
+	const CTimeValue now = GetGTimer()->GetAsyncCurTime();
 	bool regenerationAffectsQuery = false;
 #endif //NAV_MESH_QUERY_DEBUG
 
@@ -325,7 +325,7 @@ void CNavMeshQuery::OnNavMeshAnnotationChanged(NavigationAgentTypeID navAgentId,
 	}
 
 #ifdef NAV_MESH_QUERY_DEBUG
-	const CTimeValue now = gEnv->pTimer->GetAsyncCurTime();
+	const CTimeValue now = GetGTimer()->GetAsyncCurTime();
 	bool changeAffectsQuery = false;
 #endif //NAV_MESH_QUERY_DEBUG
 
@@ -456,16 +456,16 @@ INavMeshQuery::EQueryStatus CNavMeshQuery::PullNextTriangleBatchInternal(const s
 	}
 
 #ifdef NAV_MESH_QUERY_DEBUG
-	const CTimeValue timeAtStart = gEnv->pTimer->GetAsyncCurTime();
+	const CTimeValue timeAtStart = GetGTimer()->GetAsyncCurTime();
 #endif // NAV_MESH_QUERY_DEBUG
 	size_t trianglesCount;
 	ProcessTilesTriangles(batchSize, outTriangles, trianglesCount);
 	outTriangles.resize(trianglesCount);
 
 #ifdef NAV_MESH_QUERY_DEBUG
-	const CTimeValue timeAtEnd = gEnv->pTimer->GetAsyncCurTime();
-	const float elapsedTimeInMs = timeAtEnd.GetDifferenceInSeconds(timeAtStart) * 1000;
-	const INavMeshQueryDebug::SBatchData queryBatch(m_batchCount++, batchSize, elapsedTimeInMs, m_runtimeData.pMesh, outTriangles);
+	const CTimeValue timeAtEnd = GetGTimer()->GetAsyncCurTime();
+	const CTimeValue elapsedTime = timeAtEnd - timeAtStart;
+	const INavMeshQueryDebug::SBatchData queryBatch(m_batchCount++, batchSize, elapsedTime, m_runtimeData.pMesh, outTriangles);
 	m_queryDebug.AddBatchToHistory(queryBatch);
 	DebugDrawQueryBatch(queryBatch);
 #endif // NAV_MESH_QUERY_DEBUG

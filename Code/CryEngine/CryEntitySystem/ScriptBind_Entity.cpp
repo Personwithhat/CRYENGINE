@@ -5393,7 +5393,7 @@ int CScriptBind_Entity::SetTimer(IFunctionHandler* pH)
 	pH->GetParams(timerId, time);
 	if (IEntityScriptComponent* pScriptProxy = (IEntityScriptComponent*)pEntity->GetProxy(ENTITY_PROXY_SCRIPT))
 	{
-		pEntity->SetTimer(timerId, time);
+		pScriptProxy->SetTimer(timerId, time);
 	}
 	return pH->EndFunction();
 }

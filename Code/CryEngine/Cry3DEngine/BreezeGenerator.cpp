@@ -45,7 +45,7 @@ CBreezeGenerator::CBreezeGenerator()
 	m_params.breezeSpread = 0.0f;
 	m_params.breezeCount = 0;
 	m_params.breezeRadius = 0.0f;
-	m_params.breezeLifeTime = 0.0f;
+	m_params.breezeLifeTime.SetSeconds(0);
 	m_params.breezeVariance = 0.0f;
 	m_params.breezeStrength = 0.0f;
 	m_params.breezeMovementSpeed = 0.0f;
@@ -168,12 +168,11 @@ void CBreezeGenerator::Update()
 			buoyancy.waterFlow = breeze.direction = RandomDirection(m_params.windVector, m_params.breezeSpread) * cry_random(0.0f, m_params.breezeStrength);
 			breeze.wind_area->SetParams(&pp);
 			breeze.wind_area->SetParams(&buoyancy);
-			// Float inaccuracy is fine, random lifetime.
-			breeze.lifetime = m_params.breezeLifeTime * (float)cry_random<CTimeValue>("0.5", 1).GetSeconds();
+			breeze.lifetime = m_params.breezeLifeTime * cry_random<CTimeValue>("0.5", 1).GetSeconds();
 		}
 		else
 		{
-			pp.pos = (breeze.position += breeze.direction * m_params.breezeMovementSpeed * frame_time);
+			pp.pos = (breeze.position += breeze.direction * m_params.breezeMovementSpeed * frame_time.BADGetSeconds());
 			if (m_params.breezeFixedHeight != -1.f)
 				pp.pos.z = m_params.breezeFixedHeight;
 			else

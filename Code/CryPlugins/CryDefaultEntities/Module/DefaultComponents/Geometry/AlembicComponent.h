@@ -47,7 +47,7 @@ namespace Cry
 				desc.AddBase<IEditorEntityComponent>();
 
 				desc.AddMember(&CAlembicComponent::m_filePath, 'file', "FilePath", "File", "Determines the geom cache file (abc / cbc) to load", "%ENGINE%/EngineAssets/GeomCaches/default.cbc");
-				desc.AddMember(&CAlembicComponent::m_playSpeed, 'pspd', "PlaySpeed", "Speed", "Determines the play speed of the animation", 0.005f);
+				desc.AddMember(&CAlembicComponent::m_playSpeed, 'pspd', "PlaySpeed", "Speed", "Determines the play speed of the animation", CTimeValue("0.005"));
 				desc.AddMember(&CAlembicComponent::m_materialPath, 'mat', "Material", "Material", "Specifies the override material for the selected object", "");
 			}
 
@@ -69,8 +69,8 @@ namespace Cry
 			Schematyc::GeomCacheFileName m_filePath;
 			
 			bool m_isPlayEnabled = false;
-			float m_playSpeed = 0.005f;
-			float m_currentTime = 0.01f;
+			CTimeValue m_playSpeed = "0.005";
+			CTimeValue m_currentTime = "0.01";
 			Schematyc::MaterialFileName m_materialPath;
 		};
 	}

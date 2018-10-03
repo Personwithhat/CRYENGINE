@@ -162,7 +162,7 @@ void CVar::Init()
 	                               "Usage: es_ImpulseScale 0.0");
 	pMaxImpulseAdjMass = REGISTER_FLOAT("es_MaxImpulseAdjMass", 2000.0f, VF_CHEAT,
 	                                    "Usage: es_MaxImpulseAdjMass 2000.0");
-	debrisLifetimeScale = REGISTER_MPFLOAT("es_DebrisLifetimeScale", mpfloat(1), 0,
+	pDebrisLifetimeScale = REGISTER_MPFLOAT("es_DebrisLifetimeScale", mpfloat(1), 0,
 	                                      "Usage: es_DebrisLifetimeScale 1.0");
 	pHitCharacters = REGISTER_INT("es_HitCharacters", 1, 0,
 	                              "specifies whether alive characters are affected by bullet hits (0 or 1)");

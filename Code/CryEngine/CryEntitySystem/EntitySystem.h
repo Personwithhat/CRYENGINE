@@ -452,7 +452,7 @@ public:
 	struct SProfiledEntityEvent
 	{
 		int numEvents = 0;
-		float totalCostMs = 0.f;
+		CTimeValue totalCost = 0;
 		int numListenerAdditions = 0;
 		int numListenerRemovals = 0;
 
@@ -468,7 +468,7 @@ public:
 		};
 
 		SEntityInfo mostExpensiveEntity;
-		float mostExpensiveEntityCostMs = 0.f;
+		CTimeValue mostExpensiveEntityCost = 0; // Time
 	};
 
 	std::array<SProfiledEntityEvent, static_cast<size_t>(Cry::Entity::EEvent::Count)> m_profiledEvents;

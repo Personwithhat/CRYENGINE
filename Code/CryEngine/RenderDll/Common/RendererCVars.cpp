@@ -3118,11 +3118,11 @@ CCVarUpdateRecorder::SUpdateRecord::SUpdateRecord(ICVar* pCVar)
 
 	switch (type)
 	{
-		case ECVarType::CVAR_INT:    intValue = pCVar->GetIVal();                 break;
-		case ECVarType::CVAR_FLOAT:  floatValue = pCVar->GetFVal();               break;
-		case ECVarType::CVAR_STRING:
-		case ECVarType::CVAR_MPFLOAT:
-		case ECVarType::CVAR_TIMEVAL: cry_strcpy(stringValue, pCVar->GetString()); break;
+		case ECVarType::Int:    intValue = pCVar->GetIVal();                 break;
+		case ECVarType::Float:  floatValue = pCVar->GetFVal();               break;
+		case ECVarType::String:
+		case ECVarType::MPFloat:
+		case ECVarType::TimeVal: cry_strcpy(stringValue, pCVar->GetString()); break;
 		default: assert(false);
 	};
 }

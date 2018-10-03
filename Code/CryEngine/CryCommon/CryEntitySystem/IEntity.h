@@ -1464,9 +1464,9 @@ inline Matrix34 IEntityComponent::GetWorldTransformMatrix() const
 	return m_pEntity->GetWorldTM() * GetTransformMatrix();
 }
 
-inline void IEntityComponent::SetTimer(uint8 timerId, int timeInMilliseconds)
+inline void IEntityComponent::SetTimer(uint8 timerId, const CTimeValue& time)
 {
-	m_pEntity->SetTimer(this, GetEntityId(), GetGUID(), timerId, timeInMilliseconds);
+	m_pEntity->SetTimer(this, GetEntityId(), GetGUID(), timerId, time);
 }
 
 inline void IEntityComponent::KillTimer(uint8 timerId)

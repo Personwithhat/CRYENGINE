@@ -200,9 +200,8 @@ void CGameplayRecorder::CExampleMetadataListener::OnData(const IMetadata* metada
 	{
 	case eDT_frame:
 		{
-			CTimeValue tv;
-			if (const string* temp = boost::get<const string>(&data.GetValue()))
-				tv.SetSeconds(temp->c_str());
+			const auto& temp = stl::get<string>(data.GetValue());
+			CTimeValue tv = temp.c_str();
 			CryLog("frame %f", (float)tv.GetSeconds());
 		}
 		break;

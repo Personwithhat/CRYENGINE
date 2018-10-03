@@ -3031,7 +3031,7 @@ public:
 			xml->getAttr("durationOnceWithinThreshold", m_durationOnceWithinThreshold);
 		}
 
-		if (m_durationOnceWithinThreshold != -1.0 && m_durationOnceWithinThreshold < 0)
+		if (m_durationOnceWithinThreshold != -1 && m_durationOnceWithinThreshold < 0)
 		{
 			ErrorReporter(*this, context).LogWarning("%s", ErrorReporter::ErrorMessageInvalidAttribute("Aim", "durationOnceWithinThreshold", ToString(m_durationOnceWithinThreshold), "Value must be greater or equal than 0").c_str());
 		}
@@ -3069,7 +3069,7 @@ public:
 		archive.doc("When enable, aims at reference point. Otherwise, aims at Target.");
 
 
-		if (m_durationOnceWithinThreshold != -1.0f && m_durationOnceWithinThreshold < 0)
+		if (m_durationOnceWithinThreshold != -1 && m_durationOnceWithinThreshold < 0)
 		{
 			archive.warning(m_durationOnceWithinThreshold, SerializationUtils::Messages::ErrorInvalidValueWithReason("Duration once within threshold", ToString(m_durationOnceWithinThreshold), "Value must be greater or equal than 0 or -1 to run forever"));
 		}
@@ -4709,7 +4709,7 @@ public:
 		archive(m_duration, "duration", "+Duration");
 		archive.doc("Time in seconds before the node exists yielding Success.");
 
-		if (m_duration == 0.0f)
+		if (m_duration == 0)
 		{
 			archive.warning(m_duration, SerializationUtils::Messages::ErrorInvalidValueWithReason("Duration", ToString(m_duration), "Shooting duration is set to 0"));
 		}

@@ -1293,7 +1293,7 @@ public:
 		NEXT_STEP(EStep::GameTokenLibs)
 		{
 			m_pSpamDelay = gEnv->pConsole->GetCVar("log_SpamDelay");
-			m_spamDelay = 0;
+			m_spamDelay.SetSeconds(0);
 			if (m_pSpamDelay)
 			{
 				m_spamDelay = m_pSpamDelay->GetTime();
@@ -1605,7 +1605,7 @@ private:
 	
 	// Intermediate
 	ICVar* m_pSpamDelay = nullptr;
-	float m_spamDelay = 0.0f;
+	CTimeValue m_spamDelay = 0;
 	XmlNodeRef m_missionXml;
 
 	// Result

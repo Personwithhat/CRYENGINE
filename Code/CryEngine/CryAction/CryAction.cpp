@@ -2782,7 +2782,7 @@ void CCryAction::PreFinalizeCamera(CEnumFlags<ESystemUpdateFlags> updateFlags)
 		}
 	}
 
-	CTimeValue delta = gEnv->pTimer->GetFrameTime();
+	CTimeValue delta = GetGTimer()->GetFrameTime();
 	const bool bGameIsPaused = gEnv->pGameFramework->IsGamePaused(); // slightly different from m_paused (check's gEnv->pTimer as well)
 
 	if (!bGameIsPaused)

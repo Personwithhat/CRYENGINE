@@ -20,6 +20,7 @@
 
 #include <CryCore/Platform/platform.h>
 #include <CryCore/BitFiddling.h>
+#include <CrySystem/MPFloat.h>
 #include <cstdlib>
 #include <cfloat>
 #include <cmath>

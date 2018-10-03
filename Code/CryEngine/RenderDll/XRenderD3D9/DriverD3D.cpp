@@ -969,10 +969,10 @@ void CD3D9Renderer::RT_BeginFrame(const SDisplayContextKey& displayContextKey)
 
 			// NOTE: takes un-smoothed last frame's times
 			const auto& lastTimings = m_frameRenderStats[m_nFillThreadID].m_Summary;
-			static float fWaitForGPU;
-			float fSmooth = 5.0f;
-			fWaitForGPU = (lastTimings.gpuFrameTime + fWaitForGPU * fSmooth) / (fSmooth + 1.0f);
-			if (fWaitForGPU >= 0.004f)
+			static CTimeValue fWaitForGPU;
+			mpfloat fSmooth = 5;
+			fWaitForGPU = (lastTimings.gpuFrameTime + fWaitForGPU * fSmooth) / (fSmooth + 1);
+			if (fWaitForGPU >= "0.004")
 			{
 				if (m_nGPULimited < 1000)
 					m_nGPULimited++;
@@ -1459,14 +1459,14 @@ static int DebugIndexBufferSize(D3DIndexBuffer* pIB)
 }
 
 #if defined(ENABLE_SIMPLE_GPU_TIMERS)
-float CD3D9Renderer::GetGPUFrameTime()
+CTimeValue CD3D9Renderer::GetGPUFrameTime()
 {
 	// NOTE: returning un-smoothed data, smoothed can be requested using ID "RT_COMMAND_BUF_COUNT"
 	const SRenderStatistics::SFrameSummary& rtSummary = m_pPipelineProfiler->GetFrameSummary(GetMainThreadID());
 
 	float fGPUidle = rtSummary.gpuIdlePerc * 0.01f;     // normalise %
 	float fGPUload = 1.0f - fGPUidle;                   // normalised non-idle time
-	float fGPUtime = rtSummary.gpuFrameTime * fGPUload; // GPU time in seconds
+	CTimeValue fGPUtime = rtSummary.gpuFrameTime * BADMP(fGPUload); // GPU time in seconds
 	return fGPUtime;
 }
 
@@ -2112,32 +2112,32 @@ void CD3D9Renderer::DebugPerfBars(const SRenderStatistics& RStats,int nX, int nY
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fTimeDIPSum / fFrameTime * fMaxBar, nY + 12, Col_Yellow, 1.0f);
 	nY += nYst + 5;
 
-	fRTTimeProcess = (rtTimings.renderTime + fRTTimeProcess * fSmooth) / (fSmooth + 1.0f);
+	fRTTimeProcess = (rtTimings.renderTime.BADGetSeconds() + fRTTimeProcess * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colT.r, false, "RT process time: %.3fms", fRTTimeProcess * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fRTTimeProcess / fFrameTime * fMaxBar, nY + 12, Col_Gray, 1.0f);
 	nY += nYst;
 	nX += 5;
 
-	fRTTimeEndFrame = (rtTimings.endTime + fRTTimeEndFrame * fSmooth) / (fSmooth + 1.0f);
+	fRTTimeEndFrame = (rtTimings.endTime.BADGetSeconds() + fRTTimeEndFrame * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colT.r, false, "RT end frame: %.3fms", fRTTimeEndFrame * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fRTTimeEndFrame / fFrameTime * fMaxBar, nY + 12, Col_Gray, 1.0f);
 	nY += nYst;
 
-	fRTTimeFlashRender = (rtTimings.flashTime + fRTTimeFlashRender * fSmooth) / (fSmooth + 1.0f);
+	fRTTimeFlashRender = (rtTimings.flashTime.BADGetSeconds() + fRTTimeFlashRender * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colT.r, false, "RT flash render: %.3fms", fRTTimeFlashRender * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fRTTimeFlashRender / fFrameTime * fMaxBar, nY + 12, Col_Gray, 1.0f);
 	nY += nYst;
 
-	fRTTimeMiscRender = (rtTimings.miscTime + fRTTimeMiscRender * fSmooth) / (fSmooth + 1.0f);
+	fRTTimeMiscRender = (rtTimings.miscTime.BADGetSeconds() + fRTTimeMiscRender * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colT.r, false, "RT misc render: %.3fms", fRTTimeMiscRender * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fRTTimeMiscRender / fFrameTime * fMaxBar, nY + 12, Col_Gray, 1.0f);
 	nY += nYst;
 
-	fRTTimeSceneRender = (rtTimings.sceneTime + fRTTimeSceneRender * fSmooth) / (fSmooth + 1.0f);
+	fRTTimeSceneRender = (rtTimings.sceneTime.BADGetSeconds() + fRTTimeSceneRender * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colT.r, false, "RT scene render: %.3fms", fRTTimeSceneRender * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fRTTimeSceneRender / fFrameTime * fMaxBar, nY + 12, Col_Gray, 1.0f);
@@ -2150,7 +2150,7 @@ void CD3D9Renderer::DebugPerfBars(const SRenderStatistics& RStats,int nX, int nY
 	nY += nYst + 5;
 	nX -= 5;
 
-	fWaitForGPU = (rtTimings.waitForGPU + fWaitForGPU * fSmooth) / (fSmooth + 1.0f);
+	fWaitForGPU = (rtTimings.waitForGPU.BADGetSeconds() + fWaitForGPU * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colF.r, false, "Wait for GPU: %.3fms", fWaitForGPU * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fWaitForGPU / fFrameTime * fMaxBar, nY + 12, Col_Blue, 1.0f);

@@ -947,7 +947,7 @@ void CXConsole::LoadInternalState(struct IDataReadStream& reader)
 		case ECVarType::MPFloat:
 			{
 				const mpfloat mpValue = reader.ReadFloatMP();
-				if ((NULL != pVar) && (pVar->GetType() == CVAR_MPFLOAT))
+				if ((NULL != pVar) && (pVar->GetType() == ECVarType::MPFloat))
 				{
 					pVar->Set(mpValue);
 				}
@@ -960,7 +960,7 @@ void CXConsole::LoadInternalState(struct IDataReadStream& reader)
 		case ECVarType::TimeVal:
 			{
 				const CTimeValue tValue = reader.ReadTime();
-				if ((NULL != pVar) && (pVar->GetType() == CVAR_TIMEVAL))
+				if ((NULL != pVar) && (pVar->GetType() == ECVarType::TimeVal))
 				{
 					pVar->Set(tValue);
 				}
@@ -1071,7 +1071,7 @@ ICVar* CXConsole::Register(const char* sName, T* src, const T& fValue, int nFlag
 	}\
 	if (!allowModify)\
 		nFlags |= VF_CONST_CVAR;\
-	pCVar = new CXConsoleVariableMPFloatRef<T>(this, sName, src, nFlags, help);\
+	pCVar = new CXConsoleVariableMPType<T&>(this, sName, *src, nFlags, help, true);\
 	*src = fValue;\
 	RegisterVar(pCVar, pChangeFunc);\
 	return pCVar;\
@@ -1094,7 +1094,7 @@ ICVar* CXConsole::Register(const char* sName, CTimeValue* src, const CTimeValue&
 	}
 	if (!allowModify)
 		nFlags |= VF_CONST_CVAR;
-	pCVar = new CXConsoleVariableTimeValRef(this, sName, src, nFlags, help);
+	pCVar = new CXConsoleVariableTimeValRef(this, sName, *src, nFlags, help, true);
 	*src = fValue;
 	RegisterVar(pCVar, pChangeFunc);
 	return pCVar;
@@ -1163,7 +1163,7 @@ ICVar* CXConsole::RegisterFloat(const char* sName, float fValue, int nFlags, con
 
 //////////////////////////////////////////////////////////////////////////
 #define MP_FUNCTION(T)\
-ICVar* CXConsole::RegisterMPFloat(const char* sName, const T& fValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)\
+ICVar* CXConsole::RegisterMPFloat(const char* sName, const T& src, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)\
 {\
 	AssertName(sName);\
 	\
@@ -1175,14 +1175,14 @@ ICVar* CXConsole::RegisterMPFloat(const char* sName, const T& fValue, int nFlags
 		return pCVar;\
 	}\
 	\
-	pCVar = new CXConsoleVariableMPFloat<T>(this, sName, fValue, nFlags, help);\
+	pCVar = new CXConsoleVariableMPType<T>(this, sName, src, nFlags, help, true);\
 	RegisterVar(pCVar, pChangeFunc);\
 	return pCVar;\
 }
 #include <CrySystem/mpfloat.types>
 #undef MP_FUNCTION
 //////////////////////////////////////////////////////////////////////////
-ICVar* CXConsole::RegisterTime(const char* sName, const CTimeValue& fValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)
+ICVar* CXConsole::RegisterTime(const char* sName, const CTimeValue& src, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)
 {
 	AssertName(sName);
 
@@ -1196,7 +1196,7 @@ ICVar* CXConsole::RegisterTime(const char* sName, const CTimeValue& fValue, int 
 		return pCVar;
 	}
 
-	pCVar = new CXConsoleVariableTimeVal(this, sName, fValue, nFlags, help);
+	pCVar = new CXConsoleVariableTimeVal(this, sName, src, nFlags, help, true);
 	RegisterVar(pCVar, pChangeFunc);
 	return pCVar;
 }
@@ -4048,25 +4048,25 @@ protected:
 
 bool ConsoleTestBase::IsCVarTestCommandCalled = false;
 
-CRY_TEST_WITH_FIXTURE(ConsoleOpenCloseTest, ConsoleTestBase, timeout = 60.f, game = true, editor = false)
+CRY_TEST_WITH_FIXTURE(ConsoleOpenCloseTest, ConsoleTestBase, timeout = 60, game = true, editor = false)
 {
 	commands =
 	{
 		ShowConsole,
-		CryTest::CCommandWait(0.1f),
+		CryTest::CCommandWait("0.1"),
 		[] {
 			CRY_TEST_ASSERT(gEnv->pConsole->IsOpened());
 		},
-		CryTest::CCommandWait(1.f),
+		CryTest::CCommandWait(1),
 		HideConsole,
-		CryTest::CCommandWait(0.1f),
+		CryTest::CCommandWait("0.1"),
 		[] {
 			CRY_TEST_ASSERT(!gEnv->pConsole->IsOpened());
 		}
 	};
 }
 
-CRY_TEST_WITH_FIXTURE(ConsoleCVarTest, ConsoleTestBase, timeout = 60.f, game = true, editor = false)
+CRY_TEST_WITH_FIXTURE(ConsoleCVarTest, ConsoleTestBase, timeout = 60, game = true, editor = false)
 {
 	commands =
 	{
@@ -4086,7 +4086,7 @@ CRY_TEST_WITH_FIXTURE(ConsoleCVarTest, ConsoleTestBase, timeout = 60.f, game = t
 	};
 }
 
-CRY_TEST_WITH_FIXTURE(ConsoleInputCommandTest, ConsoleTestBase, timeout = 60.f, game = true, editor = false)
+CRY_TEST_WITH_FIXTURE(ConsoleInputCommandTest, ConsoleTestBase, timeout = 60, game = true, editor = false)
 {
 	commands =
 	{
@@ -4095,12 +4095,12 @@ CRY_TEST_WITH_FIXTURE(ConsoleInputCommandTest, ConsoleTestBase, timeout = 60.f, 
 			REGISTER_COMMAND("TestCommand", CVarTestCommandCallback, 0, "ok");
 		},
 		ShowConsole,
-		CryTest::CCommandWait(0.1f),
+		CryTest::CCommandWait("0.1"),
 		[] {
 			gEnv->pConsole->SetInputLine("TestCommand");
 		},
 		CCommandSimulateInputKey(EKeyId::eKI_Enter),
-		CryTest::CCommandWait(1.f),
+		CryTest::CCommandWait(1),
 		[] {
 			CRY_TEST_ASSERT(IsCVarTestCommandCalled);
 		},

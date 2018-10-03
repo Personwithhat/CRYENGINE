@@ -223,7 +223,7 @@ int CWalkingRigidEntity::Step(const CTimeValue& dt)
 	return CRigidEntity::Step(dt); 
 }
 
-bool CWalkingRigidEntity::OnSweepHit(geom_contact &cnt, int icnt, CTimeValue &dt, Vec3 &vel, int &nsweeps)
+bool CWalkingRigidEntity::OnSweepHit(geom_contact &cnt, int icnt, CTimeValue& dt, Vec3 &vel, int &nsweeps)
 {
 	m_pos = m_posNew;
 	if (!m_pentGround) {

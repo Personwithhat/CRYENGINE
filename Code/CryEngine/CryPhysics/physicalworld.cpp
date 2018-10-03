@@ -2515,7 +2515,7 @@ void CPhysicalWorld::TimeStep(const CTimeValue& time_intervalIn, int flags)
 		time_interval = time_interval_org = m_vars.maxWorldStep;
 	m_timePhysics += time_interval;
 	if (m_vars.fixedTimestep>0 && time_interval>0)
-		time_interval = min(m_vars.fixedTimestep, m_vars.maxWorldStep); // PERSONAL TODO: Don't forget to add a note about this!
+		time_interval = min(m_vars.fixedTimestep, m_vars.maxWorldStep); // PERSONAL CRYTEK: Was missing cap here on fixed timestep.
 
 	if (!(flags & ent_flagged_only)) {
 		EventPhysWorldStepStart epwss;
@@ -3364,7 +3364,7 @@ DEBUG_BREAK;
 				event.timeIdle = pent->m_timeIdle;
 				OnEvent(pent->m_flags, &event);
 			}
-			if (bBBoxUpdated && ((INT_PTR)m_pEventClients[EventPhysBBoxChange::id][0] | (INT_PTR)m_pEventClients[EventPhysBBoxChange::id][1]) && !(m_vars.lastTimeStep*pent->GetMassInv())) { 
+			if (bBBoxUpdated && ((INT_PTR)m_pEventClients[EventPhysBBoxChange::id][0] | (INT_PTR)m_pEventClients[EventPhysBBoxChange::id][1]) && !(m_vars.lastTimeStep.BADGetSeconds()*pent->GetMassInv())) { 
 				// during simulation, only send BBox updates for kinematic (0-mass) entities, to avoid redundancy with poststep
 				eventBB.pEntity=pent; eventBB.pForeignData=pent->m_pForeignData; eventBB.iForeignData=pent->m_iForeignData;
 				eventBB.BBoxOld[0] = pent->m_BBox[0];

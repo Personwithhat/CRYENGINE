@@ -191,8 +191,8 @@ namespace Cry
 		void CAlembicComponent::Stop()
 		{
 			m_isPlayEnabled = false;
-			m_currentTime = 0.01f;
-			SetPlaybackTime(0.f);
+			m_currentTime.SetSeconds("0.01");
+			SetPlaybackTime(0);
 			m_pEntity->UpdateComponentEventMask(this);
 		}
 

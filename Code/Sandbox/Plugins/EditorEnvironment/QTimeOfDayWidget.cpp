@@ -835,7 +835,7 @@ void QTimeOfDayWidget::CreateCurveEditor(QSplitter* pParent)
 	m_curveEdit = new CCurveEditor(this);
 	m_curveEdit->FillWithCurveToolsAndConnect(toolBar);
 	m_curveEdit->SetContent(m_curveContent.get());
-	m_curveEdit->SetTimeRange(0), SAnimTime(m_fAnimTimeSecondsIn24h));
+	m_curveEdit->SetTimeRange(0, m_fAnimTimeSecondsIn24h);
 	m_curveEdit->SetRulerVisible(true);
 	m_curveEdit->SetRulerHeight(nRulerHeight);
 	m_curveEdit->SetRulerTicksYOffset(nRulerGradientHeight);
@@ -849,7 +849,7 @@ void QTimeOfDayWidget::CreateCurveEditor(QSplitter* pParent)
 	connect(m_curveEdit, &CCurveEditor::SignalScrub, this, &QTimeOfDayWidget::CurveEditTimeChanged);
 	connect(m_curveEdit, &CCurveEditor::SignalDrawRulerBackground, [this](QPainter& painter, const QRect& rulerRect, const Range& visibleRange)
 	{
-		DrawGradient(GetTimeOfDay(), m_selectedParamId, painter, rulerRect, TRange<CTimeValue>(BADTIME(visibleRange.start), BADTIME(visibleRange.end))););
+		DrawGradient(GetTimeOfDay(), m_selectedParamId, painter, rulerRect, TRange<CTimeValue>(BADTIME(visibleRange.start), BADTIME(visibleRange.end)));
 	});
 	connect(m_curveEdit, &CCurveEditor::SignalContentAboutToBeChanged, this, &QTimeOfDayWidget::UndoBegin);
 	connect(m_curveEdit, &CCurveEditor::SignalContentChanging, this, &QTimeOfDayWidget::OnSplineEditing);
@@ -884,7 +884,7 @@ void QTimeOfDayWidget::CreateCurveEditor(QSplitter* pParent)
 		m_startTimeEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 		connect(m_startTimeEdit, &CTimeEditControl::timeChanged, [](const QTime& time)
 		{
-			const CTimeValue fTODTime = QTimeToFloat(time);
+			const CTimeValue fTODTime = QTimeToTime(time);
 			UpdateToDAdvancedInfo([fTODTime](ITimeOfDay::SAdvancedInfo& sAdvInfo) { sAdvInfo.fStartTime = fTODTime; });
 		});
 		pMediaBarLayoutLeft->addWidget(startTimeLabel);

@@ -1376,7 +1376,7 @@ int CArticulatedEntity::Step(const CTimeValue& time_interval)
 		m_joints[0].quat0 = (m_joints[0].quat0*Quat::CreateRotationXYZ(m_joints[0].q+m_joints[0].qext)).GetNormalized();
 		m_joints[0].q = m_joints[0].qext = Ang3(ZERO);
 	}
-	for(i=0; i<m_nJoints; i=StepJoint(i, time_interval, bBounced, iszero(m_nBodyContacts) & isneg(sqr(m_pWorld->m_vars.maxContactGap)-m_body.v.len2()*sqr(time_interval)), get_iCaller_int()));
+	for(i=0; i<m_nJoints; i=StepJoint(i, time_interval, bBounced, iszero(m_nBodyContacts) & isneg(sqr(m_pWorld->m_vars.maxContactGap)-m_body.v.len2()*sqr(time_interval.BADGetSeconds())), get_iCaller_int()));
 	m_bAwake = isneg(-(int)m_bAwake);
 	m_nBodyContacts = m_nDynContacts = 0;
 	for(i=0;i<m_nJoints;i++) m_joints[i].bHasExtContacts = 0;

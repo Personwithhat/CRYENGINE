@@ -276,39 +276,6 @@ struct EDITOR_COMMON_API IVariable : public IVariableContainer
 	//////////////////////////////////////////////////////////////////////////
 	// Value Limits.
 	//////////////////////////////////////////////////////////////////////////
-	/*
-	bool IsPercise() const {
-		int type = GetType();
-		if(type == MP || type == TV){ return true; }
-		return false;
-	}
-
-	template<class T> 
-	void SetLimits(const T& vMin, const T& vMax, const T& vStep = 0, bool bHardMin = true, bool bHardMax = true) { 
-		assert(!(IsPercise() && !boost::is_convertible<T, mpfloat>::value) && "Anti-lossy Precaution: Can't set multi-precision type with non-multi-precision values!");
-		return SetLimitsG(mpfloat().lossy(vMin), mpfloat().lossy(vMax), mpfloat().lossy(vStep), bHardMin, bHardMax);
-	}
-
-	template<class T>
-	void GetLimits(T& vMin, T& vMax) const
-	{
-		T f;
-		bool b;
-		GetLimits(vMin, vMax, f, b, b);
-	}
-	template<class T> 
-	void GetLimits(T& vMin, T& vMax, T& vStep, bool& bHardMin, bool& bHardMax) const { 
-		assert(!(IsPercise() && !boost::is_convertible<T, mpfloat>::value) && "Anti-lossy Precaution: Can't get multi-precision type with non-multi-precision values!");
-		
-		mpfloat min, max, step;
-		GetLimitsG(min, max, step, bHardMin, bHardMax);
-
-		vMin  = (T)min;
-		vMax  = (T)max;
-		vStep = (T)step;
-	}
-*/
-
 	// Converts mpfloat to/from type automatically, for "I dont know the var" sets.
 	virtual void SetLimitsG(const mpfloat& vMin, const mpfloat& vMax, const mpfloat& vStep = 0, bool bHardMin = true, bool bHardMax = true) { assert(0); }
 	void GetLimitsG(mpfloat& vMin, mpfloat& vMax) const
@@ -865,15 +832,6 @@ struct type_convertor
 		string str = from.GetString();
 		operator()(str, to);
 	}
-
-	void operator()(const int& from, int& to) const         { to = from; }
-	void operator()(const int& from, bool& to) const        { to = from != 0; }
-	void operator()(const int& from, float& to) const       { to = (float)from; }
-	/*template<class To>
-	void operator()(const mpfloat& from, To& to) const
-	{
-		to = (To)from;
-	}*/
 
 	void operator()(const int& from, int& to) const         { to = from; }
 	void operator()(const int& from, bool& to) const        { to = from != 0; }

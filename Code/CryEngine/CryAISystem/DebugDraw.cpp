@@ -4810,7 +4810,7 @@ void CAISystem::DebugDrawPhysicsAccess()
 	{
 		SRayCastRequestInfo& rayCastRequestInfo = sRequestsMap[completedInfo.requesterString.c_str()];
 
-		const int64 completionTime = (completedInfo.completedTime - completedInfo.queuedTime).GetMilliSecondsAsInt64();
+		const int64 completionTime = (int64)(completedInfo.completedTime - completedInfo.queuedTime).GetMilliSeconds();
 		rayCastRequestInfo.completedCount += 1;
 		rayCastRequestInfo.totalCompletedCount += 1;
 		rayCastRequestInfo.peakCompletionTime = max(completionTime, rayCastRequestInfo.peakCompletionTime);

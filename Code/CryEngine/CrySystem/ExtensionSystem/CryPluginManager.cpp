@@ -834,7 +834,7 @@ CRY_TEST_SUITE(CryPluginSystemTest)
 			return true;
 		}
 
-		virtual void MainUpdate(float frameTime) override
+		virtual void MainUpdate(const CTimeValue& frameTime) override
 		{
 			MainUpdateCount++;
 		}
@@ -856,11 +856,11 @@ CRY_TEST_SUITE(CryPluginSystemTest)
 	}
 
 	//http://jira.cryengine.com/browse/CE-17006
-	CRY_TEST(PluginSystemTest, timeout = 10.f)
+	CRY_TEST(PluginSystemTest, timeout = 10)
 	{
 		commands =
 		{
-			CryTest::CCommandWait(1.f),
+			CryTest::CCommandWait(1),
 			CheckCTestPluginUpdateStatus
 		};
 	}

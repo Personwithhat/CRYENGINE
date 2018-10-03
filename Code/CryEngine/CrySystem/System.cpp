@@ -2470,13 +2470,13 @@ void CSystem::GetUpdateStats(SSystemUpdateStats& stats)
 		size_t sz = m_updateTimes.size();
 		if (sz > 1)
 		{
-			const std::pair<CTimeValue, float> head = m_updateTimes.front();
-			const std::pair<CTimeValue, float> tail = m_updateTimes.back();
-			stats.avgUpdateRate = (sz - 1) / (tail.first - head.first).GetSeconds();
+			const std::pair<CTimeValue, CTimeValue> head = m_updateTimes.front();
+			const std::pair<CTimeValue, CTimeValue> tail = m_updateTimes.back();
+			stats.avgUpdateRate = (sz - 1) / (tail.first - head.first);
 		}
 		else
 		{
-			stats.avgUpdateRate = 0.0f;
+			stats.avgUpdateRate = 0;
 		}
 	}
 }

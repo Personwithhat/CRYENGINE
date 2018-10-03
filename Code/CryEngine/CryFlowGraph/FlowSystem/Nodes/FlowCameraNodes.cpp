@@ -90,7 +90,7 @@ public:
 			{
 				char buf[300];
 				cry_sprintf(buf, "-- %s : Angle: (%4.3f,%4.3f,%4.3f)  Shift: (%4.3f,%4.3f,%4.3f )  Freq: %3.1f  Random: %3.1f  Distance: %3.1f  RangeMin: %3.1f RangeMax: %3.1f sustainDuration: %3.1f FadeInDur: %3.1f  FadeOutDur: %3.1f \n",
-				            m_Presets[i].pName, m_Presets[i].angle.x, m_Presets[i].angle.y, m_Presets[i].angle.z, m_Presets[i].shift.x, m_Presets[i].shift.y, m_Presets[i].shift.z, m_Presets[i].frequency,
+				            m_Presets[i].pName, m_Presets[i].angle.x, m_Presets[i].angle.y, m_Presets[i].angle.z, m_Presets[i].shift.x, m_Presets[i].shift.y, m_Presets[i].shift.z, (float)m_Presets[i].frequency,
 				            m_Presets[i].randomness, m_Presets[i].distance, m_Presets[i].rangeMin, m_Presets[i].rangeMax, (float)m_Presets[i].sustainDuration.GetSeconds(), (float)m_Presets[i].fadeInDuration.GetSeconds(), (float)m_Presets[i].fadeOutDuration.GetSeconds());
 
 				cry_strcat(pPresetsHelp, buf);

@@ -428,7 +428,7 @@ public:
 	IProcess*      GetIProcess() override { return m_pProcess; }
 	//@}
 
-	virtual void DisplayErrorMessage(const char* acMessage, float fTime, const float* pfColor = 0, bool bHardError = true) override;
+	virtual void DisplayErrorMessage(const char* acMessage, const CTimeValue& fTime, const float* pfColor = 0, bool bHardError = true) override;
 
 	virtual void FatalError(const char* format, ...) override PRINTF_PARAMS(2, 3);
 	virtual void ReportBug(const char* format, ...) override  PRINTF_PARAMS(2, 3);

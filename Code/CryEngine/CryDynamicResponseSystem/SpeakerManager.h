@@ -77,7 +77,7 @@ private:
 			, pActor(nullptr)
 			, pEntity(nullptr)
 			, pPickedLine(nullptr)
-			, finishTime(0.0f)
+			, finishTime(0)
 			, priority(0)
 			, bWasCanceled(false)
 		{}

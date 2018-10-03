@@ -535,7 +535,7 @@ struct IPlatformOS
 	virtual ~IPlatformOS() {}
 
 	//! Tick with each frame to determine if there are any system messages requiring handling.
-	virtual void Tick(CTimeValue& realFrameTime) = 0;
+	virtual void Tick(const CTimeValue& realFrameTime) = 0;
 
 	//! Local user profile functions to check/initiate user sign in:.
 

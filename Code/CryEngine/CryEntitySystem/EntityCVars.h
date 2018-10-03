@@ -52,7 +52,7 @@ struct CVar
 	static ICVar* pMinImpulseVel;
 	static ICVar* pImpulseScale;
 	static ICVar* pMaxImpulseAdjMass;
-	static ICVar* debrisLifetimeScale;
+	static ICVar* pDebrisLifetimeScale;
 	static ICVar* pHitCharacters;
 	static ICVar* pHitDeadBodies;
 	static ICVar* pLogCollisions;

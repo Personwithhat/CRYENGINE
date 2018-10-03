@@ -525,7 +525,7 @@ public:
 					params.breezeGenerationEnabled = GetPortBool(pActInfo, eIP_BreezeEnabled);
 					params.breezeStrength          = GetPortFloat(pActInfo, eIP_BreezeStrength);
 					params.breezeVariance          = GetPortFloat(pActInfo, eIP_BreezeVariance);
-					params.breezeLifeTime          = GetPortFloat(pActInfo, eIP_BreezeLifetime);
+					params.breezeLifeTime          = GetPortTime(pActInfo, eIP_BreezeLifetime);
 
 					const int breezeCount          = GetPortInt(pActInfo, eIP_BreezeCount);
 					params.breezeCount = breezeCount > 0 ? breezeCount : 0;
