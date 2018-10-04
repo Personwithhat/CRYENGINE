@@ -50,8 +50,10 @@ void CGamePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lp
 			// Don't need to load the map in editor
 			if (!gEnv->IsEditor())
 			{
+				// WARNING: 'Example' level is currently out of date. Will not be loaded properly due to differing chunk sizes.
+				// Using test_level for now. PERSONAL TODO: What is this 'client-server' mode?
 				// Load the example map in client server mode
-				gEnv->pConsole->ExecuteString("map example s", false, true);
+				gEnv->pConsole->ExecuteString("map test_level s", false, true);
 			}
 		}
 		break;
