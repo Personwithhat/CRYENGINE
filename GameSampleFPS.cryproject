@@ -28,7 +28,7 @@
 	"console_variables": {
 		"sys_target_platforms": 			"pc",
 		"sys_user_folder": 					"OFFICIAL_GameSampleFPS", <-- Custom name for C:\Users\XXX\Saved Games\user folder -->
-		"sys_localization_folder": 			"OFFICIAL_Localization",  <-- Ditto -->
+	<-- "sys_localization_folder": 			"OFFICIAL_Localization",  	  Custom name for AssetFolder/localization folder -->
 		"ed_popupMissingAssetResolver": 	"0",					  <-- Ignore some editor errors on missing assets -->
 		
 		"t_Smoothing":						"0", <-- Don't smooth/average frame times -->
