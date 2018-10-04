@@ -1,0 +1,39 @@
+{
+	"version": 3,
+	"type": "CRYENGINE Project",
+	"info": {
+		"name": "SampleFPS",
+		"guid": "18848a42-b446-94c0-8317-cb2b0eff8774" <-- This ID has to be unique! For GUID, you can go to:
+													       VStudio->Tools->"Create GUID in registry format" -->
+	},
+	"content": {
+		"assets": [ "GameSampleFPS" ],    <-- Path to project Assets, relative to PROJECT root -->
+		"code": [ "Code/GameSampleFPS" ], <-- Not used anywhere -->
+		"libs": [
+			{
+				"name": "CE's First Person Shooter Template",
+				"shared": { "any": "SampleFPS", "win_x64": "", "win_x86": "" } <-- Library name + DLL below have to match
+																				   what's in your project's CMakeLists.txt file -->
+			}
+		]
+	},
+	"require": {
+		"engine": "engine-5.5-official", <-- The engine version this project should load, currently on your custom Github-CE version. --> 
+		"plugins": [
+			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },		   <-- You need these 2 to run the engine :) -->
+			{ "type": "EPluginType::Native", "path": "CryPerceptionSystem" },
+			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },	   <-- Gotta load this module since you compiled with it via CMake -->
+			{ "type": "EPluginType::Native", "path": "bin/win_x64/SampleFPS.dll" } <-- Path relative to PROJECT root. -->
+		]
+	},
+	"console_variables": [
+		{ "name": "sys_target_platforms", 			"value": "pc"},
+		{ "name": "sys_user_folder", 				"value": "OFFICIAL_GameSampleFPS"}, <-- Custom name for C:\Users\XXX\Saved Games\user folder -->
+		{ "name": "sys_localization_folder", 		"value": "OFFICIAL_Localization"},  <-- Ditto -->
+		{ "name": "ed_popupMissingAssetResolver", 	"value": "0"},						<-- Ignore some editor errors on missing assets -->
+		
+		<-- Project-specific CVars -->
+		{ "name": "cl_DefaultNearPlane", 			"value": "0.05"}
+	],
+	"console_commands": { }
+}

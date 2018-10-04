@@ -1,0 +1,10 @@
+message(STATUS "OVERRIDE: Overriding user-set options. Trackable in OVERRIDE.cmake")
+
+SET(OPTION_RC ON CACHE BOOL "a" FORCE)						## Needed to compile any shaders etc.
+set(OPTION_RC_RELEASE ON CACHE BOOL "a" FORCE)				## Force release build of RC, no need to wait ages for shaders if in debug build.
+
+SET(PROJECT_CRYENGINE_GAMESDK OFF CACHE BOOL "a" FORCE)		## Don't bother with this piece of junk.
+SET(OPTION_UNITY_BUILD OFF CACHE BOOL "a" FORCE)			## Not caring about this or crymono for now.
+SET(OPTION_CRYMONO OFF CACHE BOOL "a" FORCE)
+
+SET(OPTION_RUNTIME_CVAR_OVERRIDES ON CACHE BOOL "a" FORCE)	## Assuming you have more than 1 project in a solution, need this on.
