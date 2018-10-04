@@ -264,4 +264,7 @@ if(WINDOWS)
 	set(METADATA_VERSION_COMMA ${METADATA_VERSION_COMMA} CACHE INTERNAL "" FORCE)
 endif(WINDOWS)
 
+## For static/trackable build options outside of the usual setup.
+include("${TOOLS_CMAKE_DIR}/OVERRIDE.cmake") 
+
 include("${TOOLS_CMAKE_DIR}/Build.cmake")
