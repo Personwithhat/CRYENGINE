@@ -18,7 +18,7 @@
 		]
 	},
 	"require": {
-		"engine": "engine-5.5-official", <-- The engine version this project should load, currently on your custom Github-CE version. --> 
+		"engine": "engine-5.5-improved", <-- The engine version this project should load, currently on your custom Github-CE version. --> 
 		"plugins": [
 			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },		   <-- You need this to run the engine :) -->
 			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },	   <-- Gotta load this module since you compiled with it via CMake -->
@@ -27,8 +27,8 @@
 	},
 	"console_variables": {
 		"sys_target_platforms": 			"pc",
-		"sys_user_folder": 					"OFFICIAL_GameSampleFPS", <-- Custom name for C:\Users\XXX\Saved Games\user folder -->
-	<-- "sys_localization_folder": 			"OFFICIAL_Localization",  	  Custom name for AssetFolder/localization folder -->
+		"sys_user_folder": 					"IMPROVED_GameSampleFPS", <-- Custom name for C:\Users\XXX\Saved Games\user folder -->
+	<-- "sys_localization_folder": 			"IMPROVED_Localization",  	  Custom name for AssetFolder/localization folder -->
 		"ed_popupMissingAssetResolver": 	"0",					  <-- Ignore some editor errors on missing assets -->
 		
 		"t_Smoothing":						"0", <-- Don't smooth/average frame times -->
