@@ -846,8 +846,8 @@ bool CD3D9Renderer::SetWindow(int width, int height)
 		width = wndrect.right - wndrect.left;
 		height = wndrect.bottom - wndrect.top;
 
-		x += (monitorWidth - width) / 2;
-		y += (monitorHeight - height) / 2;
+		x += (monitorWidth - width) / 2 + iConsole->GetCVar("r_offset_x")->GetIVal();
+		y += (monitorHeight - height) / 2 + iConsole->GetCVar("r_offset_y")->GetIVal();
 	}
 
 	if (IsEditorMode())

@@ -230,7 +230,35 @@ void CWindowsConsole::OnInit(ISystem* pSystem)
 		m_pSystem = pSystem;
 		m_pConsole = pSystem->GetIConsole();
 
-		AllocConsole();
+		// Workaround to create a 'hidden' console to avoid flickering as its position gets changed and so on.
+		STARTUPINFO siStartInfo;		  ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
+		PROCESS_INFORMATION piProcInfo; ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
+		siStartInfo.dwFlags = STARTF_USESHOWWINDOW;
+		siStartInfo.wShowWindow = SW_HIDE;
+
+		// Only thing that Bogus_Console does is sleep for 1000000 milliseconds with a clear console window.
+		string cmd = gEnv->pSystem->GetRootFolder();
+		cmd += "Tools/Bogus_Console.exe";
+
+		if(CreateProcess(
+			NULL,						// absolute path to the application
+			LPSTR(cmd.c_str()),	// cli command
+			NULL,						// process security attributes 
+			NULL,						// primary thread security attributes 
+			TRUE,						// handles are inherited 
+			CREATE_NEW_CONSOLE,	// creation flags - Create a new console and don't inherit from this launcher
+			NULL,						// use parent's environment 
+			NULL,						// use parent's current directory 
+			&siStartInfo,			// STARTUPINFO pointer 
+			&piProcInfo)			// receives PROCESS_INFORMATION 
+		){ ::WaitForSingleObject(piProcInfo.hProcess, DWORD(500)); }		// Hardcoded sleep to wait for bogus_app to launch so we can steal console.
+
+		// Steal console and terminate process. Termination can perhaps be improved.
+		bool res = AttachConsole(piProcInfo.dwProcessId);
+		TerminateProcess(piProcInfo.hProcess, 0);
+		if(!res){ CryFatalError("Unable to launch bogus console window. Err code: %d", GetLastError()); }
+
+		// Rest of the standard console setup.
 		m_inputBufferHandle = GetStdHandle(STD_INPUT_HANDLE);
 		m_screenBufferHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 		SetConsoleMode(m_inputBufferHandle, ENABLE_WINDOW_INPUT);

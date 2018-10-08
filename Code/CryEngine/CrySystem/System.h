@@ -175,6 +175,9 @@ struct SSystemCVars
 	int sys_highrestimer;
 #endif
 
+	int r_offset_x;
+	int r_offset_y;
+
 	int sys_vr_support;
 };
 extern SSystemCVars g_cvars;

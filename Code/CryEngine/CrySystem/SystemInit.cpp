@@ -2903,8 +2903,38 @@ bool CSystem::Initialize(SSystemInitParams& startupParams)
 	#endif
 #endif // _RELEASE
 
+		// Create console
 		if (m_pUserCallback)
 			m_pUserCallback->OnInit(this);
+
+#if CRY_PLATFORM_WINDOWS
+		// Set dedicated server console location
+		if (gEnv->IsDedicated()) {
+			// Get monitor resolution
+			MONITORINFO monitorInfo;
+			monitorInfo.cbSize = sizeof(monitorInfo);
+			GetMonitorInfo(MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY), &monitorInfo);
+			int x = monitorInfo.rcMonitor.left;
+			int y = monitorInfo.rcMonitor.top;
+			const int monitorWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+			const int monitorHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+
+			// Get window width resolution
+			HWND m_hWnd = GetConsoleWindow();
+			RECT wndrect;
+			GetWindowRect(m_hWnd, &wndrect);
+			int width = wndrect.right - wndrect.left;
+			int height = wndrect.bottom - wndrect.top;
+
+			// Change console window position, instead of randomly spawning everywhere.
+			x += (monitorWidth - width) / 2   + g_cvars.r_offset_x;
+			y += (monitorHeight - height) / 2 + g_cvars.r_offset_y;
+			MoveWindow(m_hWnd, x, y, width, height, true);
+			
+			// Reveal console		
+			ShowWindow(m_hWnd, SW_SHOWNA);
+		}
+#endif
 
 		if (m_pProfilingSystem)
 			m_pProfilingSystem->RegisterCVars();
@@ -5339,6 +5369,12 @@ void CSystem::CreateSystemVars()
 #endif
 
 	g_cvars.sys_intromoviesduringinit = 0;
+
+	// When spawning game-launcher window or windows-console, offset by this much relative to screen center. 
+	// Useful for multi-window spawning & debugging e.g. for networking.
+	REGISTER_CVAR2("r_offset_x", &g_cvars.r_offset_x, 0, VF_NULL, "Initial offset X for the main launcher window, relative to screen center. In pixels.");
+	REGISTER_CVAR2("r_offset_y", &g_cvars.r_offset_y, 0, VF_NULL, "Initial offset Y for the main launcher window, relative to screen center. In pixels.");
+
 #if CRY_PLATFORM_WINDOWS
 	((DebugCallStack*)IDebugCallStack::instance())->RegisterCVars();
 #elif CRY_PLATFORM_DURANGO
