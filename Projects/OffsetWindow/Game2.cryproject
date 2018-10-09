@@ -1,0 +1,43 @@
+{
+	"version": 4,
+	"type": "CRYENGINE Project",
+	"logRoot": "LOGS/instance2/",
+	"info": {
+		"name": "OffsetWindow Instance2",
+		"guid": "0A16B213-827B-4AC7-BD5E-ADA0AD1D1B43"
+	},
+	"content": {
+		"assets": [ "Assets" ],
+		"code": [ "Code" ],
+		"libs": [
+			{
+				"name": "CE OffsetWindow",
+				"shared": { "any": "OffsetWindow", "win_x64": "", "win_x86": "" }
+			}
+		]
+	},
+	"require": {
+		"engine": "engine-5.5-improved",
+		"plugins": [
+			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },
+			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },
+			{ "type": "EPluginType::Native", "path": "../../bin/win_x64/OffsetWindow.dll" }
+		]
+	},
+	"console_variables": {
+		"sys_target_platforms": 		"pc",
+		"ed_popupMissingAssetResolver": "0",
+		"local_user_folder":			"user_game2",
+		"r_WindowIconTexture": 			"EngineAssets/Icons/Icon2.dds",  <-- Use a different icon for second game instance. -->
+
+		"t_Smoothing":					"0",
+		"sys_physics_enable_MT": 		"0", 
+		
+		"r_motionblur": 				"0", <-- Motion Blur? No thanks. -->
+		"r_nohwgamma": 					"1", <-- Disable overriding of gamma, great for windowed mode. -->
+				
+		"r_offset_x": 					"-640",
+		"r_offset_y":					"309"
+	},
+	"console_commands": { }
+}

@@ -1,0 +1,8 @@
+## Ignore user folders, it's just temporary data.
+user*/
+
+# Be sure to un-ignore asset folders if you want to sync .caf or .pak files.
+!Assets/**
+
+# Ignore preview changes on editor
+Assets/Animations/editor/*
