@@ -259,6 +259,9 @@ void CGameContext::SetContextInfo(unsigned flags, uint16 port, const char* conne
 
 void CGameContext::AddLoadLevelTasks(IContextEstablisher* pEst, bool isServer, int flags, bool** ppLoadingStarted, int establishedToken, bool bChannelIsMigrating)
 {
+	// If you're specifically NOT loading a level, ignore level startup tasks.
+	bool ignoreLevelLoad = HasContextFlag(eGSF_NoLevelLoading) && !HasContextFlag(eGSF_DemoPlayback);
+
 	bool usingLobbyHints = false;
 
 	ICryLobby* pLobby = gEnv->pNetwork->GetLobby();
@@ -286,7 +289,7 @@ void CGameContext::AddLoadLevelTasks(IContextEstablisher* pEst, bool isServer, i
 			AddActionEvent(pEst, eCVS_Begin, SActionEvent(eAE_resetLoadedLevel, loadingNewLevel));
 			AddRandomSystemReset(pEst, eCVS_Begin, loadingNewLevel);
 		}
-		if (flags & eEF_LoadNewLevel)
+		if (flags & eEF_LoadNewLevel && !ignoreLevelLoad)
 		{
 			AddPrepareLevelLoad(pEst, usingLobbyHints ? eCVS_Initial : eCVS_Begin);
 		}
@@ -300,30 +303,35 @@ void CGameContext::AddLoadLevelTasks(IContextEstablisher* pEst, bool isServer, i
 			AddClearPlayerIds(pEst, eCVS_Begin);
 		AddSetValue(pEst, usingLobbyHints ? eCVS_Initial : eCVS_EstablishContext, &m_isInLevelLoad, true, "BeginLevelLoad");
 		AddInitImmersiveness(pEst, eCVS_EstablishContext);
-		if (flags & eEF_LoadNewLevel)
-		{
-			//		We used to add a task create the game rules here using AddGameRulesCreation.
-			//		That has moved into the LoadLevel task as of 25/5/10 - peter.
-			AddLoadLevel(pEst, usingLobbyHints ? eCVS_Initial : eCVS_EstablishContext, ppLoadingStarted);
-		}
-		else
-		{
-			AddFakeSpawn(pEst, eCVS_EstablishContext, eFS_GameRules | eFS_Opt_Rebind);
-			AddLoadLevelEntities(pEst, eCVS_EstablishContext);
-			/*
-			   if (isServer)
-			   {
-			    AddSetValue( pEst, eCVS_EstablishContext, &m_isInLevelLoad, false, "PauseLevelLoad" );
-			    AddFakeSpawn( pEst, eCVS_EstablishContext, eFS_Players | eFS_Opt_Rebind );
-			    AddSetValue( pEst, eCVS_EstablishContext, &m_isInLevelLoad, true, "RestartLevelLoad" );
-			   }
-			 */
-		}
 
-		// Only reset areas right after the level loading task!
-		if (!gEnv->IsEditor() && gEnv->pSystem->IsSerializingFile() != 2)
-		{
-			AddResetAreas(pEst, usingLobbyHints ? eCVS_Initial : eCVS_EstablishContext);
+		if(!ignoreLevelLoad){
+			if (flags & eEF_LoadNewLevel)
+			{
+				//		We used to add a task create the game rules here using AddGameRulesCreation.
+				//		That has moved into the LoadLevel task as of 25/5/10 - peter.
+				AddLoadLevel(pEst, usingLobbyHints ? eCVS_Initial : eCVS_EstablishContext, ppLoadingStarted);
+			}
+			else
+			{
+				AddFakeSpawn(pEst, eCVS_EstablishContext, eFS_GameRules | eFS_Opt_Rebind);
+				AddLoadLevelEntities(pEst, eCVS_EstablishContext);
+				/*
+					if (isServer)
+					{
+					 AddSetValue( pEst, eCVS_EstablishContext, &m_isInLevelLoad, false, "PauseLevelLoad" );
+					 AddFakeSpawn( pEst, eCVS_EstablishContext, eFS_Players | eFS_Opt_Rebind );
+					 AddSetValue( pEst, eCVS_EstablishContext, &m_isInLevelLoad, true, "RestartLevelLoad" );
+					}
+				 */
+			}
+
+			// Only reset areas right after the level loading task!
+			if (!gEnv->IsEditor() && gEnv->pSystem->IsSerializingFile() != 2)
+			{
+				AddResetAreas(pEst, usingLobbyHints ? eCVS_Initial : eCVS_EstablishContext);
+			}
+		}else{
+			AddFakeSpawn(pEst, eCVS_EstablishContext, eFS_GameRules | eFS_Opt_Rebind);
 		}
 
 		AddSetValue(pEst, eCVS_EstablishContext, &m_isInLevelLoad, false, "EndLevelLoad");
@@ -333,6 +341,9 @@ void CGameContext::AddLoadLevelTasks(IContextEstablisher* pEst, bool isServer, i
 
 void CGameContext::AddLoadingCompleteTasks(IContextEstablisher* pEst, int flags, bool* pLoadingStarted, bool bChannelIsMigrating)
 {
+	// If you're specifically NOT loading a level, ignore level startup tasks.
+	bool ignoreLevelLoad = HasContextFlag(eGSF_NoLevelLoading) && !HasContextFlag(eGSF_DemoPlayback);
+
 	if (HasContextFlag(eGSF_Server) && !bChannelIsMigrating)
 	{
 		AddPauseGame(pEst, eCVS_Begin, true, false);
@@ -340,15 +351,17 @@ void CGameContext::AddLoadingCompleteTasks(IContextEstablisher* pEst, int flags,
 
 	if (!bChannelIsMigrating)
 	{
-		if (flags & eEF_LoadNewLevel)
-		{
-			SEntityEvent startLevelEvent(ENTITY_EVENT_START_LEVEL);
-			AddEntitySystemEvent(pEst, eCVS_InGame, startLevelEvent);
-		}
+		if(!ignoreLevelLoad){
+			if (flags & eEF_LoadNewLevel)
+			{
+				SEntityEvent startLevelEvent(ENTITY_EVENT_START_LEVEL);
+				AddEntitySystemEvent(pEst, eCVS_InGame, startLevelEvent);
+			}
 
-		if (!gEnv->IsEditor() && gEnv->pSystem->IsSerializingFile() != 2) /*  && (flags&eEF_LoadNewLevel)==0) */
-		{
-			AddResetAreas(pEst, eCVS_InGame);
+			if (!gEnv->IsEditor() && gEnv->pSystem->IsSerializingFile() != 2) /*  && (flags&eEF_LoadNewLevel)==0) */
+			{
+				AddResetAreas(pEst, eCVS_InGame);
+			}
 		}
 
 		if ((flags & eEF_LoadNewLevel) == 0)
@@ -356,7 +369,7 @@ void CGameContext::AddLoadingCompleteTasks(IContextEstablisher* pEst, int flags,
 			AddGameRulesReset(pEst, eCVS_InGame);
 		}
 
-		if (!gEnv->IsEditor() && (flags & eEF_LoadNewLevel))
+		if (!ignoreLevelLoad && !gEnv->IsEditor() && (flags & eEF_LoadNewLevel))
 		{
 			AddLoadingComplete(pEst, eCVS_InGame, pLoadingStarted);
 		}

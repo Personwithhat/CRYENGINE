@@ -81,13 +81,17 @@ public:
 			return eCETR_Ok;
 		}
 
+		bool hasRules = !pGameContext->HasContextFlag(eGSF_NoGameRules);
+		bool hasLevel = !pGameContext->HasContextFlag(eGSF_NoLevelLoading)
+							 && !pGameContext->HasContextFlag(eGSF_DemoPlayback);
+
 		// check our game rules have been registered
-		if (pGameContext->GetRequestedGameRules().empty())
+		if (hasRules && pGameContext->GetRequestedGameRules().empty())
 		{
 			GameWarning("SendGameRules: No game rules set");
 			return eCETR_Failed;
 		}
-		if (pGameContext->GetLevelName().empty())
+		if (hasLevel && pGameContext->GetLevelName().empty())
 		{
 			GameWarning("SendGameRules: no level name set");
 			return eCETR_Failed;
@@ -99,8 +103,7 @@ public:
 		IGameRulesSystem* pGameRulesSystem = CCryAction::GetCryAction()->GetIGameRulesSystem();
 		const char* gameRulesName = pGameRulesSystem->GetGameRulesName(CCryAction::GetCryAction()->GetGameContext()->GetRequestedGameRules());
 
-		if ((!gameRulesName || !m_pRep->ClassIdFromName(id, string(gameRulesName)) || id == (uint16)(~uint16(0)))
-			&& !CCryAction::GetCryAction()->GetGameContext()->HasContextFlag(eGSF_NoGameRules))
+		if (hasRules && (!gameRulesName || !m_pRep->ClassIdFromName(id, string(gameRulesName)) || id == (uint16)(~uint16(0))))
 		{
 			GameWarning("Cannot find rules %s in network class registry", CCryAction::GetCryAction()->GetGameContext()->GetRequestedGameRules().c_str());
 		}
