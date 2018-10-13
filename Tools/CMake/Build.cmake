@@ -40,6 +40,9 @@ endif()
 if(OPTION_ENGINE AND NOT PROJECT_BUILD)
 	# 2. Games
 	add_subdirectories_glob("Code/Game*")
+	
+	## Added to make local build neater.
+	add_subdirectories_glob("Projects/**/Code")
 endif()
 	
 # 3. Extensions (deprecated / legacy)
