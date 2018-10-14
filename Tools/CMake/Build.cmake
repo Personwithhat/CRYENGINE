@@ -115,6 +115,15 @@ if (OPTION_PAKTOOLS AND EXISTS "${CRYENGINE_DIR}/Code/Tools/PakEncrypt")
 endif()
 
 if (OPTION_RC AND EXISTS "${CRYENGINE_DIR}/Code/Tools/RC")
+	set(OPTION_RC_RELEASE OFF CACHE BOOL "Overrides non-profile build-configuration of RC to RELEASE. Otherwise uses solution configuration.")
+
+	## Helper to have release RC when debugging non-shader etc. engine/sandbox.
+	if(OPTION_RC_RELEASE)
+		set(RC_MODE "Release")
+	else()
+		set(RC_MODE "$<CONFIG>")
+	endif()
+	
 	include(ExternalProject)
 	ExternalProject_Add(RC
 		## PERSONAL CRYTEK: Ported from this commit series, MISSING ON MAIN BRANCH!
@@ -124,7 +133,7 @@ if (OPTION_RC AND EXISTS "${CRYENGINE_DIR}/Code/Tools/RC")
 		## Plus suggestion to use new cmake spcific option here, as noted here: https://gitlab.kitware.com/cmake/cmake/issues/17645
 		CMAKE_ARGS "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}" "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}" "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}" "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
 		SOURCE_DIR "${CRYENGINE_DIR}/Code/Tools/RC"
-		BUILD_COMMAND "${CMAKE_COMMAND}" --build "." --config $<$<CONFIG:Profile>:Release>$<$<NOT:$<CONFIG:Profile>>:$<CONFIG>>
+		BUILD_COMMAND "${CMAKE_COMMAND}" --build "." --config $<$<CONFIG:Profile>:Release>$<$<NOT:$<CONFIG:Profile>>:${RC_MODE}>
 		INSTALL_COMMAND echo "Skipping install"
 	)
 endif()
