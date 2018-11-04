@@ -983,7 +983,7 @@ bool CActionGame::BlockingConnect(BlockingConditionFunction condition, bool requ
 		m_pNetwork->SyncWithGame(eNGS_FrameStart);
 		m_pNetwork->SyncWithGame(eNGS_FrameEnd);
 		m_pNetwork->SyncWithGame(eNGS_WakeNetwork);
-		GetGTimer()->UpdateOnFrameStart();
+		GetGTimer()->UpdateOnFrameStart(0);
 		CGameClientChannel* pChannel = NULL;
 		if (requireClientChannel)
 		{
@@ -1072,7 +1072,7 @@ bool CActionGame::Update()
 			pgr->AddHitListener(this);
 		UpdateImmersiveness();
 
-		CServerTimer::Get()->UpdateOnFrameStart();
+		CServerTimer::Get()->UpdateOnFrameStart(0);
 
 		if (m_pGameTokenSystem)
 			m_pGameTokenSystem->DebugDraw();
