@@ -150,7 +150,8 @@ public:
 	mpfloat GetMilliSeconds() const { return m_lValue * 1'000; }
 	mpfloat GetMicroSeconds() const { return m_lValue * 1'000'000; }
 
-	string str()				  const { return m_lValue.str(); }
+	// Shorthand for seconds to string. Matches MPFloat.str() setup.
+	string str(std::streamsize digits = 0, std::ios_base::fmtflags f = 0) const { return GetSeconds().str(digits, f); }
 
 	// NOTE: Returns 'Lowest' not 'Min()'
 	static CTimeValue Min() { return CTimeValue(mpfloat::Min()); }

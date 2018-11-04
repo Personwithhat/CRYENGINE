@@ -24,7 +24,7 @@ public:
 			 void  ResetTimer();
 			 void  Serialize(TSerialize ser);
 
-			 void  UpdateOnFrameStart();
+			 void  UpdateOnFrameStart(const CTimeValue& sleepTime);
 			 bool	 SetTimer(ETimer which, const CTimeValue& timeInSeconds);
 
 			 bool	 PauseSimulation(bool bPause);
@@ -45,6 +45,8 @@ public:
 			 CTimeValue	GetAsyncTime() const;
 			 CTimeValue GetAsyncCurTime() const;
 
+			 const CTimeValue& GetSleepOvershoot()				const { return m_sleepOvershoot; }
+
 		// Timescales
 			 mpfloat     GetTimeScale() const;
 			 mpfloat     GetTimeScale(uint32 channel) const;
@@ -52,7 +54,7 @@ public:
 			 void        SetTimeScale(const mpfloat& scale, uint32 channel = 0);
 
 		// Other misc.
-			 CTimeValue  TicksToTime(int64 ticks) const { return CTimeValue(ticks / (mpfloat)m_lTicksPerSec); }
+			 CTimeValue  TicksToTime(const mpfloat& ticks) const { return CTimeValue(ticks / m_lTicksPerSec); }
 			 int64		 GetTicksPerSecond()      const { return m_lTicksPerSec; }
 
 			 rTime       GetFrameRate();
@@ -116,6 +118,8 @@ private:
 	mpfloat m_timeScaleChannels[NUM_TIME_SCALE_CHANNELS];
 	mpfloat m_totalTimeScale;
 
+	// Sleep overshoot amount, valid if enforcing frame rate.
+	CTimeValue m_sleepOvershoot;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Console vars, always have default value on secondary CTimer instances

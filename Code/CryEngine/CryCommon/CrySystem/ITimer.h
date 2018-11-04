@@ -37,7 +37,7 @@ public: //** Lifecycle
 	virtual void Serialize(TSerialize ser) = 0;
 
 	//! Updates the timer once per frame. ATM called during the start of System::Update() & CActionGame::BlockingConnect()
-	virtual void UpdateOnFrameStart() = 0;
+	virtual void UpdateOnFrameStart(const CTimeValue& sleepTime) = 0;
 
 	//! Tries to set a timer.
 	//! \return true if successful, false otherwise.
@@ -98,6 +98,8 @@ public: //** Time Getters
 	//! Returns elapsed time (at moment of call) since the last timer Reset()
 	virtual CTimeValue GetAsyncCurTime() const = 0;
 
+	//! Returns the sleep overshoot error when trying to enforce a frame rate.
+	virtual const CTimeValue& GetSleepOvershoot() const = 0;
 
 public: //** Timescales
 
@@ -121,7 +123,7 @@ public: //** Other misc.
 	virtual int64 GetTicksPerSecond() const = 0;
 
 	//! Convert from CPU ticks (e.g. CryGetTicks()) to CTimeValue
-	virtual CTimeValue TicksToTime(int64 ticks) const = 0;
+	virtual CTimeValue TicksToTime(const mpfloat& ticks) const = 0;
 
 	//! Returns the current real framerate in frames/second.
 	virtual rTime GetFrameRate() = 0;
