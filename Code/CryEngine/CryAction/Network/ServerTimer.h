@@ -19,7 +19,7 @@ public:
 			 void  ResetTimer()									{ CRY_ASSERT(false); }
 			 void  Serialize(TSerialize ser)					{ CRY_ASSERT(false); }
 
-			 void  UpdateOnFrameStart();																		//<<
+			 void  UpdateOnFrameStart(const CTimeValue& sleepTime);									//<<
 			 bool	 SetTimer(ETimer which, const CTimeValue& timeInSeconds){ assert(false); return false; }
 
 			 bool	 PauseSimulation(bool bPause)				{ assert(false); return false; }
@@ -41,6 +41,8 @@ public:
 			 CTimeValue	GetAsyncTime()		const { assert(false); return bogusTime; }
 			 CTimeValue GetAsyncCurTime() const { assert(false); return bogusTime; }
 
+			 const CTimeValue& GetSleepOvershoot()	const { assert(false); return bogusTime; }
+
 		// Timescales
 			 mpfloat     GetTimeScale() const										{ assert(false); return 1; }
 			 mpfloat     GetTimeScale(uint32 channel) const						{ assert(false); return 1; }
@@ -48,8 +50,8 @@ public:
 			 void        SetTimeScale(const mpfloat& scale, uint32 channel = 0)	{ assert(false); };
 
 		// Other misc.
-			 CTimeValue  TicksToTime(int64 ticks) const { assert(false); return bogusTime; }
-			 int64		 GetTicksPerSecond()		  const { assert(false); return 0; }
+			 CTimeValue  TicksToTime(const mpfloat& ticks) const { assert(false); return bogusTime; }
+			 int64		 GetTicksPerSecond()					  const { assert(false); return 0; }
 
 			 rTime       GetFrameRate()					  { assert(false); return rTime(0); }
 			 mpfloat     GetProfileFrameBlending(CTimeValue* pfBlendTime = 0, int* piBlendMode = 0) { assert(false); return 1; }

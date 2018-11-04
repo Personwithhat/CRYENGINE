@@ -346,6 +346,8 @@ public: // To string conversion
 				str.insert(static_cast<string::size_type>(0), 1, '-');
 			else if(showpos)
 				str.insert(static_cast<string::size_type>(0), 1, '+');
+			else 
+				str.insert(static_cast<string::size_type>(0), 1, ' ');
 			return;
 		}
 
@@ -432,6 +434,8 @@ public: // To string conversion
 			str.insert(static_cast<string::size_type>(0), 1, '-');
 		else if(showpos)
 			str.insert(static_cast<string::size_type>(0), 1, '+');
+		else
+			str.insert(static_cast<string::size_type>(0), 1, ' ');
 	}
 
 	// Near-copy of Boosts's implementation. Uses CryTek's string instead of std::string with an extra skipZero flag convenience.

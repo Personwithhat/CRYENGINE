@@ -293,9 +293,10 @@ void CrySleep(unsigned int dwMilliseconds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CryLowLatencySleep(const CTimeValue& sleepTime, bool check)
+CTimeValue CryLowLatencySleep(const CTimeValue& sleepTime, bool check)
 {
 	assert(sleepTime >= 0);
+	CTimeValue err;
 
 	// PERSONAL IMPROVE: Sleeps, high resolution timers/etc. have only been reworked for Windows. 
 	// Linux/etc. should be done later.......
@@ -373,17 +374,19 @@ void CryLowLatencySleep(const CTimeValue& sleepTime, bool check)
 		}
 
 		// HACK! Trace/Fix issues.
-		if(!check){ return; }
+		if(!check){ return err; }
 
 		// If diverging more than 5 milliseconds throw warning. Not CryWarning() since it doesn't run sometimes.
-		double err = (double)((t.QuadPart - minTicks) / lTicksPerSec) * 1000;
-		if (sleepTime != 0 && abs(err) > 5) {
+		err.SetSeconds( (t.QuadPart - minTicks) / lTicksPerSec );
+		if (abs(err.GetMilliSeconds()) > 5) {
 			CryLog(
 				"[WARNING] CryLowLatencySleep: Overshot target sleep! [%lf] %lf -> %lfms err",
-				(double)minTicks / lTicksPerSec, (double)t.QuadPart / lTicksPerSec, err
+				(double)minTicks / lTicksPerSec, (double)t.QuadPart / lTicksPerSec, (double)err.GetMilliSeconds()
 			);
 		}
 	#endif
+
+	return err;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -12,8 +12,11 @@ CServerTimer::CServerTimer()
 	m_replicationTime.SetSeconds(0);
 }
 
-void CServerTimer::UpdateOnFrameStart()
+void CServerTimer::UpdateOnFrameStart(const CTimeValue& sleepTime)
 {
+	// Not using this here.
+	assert(sleepTime == 0);
+
 	CTimeValue lastTime = m_remoteFrameStartTime;
 
 	if (gEnv->bServer)
