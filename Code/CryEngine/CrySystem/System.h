@@ -528,8 +528,8 @@ private:
 	// Release all resources.
 	void ShutDown();
 
-	// Check any frame-limiting sleeps 
-	void CheckSleeps();
+	// Check any frame-limiting sleeps, returns amount to sleep by.
+	CTimeValue CheckSleeps();
 
 	//! @name Initialization routines
 	//@{

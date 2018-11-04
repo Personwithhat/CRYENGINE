@@ -1606,7 +1606,7 @@ bool CSystem::DoFrame(const SDisplayContextKey& displayContextKey, CEnumFlags<ES
 }
 
 /////////////////////////////////////////////////////
-void CSystem::CheckSleeps(){
+CTimeValue CSystem::CheckSleeps(){
 //**
 //** Server CPU Throttle, VSync, and system cvar for maximum FPS.
 //** 
@@ -1687,18 +1687,7 @@ void CSystem::CheckSleeps(){
 		target = max(CTimeValue(1/maxFPS), target);
 	}
 
-	if(target > 0){
-		// Time left = Target timestep - (CurTime - real-StartTime)
-		CTimeValue tLeft = target - (m_Time.GetAsyncCurTime() - m_Time.GetFrameStartTime(ITimer::ETIMER_UI));
-		if(tLeft > 0){
-			CryLowLatencySleep(tLeft);
-		}else{
-			CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, 
-					"CTimer: Took longer than frame cap [%.2fms] %.2fms %.2fms", 
-					(float)target.GetMilliSeconds(), (float)(target - tLeft).GetMilliSeconds(), (float)abs(tLeft.GetMilliSeconds())
-			);
-		};
-	}
+	return target;
 }
 //////////////////////////////////////////////////////////////////////
 bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
@@ -1875,13 +1864,10 @@ bool CSystem::Update(CEnumFlags<ESystemUpdateFlags> updateFlags, int nPauseMode)
 		return true;
 #endif //EXCLUDE_UPDATE_ON_CONSOLE
 
-	// Enforce any frame-rate caps needed before caching times.
-	// Handles ALL main-thread frame-capping/etc. sleeps.
-	CheckSleeps();
-
 	// PERSONAL NOTE: Moved here since char manager depends on frame time.
-	// Update time subsystem 
-	m_Time.UpdateOnFrameStart();
+	// Enforce any frame-rate caps needed then cache frame times.
+	// CheckSleeps() accommodates ALL main-thread frame-capping/etc. sleeps.
+	m_Time.UpdateOnFrameStart(CheckSleeps());
 
 	const bool bNotLoading = !IsLoading();
 

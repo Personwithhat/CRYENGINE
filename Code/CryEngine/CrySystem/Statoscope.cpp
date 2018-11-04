@@ -1921,7 +1921,7 @@ void CStatoscope::SetCurrentProfilerRecords(const std::vector<CFrameProfiler*>* 
 			CFrameProfiler* pProfiler = (*profilers)[i];
 
 			// ignore really quick functions or ones what weren't called
-			if (GetGTimer()->TicksToTime(pProfiler->m_selfTime) > minFuncTime)
+			if (GetGTimer()->TicksToTime((int64)pProfiler->m_selfTime) > minFuncTime)
 			{
 				m_perfStatDumpProfilers.push_back(std::make_pair(pProfiler, pProfiler->m_selfTime));
 			}

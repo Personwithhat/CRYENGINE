@@ -102,7 +102,7 @@ void CTimer::ResetTimer()
 
 	m_fFrameTime.SetSeconds(0);
 	m_fRealFrameTime.SetSeconds(0);
-	m_replicationTime.SetSeconds(0);
+	m_replicationTime.SetSeconds(0); // PERSONAL TODO: Add sleep time offset/etc. reset here!
 
 	RefreshGameTime(0);
 	RefreshUITime(0);
@@ -143,7 +143,7 @@ void CTimer::Serialize(TSerialize ser)
 }
 
 /////////////////////////////////////////////////////
-void CTimer::UpdateOnFrameStart()
+void CTimer::UpdateOnFrameStart(const CTimeValue& targetRate) // PERSONAL TODO: Update to be targetRate not sleep time.
 {
 	if (!m_bEnabled)
 		return;
@@ -175,12 +175,68 @@ void CTimer::UpdateOnFrameStart()
 	return;
 #endif
 
-	const int64 now = CryGetTicks();
+	/* 
+		Frame-enforcing sleep is here to be sure that sleepOvershoot is calculated correctly.
+		Core code is from CryLowLatencySleep()
+	*/		
+		// Approximate minimum end time, in ticks.
+		LARGE_INTEGER t;
+		QueryPerformanceCounter(&t);
+		const mpfloat minTicks = (targetRate + GetFrameStartTime(ITimer::ETIMER_UI)).GetSeconds() * m_lTicksPerSec + m_lBaseTime;
+
+		// Check if you've already slower than target frame cap, e.g. last frame took too long.
+		// If target rate is 0 -> no cap -> shouldn't log even if diff is negative here.
+		mpfloat diff = minTicks - t.QuadPart;
+		if (diff < 0) {
+			if(m_TimeDebug && targetRate != 0)
+				CryLogAlways(
+					"[CTimer]: Took longer than frame cap [%.3lfms] actual: %.3lfms err: %.3lfms",
+					(double)targetRate.GetMilliSeconds(), 
+					(double)TicksToTime(t.QuadPart - m_lBaseTime - m_lLastTime).GetMilliSeconds(),
+					(double)TicksToTime(abs(diff)).GetMilliSeconds()
+				);
+			m_sleepOvershoot.SetSeconds(0);
+		}else{
+			/*
+				Sleep(1) sleeps ~1ms with an error of up to TimePrecision.
+				TimePrecision(1) = > Sleep(1) sleeps up to 1.99ms
+			*/
+			// Sleep as much as possible until at risk of err.
+			const int safe = (int)(TicksToTime(diff).GetMilliSeconds() - (mpfloat)gEnv->pSystem->GetTimeResolution() / 10'000);
+			if (safe > 0)
+				Sleep(safe);
+
+			// Sleep remainder away
+			for (;;)
+			{
+				QueryPerformanceCounter(&t);
+
+				if (t.QuadPart >= minTicks)
+					break;
+				else
+					for (int i = 0; i<8; i++) { YieldProcessor(); } // Simply yield processor (good for hyper threaded systems. Allows the logical core to run).  Based on CryAtomics_win32.h
+			}
+
+			// If diverging more than 5 milliseconds throw warning. Not CryWarning() since it doesn't run sometimes.
+			m_sleepOvershoot = TicksToTime(t.QuadPart - minTicks);
+			if (m_TimeDebug && abs(m_sleepOvershoot.GetMilliSeconds()) > 5) {
+				CryLogAlways(
+					"[CTimer]: Overshot target sleep! [%.3lf] %.3lf -> %.3lfms err",
+					(double)minTicks / m_lTicksPerSec, (double)t.QuadPart / m_lTicksPerSec, (double)m_sleepOvershoot.GetMilliSeconds()
+				);
+			}
+		}
+
+	const int64 now = t.QuadPart;
 	assert(now + 1 >= m_lBaseTime && "Invalid base time"); //+1 margin because QPC may be one off across cores
 
 	// Get and set real frame time.
 	int64 realTicks = now - m_lBaseTime - m_lLastTime;
 	m_fRealFrameTime = TicksToTime(realTicks);
+
+	// Errors at ~45 digits can easily be attributed to type conversion or base inaccuracy.
+	// PERSONAL TODO: Keep assert or what? >.>
+	assert((diff < 0) || abs(m_fRealFrameTime - (targetRate + m_sleepOvershoot)) < mpfloat().lossy(1e-44));
 
 	// PERSONAL CRYTEK: What is the point of clamping? And why do this BEFORE time scaling in default Timer.cpp ?
 	// Seriously need a discussion on timer related stuff.
@@ -191,8 +247,8 @@ void CTimer::UpdateOnFrameStart()
 
 	// Simulation time = clamp'd & scaled real time.
 	// If defined, use fixed-time-step as a base instead of real time.
-	CTimeValue tmp = (m_fixed_time_step != 0 ? m_fixed_time_step : m_fRealFrameTime);
-	m_fFrameTime = min(tmp * GetTimeScale(), m_max_time_step);
+	CTimeValue step = (m_fixed_time_step != 0 ? m_fixed_time_step : m_fRealFrameTime);
+	m_fFrameTime = min(step * GetTimeScale(), m_max_time_step);
 
 	// Update the running simulation frame-time average
 	UpdateAverageFrameTime();
@@ -353,13 +409,13 @@ CTimeValue CTimer::GetRealFrameTime() const
 CTimeValue CTimer::GetAsyncCurTime() const
 {
 	int64 llNow = CryGetTicks() - m_lBaseTime;
-	return CTimeValue(TicksToTime(llNow));
+	return TicksToTime(llNow);
 }
 
 CTimeValue CTimer::GetAsyncTime() const
 {
 	int64 llNow = CryGetTicks();
-	return CTimeValue(TicksToTime(llNow));
+	return TicksToTime(llNow);
 }
 
 #if defined(GAME_CHANNEL_SYNC_CLIENT_SERVER_TIME)

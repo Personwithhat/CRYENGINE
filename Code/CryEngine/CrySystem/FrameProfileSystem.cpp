@@ -1365,7 +1365,7 @@ void CFrameProfileSystem::UpdateOfflineHistory(CFrameProfiler* pProfiler)
 	pProfiler->m_pOfflineHistory->m_selfTime.resize(newCount);
 	pProfiler->m_pOfflineHistory->m_count.resize(newCount);
 
-	CTimeValue time = GetGTimer()->TicksToTime(pProfiler->m_selfTime);
+	CTimeValue time = GetGTimer()->TicksToTime((int64)pProfiler->m_selfTime);
 	uint16 count = pProfiler->m_count;
 	for (int i = prevCont; i < newCount; i++)
 	{
