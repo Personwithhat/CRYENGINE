@@ -58,7 +58,7 @@ void CGamePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lp
 				}
 
 				// Load the example map in client server mode PERSONAL TODO: What this mode?
-				gEnv->pConsole->ExecuteString("map example s", false, true);
+				gEnv->pConsole->ExecuteString("map test_level s", false, true);
 			}
 		}
 		break;
