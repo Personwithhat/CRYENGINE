@@ -51,7 +51,13 @@ void CGamePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lp
 			// Don't need to load the map in editor
 			if (!gEnv->IsEditor())
 			{
-				// Load the example map in client server mode
+				if (!gEnv->IsDedicated()) {
+					CryLog("Scheduled connection to server, %3.1f seconds have passed since boot.", gEnv->pTimer->GetAsyncCurTime());
+					gEnv->pConsole->ExecuteString("connect", false, true);
+					return;
+				}
+
+				// Load the example map in client server mode PERSONAL TODO: What this mode?
 				gEnv->pConsole->ExecuteString("map example s", false, true);
 			}
 		}

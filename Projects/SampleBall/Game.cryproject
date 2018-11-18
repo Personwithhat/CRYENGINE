@@ -1,0 +1,45 @@
+{
+	"version": 4,
+	"type": "CRYENGINE Project",
+	"logRoot": "LOGS/instance1/",
+	"info": {
+		"name": "SampleBall",
+		"guid": "5EF4C8A4-3520-4A08-ADDA-475CEF9082AB"
+	},
+	"content": {
+		"assets": [ "Assets" ],
+		"code": [ "Code" ],
+		"libs": [
+			{
+				"name": "CE SampleBall",
+				"shared": { "any": "SampleBall", "win_x64": "", "win_x86": "" }
+			}
+		]
+	},
+	"require": {
+		"engine": "engine-5.5-improved",
+		"plugins": [
+			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },
+			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },
+			{ "type": "EPluginType::Native", "path": "../../bin/win_x64/SampleBall.dll" }
+		]
+	},
+	"console_variables": {
+		"sys_target_platforms": 		"pc",
+		"ed_popupMissingAssetResolver": "0",
+		"local_user_folder":			"user_game",
+		
+		"t_Smoothing":					"0",
+		"sys_physics_enable_MT": 		"0", 
+		
+		"r_motionblur": 				"0", <-- Motion Blur? No thanks. -->
+		"r_nohwgamma": 					"1", <-- Disable overriding of gamma, great for windowed mode. -->
+		
+		"r_offset_x": 					"-640",
+		"r_offset_y":					"-371",
+		
+		<-- Custom project CVars -->
+		"cl_DefaultNearPlane": 			"0.05"
+	},
+	"console_commands": { }
+}

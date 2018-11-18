@@ -1,0 +1,46 @@
+{
+	"version": 4,
+	"type": "CRYENGINE Project",
+	"logRoot": "LOGS/instance2/",
+	"info": {
+		"name": "SampleBall Instance2",
+		"guid": "B15CE200-8EBB-415B-BAD6-62DF6F4C0239"
+	},
+	"content": {
+		"assets": [ "Assets" ],
+		"code": [ "Code" ],
+		"libs": [
+			{
+				"name": "CE SampleBall",
+				"shared": { "any": "SampleBall", "win_x64": "", "win_x86": "" }
+			}
+		]
+	},
+	"require": {
+		"engine": "engine-5.5-improved",
+		"plugins": [
+			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },
+			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },
+			{ "type": "EPluginType::Native", "path": "../../bin/win_x64/SampleBall.dll" }
+		]
+	},
+	"console_variables": {
+		"sys_target_platforms": 		"pc",
+		"ed_popupMissingAssetResolver": "0",
+		"local_user_folder":			"user_game2",
+		"r_WindowIconTexture": 			"EngineAssets/Icons/Icon2.dds", <-- Use a different icon for second game instance. -->
+
+		"t_Smoothing":					"0",
+		"sys_physics_enable_MT": 		"0", 
+
+		"r_motionblur": 				"0", <-- Motion Blur? No thanks. -->
+		"r_nohwgamma": 					"1", <-- Disable overriding of gamma, great for windowed mode. -->
+
+		"r_offset_x": 					"-640",
+		"r_offset_y":					"309",
+		
+		<-- Custom project CVars -->
+		"cl_DefaultNearPlane": 			"0.05"
+	},
+	"console_commands": { }
+}

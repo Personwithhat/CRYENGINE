@@ -1,0 +1,42 @@
+{
+	"version": 4,
+	"type": "CRYENGINE Project",
+	"logRoot": "LOGS/server/",
+	"info": {
+		"name": "SampleBall Server",
+		"guid": "5195EE05-E89C-4ADE-B432-EF1BCEFBC4DC"
+	},
+	"content": {
+		"assets": [ "Assets" ],
+		"code": [ "Code" ],
+		"libs": [
+			{
+				"name": "CE SampleBall",
+				"shared": { "any": "SampleBall", "win_x64": "", "win_x86": "" }
+			}
+		]
+	},
+	"require": {
+		"engine": "engine-5.5-improved",
+		"plugins": [
+			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },
+			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },
+			{ "type": "EPluginType::Native", "path": "../../bin/win_x64/SampleBall.dll" }
+		]
+	},
+	"console_variables": {
+		"sys_target_platforms": 		"pc",
+		"ed_popupMissingAssetResolver": "0",
+		"local_user_folder":			"user_server",
+		
+		"t_Smoothing":					"0",
+		<-- "sys_physics_enable_MT": 	"0", Ignored on Server, always in same thread there -->
+		
+		"r_offset_x": 					"512",
+		"r_offset_y":					"269",
+		
+		<-- Custom project CVars -->
+		"cl_DefaultNearPlane": 			"0.05"
+	},
+	"console_commands": { }
+}
