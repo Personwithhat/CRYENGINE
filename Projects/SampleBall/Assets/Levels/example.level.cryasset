@@ -1,0 +1,45 @@
+<AssetMetadata version="0" type="Level" guid="8691fc6a-9e2b-f5b4-3613-d6ba72915511" source="">
+ <Files>
+  <File path="example/example.level"/>
+ </Files>
+ <Dependencies>
+  <Path>%editor%/objects/envcube.cgf</Path>
+  <Path>%editor%/objects/envcube.mtl</Path>
+  <Path>%editor%/objects/mtlobjects.mtl</Path>
+  <Path>%editor%/objects/mtlsphere.cgf</Path>
+  <Path>%engine%/engineassets/icons/averagememoryusage.dds</Path>
+  <Path>%engine%/engineassets/icons/highmemoryusage.dds</Path>
+  <Path>%engine%/engineassets/icons/livepreview.dds</Path>
+  <Path>%engine%/engineassets/icons/lowmemoryusage.dds</Path>
+  <Path>%engine%/engineassets/materials/fog/fogvolumebox.mtl</Path>
+  <Path>%engine%/engineassets/materials/fog/fogvolumeellipsoid.mtl</Path>
+  <Path>%engine%/engineassets/materials/fog/oceaninto.mtl</Path>
+  <Path>%engine%/engineassets/materials/fog/oceanintolowspec.mtl</Path>
+  <Path>%engine%/engineassets/materials/fog/oceanoutof.mtl</Path>
+  <Path>%engine%/engineassets/materials/fog/oceanoutoflowspec.mtl</Path>
+  <Path>%engine%/engineassets/materials/material_default.mtl</Path>
+  <Path>%engine%/engineassets/materials/material_terrain_default.mtl</Path>
+  <Path>%engine%/engineassets/materials/water/wateroceanbottom.mtl</Path>
+  <Path>%engine%/engineassets/objects/editorprimitive.mtl</Path>
+  <Path>%engine%/engineassets/objects/primitive_cube.cgf</Path>
+  <Path>%engine%/engineassets/objects/primitive_sphere.cgf</Path>
+  <Path>%engine%/engineassets/texturemsg/defaultnouvs.dds</Path>
+  <Path>%engine%/engineassets/texturemsg/defaultsolids.mtl</Path>
+  <Path>%engine%/engineassets/textures/defaults/16_12.dds</Path>
+  <Path>%engine%/engineassets/textures/defaults/16_34.dds</Path>
+  <Path>%engine%/engineassets/textures/defaults/16_5.dds</Path>
+  <Path>%engine%/engineassets/textures/defaults/16_grey.dds</Path>
+  <Path>%engine%/engineassets/textures/white.dds</Path>
+  <Path>engineassets/materials/sky/sky.mtl</Path>
+  <Path>engineassets/materials/water/ocean_default.mtl</Path>
+  <Path>engineassets/texturemsg/defaultnouvs.dds</Path>
+  <Path>engineassets/textures/skys/night/half_moon.dds</Path>
+  <Path>engineassets/textures/white.dds</Path>
+  <Path>libs/environmentpresets/example.xml</Path>
+  <Path>materials/bullet.mtl</Path>
+  <Path>materials/terrain.mtl</Path>
+  <Path>scripts/ai/factions.xml</Path>
+  <Path>textures/cubemaps/example/environmentprobe1_cm.dds</Path>
+  <Path>textures/cubemaps/example/environmentprobe1_cm_diff.dds</Path>
+ </Dependencies>
+</AssetMetadata>
