@@ -52,7 +52,7 @@ void CGamePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lp
 			if (!gEnv->IsEditor())
 			{
 				if (!gEnv->IsDedicated()) {
-					CryLog("Scheduled connection to server, %3.1f seconds have passed since boot.", gEnv->pTimer->GetAsyncCurTime());
+					CryLog("Scheduled connection to server, %3.1f seconds have passed since boot.", GetGTimer()->GetAsyncCurTime());
 					gEnv->pConsole->ExecuteString("connect", false, true);
 					return;
 				}

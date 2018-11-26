@@ -28,7 +28,7 @@ public:
 	virtual const char* GetCategory() const override { return "Game"; }
 	virtual bool Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams) override;
 	// Global Update
-	virtual void MainUpdate(float fTime) override;
+	virtual void MainUpdate(const CTimeValue& fTime) override;
 	// ~Cry::IEnginePlugin
 
 	// ISystemEventListener

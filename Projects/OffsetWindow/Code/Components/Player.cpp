@@ -72,28 +72,29 @@ void CPlayerComponent::ProcessEvent(const SEntityEvent& event)
 	}
 }
 
-void CPlayerComponent::UpdateMovementRequest(float frameTime)
+void CPlayerComponent::UpdateMovementRequest(const CTimeValue& frameTime)
 {
 	static Vec3 offset = ZERO;
 
 	// Movement speed in pixels 
 	const float moveSpeed = 50;
+	const float timeInSeconds = frameTime.BADGetSeconds();
 
 	if (m_inputFlags & (TInputFlags)EInputFlag::MoveLeft)
 	{
-		offset.x -= moveSpeed * frameTime;
+		offset.x -= moveSpeed * timeInSeconds;
 	}
 	if (m_inputFlags & (TInputFlags)EInputFlag::MoveRight)
 	{
-		offset.x += moveSpeed * frameTime;
+		offset.x += moveSpeed * timeInSeconds;
 	}
 	if (m_inputFlags & (TInputFlags)EInputFlag::MoveForward)
 	{
-		offset.y -= moveSpeed * frameTime;
+		offset.y -= moveSpeed * timeInSeconds;
 	}
 	if (m_inputFlags & (TInputFlags)EInputFlag::MoveBack)
 	{
-		offset.y += moveSpeed * frameTime;
+		offset.y += moveSpeed * timeInSeconds;
 	}
 
 	// Ignore on server ofc.

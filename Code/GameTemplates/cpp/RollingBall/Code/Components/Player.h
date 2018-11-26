@@ -59,8 +59,8 @@ public:
 protected:
 	void Revive(const Matrix34& transform);
 	
-	void UpdateMovementRequest(float frameTime);
-	void UpdateCamera(float frameTime);
+	void UpdateMovementRequest(const CTimeValue& frameTime);
+	void UpdateCamera(const CTimeValue& frameTime);
 
 	void HandleInputFlagChange(CEnumFlags<EInputFlag> flags, CEnumFlags<EActionActivationMode> activationMode, EInputFlagType type = EInputFlagType::Hold);
 

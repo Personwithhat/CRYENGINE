@@ -51,7 +51,7 @@ public:
 	void Revive();
 
 protected:
-	void UpdateMovementRequest(float frameTime);
+	void UpdateMovementRequest(const CTimeValue& frameTime);
 	void HandleInputFlagChange(TInputFlags flags, int activationMode, EInputFlagType type = EInputFlagType::Hold);
 
 protected:

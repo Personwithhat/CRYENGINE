@@ -164,7 +164,7 @@ void CPlayerComponent::ProcessEvent(const SEntityEvent& event)
 	}
 }
 
-void CPlayerComponent::UpdateMovementRequest(float frameTime)
+void CPlayerComponent::UpdateMovementRequest(const CTimeValue& frameTime)
 {
 	if (IPhysicalEntity* pPhysicalEntity = m_pEntity->GetPhysicalEntity())
 	{
@@ -200,14 +200,14 @@ void CPlayerComponent::UpdateMovementRequest(float frameTime)
 			pe_action_impulse impulseAction;
 
 			// Multiply by frame time to keep consistent across machines
-			impulseAction.impulse = direction.GetNormalized() * moveImpulseStrength * frameTime;
+			impulseAction.impulse = direction.GetNormalized() * moveImpulseStrength * frameTime.BADGetSeconds();
 
 			pPhysicalEntity->Action(&impulseAction);
 		}
 	}
 }
 
-void CPlayerComponent::UpdateCamera(float frameTime)
+void CPlayerComponent::UpdateCamera(const CTimeValue& frameTime)
 {
 	// Start with updating look orientation from the latest input
 	Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(m_lookOrientation));

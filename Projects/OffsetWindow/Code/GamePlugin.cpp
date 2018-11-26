@@ -49,7 +49,7 @@ bool CGamePlugin::Initialize(SSystemGlobalEnvironment& env, const SSystemInitPar
 	return true;
 }
 
-void CGamePlugin::MainUpdate(float frameTime){
+void CGamePlugin::MainUpdate(const CTimeValue& frameTime){
 	if(!gEnv->IsDedicated() && !g_WasSpawned){ return; }
 
 	// NOTE: This window project as a whole assumes this is all on Windows for now. Can be updated later.
