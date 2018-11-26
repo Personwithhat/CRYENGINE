@@ -17,7 +17,7 @@
 		]
 	},
 	"require": {
-		"engine": "engine-5.5-improved",
+		"engine": "ce-improved",
 		"plugins": [
 			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },
 			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },
