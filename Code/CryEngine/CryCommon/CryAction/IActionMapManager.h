@@ -6,6 +6,7 @@
 #include <CryEntitySystem/IEntitySystem.h>
 #include <CryString/CryName.h>
 #include <CryCore/smartptr.h>
+#include <CryAction\delegate\MultiCastDelegate.h>
 
 typedef CCryName ActionId;
 struct SInputEvent;
@@ -123,6 +124,69 @@ struct IActionListener
 	virtual void AfterAction() {};
 };
 typedef std::vector<IActionListener*> TActionListeners;
+
+//! Improved action dispatcher. Can handle template classes and is independent of entity-components.
+//! Be sure to use action-map extra listeners!
+//! \par Example
+class CActionDispatcher : public IActionListener
+{
+public:
+	virtual ~CActionDispatcher() {}
+
+	// By default just dispatch the action.
+	virtual void OnAction(const ActionId& action, int activationMode, float value) override {
+		Dispatch(action, activationMode, value);
+	};
+
+private:
+	typedef SA::delegate<bool(const ActionId&, int, float)> delType;
+	typedef std::multimap<ActionId, delType> TActionHandlerMap;
+
+	TActionHandlerMap m_actionHandlers;
+
+	// Get action handler
+	delType* GetHandler(const ActionId& actionId)
+	{
+		typename TActionHandlerMap::iterator handler = m_actionHandlers.find(actionId);
+
+		if (handler != m_actionHandlers.end()) {
+			return &handler->second;
+		}
+
+		CryLogAlways("No handler found for actionId [%s]", actionId);
+		return 0;
+	}
+
+protected:
+	// Used to construct actionHandler delegations.
+	static delType actionDelegator;
+
+	// Add an action handler
+	void AddHandler(const ActionId& actionId, delType fHandler)
+	{
+		m_actionHandlers.insert(std::make_pair(actionId, fHandler));
+	}
+
+	// Call action handler
+	bool Dispatch(const ActionId& actionId, int activationMode, float value)
+	{
+		auto handler = *GetHandler(actionId);
+		return handler(actionId, activationMode, value);
+	}
+
+	void Clear()
+	{
+		m_actionHandlers.clear();
+	}
+
+	size_t GetNumHandlers() const
+	{
+		return m_actionHandlers.size();
+	}
+};
+
+// Use this to add an action-handler, assuming standard formatting.
+#define ADD_HANDLER(CClass, action, actionID) AddHandler(actionID, decltype(actionDelegator)::create<CClass, &CClass::OnAction##action>(this) );
 
 // Blocking action listener (Improved, left old one to avoid huge refactor)
 //------------------------------------------------------------------------
@@ -438,67 +502,4 @@ struct IActionMapManager
 	virtual void                          SetDefaultActionEntity(EntityId id, bool bUpdateAll = true) = 0;
 	virtual void                          RegisterActionMapEventListener(IActionMapEventListener* pActionMapEventListener) = 0;
 	virtual void                          UnregisterActionMapEventListener(IActionMapEventListener* pActionMapEventListener) = 0;
-};
-
-template<class T>
-class TActionHandler
-{
-public:
-	// Returns true if the action should also be forwarded to scripts
-	typedef bool (T::* TOnActionHandler)(EntityId entityId, const ActionId& actionId, int activationMode, float value);
-
-	// setup action handlers
-	void AddHandler(const ActionId& actionId, TOnActionHandler fnHandler)
-	{
-		m_actionHandlers.insert(std::make_pair(actionId, fnHandler));
-	}
-
-	size_t GetNumHandlers() const
-	{
-		return m_actionHandlers.size();
-	}
-
-	// call action handler
-	bool Dispatch(T* pThis, EntityId entityId, const ActionId& actionId, int activationMode, float value)
-	{
-		bool rVal = false;
-		return Dispatch(pThis, entityId, actionId, activationMode, value, rVal);
-	}
-
-	// call action handler
-	bool Dispatch(T* pThis, EntityId entityId, const ActionId& actionId, int activationMode, float value, bool& rVal)
-	{
-		rVal = false;
-
-		TOnActionHandler fnHandler = GetHandler(actionId);
-		if (fnHandler && pThis)
-		{
-			rVal = (pThis->*fnHandler)(entityId, actionId, activationMode, value);
-			return true;
-		}
-		else
-			return false;
-	}
-
-	// get action handler
-	TOnActionHandler GetHandler(const ActionId& actionId)
-	{
-		typename TActionHandlerMap::iterator handler = m_actionHandlers.find(actionId);
-
-		if (handler != m_actionHandlers.end())
-		{
-			return handler->second;
-		}
-		return 0;
-	}
-
-	void Clear()
-	{
-		m_actionHandlers.clear();
-	}
-
-private:
-	typedef std::multimap<ActionId, TOnActionHandler> TActionHandlerMap;
-
-	TActionHandlerMap m_actionHandlers;
 };
