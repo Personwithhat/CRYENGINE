@@ -3,7 +3,6 @@
 #pragma once
 
 #include <CryCore/Assert/CryAssert.h>
-#include <CrySystem/ISystem.h>
 
 #include <boost/version.hpp>
 //////////////////////////////////////////////////////////////////////////
