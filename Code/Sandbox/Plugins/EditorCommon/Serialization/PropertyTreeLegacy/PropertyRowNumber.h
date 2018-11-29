@@ -17,6 +17,7 @@
 #include <limits>
 #include <float.h>
 #include <math.h>
+#include <CryRenderer\Tarray.h>
 
 template<class T>
 yasli::string numberAsString(T value)

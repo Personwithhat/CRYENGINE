@@ -18,6 +18,7 @@
 #include <CryCore/Containers/VectorSet.h>
 #include <CryCore/StlUtils.h>
 #include <CryString/StringUtils.h>
+#include <CryRenderer\Tarray.h>
 
 #include <QMenu>
 #include <QPainter>
