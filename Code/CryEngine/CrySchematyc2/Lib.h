@@ -3,6 +3,7 @@
 #pragma once
 
 #include <CryCore/BoostHelpers.h>
+#include <CrySystem/ISystem.h>
 
 #include <CrySchematyc2/ILib.h>
 
