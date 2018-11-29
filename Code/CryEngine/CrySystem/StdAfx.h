@@ -154,6 +154,7 @@
 #include <CryMemory/STLGlobalAllocator.h>
 
 #include <CryCore/BoostHelpers.h>
+#include <CrySystem/ISystem.h>
 
 #include <CryCore/smartptr.h>
 #include <CryCore/CryEnumMacro.h>
