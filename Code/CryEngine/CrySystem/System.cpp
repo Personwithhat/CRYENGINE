@@ -3374,19 +3374,6 @@ int CSystem::PumpWindowMessage(bool bAll, CRY_HWND opaqueHWnd)
 			return -1;
 		}
 
-		if (msg.message == WM_ACTIVATE)
-		{
-			if (msg.wParam != WA_INACTIVE)
-				m_hWndActive = msg.hwnd;
-			else
-				m_hWndActive = (CRY_HWND)msg.lParam;
-
-			// During the time demo, do not sleep even in inactive window.
-			if (!gEnv->pGameFramework || !gEnv->pGameFramework->IsInTimeDemo())
-				// use sys_maxFPS to throttle the engine
-				m_throttleFPS = msg.wParam != WA_INACTIVE;
-		}
-
 		// Pre-process the message for IME
 		if (msg.hwnd == m_hWnd)
 		{
