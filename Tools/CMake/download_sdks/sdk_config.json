@@ -1,6 +1,6 @@
 {
-	"repo": "CRYTEK/CRYENGINE",
-	"rtag": "5.5.2",
-	"asset": "CRYENGINE_v5.5.2_SDKs",
+	"repo": "Personwithhat/CE_SDKs",
+	"rtag": "main_latest",
+	"asset": "CE_SDKs",
 	"sdk_dir": "Tools/CMake/download_sdks"
 }
