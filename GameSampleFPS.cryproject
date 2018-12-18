@@ -18,7 +18,7 @@
 		]
 	},
 	"require": {
-		"engine": "engine-5.5-official", <-- The engine version this project should load, currently on your custom Github-CE version. --> 
+		"engine": "official-5.5", <-- The engine version this project should load, currently on your custom Github-CE version. --> 
 		"plugins": [
 			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },	   <-- Gotta load this module since you compiled with it via CMake -->
 			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },		   <-- You need these 2 to run the engine :) -->
