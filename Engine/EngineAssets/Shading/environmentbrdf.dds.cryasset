@@ -1,6 +1,6 @@
-<AssetMetadata version="0" type="Texture" guid="55fd79ba-6d86-6583-1730-56c25f26b25d" source="environmentBRDF.tif">
+<AssetMetadata version="0" type="Texture" guid="55fd79ba-6d86-6583-1730-56c25f26b25d" source="environmentbrdf.tif">
  <Files>
-  <File path="environmentBRDF.dds"/>
+  <File path="environmentbrdf.dds"/>
  </Files>
  <Details>
   <Detail name="width">128</Detail>

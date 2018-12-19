@@ -1,10 +1,10 @@
-<AssetMetadata version="0" type="Texture" guid="efc2c952-ab2c-d7e6-5c7d-f549a44577cd" source="Streaming.tif">
+<AssetMetadata version="0" type="Texture" guid="efc2c952-ab2c-d7e6-5c7d-f549a44577cd" source="streaming.tif">
  <Files>
-  <File path="Streaming.dds"/>
+  <File path="streaming.dds"/>
  </Files>
  <Details>
   <Detail name="width">32</Detail>
   <Detail name="height">32</Detail>
-  <Detail name="mipCount">4</Detail>
+  <Detail name="mipCount">6</Detail>
  </Details>
 </AssetMetadata>

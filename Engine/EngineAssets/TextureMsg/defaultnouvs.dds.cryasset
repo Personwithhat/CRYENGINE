@@ -1,10 +1,6 @@
-<AssetMetadata version="0" type="Texture" guid="c3b050ef-8ead-c94f-f1e4-c4c0712c4708" source="DefaultNoUVs.tif">
+<AssetMetadata version="0" type="Texture" guid="c3b050ef-8ead-c94f-f1e4-c4c0712c4708" source="defaultnouvs.tif">
  <Files>
-  <File path="DefaultNoUVs.dds"/>
-  <File path="DefaultNoUVs.dds.1"/>
-  <File path="DefaultNoUVs.dds.2"/>
-  <File path="DefaultNoUVs.dds.3"/>
-  <File path="DefaultNoUVs.dds.4"/>
+  <File path="defaultnouvs.dds"/>
  </Files>
  <Details>
   <Detail name="width">256</Detail>

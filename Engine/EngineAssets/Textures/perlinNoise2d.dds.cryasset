@@ -1,10 +1,6 @@
-<AssetMetadata version="0" type="Texture" guid="6015c7b3-dcdd-3c4e-a5e3-667a668eb389" source="perlinNoise2d.tif">
+<AssetMetadata version="0" type="Texture" guid="6015c7b3-dcdd-3c4e-a5e3-667a668eb389" source="perlinnoise2d.tif">
  <Files>
-  <File path="perlinNoise2d.dds"/>
-  <File path="perlinNoise2d.dds.1"/>
-  <File path="perlinNoise2d.dds.2"/>
-  <File path="perlinNoise2d.dds.3"/>
-  <File path="perlinNoise2d.dds.4"/>
+  <File path="perlinnoise2d.dds"/>
  </Files>
  <Details>
   <Detail name="width">256</Detail>

@@ -1,10 +1,10 @@
-<AssetMetadata version="0" type="Texture" guid="6c459c0c-65a6-61b1-994a-29bcb96f9266" source="HighMemoryUsage.TIF">
+<AssetMetadata version="0" type="Texture" guid="6c459c0c-65a6-61b1-994a-29bcb96f9266" source="highmemoryusage.tif">
  <Files>
-  <File path="HighMemoryUsage.dds"/>
+  <File path="highmemoryusage.dds"/>
  </Files>
  <Details>
   <Detail name="width">16</Detail>
   <Detail name="height">16</Detail>
-  <Detail name="mipCount">3</Detail>
+  <Detail name="mipCount">5</Detail>
  </Details>
 </AssetMetadata>

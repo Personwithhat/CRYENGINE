@@ -1,4 +1,4 @@
-<AssetMetadata version="0" type="Texture" guid="f83f5707-a1c1-d260-2452-01db31ad3800" source="vignetting.TIF">
+<AssetMetadata version="0" type="Texture" guid="f83f5707-a1c1-d260-2452-01db31ad3800" source="vignetting.tif">
  <Files>
   <File path="vignetting.dds"/>
  </Files>

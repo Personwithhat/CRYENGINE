@@ -1,6 +1,6 @@
-<AssetMetadata version="0" type="Texture" guid="32212618-9db4-cf3b-ff5f-961ea3560db4" source="Cursor_Green.tif">
+<AssetMetadata version="0" type="Texture" guid="32212618-9db4-cf3b-ff5f-961ea3560db4" source="cursor_green.tif">
  <Files>
-  <File path="Cursor_Green.dds"/>
+  <File path="cursor_green.dds"/>
  </Files>
  <Details>
   <Detail name="width">32</Detail>

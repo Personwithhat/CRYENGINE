@@ -1,6 +1,6 @@
-<AssetMetadata version="0" type="Texture" guid="5e6cdbf1-34ee-f341-77f6-7810c507fa83" source="BlackAlpha.tif">
+<AssetMetadata version="0" type="Texture" guid="5e6cdbf1-34ee-f341-77f6-7810c507fa83" source="blackalpha.tif">
  <Files>
-  <File path="BlackAlpha.dds"/>
+  <File path="blackalpha.dds"/>
  </Files>
  <Details>
   <Detail name="width">4</Detail>

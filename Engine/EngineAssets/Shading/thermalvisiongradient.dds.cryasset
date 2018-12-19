@@ -1,6 +1,6 @@
-<AssetMetadata version="0" type="Texture" guid="813eb183-0020-a3eb-d2e4-38ac452ee535" source="ThermalVisionGradient.tif">
+<AssetMetadata version="0" type="Texture" guid="813eb183-0020-a3eb-d2e4-38ac452ee535" source="thermalvisiongradient.tif">
  <Files>
-  <File path="ThermalVisionGradient.dds"/>
+  <File path="thermalvisiongradient.dds"/>
  </Files>
  <Details>
   <Detail name="width">256</Detail>

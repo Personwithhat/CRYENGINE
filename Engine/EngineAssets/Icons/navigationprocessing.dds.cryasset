@@ -1,10 +1,10 @@
-<AssetMetadata version="0" type="Texture" guid="f4d15da3-eefe-c67a-159b-9aa85bc12cd2" source="NavigationProcessing.tif">
+<AssetMetadata version="0" type="Texture" guid="f4d15da3-eefe-c67a-159b-9aa85bc12cd2" source="navigationprocessing.tif">
  <Files>
-  <File path="NavigationProcessing.dds"/>
+  <File path="navigationprocessing.dds"/>
  </Files>
  <Details>
   <Detail name="width">32</Detail>
   <Detail name="height">32</Detail>
-  <Detail name="mipCount">4</Detail>
+  <Detail name="mipCount">6</Detail>
  </Details>
 </AssetMetadata>

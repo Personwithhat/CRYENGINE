@@ -1,6 +1,6 @@
-<AssetMetadata version="0" type="Texture" guid="83942fe2-d5d3-ef9f-2773-f9a6a7394ac0" source="color_Red.tif">
+<AssetMetadata version="0" type="Texture" guid="83942fe2-d5d3-ef9f-2773-f9a6a7394ac0" source="color_red.tif">
  <Files>
-  <File path="color_Red.dds"/>
+  <File path="color_red.dds"/>
  </Files>
  <Details>
   <Detail name="width">4</Detail>
