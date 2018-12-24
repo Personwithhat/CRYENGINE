@@ -10,6 +10,7 @@
 #include <CrySerialization/Enum.h>
 
 #include <cctype>
+#include <regex>
 
 // Temporary using statement to not break YASLI_ENUM_BEGIN_NESTED below
 // Before fixing, validate that serialization to disk is the same, it currently serializes a string.
@@ -153,10 +154,15 @@ bool CProjectManager::ParseProjectFile()
 		projectFileJson.resize(file.GetLength());
 	}
 
-	if (projectFileJson.size() > 0 &&
-		file.ReadRaw(projectFileJson.data(), projectFileJson.size()) == projectFileJson.size() &&
-		gEnv->pSystem->GetArchiveHost()->LoadJsonBuffer(Serialization::SStruct(m_project), projectFileJson.data(), projectFileJson.size()))
-	{
+	// Optimization is neglegible considering the engine boot up takes longer than parsing one small file.
+	bool checked = false;
+	if (projectFileJson.size() > 0 && file.ReadRaw(projectFileJson.data(), projectFileJson.size()) == projectFileJson.size()){
+		// Remove everything in XML style comments before parsing JSON
+		string data = std::regex_replace(projectFileJson.data(), std::regex{ "<--[\\s\\S]*?-->" }, "").c_str();
+		if(gEnv->pSystem->GetArchiveHost()->LoadJsonBuffer(Serialization::SStruct(m_project), data, data.size()))
+			checked = true;
+	}
+	if(checked){
 		if (m_project.version > LatestProjectFileVersion)
 		{
 			EQuestionResult result = CryMessageBox("Attempting to start the engine with a potentially unsupported .cryproject made with a newer version of the engine!\nDo you want to continue?", "Loading unknown .cryproject version", eMB_YesCancel);

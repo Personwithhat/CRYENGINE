@@ -2,12 +2,15 @@
 
 import json
 import os.path
+import re 
 
 def load(path):
     try:
         file = open(path, 'r', encoding='utf-8')
-        proj = json.loads (file.read())
+        fileData = file.read()
         file.close()
+        ## Make sure to remove xml-style comments before parsing json.
+        proj = json.loads(re.sub('<--[\\s\\S]*?-->', '', fileData))
     except ValueError:
         proj = None
 
