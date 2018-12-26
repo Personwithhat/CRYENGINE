@@ -4755,7 +4755,7 @@ void CSystem::CreateSystemVars()
 	m_sys_user_folder = REGISTER_STRING("sys_user_folder", "", 0, "Specifies the name of the user folder inside the 'Users/<username>/Saved Games/' folder, otherwise if left blank the User folder will be stored inside the root.");
 
 #ifndef _RELEASE
-	m_sys_resource_cache_folder = REGISTER_STRING("sys_resource_cache_folder", "Editor\\ResourceCache", 0, "Folder for resource compiled locally. Managed by Sandbox.");
+	m_sys_resource_cache_folder = REGISTER_STRING("sys_resource_cache_folder", "Editor\\ResourceCache", 0, "Folder for resource compiled locally, relative to game project directory. Managed by Sandbox.");
 #endif
 
 	REGISTER_INT("cvDoVerboseWindowTitle", 0, VF_NULL, "");
