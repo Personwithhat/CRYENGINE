@@ -3336,10 +3336,10 @@ void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
 	{
 		if (gEnv && gEnv->pTimer)
 		{
-#if !defined(EXCLUDE_NORMAL_LOG)
 			const CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
-			const float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
-#endif
+			float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
+			if (s_startTime == CTimeValue())
+				numSeconds = gEnv->pTimer->GetAsyncCurTime();				// Elapsed time since Reset, in this case system boot .-.
 			CryLog("SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
 				   m_systemGlobalState, systemGlobalState,
 				   CSystem::GetSystemGlobalStateName(m_systemGlobalState), CSystem::GetSystemGlobalStateName(systemGlobalState),

@@ -2317,7 +2317,7 @@ ELoadConfigurationType CXConsole::SetCurrentConfigType(ELoadConfigurationType co
 
 void CXConsole::ExecuteCommand(CConsoleCommand& cmd, string& str, bool bIgnoreDevMode)
 {
-	CryLog("[CONSOLE] Executing console command '%s'", str.c_str());
+	CryLog("[CONSOLE] Executing console command '%s'. [%3.1f] seconds have passed since boot.", str.c_str(), (float)gEnv->pTimer->GetAsyncCurTime());
 	INDENT_LOG_DURING_SCOPE();
 
 	std::vector<string> args;
