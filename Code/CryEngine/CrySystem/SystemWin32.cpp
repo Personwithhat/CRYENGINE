@@ -1452,10 +1452,12 @@ bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)
 void CSystem::ChangeUserPath(const char* sUserPath)
 {
 	string userFolder = sUserPath;
+	string defName = "USER";
+	string lFolder = gEnv->pConsole->GetCVar("local_user_folder")->GetString();
+
+	assert((userFolder.empty() || lFolder.empty()) && "Can't have two user folder locations!");
 
 #if CRY_PLATFORM_WINDOWS
-	bool folderCreated = false;
-
 	#if defined(DEDICATED_SERVER)
 	userFolder = "";              // Enforce userfolder as empty which will cause USER%d creation if root is not specified
 	if (!(m_root.empty()))
@@ -1466,51 +1468,46 @@ void CSystem::ChangeUserPath(const char* sUserPath)
 	}
 	else
 	#endif // defined(DEDICATED_SERVER)
-	{
-		if (userFolder.empty())
-		{
-			userFolder = "USER";
-			m_env.pCryPak->MakeDir(userFolder.c_str());
-		}
-		else
-		{
-			char szMyDocumentsPath[MAX_PATH];
-			if (GetWinGameFolder(szMyDocumentsPath, MAX_PATH))
-			{
-				string mydocs = string(szMyDocumentsPath) + "\\" + userFolder;
-				mydocs = PathUtil::RemoveSlash(mydocs);
-				mydocs = PathUtil::ToDosPath(mydocs);
-				userFolder = mydocs;
-				m_env.pCryPak->MakeDir(mydocs);
-				folderCreated = true;
-			}
-		}
+	{ 
+		// PERSONAL CRYTEK: Not too sure on intended functionality so leaving this as is for now.
 	}
-
-	if (!folderCreated)
+	
+	// 3 options: Default instanced storage in root, SavedGames/XX storage, or user-defined in .cryproject "folder location".
+	if (userFolder.empty())
 	{
-		// pick a unique dir name for this instance
-		int instance = GetApplicationInstance();
-		if (instance != 0)
-		{
-			userFolder.Format("USER(%d)", instance);
-			m_sys_user_folder->Set(userFolder.c_str());
+		if (!lFolder.empty())
+			userFolder = lFolder;
+		else {
+			userFolder = defName;
+
+			// Pick a unique dir name for this instance
+			int instance = GetApplicationInstance();
+			if (instance != 0)
+			{
+				userFolder.Format("%s(%d)", userFolder, instance);
+				m_sys_user_folder->Set(userFolder.c_str());
+			}
 		}
 
 		// Make the userFolder path absolute
-		char cwdBuffer[MAX_PATH];
-		CryGetCurrentDirectory(MAX_PATH, cwdBuffer);
-		string tempBuffer;
-		tempBuffer.Format("%s\\%s", cwdBuffer, userFolder.c_str());
-		tempBuffer = PathUtil::RemoveSlash(tempBuffer);
-		tempBuffer = PathUtil::ToDosPath(tempBuffer);
-		userFolder = tempBuffer;
+		if (PathUtil::IsRelativePath(userFolder) && userFolder[0] != '%')
+			userFolder = PathUtil::Make(PathUtil::GetProjectFolder(), PathUtil::AddSlash(userFolder));
 
-		gEnv->pCryPak->MakeDir(userFolder.c_str());
+	}else{
+		char szMyDocumentsPath[MAX_PATH];
+		if (GetWinGameFolder(szMyDocumentsPath, MAX_PATH))
+		{
+			userFolder = string(szMyDocumentsPath) + "\\" + userFolder;
+			userFolder = PathUtil::RemoveSlash(userFolder);
+			userFolder = PathUtil::ToDosPath(userFolder);
+		}
 	}
 
+	// Create user data folder
+	gEnv->pCryPak->MakeDir(userFolder.c_str());
+
 #elif CRY_PLATFORM_DURANGO
-	userFolder = "USER";
+	userFolder = defName;
 	m_env.pCryPak->MakeDir(userFolder.c_str());
 	m_sys_user_folder->Set(userFolder.c_str());
 #elif CRY_PLATFORM_ANDROID
@@ -1520,7 +1517,7 @@ void CSystem::ChangeUserPath(const char* sUserPath)
 #elif CRY_PLATFORM_LINUX || CRY_PLATFORM_ANDROID
 	if (userFolder.empty())
 	{
-		userFolder = "USER";
+		userFolder = defName;
 		m_env.pCryPak->MakeDir(userFolder.c_str());
 	}
 	else
@@ -1536,7 +1533,7 @@ void CSystem::ChangeUserPath(const char* sUserPath)
 		}
 	}
 #elif CRY_PLATFORM_ORBIS
-	userFolder = PathUtil::Make(m_env.pSystem->GetRootFolder(), "user");
+	userFolder = PathUtil::Make(m_env.pSystem->GetRootFolder(), defName);
 	m_env.pCryPak->MakeDir(userFolder);
 #endif
 

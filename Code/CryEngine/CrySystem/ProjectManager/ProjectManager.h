@@ -23,6 +23,7 @@ public:
 	virtual const char*  GetCurrentProjectName() const override;
 	virtual CryGUID      GetCurrentProjectGUID() const override;
 	virtual const char*  GetCurrentEngineID() const override;
+	virtual const char*  GetLogRoot() const override;
 
 	virtual const char*  GetCurrentProjectDirectoryAbsolute() const override;
 

@@ -1854,6 +1854,47 @@ bool CSystem::InitFileSystem(const SSystemInitParams& startupParams)
 		return false;
 	}
 
+	// Moving original log to another dir if root_log_dir is defined.
+	string logRoot = m_pProjectManager->GetLogRoot();
+	if (logRoot != ""){
+		// Backup old log path
+		string oldFilePath = m_env.pLog->GetFilePath();
+		string bFilePath   = m_env.pLog->GetBackupFilePath();
+
+		// Use absolute paths
+		if (PathUtil::IsRelativePath(oldFilePath) && oldFilePath[0] != '%') // %Alias% could expand to absolute path as well
+		{
+			oldFilePath = PathUtil::Make(PathUtil::GetEnginePath(), oldFilePath);
+			bFilePath = PathUtil::Make(PathUtil::GetEnginePath(), bFilePath);  // If one is relative, both should be.
+		}
+
+		// Flush and close existing log.
+		m_env.pLog->FlushAndClose();
+
+		// Re-use same file name, this will handle GetLogRoot() usage.
+		string logName = m_env.pLog->GetFileName();
+
+		// Remove log instancing, assumption with log-root is that we aren't using this.
+		if(GetApplicationInstance() > 0)
+			logName = std::regex_replace(logName.c_str(), std::regex{ "\\(.*\\)" }, "").c_str();
+
+		// Create ze log
+		m_env.pLog->SetFileName(logName);
+
+		// Copy existing data over
+		m_env.pCryPak->CopyFileOnDisk(oldFilePath, m_env.pLog->GetFilePath(), false);
+		m_env.pCryPak->CopyFileOnDisk(bFilePath, m_env.pLog->GetBackupFilePath(), false);
+
+		// Clean-up old log files
+		m_env.pCryPak->RemoveFile(oldFilePath);
+		m_env.pCryPak->RemoveFile(bFilePath);
+
+		// Re-install handler if defined.
+		#ifdef CRY_USE_CRASHRPT
+			CCrashRpt::ReInstallCrashRptHandler(0);
+		#endif
+	}
+
 	m_env.pCryPak->ClosePack(szConfigPakPath);
 
 	// Legacy support for setting decryption key from IGameStartup interface
@@ -5374,6 +5415,9 @@ void CSystem::CreateSystemVars()
 	// Useful for multi-window spawning & debugging e.g. for networking.
 	REGISTER_CVAR2("r_offset_x", &g_cvars.r_offset_x, 0, VF_NULL, "Initial offset X for the main launcher window, relative to screen center. In pixels.");
 	REGISTER_CVAR2("r_offset_y", &g_cvars.r_offset_y, 0, VF_NULL, "Initial offset Y for the main launcher window, relative to screen center. In pixels.");
+
+	// To better manage user folder
+	REGISTER_STRING("local_user_folder", "", VF_NULL, "Create this named user-folder in local directory instead of SavedGames");
 
 #if CRY_PLATFORM_WINDOWS
 	((DebugCallStack*)IDebugCallStack::instance())->RegisterCVars();

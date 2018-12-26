@@ -31,6 +31,8 @@
 #include "Services/UpdateScheduler.h"
 #include "UnitTests/UnitTestRegistrar.h"
 
+#include <CrySystem\IProjectManager.h>
+
 namespace Schematyc
 {
 namespace
@@ -115,7 +117,10 @@ bool CCore::Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& i
 	{
 		CStackString logFileName;
 		const int applicationInstance = gEnv->pSystem->GetApplicationInstance();
-		if (applicationInstance)
+		string log_root = gEnv->pSystem->GetIProjectManager()->GetLogRoot();
+
+		// PERSONAL NOTE: Assuming that if you have a specific log-root you don't want instanced logs. Can be improved later.
+		if (applicationInstance && log_root.empty())
 		{
 			logFileName.Format("CrySchematyc(%d).log", applicationInstance);
 		}

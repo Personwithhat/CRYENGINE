@@ -23,6 +23,7 @@
 #include <CryString/UnicodeFunctions.h>
 #include <CryString/StringUtils.h>
 #include <CrySystem/ConsoleRegistration.h>
+#include <CrySystem/IProjectManager.h>
 
 #if CRY_PLATFORM_WINDOWS
 	#include <time.h>
@@ -1378,7 +1379,7 @@ void CLog::CreateBackupFile()
 
 	string backupFolder = "LogBackups";
 #if !defined(CRY_PLATFORM_CONSOLE)
-	backupFolder = PathUtil::Make(PathUtil::GetProjectFolder(), backupFolder);
+	backupFolder = PathUtil::Make(PathUtil::GetParentDirectory(m_filePath), backupFolder);
 #endif
 	const string backupFileName = PathUtil::GetFileName(m_filename) + backupNameAttachment + ".log";
 	const string backupFilePath = PathUtil::Make(backupFolder, backupFileName);
@@ -1421,6 +1422,12 @@ bool CLog::SetFileName(const char* szFileName)
 	gEnv->pCryPak->AdjustFileName(szFileName, adjustedPath, ICryPak::FLAGS_FOR_WRITING | ICryPak::FLAGS_PATH_REAL);
 	m_filePath = adjustedPath.c_str();
 	m_filename = PathUtil::GetFile(m_filePath);
+
+	// Update log-dir root. Only works on relative paths.
+	string log_root = gEnv->pSystem->GetIProjectManager()->GetLogRoot();
+	if (!log_root.empty() && PathUtil::IsRelativePath(szFileName) && szFileName[0] != '%') {
+		m_filePath = PathUtil::Make(PathUtil::GetProjectFolder(), PathUtil::Make(log_root, m_filePath));
+	}
 
 	CreateBackupFile();
 

@@ -605,7 +605,7 @@ void DebugCallStack::RemoveOldFiles()
 		baseName = "error";
 	}
 
-	baseName = PathUtil::Make("LogBackups", baseName);
+	baseName = PathUtil::Make("OldErrors", baseName);
 	string logDest = baseName + ".log";
 	string jpgDest = baseName + ".jpg";
 	string dmpDest = baseName + ".dmp";

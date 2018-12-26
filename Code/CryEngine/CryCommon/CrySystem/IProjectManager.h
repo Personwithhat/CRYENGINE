@@ -82,6 +82,9 @@ struct SProject
 	string       filePath;
 	string       engineVersionId;
 
+	// Root directory for logs
+	string logRoot;
+
 	// Directory containing the .cryproject file
 	string rootDirectory;
 	// Directory game will search for assets in (relative to project directory)
@@ -206,6 +209,7 @@ struct SProjectFileParser<LatestProjectFileVersion>
 		};
 
 		ar(project.type, "type", "type");
+		ar(project.logRoot, "logRoot", "logRoot");
 		ar(SInfo(project), "info", "info");
 		ar(SContent(project), "content", "content");
 		ar(SRequire(project), "require", "require");
@@ -241,6 +245,9 @@ struct IProjectManager
 	virtual CryGUID     GetCurrentProjectGUID() const = 0;
 	//! Gets the identifier for the engine used by this project
 	virtual const char* GetCurrentEngineID() const = 0;
+
+	//! Gets root directory for logs
+	virtual const char* GetLogRoot() const = 0;
 
 	//! Gets the absolute path to the root of the project directory, where the .cryproject resides.
 	//! \return Path without trailing separator.

@@ -21,6 +21,8 @@
 
 #include "BaseEnv/BaseEnv_BaseEnv.h"
 
+#include <CrySystem\IProjectManager.h>
+
 //////////////////////////////////////////////////////////////////////////
 // NEW RUNTIME
 //////////////////////////////////////////////////////////////////////////
@@ -115,7 +117,8 @@ namespace Schematyc2
 		{
 			stack_string logFileName;
 			const int    applicationInstance = gEnv->pSystem->GetApplicationInstance();
-			if(applicationInstance)
+			string log_root = gEnv->pSystem->GetIProjectManager()->GetLogRoot();
+			if(applicationInstance && log_root.empty())
 			{
 				logFileName.Format("schematyc_legacy(%d).log", applicationInstance);
 			}

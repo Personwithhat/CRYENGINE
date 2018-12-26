@@ -45,6 +45,11 @@ const char* CProjectManager::GetCurrentEngineID() const
 	return m_project.engineVersionId.c_str();
 }
 
+const char* CProjectManager::GetLogRoot() const
+{
+	return m_project.logRoot;
+}
+
 const char* CProjectManager::GetCurrentProjectDirectoryAbsolute() const
 {
 	return m_project.rootDirectory;
@@ -165,8 +170,12 @@ bool CProjectManager::ParseProjectFile()
 
 		m_project.rootDirectory = PathUtil::RemoveSlash(PathUtil::ToUnixPath(PathUtil::GetPathWithoutFilename(m_project.filePath)));
 
-		// Create the full path to the asset directory
-		m_project.assetDirectoryFullPath = PathUtil::Make(m_project.rootDirectory, m_project.assetDirectory);
+		// Get absolute path to asset folder
+		if (PathUtil::IsRelativePath(m_project.assetDirectory) && m_project.assetDirectory[0] != '%')
+			m_project.assetDirectoryFullPath = PathUtil::Make(m_project.rootDirectory, m_project.assetDirectory);
+		else
+			m_project.assetDirectoryFullPath = m_project.assetDirectory;
+
 		// Ensure compatibility with all supported platform filesystems
 		m_project.assetDirectoryFullPath.MakeLower();
 
