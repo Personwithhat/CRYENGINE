@@ -359,7 +359,7 @@ void CTimer::UpdateOnFrameStart()
 		m_replicationTime += m_fFrameTime;
 
 	// Adjust the base time so that time actually seems to have moved forward m_fFrameTime
-	const int64 frameTicks = SecondsToTicks(m_fFrameTime);
+	/*const int64 frameTicks = SecondsToTicks(m_fFrameTime);
 	const int64 realTicks = SecondsToTicks(m_fRealFrameTime);
 	m_lBaseTime += realTicks - frameTicks;
 	if (m_lBaseTime > now)
@@ -367,10 +367,10 @@ void CTimer::UpdateOnFrameStart()
 		// Guard against rounding errors due to float <-> int64 precision
 		assert(m_lBaseTime - now <= 10 && "Bad base time or adjustment, too much difference for a rounding error");
 		m_lBaseTime = now;
-	}
+	}*/
 	const int64 currentTime = now - m_lBaseTime;
 
-	assert(fabsf(TicksToSeconds(currentTime - m_lLastTime) - m_fFrameTime) < 0.01f && "Bad calculation");
+	//assert(fabsf(TicksToSeconds(currentTime - m_lLastTime) - m_fFrameTime) < 0.01f && "Bad calculation");
 	assert(currentTime >= m_lLastTime && "Bad adjustment in previous frame");
 	assert(currentTime + m_lOffsetTime >= 0 && "Sum of game time is negative");
 
