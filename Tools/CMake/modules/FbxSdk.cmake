@@ -1,4 +1,15 @@
 if(WIN64)
+	if(NOT EXISTS "${SDK_DIR}/FbxSdk")
+		string(CONCAT errmsg 
+			" FBX SDK (2016) is missing, needed for Sandbox.\n"
+			" Download it from https://www.autodesk.com or directly from this URL:\n"
+			"     images.autodesk.com/adsk/files/fbx20161_fbxsdk_vs2015_win0.exe\n \n"
+			" After install, copy and rename 'XX/Program Files/Autodesk/FBX/FBX SDK/2016.1' to 'Code/SDKs/FbxSdk'\n"
+			" Path should be e.g. %ENGINEROOT%/Code/SDKs/FbxSdk/include\n"
+		)
+		message(FATAL_ERROR ${errmsg})
+	endif()
+
 	add_library(FbxSdk SHARED IMPORTED GLOBAL)
 	set_target_properties(FbxSdk PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${SDK_DIR}/FbxSdk/include")
 	set_target_properties(FbxSdk PROPERTIES INTERFACE_COMPILE_DEFINITIONS FBXSDK_NEW_API=1)

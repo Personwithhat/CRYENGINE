@@ -1,8 +1,3 @@
-if(NOT EXISTS "${SDK_DIR}/FbxSdk")
-	message(WARNING "FBX SDK (2016) is required to build Sandbox. Download it from https://www.autodesk.com.")
-	return()
-endif()
-
 set(CMAKE_AUTOMOC_RELAXED_MODE TRUE)
 
 #modules
