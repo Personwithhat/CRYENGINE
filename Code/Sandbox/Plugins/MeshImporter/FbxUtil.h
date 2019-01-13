@@ -2,7 +2,7 @@
 // Utilities for FbxTool.
 #pragma once
 #if !defined(BUILDING_FBX_TOOL)
-	#error This header must not be included directly, #include FbxTool.h instead
+	#error CMake building MeshImporter plugin without FBX!
 #endif
 #include "FbxSdkInclude.h"
 #include <vector> // std::vector

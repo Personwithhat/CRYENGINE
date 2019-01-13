@@ -42,8 +42,6 @@ add_sources("NoUberFile"
 		"ImporterUtil.cpp"
 		"TextureManager.h"
 		"TextureManager.cpp"
-		"AssetImporterFBX.h"
-		"AssetImporterFBX.cpp"
 		"AssetImporterImage.h"
 		"AssetImporterImage.cpp"
 	SOURCE_GROUP "Dialog"
@@ -72,19 +70,6 @@ add_sources("NoUberFile"
 		"DialogCHR/DialogCHR.cpp"
 		"DialogCHR/DialogCHR_SceneUserData.h"
 		"DialogCHR/DialogCHR_SceneUserData.cpp"
-	SOURCE_GROUP "FbxTool\\\\FbxMetaData"
-		"FbxMetaData.h"
-		"FbxMetaData.cpp"
-		"NodeProperties.h"
-		"NodeProperties.cpp"
-	SOURCE_GROUP "FbxTool\\\\FbxTool"
-		"FbxScene.h"
-		"FbxScene.cpp"
-		"FbxUtil.h"
-		"FbxUtil.cpp"
-		"FbxSdkInclude.h"
-	SOURCE_GROUP "FbxTool\\\\Mesh"
-		"CreateEngineMesh.cpp"
 	SOURCE_GROUP "MaterialGenerator"
 		"MaterialGenerator/MaterialGenerator.h"
 		"MaterialGenerator/MaterialGenerator.cpp"
@@ -189,6 +174,27 @@ add_sources("NoUberFile"
 		"TextureView.cpp"
 )
 
+if(OPTION_FBX_SDK)
+	add_sources("NoUberFile"
+		SOURCE_GROUP "Code"
+			"AssetImporterFBX.h"
+			"AssetImporterFBX.cpp"
+		SOURCE_GROUP "FbxTool\\\\FbxMetaData"
+			"FbxMetaData.h"
+			"FbxMetaData.cpp"
+			"NodeProperties.h"
+			"NodeProperties.cpp"
+		SOURCE_GROUP "FbxTool\\\\FbxTool"
+			"FbxScene.h"
+			"FbxScene.cpp"
+			"FbxUtil.h"
+			"FbxUtil.cpp"
+			"FbxSdkInclude.h"
+		SOURCE_GROUP "FbxTool\\\\Mesh"
+			"CreateEngineMesh.cpp"
+	)
+endif()
+
 end_sources()
 #END-FILE-LIST
 
@@ -198,6 +204,7 @@ target_include_directories(${THIS_PROJECT} PRIVATE ../../EditorQt)
 target_include_directories(${THIS_PROJECT} PRIVATE ../../EditorQt/Include)
 target_include_directories(${THIS_PROJECT} PRIVATE ../MFCToolsPlugin)	
 
-target_link_libraries(${THIS_PROJECT} PRIVATE Sandbox MFCToolsPlugin FbxSdk)
-target_compile_definitions(${THIS_PROJECT} PRIVATE -DBUILDING_FBX_TOOL)
-
+if(OPTION_FBX_SDK)
+	target_link_libraries(${THIS_PROJECT} PRIVATE Sandbox MFCToolsPlugin FbxSdk)
+	target_compile_definitions(${THIS_PROJECT} PRIVATE -DBUILDING_FBX_TOOL)
+endif()

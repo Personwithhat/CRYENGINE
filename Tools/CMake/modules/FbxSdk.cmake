@@ -1,7 +1,7 @@
 if(WIN64)
 	if(NOT EXISTS "${SDK_DIR}/FbxSdk")
 		string(CONCAT errmsg 
-			" FBX SDK (2016) is missing, needed for Sandbox.\n"
+			" Trying to include FBX SDK (2016), but it's missing!\n"
 			" Download it from https://www.autodesk.com or directly from this URL:\n"
 			"     images.autodesk.com/adsk/files/fbx20161_fbxsdk_vs2015_win0.exe\n \n"
 			" After install, copy and rename 'XX/Program Files/Autodesk/FBX/FBX SDK/2016.1' to 'Code/SDKs/FbxSdk'\n"
