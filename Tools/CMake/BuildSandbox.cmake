@@ -3,7 +3,20 @@ option(PLUGIN_SAMPLE_EDITOR_PLUGIN "Build SamplePlugin" OFF)
 set(CMAKE_AUTOMOC_RELAXED_MODE TRUE)
 
 #modules
-include("${TOOLS_CMAKE_DIR}/modules/FbxSdk.cmake")
+unset(OPTION_FBX_SDK CACHE)
+if (EXISTS "${SDK_DIR}/FbxSdk")
+	message(STATUS "FBX SDK found in ${SDK_DIR}/FbxSdk - enabling FBX import support")
+	
+	# This is to update only the message in the cache that is then used in the GUI as a tooltip.
+	option(OPTION_FBX_SDK "FBX SDK found in ${SDK_DIR}/FbxSdk." ON)
+		
+	include("${TOOLS_CMAKE_DIR}/modules/FbxSdk.cmake")
+else()
+	message(STATUS "FBX SDK not found in ${SDK_DIR}/FbxSdk - disabling FBX import support")
+	
+	# Disables the OPTION_FBX_SDK option but also updates the message in the cache that is then used in the GUI as a tooltip.
+	option(OPTION_FBX_SDK "FBX SDK not found in ${SDK_DIR}/FbxSdk." OFF)
+endif()
 include("${TOOLS_CMAKE_DIR}/modules/Python.cmake")
 #---
 
@@ -50,8 +63,10 @@ add_subdirectory("Code/Sandbox/Plugins/EditorTrackView")
 add_subdirectory("Code/Sandbox/Plugins/EditorBehaviorTree")
 add_subdirectory("Code/Sandbox/Plugins/EditorUDR")
 add_subdirectory("Code/Sandbox/Plugins/EditorGameSDK")
-add_subdirectory("Code/Sandbox/Plugins/FbxPlugin")
-add_subdirectory("Code/Sandbox/Plugins/MeshImporter")
+if(OPTION_FBX_SDK)
+	add_subdirectory("Code/Sandbox/Plugins/FbxPlugin")
+	add_subdirectory("Code/Sandbox/Plugins/MeshImporter")
+endif()
 add_subdirectory("Code/Sandbox/Plugins/PerforcePlugin")
 add_subdirectory("Code/Sandbox/Plugins/PerforcePlugin_Legacy")
 add_subdirectory("Code/Sandbox/Plugins/SandboxPythonBridge")
