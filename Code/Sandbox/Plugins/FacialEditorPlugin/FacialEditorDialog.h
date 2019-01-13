@@ -135,7 +135,10 @@ protected:
 	afx_msg void            OnSequenceLoadVideoIgnoreSequence();
 	afx_msg void            OnSequenceLoadC3DFile();
 	afx_msg void            OnSeqenceLoadGroupFile();
+
+	#if defined(BUILDING_FBX_TOOL) 
 	afx_msg void            OnSequenceImportFBX();
+	#endif
 
 	afx_msg void            OnJoysticksNew();
 	afx_msg void            OnJoysticksOpen();
@@ -198,15 +201,20 @@ protected:
 	void                                MergeVideoExtractedSequence(const char* filename, float startTime, bool loadSequence = true);
 	void                                LoadGroupFile(const char* filename);
 	void                                LoadC3DFile(const char* filename);
-	void                                LoadFBXToSequence(const char* filename);
+
+	#if defined(BUILDING_FBX_TOOL) 
+	void								LoadFBXToSequence(const char* filename);
+	#endif
 
 	void                                DisplayCurrentVideoFrame();
 
 	_smart_ptr<IFacialEffectorsLibrary> CreateLibraryOfSelectedEffectors();
 	void                                UpdateSkeletonAnimText();
 
+	#if defined(BUILDING_FBX_TOOL) 
 	// Helper Functions, do not call directly - Call ::LoadFBXToSequence instead
 	bool ImportFBXAsSequence(IFacialAnimSequence* newSequence, const char* filename);
+	#endif
 
 private:
 	CFacialPreviewDialog        m_panePreview;
