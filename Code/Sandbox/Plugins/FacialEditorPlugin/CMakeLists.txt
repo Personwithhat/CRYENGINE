@@ -40,7 +40,6 @@ add_sources("Editor_Uber_FacialEditor.cpp"
 		"JoystickPropertiesDlg.cpp"
 		"PhonemeAnalyzer.cpp"
 		"PhonemesCtrl.cpp"
-		"FBX_Import.cpp"
 		"EffectorInfoWnd.h"
 		"FacialEdContext.h"
 		"FacialEditorDialog.h"
@@ -78,6 +77,12 @@ add_sources("Editor_Uber_FacialEditor.cpp"
 		"Vicon/Vicon_ClientCodes.cpp"
 		"Vicon/Vicon_ClientCodes.h"
 )
+if(OPTION_FBX_SDK)
+	add_sources("Editor_Uber_FacialEditor.cpp"
+		SOURCE_GROUP "FacialEditor"
+			"FBX_Import.cpp"
+	)
+endif()	
 
 end_sources()
 #END-FILE-LIST
@@ -92,3 +97,7 @@ target_include_directories(${THIS_PROJECT} PRIVATE ../MFCToolsPlugin)
 
 #target_link_libraries(${THIS_PROJECT} PRIVATE Sandbox)
 target_link_libraries(${THIS_PROJECT} PRIVATE MFCToolsPlugin)
+
+if(OPTION_FBX_SDK)
+	target_compile_definitions(${THIS_PROJECT} PRIVATE -DBUILDING_FBX_TOOL)
+endif()

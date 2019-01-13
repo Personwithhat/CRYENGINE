@@ -15,11 +15,7 @@ add_sources("Uber_EditorTrackView.cpp"
 	SOURCE_GROUP "Exporter"
 		"TrackViewExporter.cpp"
 		"TrackViewExporter.h"
-		"Exporter/FBXImporterDlg.cpp"
-		"Exporter/FBXImporterDlg.h"
-		"Exporter/FBXExporterDlg.cpp"
 		"Exporter/XMLExporterDlg.cpp"
-		"Exporter/FBXExporterDlg.h"
 		"Exporter/XMLExporterDlg.h"
 	SOURCE_GROUP "Nodes"
 		"Nodes/TrackViewAnimNode.cpp"
@@ -89,7 +85,13 @@ add_sources("Uber_EditorTrackView.cpp"
 		"Controls/PropertyTreeDockWidget.h"
 		"Controls/SequenceTabWidget.h"
 )
-
+add_sources("Uber_EditorTrackView.cpp"
+	SOURCE_GROUP "Exporter"
+		"Exporter/FBXImporterDlg.cpp"
+		"Exporter/FBXImporterDlg.h"
+		"Exporter/FBXExporterDlg.cpp"
+		"Exporter/FBXExporterDlg.h"
+)
 end_sources()
 #END-FILE-LIST
 

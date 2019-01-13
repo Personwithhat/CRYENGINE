@@ -128,7 +128,10 @@ ON_COMMAND(ID_SEQUENCE_SAVEAS, OnSequenceSaveAs)
 ON_COMMAND(ID_SEQUENCE_LOADSOUND, OnSequenceLoadSound)
 ON_COMMAND(ID_SEQUENCE_LOADSKELETONANIMATION, OnSequenceLoadSkeletonAnimation)
 ON_COMMAND(ID_SEQUENCE_TEXT_LIPSYNC, OnSequenceLipSync)
+
+#if defined(BUILDING_FBX_TOOL) 
 ON_COMMAND(ID_SEQUENCE_IMPORT_FBX_TO_SEQUENCE, OnSequenceImportFBX)
+#endif
 
 ON_COMMAND(ID_JOYSTICKS_NEW, OnJoysticksNew)
 ON_COMMAND(ID_JOYSTICKS_OPEN, OnJoysticksOpen)
@@ -2423,6 +2426,7 @@ void CFacialEditorDialog::OnSeqenceLoadGroupFile()
 }
 
 //////////////////////////////////////////////////////////////////////////
+#if defined(BUILDING_FBX_TOOL) 
 void CFacialEditorDialog::OnSequenceImportFBX()
 {
 	CString filename;
@@ -2434,7 +2438,7 @@ void CFacialEditorDialog::OnSequenceImportFBX()
 	if (CFileUtil::SelectFile(filter, "", filename))
 		LoadFBXToSequence(filename.GetString());
 }
-
+#endif
 //////////////////////////////////////////////////////////////////////////
 void CFacialEditorDialog::OnJoysticksNew()
 {

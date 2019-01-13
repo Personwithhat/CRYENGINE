@@ -136,8 +136,6 @@ add_sources("Editor_Uber_ExportManager.cpp"
 	SOURCE_GROUP "Export"
 		"AnimationSerializer.cpp"
 		"AnimationSerializer.h"
-		"FBXExporterDialog.h"
-		"FBXExporterDialog.cpp"
 		"GameExporter.cpp"
 		"GameResourcesExporter.cpp"
 		"ParticleExporter.cpp"
@@ -152,6 +150,13 @@ add_sources("Editor_Uber_ExportManager.cpp"
 		"Export/OCMExporter.h"
 		"Export/ScreenshotExporter.cpp"
 )
+if(OPTION_FBX_SDK)
+	add_sources("Editor_Uber_ExportManager.cpp"
+		SOURCE_GROUP "Export"
+			"FBXExporterDialog.h"
+			"FBXExporterDialog.cpp"
+	)
+endif()
 
 add_sources("Editor_Uber_Geometry.cpp"
 	SOURCE_GROUP "Util\\\\Geometry"
@@ -1518,7 +1523,9 @@ PRIVATE
 )
 target_link_libraries(${THIS_PROJECT} PRIVATE tiff zlib prt)
 if(WINDOWS)
-	target_link_libraries(${THIS_PROJECT} PRIVATE FbxSdk)
+	if(OPTION_FBX_SDK)
+		target_link_libraries(${THIS_PROJECT} PRIVATE FbxSdk)
+	endif()
 	target_link_libraries(${THIS_PROJECT} PRIVATE qtmain$<$<CONFIG:Debug>:d>)
 endif()
 
