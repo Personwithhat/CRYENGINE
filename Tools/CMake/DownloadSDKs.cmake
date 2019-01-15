@@ -5,7 +5,7 @@ unset(CMAKE_MODE CACHE)
 
 if (NOT EXISTS "${CRYENGINE_DIR}/Tools/branch_bootstrap/bootstrap.exe" AND NOT EXISTS "${CRYENGINE_DIR}/Code/SDKs")
 	set(GIT_REPO      "Personwithhat/CE_SDKs")
-	set(GIT_TAG       "main_latest")
+	set(GIT_TAG       "time_latest")
 	set(SDK_ARCHIVE   "CE_SDKs")
 	
 	## Update download_sdk config using CMake variables
