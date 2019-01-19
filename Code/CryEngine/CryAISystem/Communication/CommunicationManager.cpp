@@ -154,7 +154,7 @@ bool CCommunicationManager::LoadCommunicationSettingsXML(const char* fileName)
 	XmlNodeRef rootNode = GetISystem()->LoadXmlFromFile(fileName);
 	if (!rootNode)
 	{
-		AIWarning("Failed to open XML file '%s'...", fileName);
+		AIWarning("Failed to load CommunicationSystem config \"%s\"...", fileName);
 
 		return false;
 	}
