@@ -195,12 +195,11 @@ void CVisibleRenderNodesManager::UpdateVisibleNodes(int currentFrame, int maxNod
 			m_firstAddedNode = -1;
 		}
 
-		auto b = m_visibleNodes.begin() + m_lastStartUpdateNode;
-		if (b >= m_visibleNodes.end())
-		{
-			b = m_visibleNodes.begin();
+		auto b = m_visibleNodes.begin();
+		if (m_lastStartUpdateNode >= m_visibleNodes.size())
 			m_lastStartUpdateNode = 0;
-		}
+		else
+			b += m_lastStartUpdateNode;
 
 		const auto maxFrames = (uint32)C3DEngine::GetCVars()->e_RNTmpDataPoolMaxFrames;
 		for (int i=0; i<maxNodesToCheck && b!=m_visibleNodes.end(); ++i)
