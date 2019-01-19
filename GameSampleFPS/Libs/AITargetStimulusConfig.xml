@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AITargetStimulusConfig version="1">
+	<Config name="empty">
+		<Stimuli>
+		</Stimuli>
+	</Config>
+</AITargetStimulusConfig>
