@@ -137,7 +137,9 @@ bool CDeviceRenderPassDesc::SetDepthTarget(CTexture* pTexture, ResourceViewHandl
 {
 	CRY_ASSERT(!pTexture || !m_renderTargets[0].pTexture || (
 		pTexture->GetWidth() == m_renderTargets[0].pTexture->GetWidth() &&
-		pTexture->GetHeight() == m_renderTargets[0].pTexture->GetHeight()));
+		pTexture->GetHeight() == m_renderTargets[0].pTexture->GetHeight())
+		|| !strcmp(m_renderTargets[0].pTexture->GetSourceName(), "SVO_SUN_RSM_COLOR")
+	);
 
 	const SResourceBindPoint bindPoint(SResourceBindPoint::ESlotType::TextureAndBuffer, -1, EShaderStage_Pixel);
 	bool result = UpdateResource(bindPoint, m_depthTarget, SResourceBinding(pTexture, hView));
