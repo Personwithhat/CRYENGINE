@@ -64,16 +64,16 @@ CDXInput::~CDXInput()
 
 bool CDXInput::Init()
 {
-	//	gEnv->pLog->Log("DXInput::Init()\n");
+	//	gEnv->pLog->Log("DXInput::Init()");
 	CBaseInput::Init();
 
-	gEnv->pLog->Log("Initializing DirectInput\n");
+	gEnv->pLog->Log("Initializing DirectInput");
 
 	HRESULT hr = DirectInput8Create(CryGetCurrentModule(), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&m_pDI, 0);
 
 	if (FAILED(hr))
 	{
-		gEnv->pLog->Log("Cannot initialize DirectInput\n");
+		gEnv->pLog->Log("Cannot initialize DirectInput");
 		return false;
 	}
 
@@ -127,7 +127,7 @@ void CDXInput::Update(bool bFocus)
 
 void CDXInput::ShutDown()
 {
-	gEnv->pLog->Log("DXInput Shutdown\n");
+	gEnv->pLog->Log("DXInput Shutdown");
 
 	CBaseInput::ShutDown();
 

@@ -116,19 +116,6 @@ CHardwareMouse::CHardwareMouse(bool bVisibleByDefault)
 	}
 #endif
 
-	if (gEnv->pConsole)
-	{
-		ICVar* pCursorTexturePath = gEnv->pConsole->GetCVar("r_MouseCursorTexture");
-		if (pCursorTexturePath)
-		{
-			const char* szCursorTexturePath = pCursorTexturePath->GetString();
-			if (szCursorTexturePath && *szCursorTexturePath)
-			{
-				SetCursor(pCursorTexturePath->GetString());
-			}
-		}
-	}
-
 #if !CRY_PLATFORM_WINDOWS
 	if (gEnv->pRenderer)
 		SetHardwareMousePosition(gEnv->pRenderer->GetOverlayWidth() * 0.5f, gEnv->pRenderer->GetOverlayHeight() * 0.5f);

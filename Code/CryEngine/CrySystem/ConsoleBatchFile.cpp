@@ -67,7 +67,7 @@ bool CConsoleBatchFile::ExecuteConfigFile(const char* sFilename)
 
 		if (!CSystemConfiguration::OpenFile(filename, file, ICryPak::FOPEN_ONDISK))
 		{
-			CryLog("%s \"%s\" not found!", szLog, filename.c_str());
+			CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "%s \"%s\" not found!", szLog, filename.c_str());
 			return false;
 		}
 		filenameLog = file.GetFilename();
