@@ -15,7 +15,7 @@ CDialogQueuesManager::CDialogQueuesManager()
 	if (xmlNodeRoot == (IXmlNode*)NULL)
 	{
 		if (!gEnv->IsEditor())
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "CDialogFlowNodeMgr::Init() - Failed to load '%s'. dialog flownode buffers disabled.", BUFFERS_FILENAME);
+			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, "CDialogFlowNodeMgr::Init() - Failed to load '%s'. Dialog flownode buffers disabled.", BUFFERS_FILENAME);
 		return;
 	}
 

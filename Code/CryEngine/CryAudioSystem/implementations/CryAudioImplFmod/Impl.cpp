@@ -1342,7 +1342,9 @@ void CImpl::MuteMasterBus(bool const shouldMute)
 #if defined(CRY_AUDIO_IMPL_FMOD_USE_PRODUCTION_CODE)
 	if (g_pSystem->getBus(g_szBusPrefix, &pMasterBus) != FMOD_OK)
 	{
-		Cry::Audio::Log(ELogType::Error, "Failed to get master bus during %s", __FUNCTION__);
+		// Ignore err if failed to load master banks obv
+		if(!m_masterBankPath.empty() && !m_masterStringsBankPath.empty())
+			Cry::Audio::Log(ELogType::Error, "Failed to get master bus during %s", __FUNCTION__);
 	}
 #else
 	g_pSystem->getBus(g_szBusPrefix, &pMasterBus);

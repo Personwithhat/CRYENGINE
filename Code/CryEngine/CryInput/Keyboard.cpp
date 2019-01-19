@@ -35,7 +35,7 @@ CKeyboard::CKeyboard(CDXInput& input) :
 //////////////////////////////////////////////////////////////////////////
 bool CKeyboard::Init()
 {
-	gEnv->pLog->LogToFile("Initializing Keyboard\n");
+	gEnv->pLog->LogToFile("Initializing Keyboard");
 
 	if (!gEnv->pConsole->GetCVar("g_disableWinKeys"))
 	{
@@ -105,7 +105,7 @@ bool CKeyboard::SetExclusiveMode(bool value)
 
 		if (FAILED(hr))
 		{
-			gEnv->pLog->LogToFile("Cannot Set Keyboard Exclusive Mode\n");
+			gEnv->pLog->LogToFile("Cannot Set Keyboard Exclusive Mode");
 			return false;
 		}
 	}
@@ -115,7 +115,7 @@ bool CKeyboard::SetExclusiveMode(bool value)
 		hr = GetDirectInputDevice()->SetCooperativeLevel((HWND)GetDXInput().GetHWnd(), GetDeviceFlags());
 		if (FAILED(hr))
 		{
-			gEnv->pLog->LogToFile("Cannot Set Keyboard Non-Exclusive Mode\n");
+			gEnv->pLog->LogToFile("Cannot Set Keyboard Non-Exclusive Mode");
 			return false;
 		}
 	}
@@ -134,7 +134,7 @@ void CKeyboard::ChangeDisableWinKeys(ICVar* pVar)
 	hr = GetDirectInputDevice()->SetCooperativeLevel((HWND)GetDXInput().GetHWnd(), GetDeviceFlags());
 	if (FAILED(hr))
 	{
-		gEnv->pLog->LogToFile("Error changing enabled state of windows keys\n");
+		gEnv->pLog->LogToFile("Error changing enabled state of windows keys");
 	}
 	Acquire();
 }
