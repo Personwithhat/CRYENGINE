@@ -410,8 +410,13 @@ void Command_DumpVars(IConsoleCmdArgs* Cmd)
 bool CXConsole::ParseCVarOverridesFile(const char* szSysCVarOverridesPathConfigFile)
 {
 #if defined(USE_RUNTIME_CVAR_OVERRIDES)
-	CRY_ASSERT_MESSAGE(m_mapVariables.empty(), "There should not be any cvars registered before parsing the runtime CVar overrides file, num: %i", m_mapVariables.size());
-	
+	#ifdef USE_FRAME_PROFILER
+		static int profilerCVarCount = 17;
+		CRY_ASSERT_MESSAGE(m_mapVariables.size() == profilerCVarCount, "Aside from profiler CVars, there shouldn't be any cvars registered before parsing the runtime CVar overrides file, num extra: %i", m_mapVariables.size() - profilerCVarCount);
+	#else
+		CRY_ASSERT_MESSAGE(m_mapVariables.empty(), "There should not be any cvars registered before parsing the runtime CVar overrides file, num: %i", m_mapVariables.size());
+	#endif
+
 	string sys_cvar_overrides_path;
 	{
 		char path[_MAX_PATH];
