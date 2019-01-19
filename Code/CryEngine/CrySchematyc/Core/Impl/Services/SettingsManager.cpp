@@ -54,7 +54,7 @@ namespace Schematyc
 			fileName.append(".sc_settings");
 			fileName.MakeLower();
 
-			if (CVars::sc_SettingsNotFoundWarning != 0 || gEnv->pCryPak->IsFileExist(fileName))
+			if ((CVars::sc_SettingsNotFoundWarning != 0 && strcmp(szName, "log_settings")) || gEnv->pCryPak->IsFileExist(fileName))
 			{
 				Serialization::LoadXmlFile(*settings.second, fileName);
 			}

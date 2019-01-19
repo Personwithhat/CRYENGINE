@@ -1,8 +1,12 @@
 
 #options
 
-option(PLUGIN_SCHEMATYC "Enables compilation of the Schematyc plugin (currently Schematyc2.dll)" ON)
+option(PLUGIN_SCHEMATYC "Enables compilation of the Schematyc plugin (currently Schematyc2.dll)" OFF)
 option(PLUGIN_SCHEMATYC_EXPERIMENTAL "Enables compilation of the Experimental Schematyc plugin (Schematyc.dll)" ON)
+
+if(PLUGIN_SCHEMATYC AND PLUGIN_SCHEMATYC_EXPERIMENTAL)
+	message(WARNING "You are compiling two schematyc plugins, they may conflict. CVars/commands etc.!!")
+endif()
 
 option(OPTION_PAKTOOLS "Build .pak encryption tools" OFF)
 option(OPTION_RC "Include RC in the build" OFF)

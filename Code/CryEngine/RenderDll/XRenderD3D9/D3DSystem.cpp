@@ -1916,7 +1916,8 @@ HRESULT CALLBACK CD3D9Renderer::OnD3D11CreateDevice(D3DDevice* pd3dDevice)
 	driverVersion.HighPart = (VK_VERSION_MAJOR(version) << 16) | VK_VERSION_MINOR(version);
 	driverVersion.LowPart = (VK_VERSION_PATCH(version) << 16) | VK_HEADER_VERSION;
 	#else
-	rd->m_devInfo.Adapter()->CheckInterfaceSupport(__uuidof(ID3D11Device), &driverVersion);
+	// PERSONAL CRYTEK: Invalid check, you can only do this for D3D10, this returns 0/unsupported 24/7.
+	//rd->m_devInfo.Adapter()->CheckInterfaceSupport(__uuidof(ID3D11Device), &driverVersion);
 	#endif
 	iLog->Log("D3D Adapter: Description: %ls", rd->m_devInfo.AdapterDesc().Description);
 	iLog->Log("D3D Adapter: Driver version (UMD): %d.%02d.%02d.%04d", HIWORD(driverVersion.u.HighPart), LOWORD(driverVersion.u.HighPart), HIWORD(driverVersion.u.LowPart), LOWORD(driverVersion.u.LowPart));

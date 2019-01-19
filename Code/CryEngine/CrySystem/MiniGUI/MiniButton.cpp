@@ -275,7 +275,7 @@ bool CMiniButton::SetControlCVar(const char* sCVarName, float fOffValue, float f
 
 	if (!m_pCVar)
 	{
-		CryLogAlways("failed to find CVar: %s\n", sCVarName);
+		CryLogAlways("Failed to find CVar: %s", sCVarName);
 	}
 
 	m_fCVarValue[0] = fOffValue;
