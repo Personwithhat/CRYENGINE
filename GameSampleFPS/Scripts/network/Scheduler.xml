@@ -24,7 +24,7 @@
 	<!-- owned object -->
 	<Group name="own" priority="16"/>
 	<!-- players -->
-	<Group name="player" priority="8" drawn="1" normalDistance="100" close="2" far="2" foi="90" front="1" back="1">
+	<Group name="dude" priority="8" drawn="1" normalDistance="100" close="2" far="2" foi="90" front="1" back="1">
 		<Pulse name="bump" bump="3" decayTime="2"/>
 		<Pulse name="bang" bump="4" decayTime="0.65"/> <!-- is about bump=2 after 1 second -->
 	</Group>
