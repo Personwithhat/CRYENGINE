@@ -530,9 +530,8 @@ struct SysSpecOverrideSink : public ILoadConfigurationEntrySink
 				if (stricmp(szKey, "sys_spec_full") == 0)
 				{
 					// If it is set to 0 then ignore this request to set to something else
-					// If it is set to 0 then the user wants to changes system spec settings in system.cfg
-					// Ignore the spec if the renderer wasn't initialized.
-					if (pCvar->GetIVal() != 0 && gEnv->pRenderer != nullptr)
+					// If it is set to 0 then the user wants to change system spec settings in system.cfg
+					if (pCvar->GetIVal() != 0)
 					{
 						applyCvar = true;
 					}
@@ -711,7 +710,8 @@ WIN_HMODULE CSystem::LoadDynamicLibrary(const char* szModulePath, bool bQuitIfNo
 		if (!handle && bLogLoadingInfo)
 		{
 			DWORD dwErrorCode = GetLastError();
-			CryLogAlways("DLL Failed to load, error code: %X", dwErrorCode);
+			if(!strcmp(szModulePath, DLL_SCALEFORM) && dwErrorCode == 0xE7)		 // Ignore if Scaleform dll missing/not used.
+				CryLogAlways("DLL Failed to load, error code: %X", dwErrorCode);
 		}
 	}
 	else
@@ -1754,7 +1754,8 @@ bool CSystem::InitFileSystem(const SSystemInitParams& startupParams)
 	LoadConfiguration(path.c_str(), pCVarsWhiteListConfigSink, eLoadConfigInit, ELoadConfigurationFlags::SuppressConfigNotFoundWarning);
 
 	const char* szConfigPakPath = "%ENGINEROOT%/config.pak";
-	m_env.pCryPak->OpenPack(szConfigPakPath);
+	if(m_env.pCryPak->IsFileExist(szConfigPakPath, ICryPak::EFileSearchLocation::eFileLocation_OnDisk))
+		m_env.pCryPak->OpenPack(szConfigPakPath);
 
 	// Initialize console before the project system
 	// This ensures that "exec" and other early commands can be executed immediately on parsing
@@ -2177,12 +2178,14 @@ void CSystem::InitLocalization()
 	stack_string szLanguageAudio = szLanguage;
 	pCVar = (m_env.pConsole != nullptr) ? m_env.pConsole->GetCVar("g_languageAudio") : nullptr;
 
+	bool load = true;
 	if (pCVar != nullptr)
 	{
 		if (strlen(pCVar->GetString()) == 0)
 		{
 			// Use "g_language" value in case "g_languageAudio" has not been set.
 			pCVar->Set(szLanguageAudio.c_str());
+			load = false;
 		}
 		else
 		{
@@ -2190,7 +2193,9 @@ void CSystem::InitLocalization()
 		}
 	}
 
-	OpenLanguageAudioPak(szLanguageAudio.c_str());
+	// This particular CVar already auto-loads the pak when set, so you'd end up loading it twice otherwise.
+	if(load)
+		OpenLanguageAudioPak(szLanguageAudio.c_str());
 
 	// Construct the localization manager after the paks have been opened.
 	if (m_pLocalizationManager == nullptr)
@@ -2319,7 +2324,7 @@ void CSystem::OpenLanguageAudioPak(char const* const szLanguage)
 	if (!m_env.pCryPak->OpenPack(bindingRoot.c_str(), pakFilePath))
 	{
 		// make sure the localized language is found - not really necessary, for TC
-		CryLogAlways("Localized language content(%s) not available or modified from the original installation.", szLanguage);
+		CryLogAlways("Audio localized language content(%s) not available or modified from the original installation.", szLanguage);
 	}
 
 	//Debugging code for profiling memory usage of pak system
@@ -3107,13 +3112,13 @@ bool CSystem::Initialize(SSystemInitParams& startupParams)
 					if (!InitializeEngineModule(startupParams, DLL_SCALEFORM, cryiidof<IScaleformHelperEngineModule>(), false))
 					{
 						m_env.pScaleformHelper = nullptr;
-						CryLog("Attempt to load Scaleform helper library from '%s' failed, this feature will not be available", DLL_SCALEFORM);
+						CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Attempt to load Scaleform helper library from '%s' failed, this feature will not be available", DLL_SCALEFORM);
 					}
 					else if (!m_env.pScaleformHelper->Init())
 					{
 						m_env.pScaleformHelper->Destroy();
 						m_env.pScaleformHelper = nullptr;
-						CryLog("Unable to initialize Scaleform helper library, this feature will not be available");
+						CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Unable to initialize Scaleform helper library, this feature will not be available");
 					}
 					else
 					{

@@ -352,7 +352,7 @@ void CPerfHUD::InitUI(IMiniGUI* pGUI)
 	CreateCVarMenuItem(pDebugMenu, "Characters", "ca_DrawChr", 0, 1);
 	CreateCVarMenuItem(pDebugMenu, "Coverage Buffer", "e_CoverageBuffer", 0, 1);
 	CreateCVarMenuItem(pDebugMenu, "Sun", "e_Sun", 0, 1);
-	CreateCVarMenuItem(pDebugMenu, "Unlit", "r_Unlit", 0, 1);
+	// CreateCVarMenuItem(pDebugMenu, "Unlit", "r_Unlit", 0, 1); // NOTE: No mention anywhere in CE code.
 	CreateCVarMenuItem(pDebugMenu, "Disable Normal Maps", "r_texbindmode", 0, 5);
 	CreateCVarMenuItem(pDebugMenu, "Env Probes", "r_deferredShadingEnvProbes", 0, 1);
 	CreateCVarMenuItem(pDebugMenu, "Lighting View", "r_texbindmode", 0, 11);
@@ -389,7 +389,10 @@ void CPerfHUD::InitUI(IMiniGUI* pGUI)
 	CreateCVarMenuItem(pStatsMenu, "Texture Memory Usage", "e_debugDraw", 0, 4);
 	CreateCVarMenuItem(pStatsMenu, "Detailed Render Stats", "r_Stats", 0, 1);
 	CreateCVarMenuItem(pStatsMenu, "Shader Stats", "r_profiler", 0, 2);
+
+	#ifdef INCLUDE_SCALEFORM_SDK
 	CreateCVarMenuItem(pStatsMenu, "Flash Stats", "sys_flash_info", 0, 1);
+	#endif
 
 	//
 	// SYSTEM MENU

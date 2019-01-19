@@ -756,8 +756,9 @@ void CLevelInfo::ReadMetaData()
 		return;
 
 	XmlNodeRef mapInfo = GetISystem()->LoadXmlFromFile(fullPath.c_str());
-	//retrieve the coordinates of the map
-	bool foundMinimapInfo = false;
+	// Retrieve the coordinates of the map
+	bool usingMinimap = false;
+	bool validMinimap = false;
 	if (mapInfo)
 	{
 		for (int n = 0; n < mapInfo->getChildCount(); ++n)
@@ -797,21 +798,21 @@ void CLevelInfo::ReadMetaData()
 			}
 			else if (!stricmp(name, "Minimap"))
 			{
-				foundMinimapInfo = true;
+				usingMinimap = true;
 
 				const char* minimap_dds = "";
-				foundMinimapInfo &= rulesNode->getAttr("Filename", &minimap_dds);
+				validMinimap &= rulesNode->getAttr("Filename", &minimap_dds);
 				m_minimapImagePath = minimap_dds;
 				m_minimapInfo.sMinimapName = GetPath();
 				m_minimapInfo.sMinimapName.append("/");
 				m_minimapInfo.sMinimapName.append(minimap_dds);
 
-				foundMinimapInfo &= rulesNode->getAttr("startX", m_minimapInfo.fStartX);
-				foundMinimapInfo &= rulesNode->getAttr("startY", m_minimapInfo.fStartY);
-				foundMinimapInfo &= rulesNode->getAttr("endX", m_minimapInfo.fEndX);
-				foundMinimapInfo &= rulesNode->getAttr("endY", m_minimapInfo.fEndY);
-				foundMinimapInfo &= rulesNode->getAttr("width", m_minimapInfo.iWidth);
-				foundMinimapInfo &= rulesNode->getAttr("height", m_minimapInfo.iHeight);
+				validMinimap &= rulesNode->getAttr("startX", m_minimapInfo.fStartX);
+				validMinimap &= rulesNode->getAttr("startY", m_minimapInfo.fStartY);
+				validMinimap &= rulesNode->getAttr("endX", m_minimapInfo.fEndX);
+				validMinimap &= rulesNode->getAttr("endY", m_minimapInfo.fEndY);
+				validMinimap &= rulesNode->getAttr("width", m_minimapInfo.iWidth);
+				validMinimap &= rulesNode->getAttr("height", m_minimapInfo.iHeight);
 				m_minimapInfo.fDimX = m_minimapInfo.fEndX - m_minimapInfo.fStartX;
 				m_minimapInfo.fDimY = m_minimapInfo.fEndY - m_minimapInfo.fStartY;
 				m_minimapInfo.fDimX = m_minimapInfo.fDimX > 0 ? m_minimapInfo.fDimX : 1;
@@ -849,10 +850,10 @@ void CLevelInfo::ReadMetaData()
 		}
 		m_bMetaDataRead = true;
 	}
-	if (!foundMinimapInfo)
-	{
-		gEnv->pLog->LogWarning("Map %s: Missing or invalid minimap info!", mapName.c_str());
-	}
+	if (!usingMinimap)
+		gEnv->pLog->Log("No minimap found at \"%s\", skipping.", mapName.c_str());
+	else if(!validMinimap)
+		gEnv->pLog->LogWarning("Map %s: Invalid minimap info!", mapName.c_str());
 }
 
 //------------------------------------------------------------------------
@@ -885,8 +886,10 @@ CLevelSystem::CLevelSystem(ISystem* pSystem)
 	LOADING_TIME_PROFILE_SECTION;
 	CRY_ASSERT(pSystem);
 
-	//Load user defined level types
-	if (XmlNodeRef levelTypeNode = m_pSystem->LoadXmlFromFile("Libs/Levels/leveltypes.xml"))
+	// Load user defined level types, if any.
+	string typeFile = "Libs/Levels/leveltypes.xml";
+	XmlNodeRef levelTypeNode = gEnv->pCryPak->IsFileExist(typeFile) ? m_pSystem->LoadXmlFromFile(typeFile) : nullptr;
+	if (levelTypeNode)
 	{
 		for (unsigned int i = 0; i < levelTypeNode->getChildCount(); ++i)
 		{

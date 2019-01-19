@@ -1038,7 +1038,7 @@ void CMatMan::InitDefaults()
 
 	if (!m_pDefaultLayersMtl)
 	{
-		m_pDefaultLayersMtl = LoadMaterial("Materials/material_layers_default", false);
+		m_pDefaultLayersMtl = LoadMaterial("%ENGINE%/EngineAssets/Materials/material_layers_default", false);
 	}
 
 	if (!m_pNoDrawMtl)

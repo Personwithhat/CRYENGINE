@@ -1157,9 +1157,10 @@ void CShaderMan::mfInit(void)
 			CRenderer::CV_r_shadersImport = 0;           // don't allow shader importing
 		}
 
-		// make sure correct paks are open - shaders.pak will be unloaded from memory after init
-		gEnv->pCryPak->OpenPack(PathUtil::GetGameFolder() + "/", "%ENGINEROOT%/Engine/Shaders.pak",
-		                        ICryPak::FLAGS_PAK_IN_MEMORY | ICryPak::FLAGS_PATH_REAL);
+		// Make sure correct paks are open - shaders.pak will be unloaded from memory after init
+		string shaderPak = "%ENGINEROOT%/Engine/Shaders.pak";
+		if (gEnv->pCryPak->IsFileExist(shaderPak, ICryPak::EFileSearchLocation::eFileLocation_OnDisk))
+			gEnv->pCryPak->OpenPack(PathUtil::GetGameFolder() + "/", shaderPak, ICryPak::FLAGS_PAK_IN_MEMORY | ICryPak::FLAGS_PATH_REAL);
 
 		ParseShaderProfiles();
 

@@ -179,11 +179,11 @@ void CFlashUIActionEvents::OnLoadingStart(ILevelInfo* pLevel)
 		string imageFile;
 		string text;
 		bool ok = pLevel->GetAttribute("loading_video", videoFile);
-		ok &= pLevel->GetAttribute("loading_image", imageFile);
-		ok &= pLevel->GetAttribute("loading_text", text);
+		ok |= pLevel->GetAttribute("loading_image", imageFile);
+		ok |= pLevel->GetAttribute("loading_text", text);
 		if (!ok)
 		{
-			gEnv->pLog->LogWarning("Level does not have loading screen info");
+			gEnv->pLog->LogWarning("Level does not have any loading screen info.");
 		}
 
 		m_eventSender.SendEvent<eUIE_OnLoadingStart>(pLevel->GetDisplayName(), videoFile, imageFile, text);
