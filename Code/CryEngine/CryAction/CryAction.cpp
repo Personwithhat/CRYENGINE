@@ -2012,7 +2012,9 @@ bool CCryAction::Initialize(SSystemInitParams& startupParams)
 
 		gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_GAME_FRAMEWORK_INIT_DONE, 0, 0);
 
-		gEnv->pConsole->ExecuteString("exec autoexec.cfg");
+		// Optional console batch file.
+		if(gEnv->pCryPak->IsFileExist("%ENGINE%/autoexec.cfg"))
+			gEnv->pConsole->ExecuteString("exec autoexec.cfg");
 
 		return true;
 	}
@@ -2067,7 +2069,7 @@ bool CCryAction::InitGame(SSystemInitParams& startupParams)
 		CreateGameStartup = (IGameStartup::TEntryFunction)CryGetProcAddress(hGameDll, "CreateGameStartup");
 		if (!CreateGameStartup)
 		{
-			CryMessageBox("Failed to find the GameStartup Interface!", gameDLLName.c_str(), eMB_Error);
+			//CryMessageBox("Failed to find the GameStartup Interface!", gameDLLName.c_str(), eMB_Error);
 			CryFreeLibrary(hGameDll);
 			return false;
 		}

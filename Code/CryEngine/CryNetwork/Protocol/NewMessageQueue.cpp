@@ -222,7 +222,7 @@ bool CMessageQueue::CConfig::Read(XmlNodeRef n)
 			if (!StringToKey(name, key))
 			{
 				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR,
-					"Scheduler policy name should not exceed 4 characters.");
+					"Scheduler policy name '%s' should not exceed 4 characters.", name);
 				return false;
 			}
 			if (key == ~uint32(0))

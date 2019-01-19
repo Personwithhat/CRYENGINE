@@ -32,7 +32,10 @@ CGameStatsConfig::~CGameStatsConfig()
 
 void CGameStatsConfig::ReadConfig()
 {
-	XmlNodeRef root = GetISystem()->LoadXmlFromFile(gConfigFileName);
+	if (!gEnv->pCryPak->IsFileExist(gConfigFileName))
+		return;
+
+	XmlNodeRef root = GetISystem()->LoadXmlFromFile(gConfigFileName);	
 	if (!root)
 	{
 		return;

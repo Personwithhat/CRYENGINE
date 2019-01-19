@@ -96,7 +96,7 @@ bool CCoverSystem::ReloadConfig()
 
 	if (!rootNode)
 	{
-		AIWarning("Failed to open XML file '%s'...", fileName);
+		AIWarning("Failed to load Cover system config \"%s\"...", fileName);
 
 		return false;
 	}

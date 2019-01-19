@@ -30,7 +30,7 @@ CScriptBind_VehicleSystem::CScriptBind_VehicleSystem(ISystem* pSystem, CVehicleS
 	RegisterGlobals();
 	RegisterMethods();
 
-	gEnv->pScriptSystem->ExecuteFile("Scripts/Entities/Vehicles/VehicleSystem.lua");
+	gEnv->pScriptSystem->ExecuteFile("Scripts/Entities/Vehicles/VehicleSystem.lua", false);
 }
 
 //------------------------------------------------------------------------

@@ -2470,7 +2470,7 @@ bool NavigationSystem::ReloadConfig()
 	XmlNodeRef rootNode = GetISystem()->LoadXmlFromFile(m_configName.c_str());
 	if (!rootNode)
 	{
-		AIWarning("Failed to open XML file '%s'...", m_configName.c_str());
+		AIWarning("Failed to open Navigation config: \"%s\"...", m_configName.c_str());
 
 		return false;
 	}

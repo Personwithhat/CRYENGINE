@@ -82,6 +82,9 @@ void CVehicleSystem::RegisterVehicles(IGameFramework* gameFramework)
 	detachedPartClass.sScriptFile = "Scripts/Entities/Vehicles/VehiclePartDetached.lua";
 	detachedPartClass.flags = ECLF_INVISIBLE;
 
+	if (!gEnv->pCryPak->IsFileExist(detachedPartClass.sScriptFile))
+		detachedPartClass.sScriptFile = "";
+
 	static IGameFramework::CGameObjectExtensionCreator<CVehiclePartDetachedEntity> createVehicleDetachedPartEntity;
 	CCryAction::GetCryAction()->GetIGameObjectSystem()->RegisterExtension(detachedPartClass.sName, &createVehicleDetachedPartEntity, &detachedPartClass);
 

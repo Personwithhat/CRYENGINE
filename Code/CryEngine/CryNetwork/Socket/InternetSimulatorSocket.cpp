@@ -238,7 +238,8 @@ void CInternetSimulatorSocket::LoadXMLProfiles(const char* pFileName)
 
 	if (pFileName[0] != 0)
 	{
-		XmlNodeRef rootNode = gEnv->pSystem->LoadXmlFromFile(PathUtil::GetGameFolder() + "/Scripts/Network/" + pFileName);
+		string fPath = PathUtil::GetGameFolder() + "/Scripts/Network/" + pFileName;
+		XmlNodeRef rootNode = gEnv->pSystem->LoadXmlFromFile(fPath);
 		if (rootNode)
 		{
 			uint32 nProfileCount = 0;
@@ -275,13 +276,15 @@ void CInternetSimulatorSocket::LoadXMLProfiles(const char* pFileName)
 					}
 				}
 
-				CryLog("[LagProfiles] \"%s\" file parsed. %u lag profiles loaded.", pFileName, sm_nProfiles);
+				CryLog("[LagProfiles] \"%s\" file parsed. %u lag profiles loaded.", fPath, sm_nProfiles);
 				return;
 			}
 		}
+		CryLog("[LagProfiles] Could not load \"%s\". %u default profiles activated.", fPath, sm_nProfiles);
 	}
+	else
+		CryLog("[LagProfiles] net_sim_loadprofiles not set, %u default profiles activated.", sm_nProfiles);
 
-	CryLog("[LagProfiles] Could not load \"%s\". %u default profiles activated.", pFileName, sm_nProfiles);
 }
 
 #endif
