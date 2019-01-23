@@ -20,8 +20,8 @@ else:
     CRYENGINE_DIR = os.getcwd()
 
 CMAKE_DIR = os.path.abspath(os.path.join(CRYENGINE_DIR,'Tools','CMake'))
-CMAKE_EXE = os.path.abspath(os.path.join(CMAKE_DIR,'Win32','bin','cmake.exe'))
-CMAKE_GUI_EXE = os.path.abspath(os.path.join(CMAKE_DIR,'Win32','bin','cmake-gui.exe'))
+CMAKE_EXE = os.path.abspath(os.path.join(CMAKE_DIR,'win64','bin','cmake.exe'))
+CMAKE_GUI_EXE = os.path.abspath(os.path.join(CMAKE_DIR,'win64','bin','cmake-gui.exe'))
 #CODE_SDKS_DIR = os.path.abspath(os.path.join(CRYENGINE_DIR,'Code','SDKs'))
 
 CONFIGS = [
