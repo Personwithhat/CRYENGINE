@@ -151,7 +151,13 @@ def cmake_configure(generator, srcdir, builddir, cmakeexe=CMAKE_EXE, options=[],
             input("=================== SUCCESS ===================\nBuild done! Press Enter to quit...\n")
 
         # Start cmake-gui application
-        subprocess.Popen([CMAKE_GUI_EXE,'-H'+srcdir,'-B'+builddir])
+        try:
+            subprocess.Popen([CMAKE_GUI_EXE,'-S'+srcdir,'-B'+builddir])
+        except Exception as ex:
+            print(ex)
+            input("==================== ERROR ====================\nFailed to launch CMake GUI! Press Enter to quit...\n")
+            sys.exit(0)
+            
     else:
         input("==================== ERROR ====================\nFailed to build! Press Enter to quit...\n")
 
