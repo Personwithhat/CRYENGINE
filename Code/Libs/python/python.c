@@ -2,6 +2,7 @@
 
 #include "Python.h"
 #include "Windows.h"
+#include "shlwapi.h"
 
 int main(int argc, char **argv)
 {
@@ -13,7 +14,7 @@ int main(int argc, char **argv)
 	else
 	{
 		PathRemoveFileSpecA(filename);
-		strcat(filename, "\\..\\..\\Editor\\Python\\windows");
+		strcat_s(filename, RSIZE_MAX, "\\..\\..\\Editor\\Python\\windows");
 		Py_SetPythonHome(filename);
 		return Py_Main(argc, argv);
 	}
