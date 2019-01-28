@@ -73,7 +73,7 @@ set(METADATA_PROJECT_NAME "CryEngine" CACHE STRING "Name of the solution project
 project("${METADATA_PROJECT_NAME}_CMake_${BUILD_PLATFORM}" CXX C)
 
 # Prefix all Visual Studio solution folder names with this string
-set( VS_FOLDER_PREFIX "CRYENGINE/" )
+set(VS_FOLDER_PREFIX "CRYENGINE" )
 
 set(MODULES CACHE INTERNAL "List of engine modules being built" FORCE)
 set(GAME_MODULES CACHE INTERNAL "List of game modules being built" FORCE)
