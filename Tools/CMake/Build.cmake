@@ -38,8 +38,9 @@ if (OPTION_SANDBOX AND WINDOWS)
 	set(QT_DIR "${QT_DIR}" CACHE INTERNAL "QT directory" FORCE)
 	set(Qt5_DIR "${Qt5_DIR}" CACHE INTERNAL "QT directory" FORCE)
 
-	set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER  "${VS_FOLDER_PREFIX}/Sandbox/AUTOGEN")
-
+	set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER "${VS_FOLDER_PREFIX}/Sandbox/AUTOMOC_Targets") ## Relative to root in solution explorer
+	set_property(GLOBAL PROPERTY AUTOGEN_SOURCE_GROUP "AUTOMOC_Generated") ## Relative to each project
+	
 	message(STATUS "Include Sandbox Editor")
 	include ("${TOOLS_CMAKE_DIR}/BuildSandbox.cmake")
 endif()
