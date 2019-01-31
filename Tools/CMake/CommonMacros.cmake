@@ -76,6 +76,11 @@ function(USE_MSVC_PRECOMPILED_HEADER TargetProject PrecompiledHeader Precompiled
 	get_target_property(HAS_AUTOMOC ${TargetProject} AUTOMOC)
 	if (HAS_AUTOMOC STREQUAL "TRUE")
 		set (MOC_COMPILATION "${CMAKE_CURRENT_BINARY_DIR}/${TargetProject}_autogen/mocs_compilation.cpp")
+		
+		## CMake v3.13+ bug, file list read before moc_compilation marked generated when handling PCH's.
+		## That causes the file to be removed from sources before VStudio launches. Marking it as generated manually == ignores internal error and fixes.
+		set_property(SOURCE "${MOC_COMPILATION}" APPEND_STRING PROPERTY GENERATED "1")
+		
 		# Regardless of PCH, stdafx.h needs to be includeded to ensure platform definitions are visible
 		set_property(SOURCE "${MOC_COMPILATION}" APPEND_STRING PROPERTY COMPILE_FLAGS " /FI\"${PrecompiledHeader}\"")
 		if (OPTION_PCH)
