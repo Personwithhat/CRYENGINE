@@ -5,10 +5,6 @@
 ## Enforced tracking for .dds file, to prevent excessive 'new files' when RC compiles some textures. Use "git add -f" instead.
 Engine/EngineAssets/**/*.dds
 
-# Ain't that many files to ignore, easier to handle through github for now.
-!GameSampleFPS/**
-GameSampleFPS/Animations/editor/*
-
 # Config files
 #/user.cfg
 #/system.cfg

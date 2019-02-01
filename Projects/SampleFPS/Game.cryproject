@@ -1,14 +1,15 @@
 {
 	"version": 4,
 	"type": "CRYENGINE Project",
+	"logRoot": "LOGS/instance1/",	<-- Instead of storing logs all over the place, stores all logs here. -->
 	"info": {
 		"name": "SampleFPS",
 		"guid": "18848a42-b446-94c0-8317-cb2b0eff8774" <-- This ID has to be unique! For GUID, you can go to:
 													       VStudio->Tools->"Create GUID in registry format" -->
 	},
 	"content": {
-		"assets": [ "GameSampleFPS" ],    <-- Path to project Assets, relative to PROJECT root -->
-		"code": [ "Code/GameSampleFPS" ], <-- Not used anywhere -->
+		"assets": [ "Assets" ], <-- Path to project Assets, relative to PROJECT root -->
+		"code": [ "Code" ], 	<-- Not used anywhere -->
 		"libs": [
 			{
 				"name": "CE's First Person Shooter Template",
@@ -22,12 +23,12 @@
 		"plugins": [
 			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },		   <-- You need this to run the engine :) -->
 			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },	   <-- Gotta load this module since you compiled with it via CMake -->
-			{ "type": "EPluginType::Native", "path": "bin/win_x64/SampleFPS.dll" } <-- Path relative to PROJECT root. -->
+			{ "type": "EPluginType::Native", "path": "../../bin/win_x64/SampleFPS.dll" } <-- Path relative to PROJECT root. -->
 		]
 	},
 	"console_variables": {
 		"sys_target_platforms": 			"pc",
-		"sys_user_folder": 					"IMPROVED_GameSampleFPS", <-- Custom name for C:\Users\XXX\Saved Games\user folder -->
+		"local_user_folder":				"user_game", 			  <-- Name of user folder relative to Project-dir, instead of 'user' or 'user(1)'-->
 	<-- "sys_localization_folder": 			"IMPROVED_Localization",  	  Custom name for AssetFolder/localization folder -->
 		"ed_popupMissingAssetResolver": 	"0",					  <-- Ignore some editor errors on missing assets -->
 		

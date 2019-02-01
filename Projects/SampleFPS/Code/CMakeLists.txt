@@ -1,4 +1,5 @@
 ## NOTE: Only projects that follow 'ENGINE_ROOT/Code/GameXXXX' conventions will be CMake-included for build.
+## OR anything in 'ENGINE_ROOT/Projects/**/Code'
 
 ## Add toggleable option for CMake
 option(PROJECT_SampleFPS "Build SampleFPS project" ON)
@@ -70,9 +71,9 @@ elseif(DURANGO)
 endif()
 
 ## Setup vstudio debugger command, overrides existing. The -project is relative to CryEngine root.
-set_visual_studio_debugger_command(${THIS_PROJECT} "${OUTPUT_DIRECTORY}/GameLauncher.exe" "-project GameSampleFPS.cryproject" "yes")
+set_visual_studio_debugger_command(${THIS_PROJECT} "${OUTPUT_DIRECTORY}/GameLauncher.exe" "-project Projects/${THIS_PROJECT}/Game.cryproject" "yes")
 
 ## Dummy project for quick alternation between sandbox and launcher.
 add_custom_target("fps_sandbox")
 set_solution_folder("Projects/GameSampleFPS" "fps_sandbox")
-set_visual_studio_debugger_command("fps_sandbox" "${OUTPUT_DIRECTORY}/Sandbox.exe" "-project GameSampleFPS.cryproject" "yes")
+set_visual_studio_debugger_command("fps_sandbox" "${OUTPUT_DIRECTORY}/Sandbox.exe" "-project Projects/${THIS_PROJECT}/Game.cryproject" "yes")
