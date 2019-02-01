@@ -1,7 +1,15 @@
 // Copyright 2001-2018 Crytek GmbH / Crytek Group. All rights reserved.
 
-#pragma once
+/*************************************************************************
+   -------------------------------------------------------------------------
+   Description:
+   Helper macros/methods/classes for boost.
+   -------------------------------------------------------------------------
+   History:
+   - 02:07:2009: Created by Alex McCarthy
+*************************************************************************/
 
+#pragma once
 #include <CryCore/Assert/CryAssert.h>
 #include <CrySystem/ISystem.h>
 
@@ -28,6 +36,7 @@ template<class E> inline void throw_exception(E const& e)
 	while (true)
 	{
 	}
+	;
 }
 }
 	#endif //BOOST_NO_EXCEPTIONS
@@ -41,3 +50,10 @@ template<class E> inline void throw_exception(E const& e)
 	#include <typeinfo>
 using std::type_info;
 #endif
+
+#pragma warning(push)
+#pragma warning(disable : 4345)
+#include <boost/variant.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/find.hpp>
+#pragma warning(pop)

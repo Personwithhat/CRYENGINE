@@ -1,16 +1,35 @@
 // Copyright 2001-2018 Crytek GmbH / Crytek Group. All rights reserved.
 
 #pragma once
-
-#include "AutoCompletePopup.h"
+#include <CryCore/Platform/platform.h>
+#include <CrySystem/ISystem.h>
+#include <CryCore/BoostHelpers.h> // to make sure we get own throw_exceptions
+#include <boost/circular_buffer.hpp>
+#include <algorithm>
 #include "Messages.h"
+#include "AutoCompletePopup.h"
 
-#include <EditorFramework/Editor.h>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QListView>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QWidget>
+
+#include "TabLineEdit.h"
+#include <QtViewPane.h>
+
+#include "Util/EditorUtils.h"
+
+#include <QTextEdit>
+
+#include <CrySystem/ILog.h>
+
+#include "EditorFramework/Editor.h"
+#include <QMenu>
+#include <QMenuBar>
+
 #include <QSearchBox.h>
-
-class QTextEdit;
-class QTabLineEdit;
-class QWidget;
 
 //the limit to number of console messages to cache
 //this ensures an upper bound in memory usage and processing time in case of huge log-spam
