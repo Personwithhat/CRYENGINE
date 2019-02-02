@@ -3,8 +3,7 @@
 #pragma once
 
 #include "QToolWindowManagerCommon.h"
-
-class QWidget;
+#include <QWidget>
 
 struct QTOOLWINDOWMANAGER_EXPORT IToolWindowWrapper
 {
