@@ -18,15 +18,16 @@
 #include <QWindowStateChangeEvent>
 
 #if defined(WIN32) || defined(WIN64)
-	#include <windows.h>
-	#include <windowsx.h>
-	#include <dwmapi.h>
+#include <windows.h>
+#include <windowsx.h>
+#include <dwmapi.h>
 
-	#ifdef UNICODE
-		#define _UNICODE
-	#endif
 
-	#include <tchar.h>
+#ifdef UNICODE
+#define _UNICODE
+#endif
+
+#include <tchar.h>
 
 Q_GUI_EXPORT QPixmap qt_pixmapFromWinHICON(HICON icon);
 #endif
@@ -43,7 +44,7 @@ QToolWindowCustomWrapper* QToolWindowCustomWrapper::wrapWidget(QWidget* w, QVari
 
 QToolWindowCustomWrapper::QToolWindowCustomWrapper(QToolWindowManager* manager, QWidget* wrappedWidget, QVariantMap config)
 	: QCustomWindowFrame()
-	, m_manager(manager)
+	, m_manager(manager)	
 {
 	m_manager->installEventFilter(this);
 	setStyleSheet(m_manager->styleSheet());
@@ -118,7 +119,7 @@ bool QToolWindowCustomWrapper::eventFilter(QObject* o, QEvent* e)
 	{
 		switch (e->type())
 		{
-		// Don't intercept these messages in parent class.
+			// Don't intercept these messages in parent class.
 		case QEvent::Close:
 		case QEvent::HideToParent:
 		case QEvent::ShowToParent:
@@ -141,7 +142,7 @@ Qt::WindowFlags QToolWindowCustomWrapper::calcFrameWindowFlags()
 	return flags;
 }
 
-bool QToolWindowCustomWrapper::nativeEvent(const QByteArray& eventType, void* message, long* result)
+bool QToolWindowCustomWrapper::nativeEvent(const QByteArray &eventType, void *message, long *result)
 {
 	if (!m_titleBar)
 		return false;
@@ -155,7 +156,7 @@ bool QToolWindowCustomWrapper::nativeEvent(const QByteArray& eventType, void* me
 }
 
 #if defined(WIN32) || defined(WIN64)
-bool QToolWindowCustomWrapper::winEvent(MSG* msg, long* result)
+bool QToolWindowCustomWrapper::winEvent(MSG *msg, long *result)
 {
 	switch (msg->message)
 	{

@@ -8,10 +8,12 @@
 
 void QToolWindowDragHandlerNinePatch::startDrag()
 {
+	
 }
 
 void QToolWindowDragHandlerNinePatch::switchedArea(IToolWindowArea* lastArea, IToolWindowArea* newArea)
 {
+	
 }
 
 QToolWindowAreaTarget QToolWindowDragHandlerNinePatch::getTargetFromPosition(IToolWindowArea* area) const
@@ -29,7 +31,7 @@ QToolWindowAreaTarget QToolWindowDragHandlerNinePatch::getTargetFromPosition(ITo
 	QPoint tabPos = area->mapCombineDropAreaFromGlobal(QCursor::pos());
 
 	if (area->combineAreaRect().contains(tabPos))
-	{
+	{				
 		result.reference = QToolWindowAreaReference::Combine;
 		result.index = area->subWidgetAt(tabPos);
 	}
@@ -44,7 +46,7 @@ QToolWindowAreaTarget QToolWindowDragHandlerNinePatch::getTargetFromPosition(ITo
 		else if (pos.y() > centerRect.y() + centerRect.height()) // bottom region
 			result.reference = QToolWindowAreaReference::HSplitBottom;
 	}
-
+	
 	return result;
 }
 

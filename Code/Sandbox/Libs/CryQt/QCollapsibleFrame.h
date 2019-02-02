@@ -8,6 +8,7 @@
 #include <QWidget>
 
 #include <functional>
+#include <memory>
 
 class QEvent;
 class QFrame;
