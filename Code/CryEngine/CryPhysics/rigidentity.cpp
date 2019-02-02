@@ -4454,7 +4454,7 @@ void CRigidEntity::ApplyBuoyancy(float time_interval,const Vec3& gravity,pe_para
 	if (m_kwaterDensity==0 || m_body.Minv==0) {
 		m_submergedFraction=0; return;
 	}
-	int i,ibuoy,ibuoySplash=-1;
+	int i=0,ibuoy,ibuoySplash=-1;
 	Vec3 sz,center,dP,totResistance=Vec3(ZERO),vel0=m_body.v; 
 	float r,dist,V=0.0f,Vsubmerged,Vfull,submergedFraction,waterFraction=0,g=gravity.len();
 	geom_world_data gwd;
