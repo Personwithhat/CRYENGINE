@@ -387,7 +387,8 @@ void CTimer::UpdateOnFrameStart()
 
 	if (m_TimeDebug > 1)
 	{
-		CryLogAlways("[CTimer]: Frame=%d Cur=%lld Now=%lld Off=%lld Async=%f CurrTime=%f UI=%f", gEnv->pRenderer->GetFrameID(false), (long long)currentTime, (long long)now, (long long)m_lOffsetTime, GetAsyncCurTime(), GetCurrTime(ETIMER_GAME), GetCurrTime(ETIMER_UI));
+		int frameID = !gEnv->IsDedicated() ? gEnv->pRenderer->GetFrameID(false) : gEnv->nMainFrameID;
+		CryLogAlways("[CTimer]: Frame=%d Cur=%lld Now=%lld Off=%lld Async=%f CurrTime=%f UI=%f", frameID, (long long)currentTime, (long long)now, (long long)m_lOffsetTime, GetAsyncCurTime(), GetCurrTime(ETIMER_GAME), GetCurrTime(ETIMER_UI));
 	}
 }
 
@@ -495,7 +496,8 @@ void CTimer::Serialize(TSerialize ser)
 		if (m_TimeDebug)
 		{
 			const int64 now = CryGetTicks();
-			CryLogAlways("[CTimer]: Serialize: Frame=%d Last=%lld Now=%lld Off=%lld Async=%f CurrTime=%f UI=%f", gEnv->pRenderer->GetFrameID(false), (long long)m_lLastTime, (long long)now, (long long)m_lOffsetTime, GetAsyncCurTime(), GetCurrTime(ETIMER_GAME), GetCurrTime(ETIMER_UI));
+			int frameID = !gEnv->IsDedicated() ? gEnv->pRenderer->GetFrameID(false) : gEnv->nMainFrameID;
+			CryLogAlways("[CTimer]: Serialize: Frame=%d Last=%lld Now=%lld Off=%lld Async=%f CurrTime=%f UI=%f", frameID, (long long)m_lLastTime, (long long)now, (long long)m_lOffsetTime, GetAsyncCurTime(), GetCurrTime(ETIMER_GAME), GetCurrTime(ETIMER_UI));
 		}
 #endif
 	}
@@ -518,7 +520,8 @@ bool CTimer::PauseTimer(ETimer which, bool bPause)
 		m_lGameTimerPausedTime = m_lLastTime + m_lOffsetTime;
 		if (m_TimeDebug)
 		{
-			CryLogAlways("[CTimer]: Pausing ON: Frame=%d Last=%lld Off=%lld Async=%f CurrTime=%f UI=%f", gEnv->pRenderer->GetFrameID(false), (long long)m_lLastTime, (long long)m_lOffsetTime, GetAsyncCurTime(), GetCurrTime(ETIMER_GAME), GetCurrTime(ETIMER_UI));
+			int frameID = !gEnv->IsDedicated() ? gEnv->pRenderer->GetFrameID(false) : gEnv->nMainFrameID;
+			CryLogAlways("[CTimer]: Pausing ON: Frame=%d Last=%lld Off=%lld Async=%f CurrTime=%f UI=%f", frameID, (long long)m_lLastTime, (long long)m_lOffsetTime, GetAsyncCurTime(), GetCurrTime(ETIMER_GAME), GetCurrTime(ETIMER_UI));
 		}
 	}
 	else
@@ -527,7 +530,8 @@ bool CTimer::PauseTimer(ETimer which, bool bPause)
 		m_lGameTimerPausedTime = 0;
 		if (m_TimeDebug)
 		{
-			CryLogAlways("[CTimer]: Pausing OFF: Frame=%d Last=%lld Off=%lld Async=%f CurrTime=%f UI=%f", gEnv->pRenderer->GetFrameID(false), (long long)m_lLastTime, (long long)m_lOffsetTime, GetAsyncCurTime(), GetCurrTime(ETIMER_GAME), GetCurrTime(ETIMER_UI));
+			int frameID = !gEnv->IsDedicated() ? gEnv->pRenderer->GetFrameID(false) : gEnv->nMainFrameID;
+			CryLogAlways("[CTimer]: Pausing OFF: Frame=%d Last=%lld Off=%lld Async=%f CurrTime=%f UI=%f", frameID, (long long)m_lLastTime, (long long)m_lOffsetTime, GetAsyncCurTime(), GetCurrTime(ETIMER_GAME), GetCurrTime(ETIMER_UI));
 		}
 	}
 
