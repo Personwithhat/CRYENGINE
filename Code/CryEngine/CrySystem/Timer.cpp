@@ -102,13 +102,20 @@ void CTimer::ResetTimer()
 
 	m_fFrameTime.SetSeconds(0);
 	m_fRealFrameTime.SetSeconds(0);
-	m_replicationTime.SetSeconds(0); // PERSONAL TODO: Add sleep time offset/etc. reset here!
+	m_replicationTime.SetSeconds(0);
 
 	RefreshGameTime(0);
 	RefreshUITime(0);
+	m_realStartTime.SetSeconds(0);
 
 	m_bGameTimerPaused = false;
 	m_lGameTimerPausedTime = 0;
+
+	for(int i=0; i<EOVER_LAST;i++)
+		m_FrameOvershoot[i] = 0;
+
+	for (int i = 0; i<EOVER_LAST; i++)
+		m_cumOvershoot[i] = 0;
 }
 
 void CTimer::Serialize(TSerialize ser)
@@ -172,7 +179,8 @@ void CTimer::UpdateOnFrameStart(const CTimeValue& targetRate) // PERSONAL TODO: 
 	g_lCurrentTime += int64(m_fFrameTime.GetSeconds() * m_lTicksPerSec);
 	m_lLastTime = g_lCurrentTime;
 	RefreshGameTime(m_lLastTime);
-	RefreshUITime(m_lLastTime);
+	
+	(m_lLastTime);
 	return;
 #endif
 
@@ -183,50 +191,62 @@ void CTimer::UpdateOnFrameStart(const CTimeValue& targetRate) // PERSONAL TODO: 
 		// Approximate minimum end time, in ticks.
 		LARGE_INTEGER t;
 		QueryPerformanceCounter(&t);
-		const mpfloat minTicks = (targetRate + GetFrameStartTime(ITimer::ETIMER_UI)).GetSeconds() * m_lTicksPerSec + m_lBaseTime;
+		const mpfloat targetTicks = targetRate.GetSeconds()*m_lTicksPerSec;
+		const mpfloat minTicks	  = m_lBaseTime + m_lLastTime + targetTicks;
 
 		// Check if you've already slower than target frame cap, e.g. last frame took too long.
-		// If target rate is 0 -> no cap -> shouldn't log even if diff is negative here.
+		// If target rate is 0 -> no cap -> Overshoots invalid (set to 0)
 		mpfloat diff = minTicks - t.QuadPart;
-		if (diff < 0) {
-			if(m_TimeDebug && targetRate != 0)
-				CryLogAlways(
-					"[CTimer]: Took longer than frame cap [%.3lfms] actual: %.3lfms err: %.3lfms",
-					(double)targetRate.GetMilliSeconds(), 
-					(double)TicksToTime(t.QuadPart - m_lBaseTime - m_lLastTime).GetMilliSeconds(),
-					(double)TicksToTime(abs(diff)).GetMilliSeconds()
-				);
-			m_sleepOvershoot.SetSeconds(0);
-		}else{
-			/*
-				Sleep(1) sleeps ~1ms with an error of up to TimePrecision.
-				TimePrecision(1) = > Sleep(1) sleeps up to 1.99ms
-			*/
-			// Sleep as much as possible until at risk of err.
-			const int safe = (int)(TicksToTime(diff).GetMilliSeconds() - (mpfloat)gEnv->pSystem->GetTimeResolution() / 10'000);
-			if (safe > 0)
-				Sleep(safe);
+		if(targetRate != 0)
+			if (diff < 0) {
+				m_FrameOvershoot[EOVER_SLEEP] = 0;
+				m_FrameOvershoot[EOVER_WUT]   = abs(diff);
 
-			// Sleep remainder away
-			for (;;)
-			{
-				QueryPerformanceCounter(&t);
+				if(m_TimeDebug)
+					CryLogAlways(
+						"[CTimer]: Took longer than frame cap [%.3lfms] actual: %.3lfms err: %.3lfms",
+						(double)targetRate.GetMilliSeconds(), 
+						(double)TicksToTime(t.QuadPart - m_lBaseTime - m_lLastTime).GetMilliSeconds(),
+						(double)TicksToTime(m_FrameOvershoot[EOVER_WUT]).GetMilliSeconds()
+					);
+			}else{
+				m_FrameOvershoot[EOVER_WUT] = 0;
 
-				if (t.QuadPart >= minTicks)
-					break;
-				else
-					for (int i = 0; i<8; i++) { YieldProcessor(); } // Simply yield processor (good for hyper threaded systems. Allows the logical core to run).  Based on CryAtomics_win32.h
+				/*
+					Sleep(1) sleeps ~1ms with an error of up to TimePrecision.
+					TimePrecision(1) = > Sleep(1) sleeps up to 1.99ms
+				*/
+				// Sleep as much as possible until at risk of err.
+				const int safe = (int)(TicksToTime(diff).GetMilliSeconds() - (mpfloat)gEnv->pSystem->GetTimeResolution() / 10'000);
+				if (safe > 0)
+					Sleep(safe);
+
+				// Sleep remainder away
+				for (;;)
+				{
+					QueryPerformanceCounter(&t);
+
+					if (t.QuadPart >= minTicks)
+						break;
+					else
+						for (int i = 0; i<8; i++) { YieldProcessor(); } // Simply yield processor (good for hyper threaded systems. Allows the logical core to run).  Based on CryAtomics_win32.h
+				}
+				m_FrameOvershoot[EOVER_SLEEP] = t.QuadPart - minTicks;
+
+				// If diverging more than 5 milliseconds throw warning. Not CryWarning() since it doesn't run sometimes.
+				CTimeValue tmp = TicksToTime(m_FrameOvershoot[EOVER_SLEEP]);
+				if (m_TimeDebug && abs(tmp.GetMilliSeconds()) > 5) {
+					CryLogAlways(
+						"[CTimer]: Overshot target sleep! [%.3lf] %.3lf -> %.3lfms err",
+						(double)minTicks / m_lTicksPerSec, (double)t.QuadPart / m_lTicksPerSec, (double)tmp.GetMilliSeconds()
+					);
+				}
 			}
 
-			// If diverging more than 5 milliseconds throw warning. Not CryWarning() since it doesn't run sometimes.
-			m_sleepOvershoot = TicksToTime(t.QuadPart - minTicks);
-			if (m_TimeDebug && abs(m_sleepOvershoot.GetMilliSeconds()) > 5) {
-				CryLogAlways(
-					"[CTimer]: Overshot target sleep! [%.3lf] %.3lf -> %.3lfms err",
-					(double)minTicks / m_lTicksPerSec, (double)t.QuadPart / m_lTicksPerSec, (double)m_sleepOvershoot.GetMilliSeconds()
-				);
-			}
-		}
+		// Culmulate overshoots
+		m_cumOvershoot[EOVER_WUT]   += m_FrameOvershoot[EOVER_WUT];
+		m_cumOvershoot[EOVER_SLEEP] += m_FrameOvershoot[EOVER_SLEEP];
+
 
 	const int64 now = t.QuadPart;
 	assert(now + 1 >= m_lBaseTime && "Invalid base time"); //+1 margin because QPC may be one off across cores
@@ -235,9 +255,22 @@ void CTimer::UpdateOnFrameStart(const CTimeValue& targetRate) // PERSONAL TODO: 
 	int64 realTicks = now - m_lBaseTime - m_lLastTime;
 	m_fRealFrameTime = TicksToTime(realTicks);
 
-	// Errors at ~45 digits can easily be attributed to type conversion or base inaccuracy.
-	// PERSONAL TODO: Keep assert or what? >.>
-	assert((diff < 0) || abs(m_fRealFrameTime - (targetRate + m_sleepOvershoot)) < mpfloat().lossy(1e-44));
+	
+	// NOTE: Boost wrapper around MPFR defaults to MPFR_RNDN (round to nearest) for typical math and MPFR_RNDZ (round to zero) when converting to/from decimals!!
+	// TODO: Setup MPFR_RNDN for conversions as well??
+
+	// realTicks = targetTicks + m_sleepFrameOvershoot
+	// realTicks = targetTicks + (t.QuadPart - minTicks)
+	// realTicks = (targetTicks + t.QuadPart) - minTicks)
+	// realTicks - targetTicks - m_sleepFrameOvershoot) == 0; WON'T WORK, error!
+	//assert((diff < 0) || targetTicks + (t.QuadPart - minTicks) != (targetTicks + t.QuadPart) - minTicks);
+
+	// TODO: Have to use this check instead, right? Hopefully sleep overshoot won't have much error....
+	// Cumulative impercise sums of sleep-overshoot == accuracy issue? Ugh.....
+	// Use the https://en.wikipedia.org/wiki/Kahan_summation_algorithm ???
+	assert((diff < 0) || (realTicks - t.QuadPart - targetTicks + minTicks) == 0);
+
+
 
 	// PERSONAL CRYTEK: What is the point of clamping? And why do this BEFORE time scaling in default Timer.cpp ?
 	// Seriously need a discussion on timer related stuff.
@@ -285,6 +318,7 @@ void CTimer::UpdateOnFrameStart(const CTimeValue& targetRate) // PERSONAL TODO: 
 	assert(currentTime + m_lOffsetTime >= 0 && "Sum of game time is negative");
 
 	// Update all the timers
+	m_realStartTime = TicksToTime(now);
 	RefreshUITime(currentTime);
 	if (!m_bGameTimerPaused)
 	{
@@ -442,7 +476,7 @@ const CTimeValue CTimer::GetServerTime() const
 }
 #else
 // PERSONAL CRYTEK: The time's used by the two versions do not match.
-// Default is absolute real time at moment of call, but this one here is in game-simulation start-of-frame time.
+// Default is real time at moment of call, but this one here is in game-simulation start-of-frame time.
 const CTimeValue CTimer::GetServerTime() const
 {
 	if (gEnv->bServer)

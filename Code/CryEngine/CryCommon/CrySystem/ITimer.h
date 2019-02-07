@@ -15,6 +15,13 @@ struct ITimer
 		ETIMER_LAST
 	};
 
+	enum EOvershoot
+	{
+		EOVER_WUT  = 0, //!< Unexpected overshoot of target frame-rate.
+		EOVER_SLEEP,    //!< Overshoot of target frame-rate due to OS thread-wake up delays post-sleep.
+		EOVER_LAST
+	};
+
 	enum ETimeScaleChannels
 	{
 		eTSC_Trackview = 0,
@@ -82,24 +89,30 @@ public: //** Time Getters
 	//! PERSONAL CRYTEK: NOPE! See comments in timer.cpp on ACTUAL game-time, not just game-frame-time...
 	virtual const CTimeValue& GetFrameStartTime(ETimer which = ETIMER_GAME) const = 0;
 
+	//! Returns real time at the start of this frame, not relative to base time!
+	virtual const CTimeValue& GetRealStartTime() const = 0;
+
 	//! Returns sum of simulation frame-time's. Used for networking.
 	virtual const CTimeValue& GetReplicationTime() const = 0;
 
-	//! Returns the (synched) absolute real-time of the server at moment of call. (So use this for timed events, such as MP round times)
+	//! Returns real-time at moment of call PLUS average travel-time to server. (Travel time of 0 if called on server)
 	//! Not to be confused with CServerTimer
 	virtual const CTimeValue GetServerTime() const = 0;
 
 	//! Returns recent simulation frame-time's averaged over a time period (e.g. 0.25 seconds)
 	virtual const CTimeValue& GetAverageFrameTime() const = 0;
 
-	//! Returns absolute real-time at moment of call.
+	//! Returns real-time at moment of call.
 	virtual CTimeValue GetAsyncTime() const = 0;
 
 	//! Returns elapsed time (at moment of call) since the last timer Reset()
 	virtual CTimeValue GetAsyncCurTime() const = 0;
 
-	//! Returns the sleep overshoot error when trying to enforce a frame rate.
-	virtual const CTimeValue& GetSleepOvershoot() const = 0;
+	//! Returns frame-overshoot error (for this frame) when trying to enforce a frame rate.
+	virtual const CTimeValue GetCurOvershoot(EOvershoot which = EOVER_WUT) const = 0;
+	
+	//! Returns frame-overshoot error (cumulative since last Reset) when trying to enforce a frame rate.
+	virtual const CTimeValue GetFrameOvershoot(EOvershoot which = EOVER_WUT) const = 0;
 
 public: //** Timescales
 
