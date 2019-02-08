@@ -76,6 +76,7 @@
 #include <cfloat>
 #include <chrono>
 #include <cinttypes>
+#include <ciso646>
 #include <climits>
 #include <clocale>
 #include <cmath>

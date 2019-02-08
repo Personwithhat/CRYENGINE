@@ -58,6 +58,12 @@ Q_DECLARE_METATYPE(CryGUID);
 	#include <QVector>
 	#include <QWidget>
 
+	#ifdef USE_PYTHON_SCRIPTING
+		#include <CryCore/BoostHelpers.h>
+		#include <boost/python.hpp>
+		#include <CryCore/Assert/CryAssert.h>
+	#endif
+
 	#include <algorithm>
 	#include <array>
 	#include <atomic>
@@ -69,6 +75,7 @@ Q_DECLARE_METATYPE(CryGUID);
 	#include <cfloat>
 	#include <chrono>
 	#include <cinttypes>
+	#include <ciso646>
 	#include <climits>
 	#include <clocale>
 	#include <cmath>

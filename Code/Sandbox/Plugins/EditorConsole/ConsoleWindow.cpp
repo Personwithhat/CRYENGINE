@@ -3,24 +3,23 @@
 #include "StdAfx.h"
 #include "ConsoleWindow.h"
 #include "ConsolePlugin.h"
-#include "TabLineEdit.h"
-
+#include <CryIcon.h>
 #include <EditorFramework/Events.h>
 #include <EditorStyleHelper.h>
 #include <FileDialogs/SystemFileDialog.h>
+#include <Menu/AbstractMenu.h>
 #include <Preferences/GeneralPreferences.h>
-
+#include <QClipboard>
 #include <QDir>
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QMenu>
-#include <QPushButton>
-#include <QTextEdit>
+#include <QScrollBar>
 #include <QTime>
 #include <QTimer>
 #include <QToolButton>
+#include <QtUtil.h>
 #include <QVBoxLayout>
-#include <QWidget>
 
 //timer interval, in ms, for forcing the popup window in place
 //once this is no longer necessary, set this to 0 to save some cycles

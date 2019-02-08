@@ -34,6 +34,7 @@
 #include "Terrain/SurfaceType.h"
 #include "Terrain/TerrainManager.h"
 #include "Util/AutoLogTime.h"
+#include "Util/BoostPythonHelpers.h"
 #include "Util/FileUtil.h"
 #include "Util/MFCUtil.h"
 #include "Util/PakFile.h"

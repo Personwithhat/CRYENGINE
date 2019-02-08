@@ -32,12 +32,14 @@
 #include <Cry3DEngine/IStatObj.h>
 
 #include <boost/python.hpp>
-#include <boost/python/converter/registry.hpp>
-#include <boost/python/dict.hpp>
-#include <boost/python/object.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <boost/python/to_python_converter.hpp>
-#include <boost/python/tuple.hpp>
+#include "boost/python/object.hpp"
+#include "boost/python/tuple.hpp"
+#include "boost/python/dict.hpp"
+#include "boost/python/to_python_converter.hpp"
+#include "boost/python/converter/registry.hpp"
+#include "boost/python/suite/indexing/vector_indexing_suite.hpp"
+
 
 struct CryLogPythonOutput : public PyScript::IPyScriptListener
 {
@@ -747,23 +749,23 @@ void PyGameObject::UpdateObject()
 	// Lets assume since an update was requested that it is desired to run on the subobject also.
 	if (pBaseObject->IsKindOf(RUNTIME_CLASS(CBrushObject)))
 	{
-		std::static_pointer_cast<PyGameBrush>(m_objClass->ptr).get()->UpdateBrush();
+		boost::static_pointer_cast<PyGameBrush>(m_objClass->ptr).get()->UpdateBrush();
 	}
 	else if (pBaseObject->IsKindOf(RUNTIME_CLASS(CEntityObject)))
 	{
-		std::static_pointer_cast<PyGameEntity>(m_objClass->ptr).get()->UpdateEntity();
+		boost::static_pointer_cast<PyGameEntity>(m_objClass->ptr).get()->UpdateEntity();
 	}
 	else if (pBaseObject->IsKindOf(RUNTIME_CLASS(CPrefabObject)))
 	{
-		std::static_pointer_cast<PyGamePrefab>(m_objClass->ptr).get()->UpdatePrefab();
+		boost::static_pointer_cast<PyGamePrefab>(m_objClass->ptr).get()->UpdatePrefab();
 	}
 	else if (pBaseObject->IsKindOf(RUNTIME_CLASS(CGroup)))
 	{
-		std::static_pointer_cast<PyGameGroup>(m_objClass->ptr).get()->UpdateGroup();
+		boost::static_pointer_cast<PyGameGroup>(m_objClass->ptr).get()->UpdateGroup();
 	}
 	else if (pBaseObject->IsKindOf(RUNTIME_CLASS(CCameraObject)))
 	{
-		std::static_pointer_cast<PyGameCamera>(m_objClass->ptr).get()->UpdateCamera();
+		boost::static_pointer_cast<PyGameCamera>(m_objClass->ptr).get()->UpdateCamera();
 	}
 }
 
@@ -1599,7 +1601,7 @@ public:
 			//BOOST NOTE: While registry conversion for shared_ptr's is automatic via from_python, to_python requires the raw pointer.
 			if (reg != NULL && reg->m_to_python != NULL)
 			{
-				return boost::python::incref(reg->to_python(std::static_pointer_cast<PyGameBrush>(wrappedClass->ptr).get()));
+				return boost::python::incref(reg->to_python(boost::static_pointer_cast<PyGameBrush>(wrappedClass->ptr).get()));
 			}
 			else
 			{
@@ -1613,7 +1615,7 @@ public:
 
 			if (reg != NULL && reg->m_to_python != NULL)
 			{
-				return boost::python::incref(reg->to_python(std::static_pointer_cast<PyGameCamera>(wrappedClass->ptr).get()));
+				return boost::python::incref(reg->to_python(boost::static_pointer_cast<PyGameCamera>(wrappedClass->ptr).get()));
 			}
 			else
 			{
@@ -1627,7 +1629,7 @@ public:
 
 			if (reg != NULL && reg->m_to_python != NULL)
 			{
-				return boost::python::incref(reg->to_python(std::static_pointer_cast<PyGameEntity>(wrappedClass->ptr).get()));
+				return boost::python::incref(reg->to_python(boost::static_pointer_cast<PyGameEntity>(wrappedClass->ptr).get()));
 			}
 			else
 			{
@@ -1641,7 +1643,7 @@ public:
 
 			if (reg != NULL && reg->m_to_python != NULL)
 			{
-				return boost::python::incref(reg->to_python(std::static_pointer_cast<PyGameGroup>(wrappedClass->ptr).get()));
+				return boost::python::incref(reg->to_python(boost::static_pointer_cast<PyGameGroup>(wrappedClass->ptr).get()));
 			}
 			else
 			{
@@ -1655,7 +1657,7 @@ public:
 
 			if (reg != NULL && reg->m_to_python != NULL)
 			{
-				return boost::python::incref(reg->to_python(std::static_pointer_cast<PyGamePrefab>(wrappedClass->ptr).get()));
+				return boost::python::incref(reg->to_python(boost::static_pointer_cast<PyGamePrefab>(wrappedClass->ptr).get()));
 			}
 			else
 			{
@@ -2199,7 +2201,7 @@ PyObject* s_pStdOutSaved;
 PyObject* s_pStdErr;
 PyObject* s_pStdErrSaved;
 
-PyMODINIT_FUNC PyInitRedirecting()
+PyMODINIT_FUNC PyInitRedirecting(void)
 {
 	s_pStdOut = NULL;
 	s_pStdOutSaved = NULL;
