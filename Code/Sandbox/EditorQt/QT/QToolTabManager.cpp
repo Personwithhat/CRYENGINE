@@ -64,7 +64,7 @@ void PyResetLayout()
 
 void PyLoadLayoutDlg()
 {
-	QDir dir(UserDataUtil::GetUserPath("").c_str());
+	QDir dir(UserDataUtil::GetUserPath(""));
 	dir.cd(szAppDataLayoutDir);
 
 	CSystemFileDialog::RunParams runParams;
@@ -83,7 +83,7 @@ void PySaveLayoutAs()
 {
 	QDir dir(QtUtil::GetAppDataFolder());
 	// This will build the folder structure required if it doesn't exist yet
-	QString userDataPath(UserDataUtil::GetUserPath(szAppDataLayoutDir).c_str());
+	QString userDataPath = UserDataUtil::GetUserPath(szAppDataLayoutDir);
 	dir.mkpath(userDataPath);
 	dir.cd(userDataPath);
 
@@ -715,7 +715,7 @@ QFileInfoList CTabPaneManager::GetUserLayouts()
 	QStringList filter;
 	filter << "*.json";
 
-	QDir dir(UserDataUtil::GetUserPath(szAppDataLayoutDir).c_str());
+	QDir dir(UserDataUtil::GetUserPath(szAppDataLayoutDir));
 	if (dir.exists())
 	{
 		return dir.entryInfoList(filter, QDir::Files);

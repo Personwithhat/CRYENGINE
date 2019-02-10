@@ -374,10 +374,7 @@ void QMenuComboBox::SetItemText(int index, const QString& text)
 	{
 		return;
 	}
-
 	m_data[index].text = text;
-	m_data[index].action->setText(m_data[index].text);
-
 	if (index == m_lastSelected)
 	{
 		UpdateText();

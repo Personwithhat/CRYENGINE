@@ -61,7 +61,7 @@ public:
 	{
 		for (const QString& command : m_commands)
 		{
-			GetIEditor()->ExecuteCommand(command.toLocal8Bit().constData());
+			GetIEditor()->ExecuteCommand(command.toLocal8Bit());
 		}
 	}
 

@@ -3,9 +3,8 @@
 #include "StdAfx.h"
 #include "DynamicPopupMenu.h"
 
-#include "Commands/ICommandManager.h"
 #include "EditorCommonInit.h"
-
+#include "ICommandManager.h"
 #include <IEditor.h>
 #include <CryIcon.h>
 

@@ -1319,41 +1319,41 @@ QToolWindowArea > QTabBar > QPushButton, QToolWindowArea > QTabBar > QPushButton
     padding-left:5px;
 }
 
-CToolBarCustomizeDialog QToolBar {
+QToolBarCreator QToolBar {
 	padding-top: 3px;
 	padding-bottom: 3px;
 	min-height: 36px;
 }
 
-CToolBarCustomizeDialog QToolButton#open-cvar
+QToolBarCreator QToolButton#open-cvar
 {
 	width: 16px;
 	height: 16px;
 }
 
-CToolBarCustomizeDialog QToolButton#open-icon
+QToolBarCreator QToolButton#open-icon
 {
 	width: 16px;
 	height: 16px;
 }
 
-CToolBarCustomizeDialog QToolBar QToolButton{
+QToolBarCreator QToolBar QToolButton{
 	margin:2px;
 }
 
-CToolBarCustomizeDialog QToolBar QToolButton::hover {
+QToolBarCreator QToolBar QToolButton::hover {
 	background-color: rgba(255,255,255,20);
 }
 
-CToolBarCustomizeDialog QToolBar QToolButton:pressed {
+QToolBarCreator QToolBar QToolButton:pressed {
 	border: 0px solid rgb(97,172,236);
 }
 
-CToolBarCustomizeDialog QToolBar QToolButton:checked {
+QToolBarCreator QToolBar QToolButton:checked {
 	border: 0px solid rgb(97,172,236);
 }
 
-CToolBarCustomizeDialog > QLabel {
+QToolBarCreator > QLabel {
 	min-width: 80px;
 	max-width: 80px;
 }

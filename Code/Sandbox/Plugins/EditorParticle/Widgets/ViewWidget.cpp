@@ -10,7 +10,7 @@
 #include <QtUtil.h>
 #include "Undo.h"
 
-#include <Commands/ICommandManager.h>
+#include <ICommandManager.h>
 #include <NodeGraph/NodeGraphUndo.h>
 
 #include <QVBoxLayout>

@@ -2,15 +2,6 @@
 #include <StdAfx.h>
 #include "TagLocations.h"
 
-// Sandbox
-#include "CryEditDoc.h"
-#include "ViewManager.h"
-
-// EditorCommon
-#include <EditorFramework/Events.h>
-#include <QtUtil.h>
-#include <Util/Math.h>
-
 // System
 #include <CrySystem/Profilers/IStatoscope.h>
 
@@ -23,6 +14,12 @@
 #include <QJsonDocument>
 #include <QFile>
 #include <QFileInfo>
+
+// Sandbox
+#include "CryEditDoc.h"
+#include "ViewManager.h"
+#include <EditorFramework/Events.h>
+#include <Util/Math.h>
 
 static const char* s_tagsPath = "/tags.json";
 
@@ -89,15 +86,13 @@ void CTagLocations::SaveTagLocations()
 	SaveToTxt();
 
 	QFileInfo fileInfo(GetIEditorImpl()->GetDocument()->GetPathName().c_str());
-	string fullPath;
-	fullPath.Format("%s%s", QtUtil::ToString(fileInfo.absolutePath()).c_str(), s_tagsPath);
+	QString fullPath(fileInfo.absolutePath() + s_tagsPath);
 
-	QFile file(fullPath.c_str());
+	QFile file(fullPath);
 	if (!file.open(QIODevice::WriteOnly))
 	{
-		string message;
-		message.Format("Failed to open path: %s", fullPath.c_str());
-		CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, message.c_str());
+		QString msg = "Failed to open path: " + fullPath;
+		CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, msg.toLocal8Bit());
 		return;
 	}
 
@@ -112,15 +107,13 @@ void CTagLocations::LoadTagLocations()
 {
 	// Use level location to find tags file
 	QFileInfo fileInfo(GetIEditorImpl()->GetDocument()->GetPathName().c_str());
-	string fullPath;
-	fullPath.Format("%s%s", QtUtil::ToString(fileInfo.absolutePath()).c_str(), s_tagsPath);
+	QString fullPath(fileInfo.absolutePath() + s_tagsPath);
 
-	QFile file(fullPath.c_str());
+	QFile file(fullPath);
 	if (!file.open(QIODevice::ReadOnly))
 	{
-		string message;
-		message.Format("Failed to open path: %s", fullPath.c_str());
-		CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_COMMENT, message.c_str());
+		QString msg = "Failed to open path: " + fullPath;
+		CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_COMMENT, msg.toLocal8Bit());
 		return;
 	}
 

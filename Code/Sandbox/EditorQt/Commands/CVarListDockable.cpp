@@ -2,6 +2,7 @@
 
 #include "StdAfx.h"
 #include "Commands/CVarListDockable.h"
+#include "IEditorImpl.h"
 
 #include "Qt/QtMainFrame.h"
 
@@ -31,11 +32,11 @@ namespace Private_CVarListDockable
 void PyImportCVarList()
 {
 	CSystemFileDialog::RunParams runParams;
-	runParams.title = QObject::tr("Import CVar List");
+	runParams.title = CEditorMainFrame::tr("Import CVar List");
 	runParams.initialDir = QDir(QtUtil::GetAppDataFolder()).absolutePath();
-	runParams.extensionFilters << CExtensionFilter(QObject::tr("JSON Files"), "json");
+	runParams.extensionFilters << CExtensionFilter(CEditorMainFrame::tr("JSON Files"), "json");
 
-	const QString path = CSystemFileDialog::RunImportFile(runParams);
+	const QString path = CSystemFileDialog::RunImportFile(runParams, CEditorMainFrame::GetInstance());
 	if (!path.isEmpty())
 	{
 		CCVarListDockable::LoadCVarListFromFile(path.toStdString().c_str());
@@ -45,11 +46,11 @@ void PyImportCVarList()
 void PyExportCVarList()
 {
 	CSystemFileDialog::RunParams runParams;
-	runParams.title = QObject::tr("Export CVar List");
+	runParams.title = CEditorMainFrame::tr("Export CVar List");
 	runParams.initialDir = QDir(QtUtil::GetAppDataFolder()).absolutePath();
-	runParams.extensionFilters << CExtensionFilter(QObject::tr("JSON Files"), "json");
+	runParams.extensionFilters << CExtensionFilter(CEditorMainFrame::tr("JSON Files"), "json");
 
-	const QString path = CSystemFileDialog::RunExportFile(runParams);
+	const QString path = CSystemFileDialog::RunExportFile(runParams, CEditorMainFrame::GetInstance());
 	if (!path.isEmpty())
 	{
 		CCVarListDockable::SaveCVarListToFile(path.toStdString().c_str());
@@ -184,7 +185,7 @@ public:
 	void SetFilterByFavorites(bool bFavoritesOnly)
 	{
 		m_bIsFiltering = bFavoritesOnly;
-		GetIEditor()->GetPersonalizationManager()->SetProperty("ConsoleVariables", "FavoritesOnly", m_bIsFiltering);
+		GetIEditorImpl()->GetPersonalizationManager()->SetProperty("ConsoleVariables", "FavoritesOnly", m_bIsFiltering);
 		this->invalidate();
 	}
 
@@ -472,7 +473,7 @@ void CCVarModel::OnAfterVarChange(ICVar* pVar)
 CCVarBrowser::CCVarBrowser(QWidget* pParent /* = nullptr*/)
 	: m_pModel(new CCVarModel())
 {
-	const bool bFavoritesOnly = GetIEditor()->GetPersonalizationManager()->GetProperty("ConsoleVariables", "FavoritesOnly").toBool();
+	const bool bFavoritesOnly = GetIEditorImpl()->GetPersonalizationManager()->GetProperty("ConsoleVariables", "FavoritesOnly").toBool();
 
 	const CFavoriteFilterProxy::BehaviorFlags behavior = CFavoriteFilterProxy::AcceptIfChildMatches | CFavoriteFilterProxy::AcceptIfParentMatches;
 	m_pFilterProxy = std::unique_ptr<CFavoriteFilterProxy>(new CFavoriteFilterProxy(behavior, bFavoritesOnly));
@@ -649,6 +650,10 @@ CCVarListDockable::CCVarListDockable(QWidget* const pParent)
 	pLayout->setMenuBar(pMenuBar);
 	pLayout->addWidget(m_pCVarBrowser);
 	SetContent(pLayout);
+}
+
+CCVarListDockable::~CCVarListDockable()
+{
 }
 
 bool CCVarListDockable::OnCopy()

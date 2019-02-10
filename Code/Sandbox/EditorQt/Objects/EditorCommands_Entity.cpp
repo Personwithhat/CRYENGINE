@@ -1,6 +1,10 @@
 // Copyright 2001-2018 Crytek GmbH / Crytek Group. All rights reserved.
 #include <StdAfx.h>
 
+// EditorCommon
+#include <ICommandManager.h>
+#include <IUndoObject.h>
+
 // Sandbox
 #include "IEditorImpl.h"
 #include "Objects/ObjectManager.h"
@@ -18,10 +22,6 @@
 #include "Util/CubemapUtils.h"
 #include <Util/FileUtil.h>
 #include <Cry3DEngine/I3DEngine.h>
-
-// EditorCommon
-#include <Commands/ICommandManager.h>
-#include <IUndoObject.h>
 
 //////////////////////////////////////////////////////////////////////////
 namespace Private_EditorCommands

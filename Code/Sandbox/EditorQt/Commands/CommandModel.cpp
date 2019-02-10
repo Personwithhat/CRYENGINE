@@ -1,11 +1,12 @@
 // Copyright 2001-2018 Crytek GmbH / Crytek Group. All rights reserved.
 
 #include "StdAfx.h"
-#include "CommandModel.h"
 
-#include "CustomCommand.h"
-#include "ICommandManager.h"
+#include "IEditorImpl.h"
+#include "CommandManager.h"
+#include "CommandModel.h"
 #include "QCommandAction.h"
+#include "CustomCommand.h"
 #include "QtUtil.h"
 
 const char* CommandModel::s_ColumnNames[3] = { QT_TR_NOOP("Action"), QT_TR_NOOP("Command"), QT_TR_NOOP("Shortcut") };
@@ -42,12 +43,12 @@ CommandModel::CommandModel()
 
 CommandModel::~CommandModel()
 {
-	GetIEditor()->GetICommandManager()->signalChanged.DisconnectObject(this);
+	GetIEditorImpl()->GetCommandManager()->signalChanged.DisconnectObject(this);
 }
 
 void CommandModel::Initialize()
 {
-	GetIEditor()->GetICommandManager()->signalChanged.Connect(this, &CommandModel::Rebuild);
+	GetIEditorImpl()->GetCommandManager()->signalChanged.Connect(this, &CommandModel::Rebuild);
 	Rebuild();
 }
 
@@ -58,7 +59,7 @@ void CommandModel::Rebuild()
 	m_modules.clear();
 
 	std::vector<CCommand*> cmds;
-	GetIEditor()->GetICommandManager()->GetCommandList(cmds);
+	GetIEditorImpl()->GetCommandManager()->GetCommandList(cmds);
 
 	for (CCommand* cmd : cmds)
 	{
@@ -409,7 +410,7 @@ CommandModel::CommandModule& CommandModel::FindOrCreateModule(const QString& mod
 {
 	CommandModule module;
 	module.m_name = moduleName;
-	module.m_desc = GetIEditor()->GetICommandManager()->FindOrCreateModuleDescription(moduleName.toStdString().c_str());
+	module.m_desc = GetIEditorImpl()->GetCommandManager()->GetCommandModuleDescription(moduleName.toStdString().c_str());
 
 	auto it = std::lower_bound(m_modules.begin(), m_modules.end(), module, [](const CommandModule& a, const CommandModule& b) { return a.m_name < b.m_name; });
 	if (it != m_modules.end() && it->m_name == moduleName)

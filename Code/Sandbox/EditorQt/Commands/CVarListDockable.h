@@ -110,6 +110,7 @@ class CCVarListDockable : public CDockableEditor
 {
 public:
 	CCVarListDockable(QWidget* const pParent = nullptr);
+	~CCVarListDockable();
 
 	//////////////////////////////////////////////////////////
 	// CDockableWidget implementation

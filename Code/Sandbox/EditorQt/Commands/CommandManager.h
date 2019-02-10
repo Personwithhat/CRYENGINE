@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include <Commands/ICommandManager.h>
+#include "ICommandManager.h"
+#include <CrySandbox/CrySignal.h>
 
 class CCustomCommand;
 class QCommandAction;
@@ -30,10 +31,10 @@ public:
 	void                             GetCommandList(std::vector<CCommand*>& cmds) const override;
 	void                             RemapCommand(const char* oldModule, const char* oldName, const char* newModule, const char* newName) override;
 
-	bool                             IsCommandDeprecated(const char* cmdFullName) const override;
-	const CCommandModuleDescription* FindOrCreateModuleDescription(const char* moduleName) override;
+	bool                             IsCommandDeprecated(const char* cmdFullName) const;
+	const CCommandModuleDescription* GetCommandModuleDescription(const char* moduleName);
 	virtual CCommand*                GetCommand(const char* cmdFullName) const override;
-	virtual void                     SetChecked(const char* cmdFullName, bool checked) override;
+	virtual void                     SetChecked(const char* cmdFullName, bool checked);
 	virtual QAction*                 GetAction(const char* cmdFullName, const char* text = nullptr) const override;
 	virtual QAction*                 CreateNewAction(const char* cmdFullName) const override;
 
@@ -58,6 +59,8 @@ public:
 	void            RemoveAllCustomCommands();
 	void            GetCustomCommandList(std::vector<CCommand*>& cmds) const;
 	QCommandAction* GetCommandAction(string command, const char* text = nullptr) const;
+
+	CCrySignal<void()> signalChanged;
 
 protected:
 	struct SCommandTableEntry

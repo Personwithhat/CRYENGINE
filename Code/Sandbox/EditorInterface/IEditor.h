@@ -16,7 +16,6 @@ class CBaseObject;
 class CBroadcastManager;
 class CConfigurationManager;
 class CCryEditDoc;
-class CEditorToolBarService;
 class CFlowGraphManager;
 class CHeightmap;
 class CGameEngine;
@@ -280,9 +279,6 @@ struct IEditor
 
 	//! Access to tray area
 	virtual CTrayArea* GetTrayArea() = 0;
-
-	//! Access to toolbar service for loading and storing editor specific toolbars
-	virtual CEditorToolBarService* GetEditorToolBarService() = 0;
 
 	//! Retrieve interface to the source control.
 	virtual ISourceControl* GetSourceControl() = 0;

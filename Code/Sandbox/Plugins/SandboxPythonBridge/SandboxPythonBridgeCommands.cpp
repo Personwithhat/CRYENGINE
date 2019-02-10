@@ -3,7 +3,7 @@
 #include "StdAfx.h"
 
 #include <BoostPythonMacros.h>
-#include <Commands/ICommandManager.h>
+#include <ICommandManager.h>
 #include <PathUtils.h>
 
 #include <QDir>

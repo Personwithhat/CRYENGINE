@@ -3,7 +3,7 @@
 #include "SamplePlugin.h"
 
 #include <CryCore/Platform/platform_impl.inl>
-#include <Commands/ICommandManager.h>
+#include <ICommandManager.h>
 
 namespace Private_SamplePlugin
 {

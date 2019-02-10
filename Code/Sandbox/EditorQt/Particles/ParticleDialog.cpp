@@ -1277,7 +1277,7 @@ SResourceSelectionResult ParticleResourceSelector(const SResourceSelectorContext
 		QString relativeFilename(szPreviousValue);
 
 		CEngineFileDialog::OpenParams dialogParams(CEngineFileDialog::OpenFile);
-		dialogParams.initialDir = QtUtil::ToQString(PathUtil::GetPathWithoutFilename(relativeFilename.toLocal8Bit().constData()));
+		dialogParams.initialDir = QtUtil::ToQString(PathUtil::GetPathWithoutFilename(relativeFilename.toLocal8Bit()));
 		if (!relativeFilename.isEmpty())
 		{
 			dialogParams.initialFile = szPreviousValue;
@@ -1362,7 +1362,7 @@ void EditParticle(const SResourceSelectorContext& context, const char* szAssetPa
 	}
 	else
 	{
-		GetIEditorImpl()->ExecuteCommand(QString("particle.show_effect '%1'").arg(szAssetPath).toLocal8Bit().constData());
+		GetIEditorImpl()->ExecuteCommand(QString("particle.show_effect '%1'").arg(szAssetPath).toLocal8Bit());
 	}
 }
 

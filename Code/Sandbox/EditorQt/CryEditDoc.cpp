@@ -10,6 +10,7 @@
 #include "EntityPrototypeManager.h"
 #include "GameEngine.h"
 #include "GameTokens/GameTokenManager.h"
+#include "ICommandManager.h"
 #include "IEditorImpl.h"
 #include "IObjectManager.h"
 #include "IUndoManager.h"

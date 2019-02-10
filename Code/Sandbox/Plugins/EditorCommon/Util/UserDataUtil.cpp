@@ -1,7 +1,6 @@
 // Copyright 2001-2018 Crytek GmbH / Crytek Group. All rights reserved.
 
 #include <StdAfx.h>
-#include "FileUtils.h"
 #include "UserDataUtil.h"
 
 #include <QDir>
@@ -15,6 +14,45 @@
 namespace UserDataUtil
 {
 const unsigned currentVersion = 1;
+
+bool Migrate(const QString& from, const QString& to)
+{
+	QFileInfo fileInfo(from);
+	if (fileInfo.isDir())
+	{
+		QDir fromDir(from);
+		if (!fromDir.exists())
+			return false;
+
+		QString newDir = to + "/" + fromDir.dirName();
+		QDir toDir(newDir);
+		toDir.mkpath(toDir.absolutePath());
+
+		QFileInfoList infoList = fromDir.entryInfoList(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
+		for (const QFileInfo& fileInfo : infoList)
+		{
+			if (!Migrate(from + "/" + fileInfo.fileName(), newDir))
+				return false;
+		}
+	}
+	else
+	{
+		QString destination(to + "/" + fileInfo.fileName());
+
+		// Don't replace any existing files
+		if (QFile::exists(destination))
+			return true;
+
+		// Make sure the folder exists in the versioned user data
+		QFileInfo fileInfo(destination);
+		QDir toDir(fileInfo.absolutePath());
+		toDir.mkpath(fileInfo.absolutePath());
+
+		return QFile::copy(from, destination);
+	}
+
+	return true;
+}
 
 bool Migrate(const char* szRelativeFilePath)
 {
@@ -42,28 +80,25 @@ bool Migrate(const char* szRelativeFilePath)
 		}
 
 		// If directory was copied successfully, then return the current version path
-		return FileUtils::CopyDirectory(QtUtil::ToString(lastVersionPath).c_str(), QtUtil::ToString(currentVersionPath).c_str());
+		return Migrate(lastVersionPath, currentVersionPath);
 	}
 
 	return true;
 }
 
-string GetUserPath(const char* szRelativeFilePath)
+QString GetUserPath(const char* szRelativeFilePath)
 {
-	string userPath;
-	userPath.Format("%s/%d/%s", QtUtil::ToString(QtUtil::GetAppDataFolder()), currentVersion, szRelativeFilePath);
-	return userPath;
+	return QtUtil::GetAppDataFolder() + "/" + QString::number(currentVersion) + "/" + szRelativeFilePath;
 }
 
 QVariant Load(const char* szRelativeFilePath)
 {
-	const string filePath(GetUserPath(szRelativeFilePath));
-	QFile file(filePath.c_str());
+	const QString filePath(GetUserPath(szRelativeFilePath));
+	QFile file(filePath);
 	if (!file.open(QIODevice::ReadOnly))
 	{
-		string msg;
-		msg.Format("Failed to open path: %s", filePath.c_str());
-		CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_COMMENT, msg);
+		QString msg = "Failed to open path: " + filePath;
+		CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_COMMENT, QtUtil::ToConstCharPtr(msg));
 		return QVariant();
 	}
 
@@ -74,16 +109,16 @@ QVariant Load(const char* szRelativeFilePath)
 
 void Save(const char* szRelativeFilePath, const char* data)
 {
-	const string filePath(GetUserPath(szRelativeFilePath));
+	QString filePath(GetUserPath(szRelativeFilePath));
 	// Remove filename from path
-	QDir dir(QFileInfo(filePath.c_str()).absolutePath());
+	QDir dir(QFileInfo(filePath).absolutePath());
 	// Make sure the directory exists
 	dir.mkpath(dir.absolutePath());
 
-	QFile file(filePath.c_str());
+	QFile file(filePath);
 	if (!file.open(QIODevice::WriteOnly))
 	{
-		CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "Failed to open path: %s", filePath.c_str());
+		CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "Failed to open path: %s", QtUtil::ToConstCharPtr(filePath));
 		return;
 	}
 
@@ -91,11 +126,16 @@ void Save(const char* szRelativeFilePath, const char* data)
 }
 } // namespace UserDataUtil
 
-CUserData::CUserData(const std::vector<string>& userDataPaths)
+CUserData::CUserData(std::vector<string> userDataPaths)
 {
 	// Automatically migrate any relevant data to new version folder
 	for (auto& userDataPath : userDataPaths)
 	{
 		UserDataUtil::Migrate(userDataPath.c_str());
 	}
+}
+
+CUserData::~CUserData()
+{
+
 }

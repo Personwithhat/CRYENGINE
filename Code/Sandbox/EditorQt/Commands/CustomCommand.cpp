@@ -2,8 +2,9 @@
 #include <StdAfx.h>
 #include "CustomCommand.h"
 
+#include "IEditorImpl.h"
+#include "CommandManager.h"
 #include "CommandModuleDescription.h"
-#include "ICommandManager.h"
 
 CCustomCommand::CCustomCommand(const string& name, const string& command)
 	: CCommand0("custom", name, CCommandDescription(""), Functor0())
@@ -13,12 +14,12 @@ CCustomCommand::CCustomCommand(const string& name, const string& command)
 
 void CCustomCommand::Register()
 {
-	GetIEditor()->GetICommandManager()->AddCustomCommand(this);
+	GetIEditorImpl()->GetCommandManager()->AddCustomCommand(this);
 }
 
 void CCustomCommand::Unregister()
 {
-	GetIEditor()->GetICommandManager()->RemoveCustomCommand(this);
+	GetIEditorImpl()->GetCommandManager()->RemoveCustomCommand(this);
 }
 
 void CCustomCommand::SetName(const char* name)
