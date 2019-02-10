@@ -47,6 +47,9 @@ CVisAreaManager::CVisAreaManager()
 	m_segVisAreas.Clear();
 	m_segPortals.Clear();
 	m_segOcclAreas.Clear();
+	
+	// For Editor
+	InitAABBTree();
 }
 
 void CVisAreaManager::DeleteAllVisAreas()
