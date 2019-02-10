@@ -239,6 +239,8 @@ bool CVisAreaManager::Load_T(T*& f, int& nDataSize, SVisAreaManChunkHeader* pVis
 	m_pCurArea = m_pCurPortal = 0;
 	UpdateConnections();
 
+	InitAABBTree();
+
 	return nDataSize == 0;
 }
 
