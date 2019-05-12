@@ -13,7 +13,15 @@
 #include "physicalworld.h"
 #include "rigidentity.h"
 #include "articulatedentity.h"
-#include "qpOASES.hpp"
+
+// TODO: Temporarily ignoring __FUNC__ override conflict with qpOASES, fix.
+// Plus ignoring 'hidden' functions.
+#pragma warning(push)
+	#pragma warning(disable:4005)
+	#pragma warning(disable:4266)
+	#pragma warning(disable:4264)
+	#include "qpOASES.hpp"
+#pragma warning(pop)
 
 typedef Vec3_tpl<qpOASES::real_t> Vec3qp;
 
