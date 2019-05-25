@@ -10,3 +10,28 @@
 #include <CrySystem/ISystem.h>
 #include <Cry3DEngine/I3DEngine.h>
 #include <CryNetwork/ISerialize.h>
+#include <CryEntitySystem/IEntitySystem.h>
+
+//template<class T>
+static IEntityClass* RegisterEntityClass(const char* name, const char* editorCategory = "", const char* editorIcon = "", bool bIconOnTop = false)
+{
+	IEntityClassRegistry::SEntityClassDesc clsDesc;
+	clsDesc.sName = name;
+
+	clsDesc.editorClassInfo.sCategory = editorCategory;
+	clsDesc.editorClassInfo.sIcon = editorIcon;
+	clsDesc.editorClassInfo.bIconOnTop = bIconOnTop;
+
+	/*struct CObjectCreator
+	{
+		static IEntityComponent* Create(IEntity* pEntity, SEntitySpawnParams& params, void* pUserData)
+		{
+			return pEntity->GetOrCreateComponentClass<T>();
+		}
+	};
+
+	clsDesc.pUserProxyCreateFunc = &CObjectCreator::Create;*/
+	clsDesc.flags |= ECLF_INVISIBLE;
+
+	return gEnv->pEntitySystem->GetClassRegistry()->RegisterStdClass(clsDesc);
+}

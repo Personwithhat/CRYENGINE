@@ -1,11 +1,11 @@
 <EntityScheduler>
 	<!-- game rules -->
-	<Class name="SinglePlayer" policy="rule"/>
+	<!-- <Class name="SinglePlayer" policy="rule"/>-->
 
-	<Class name="Player" policy="player" own="own"/>
+	<Class name="Actor" policy="player" own="own"/>
 	
-	<Class name="Bullet" policy="phys"/>
-	<Class name="Rifle" policy="obj"/>
+	<Class name="Projectile" policy="phys"/>
+	<!-- <Class name="Rifle" policy="obj"/> -->
 	
 	<Class name="RigidBody" policy="phys"/>
 	

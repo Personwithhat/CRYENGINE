@@ -103,7 +103,7 @@ void CPlayerComponent::InitializeLocalPlayer()
 					QuatTS bulletOrigin = pBarrelOutAttachment->GetAttWorldAbsolute();
 
 					SEntitySpawnParams spawnParams;
-					spawnParams.pClass = gEnv->pEntitySystem->GetClassRegistry()->GetDefaultClass();
+					spawnParams.pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Projectile");
 
 					spawnParams.vPosition = bulletOrigin.t;
 					spawnParams.qRotation = bulletOrigin.q;

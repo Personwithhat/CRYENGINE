@@ -60,6 +60,10 @@ void CGamePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lp
 
 		case ESYSTEM_EVENT_REGISTER_SCHEMATYC_ENV:
 		{
+			// Basic classes, without default component so as to preserve network bind/etc. order.
+			RegisterEntityClass("Actor", "Actors", "", true);
+			RegisterEntityClass("Projectile", "Geometry", "", true);
+
 			// Register all components that belong to this plug-in
 			auto staticAutoRegisterLambda = [](Schematyc::IEnvRegistrar& registrar)
 			{
@@ -94,7 +98,7 @@ bool CGamePlugin::OnClientConnectionReceived(int channelId, bool bIsReset)
 {
 	// Connection received from a client, create a player entity and component
 	SEntitySpawnParams spawnParams;
-	spawnParams.pClass = gEnv->pEntitySystem->GetClassRegistry()->GetDefaultClass();
+	spawnParams.pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("Actor");
 	
 	// Set a unique name for the player entity
 	const string playerName = string().Format("Player%" PRISIZE_T, m_players.size());
