@@ -116,13 +116,13 @@ struct  SplineKey
 {
 	typedef T value_type;
 
-	mpfloat	  time;      //!< Key time, not necessarily 'time' e.g. wind-strength
+	mpfloat	   time;      //!< Key time, not necessarily 'time' e.g. wind-strength
 	Flags      flags;     //!< Key flags.
 	value_type value;     //!< Key value.
 	value_type ds;        //!< Incoming tangent.
 	value_type dd;        //!< Outgoing tangent.
 
-	SplineKey() { ZeroStruct(*this); }
+	SplineKey() { ZeroStruct(*this); time.fixSet(); }
 
 	bool operator==(const SplineKey<T>& k2) const { return time == k2.time; };
 	bool operator!=(const SplineKey<T>& k2) const { return time != k2.time; };

@@ -79,6 +79,7 @@ public:
 		m_aiParams = 0;
 		m_pBreakable2DParams = 0;
 		memset(&m_physParams, 0, sizeof(m_physParams));
+		m_physParams.hit_lifetime.fixSet();
 	}
 	~CMaterialSurfaceType()
 	{

@@ -2081,9 +2081,10 @@ inline ScriptAnyValue::ScriptAnyValue(const ScriptAnyValue& rhs)
 }
 inline void ScriptAnyValue::Swap(ScriptAnyValue& value)
 {
-	ScriptAnyValue tmp = value; // PERSONAL NOTE: mpfloat != POD type -> can't memcpy it around.
-	value = this;
-	*this = tmp;
+	char temp[sizeof(ScriptAnyValue)];
+	memcpy(temp, this, sizeof(ScriptAnyValue));
+	memcpy(this, &value, sizeof(ScriptAnyValue));
+	memcpy(&value, temp, sizeof(ScriptAnyValue));
 }
 
 inline ScriptAnyValue::ScriptAnyValue(HSCRIPTFUNCTION value)

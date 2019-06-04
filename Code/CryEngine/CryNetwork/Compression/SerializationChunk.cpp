@@ -37,6 +37,13 @@ ILINE void CopyToBuffer(const T& value, CByteOutputStream& s)
 	s.PutTyped<T>() = value;
 }
 
+ILINE void CopyToBuffer(const CTimeValue& value, CByteOutputStream& s)
+{
+	CTimeValue* tmp = &s.PutTyped<CTimeValue>();
+	tmp->fixSet(); // Make it a valid MPFR
+	*tmp = value;
+}
+
 ILINE void CopyToBuffer(const SSerializeString& value, CByteOutputStream& s)
 {
 	uint32 len = value.size();

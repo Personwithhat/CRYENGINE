@@ -355,7 +355,9 @@ protected:
 									m_pSpline->aElems[i].set_key(source.time(i), source.value(i));
 				This creates mpfloat but its contents are bogus. Have to force intialization due to Undef-behavior.
 			*/
-			st.memHACK();
+			memset(&st, 0, sizeof(TStore));
+			st.fixSet();
+
 			st = t;
 			sv = v;
 		}
@@ -547,7 +549,7 @@ protected:
 			                + 1
 #endif
 			;
-			m_pSpline = new(malloc(nAlloc))Spline(nKeys);		// PERSONAL DEBUG: Allocation issues with ctimevalue/mpfloat?
+			m_pSpline = new(malloc(nAlloc))Spline(nKeys);
 		}
 		else
 			m_pSpline = NULL;
@@ -575,7 +577,7 @@ public:
 		if (!in.empty() && in.num_keys() != 0)
 		{
 			alloc(in.num_keys());
-			memcpy(m_pSpline, in.m_pSpline, in.m_pSpline->alloc_size()); // PERSONAL DEBUG: memcpy issues with CTimeValue?
+			memcpy(m_pSpline, in.m_pSpline, in.m_pSpline->alloc_size());
 			m_pSpline->validate();
 		}
 		else

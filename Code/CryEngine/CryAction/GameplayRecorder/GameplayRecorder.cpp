@@ -106,7 +106,7 @@ void CGameplayRecorder::CExampleMetadataListener::RecordGameData()
 		CTimeValue t = GetGTimer()->GetFrameStartTime();
 		IMetadataPtr pMetadata;
 		pMetadata->SetTag(eDT_frame);
-		pMetadata->SetValue(eBT_TVal, (uint8*)&t.GetSeconds().str(), 8); // PERSONAL DEBUG: Possible memcpy issues.
+		pMetadata->SetValue(eBT_TVal, (uint8*)&t, 8); // PERSONAL DEBUG: Get proper sizing
 		//m_pMetadataRecorder->RecordIt( pMetadata.get() );
 		pRecorder->OnGameData(pMetadata.get());
 	}

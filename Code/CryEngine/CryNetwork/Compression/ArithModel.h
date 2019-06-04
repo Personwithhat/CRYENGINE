@@ -113,7 +113,7 @@ class CNetContextState;
 // implementation of IArithModel for the network engine
 class CArithModel
 {
-private:
+public:
 	struct STimeAdaption
 	{
 		STimeAdaption()

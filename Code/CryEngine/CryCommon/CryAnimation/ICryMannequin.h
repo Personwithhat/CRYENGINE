@@ -34,6 +34,7 @@ DECLARE_SHARED_POINTERS(IProceduralParams);
 
 const uint32 MANN_NUMBER_BLEND_CHANNELS = 4;
 
+static const mpfloat blendChanZero[MANN_NUMBER_BLEND_CHANNELS] = { 0 };
 struct SAnimationEntry
 {
 	SAnimationEntry()
@@ -43,8 +44,7 @@ struct SAnimationEntry
 		playbackWeight(1.0f),
 		weightList(0)
 	{
-		for (int i = 0; i < MANN_NUMBER_BLEND_CHANNELS; i++)
-			blendChannels[i] = 0;
+		memcpy(&blendChannels, &blendChanZero, sizeof(mpfloat) * MANN_NUMBER_BLEND_CHANNELS);
 	}
 
 	ILINE bool IsEmpty() const

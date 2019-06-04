@@ -41,13 +41,15 @@ static ILINE char AlphabetToChar(unsigned a)
 	return (char)(unsigned char) a;
 }
 
+static const CArithModel::STimeAdaption timeZero[NUM_TIME_STREAMS];
 CArithModel::CArithModel()
 	: m_alphabet(256)
 	, m_entityIDAlphabet(2)
 	, m_pNetContext(nullptr)
 {
 	m_timeFraction32 = 0;
-	ZeroMemory(&m_vTimeAdaption, sizeof(m_vTimeAdaption));
+	//ZeroMemory(&m_vTimeAdaption, sizeof(m_vTimeAdaption));
+	memcpy(&m_vTimeAdaption, &timeZero, sizeof(m_vTimeAdaption));
 }
 
 CArithModel::~CArithModel()

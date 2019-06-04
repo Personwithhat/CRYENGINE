@@ -1294,6 +1294,7 @@ bool CTexture::StartStreaming(CTexture* pTex, STexPoolItem* pNewPoolItem, const 
 
 			pStreamState->m_pNewPoolItem = pNewPoolItem;
 #ifndef _RELEASE
+			pStreamState->m_fStartTime.fixSet();
 			pStreamState->m_fStartTime = GTimer(d3d)->GetAsyncTime();
 #endif
 			pStreamState->m_nAsyncRefCount = 0;

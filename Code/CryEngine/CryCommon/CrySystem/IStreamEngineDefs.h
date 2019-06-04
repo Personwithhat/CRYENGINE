@@ -91,6 +91,7 @@ struct SStreamEngineStatistics
 		void ResetStats()
 		{
 			memset(this, 0, sizeof(SMediaTypeInfo));
+			fActiveDuringLastSecond.fixSet(); // Avoids memory issues
 		}
 
 		nTime  fActiveDuringLastSecond; //!< Amount of time media device was active during last second.

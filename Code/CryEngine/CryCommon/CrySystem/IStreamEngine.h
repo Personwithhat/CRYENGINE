@@ -36,6 +36,8 @@ public:
 	{
 		memset(this, 0, sizeof(*this));
 		ePriority = estpNormal;
+		nLoadTime.fixSet();
+		nMaxLoadTime.fixSet();
 	}
 
 	StreamReadParams(

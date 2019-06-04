@@ -107,7 +107,8 @@ static inline TBasicType ComposeValue(const IMetadata* metadata)
 		v = TBasicType(ComposeValue<QuatT>(dt, sz));
 		break;
 	case eBT_TVal:
-		// PERSONAL IMPROVE: CTimeValue -> mpfloat -> MPFR ofc has pointers and what not. So not a POD etc. type
+		// PERSONAL TODO: Verify that this memcpy() functions with MPFR.
+		v = TBasicType(ComposeValue<CTimeValue>(dt, sz));
 		assert(0);
 		break;
 	default:

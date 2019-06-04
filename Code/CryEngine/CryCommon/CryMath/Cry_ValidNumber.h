@@ -37,7 +37,7 @@ template<typename T> struct MPTest
 {
 	static void SetInvalid(T& val)
 	{
-		val.memHack(); // Treating this as a 'Signaling' NAN!
+		val.SetNaN(); // Not a signaling NaN. Quiet NaN, but will propogate.
 	}
 	static bool IsValid(const T& val)
 	{

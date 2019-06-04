@@ -127,11 +127,12 @@ MemoryWriter& MemoryWriter::operator<<(const CTimeValue& value)
 	return operator<<(value.m_lValue);
 }
 
-// Non-POD type -> conver to string first.
 #define MP_FUNCTION(T)\
 MemoryWriter& MemoryWriter::operator<<(const T& value)\
 {\
-	return operator<<((const char*)value.str());\
+	char buffer[MP_SIZE];\
+	sprintf(buffer, "%s", value.str());\
+	return operator<<((const char*)buffer);\
 }
 #include <CrySystem\mpfloat.types>
 #undef MP_FUNCTION

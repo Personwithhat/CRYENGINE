@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "MPFloat.h"	 //! MPfloat definitions
+#include "MPFloat.h"  //! MPfloat definitions
 #include "XML\IXml.h" //! For serialization
 
 /* PERSONAL IMPROVE: 			
@@ -29,7 +29,7 @@ struct SAnimData {
 public:
 	SAnimData() { assert(false && "This is a static data/helper struct, do not build!"); }
 
-	// ?????????
+	// ????????? PERSONAL TODO
 	enum class EDisplayMode
 	{
 		Ticks = 0,
@@ -146,7 +146,7 @@ public:
 	// Ideally, anything with precision loss uses this to fetch seconds. (Or other 'BAD' nomenclature)
 	float BADGetSeconds()	  const { return (float)m_lValue; }
 
-	mpfloat GetSeconds()		  const { return m_lValue; }
+	mpfloat GetSeconds()	  const { return m_lValue; }
 	mpfloat GetMilliSeconds() const { return m_lValue * 1'000; }
 	mpfloat GetMicroSeconds() const { return m_lValue * 1'000'000; }
 
@@ -167,7 +167,7 @@ public:
 	//! Use .SetSeconds() etc. instead to maintain clear units (milliseconds etc.)
 	template<typename T> CTimeValue& operator=(const T& inRhs) = delete;
 
-	CTimeValue operator-()								 const { CTimeValue ret; ret.m_lValue = -m_lValue; return ret; }
+	CTimeValue operator-()						  const { CTimeValue ret; ret.m_lValue = -m_lValue; return ret; }
 
 	CTimeValue operator-(const CTimeValue& inRhs) const { CTimeValue ret; ret.m_lValue = m_lValue - inRhs.m_lValue; return ret; }
 	CTimeValue operator+(const CTimeValue& inRhs) const { CTimeValue ret; ret.m_lValue = m_lValue + inRhs.m_lValue; return ret;  }
@@ -176,7 +176,7 @@ public:
 	CTimeValue& operator+=(const CTimeValue& inRhs) { m_lValue += inRhs.m_lValue; return *this; }
 	CTimeValue& operator-=(const CTimeValue& inRhs) { m_lValue -= inRhs.m_lValue; return *this; }
 
-	TVOnly mpfloat operator*(const T& inRhs)  const { return m_lValue * inRhs.m_lValue; }					   //! Time * Time = mpfloat (For convenience)
+	TVOnly mpfloat operator*(const T& inRhs)  const { return m_lValue * inRhs.m_lValue; }					//! Time * Time = mpfloat (For convenience)
 	TVOnly nTime   operator/(const T& inRhs)  const { return (m_lValue / inRhs.m_lValue).conv<nTime>(); }	//! Time / Time = normalized time
 
 	// Time vs Time comparisons ----------------------------
@@ -195,7 +195,7 @@ public:
 	CTimeValue& operator*=(const mpfloat& inRhs) { m_lValue *= inRhs; return *this; }
 	CTimeValue  operator/(const mpfloat& inRhs)  const { CTimeValue ret; ret.m_lValue = m_lValue / inRhs; return ret; }
 	CTimeValue  operator*(const mpfloat& inRhs)  const { CTimeValue ret; ret.m_lValue = m_lValue * inRhs; return ret; }
-	friend rTime operator/(const mpfloat& inLhs, const CTimeValue& inRhs)		{ return (inLhs / inRhs.m_lValue).conv<rTime>(); }
+	friend rTime operator/(const mpfloat& inLhs, const CTimeValue& inRhs)	   { return (inLhs / inRhs.m_lValue).conv<rTime>(); }
 	friend CTimeValue operator*(const mpfloat& inLhs, const CTimeValue& inRhs) { CTimeValue ret; ret.m_lValue = inLhs * inRhs.m_lValue; return ret; }
 
 	// rTime * Time = Time/Time = mpfloat, not ntime. Typically rTime is used for a rate, e.g. frames/second which would translate to 'mpfloat of Frames' rather than 'nTime of Frames'
@@ -210,38 +210,39 @@ public:
 //** Snapping time to frame multiple
 //** 
 	// Return time snapped to nearest multiple of given frame rate
-	CTimeValue SnapToNearest(const SAnimData::EFrameRate frameRate) const { return SnapToNearest(SAnimData::GetFrameRateValue(frameRate)); }
-	CTimeValue SnapToNearest(const uint frameRate)						 const;
+	CTimeValue SnapToNearest(const SAnimData::EFrameRate frameRate)  const { return SnapToNearest(SAnimData::GetFrameRateValue(frameRate)); }
+	CTimeValue SnapToNearest(const uint frameRate)					 const;
 
 	// Return time snapped to next multiple of given frame rate		 
 	// (Will NOT change when already at a multiple)
 	CTimeValue SnapToNext(const SAnimData::EFrameRate frameRate)	 const { return SnapToNext(SAnimData::GetFrameRateValue(frameRate)); }
-	CTimeValue SnapToNext(const uint frameRate)							 const;
+	CTimeValue SnapToNext(const uint frameRate)						 const;
 
 	// Return time snapped to previous multiple of given frame rate 
 	// (Will NOT change when already at a multiple) 
 	CTimeValue SnapToPrev(const SAnimData::EFrameRate frameRate)	 const { return SnapToPrev(SAnimData::GetFrameRateValue(frameRate)); }
-	CTimeValue SnapToPrev(const uint frameRate)							 const;
+	CTimeValue SnapToPrev(const uint frameRate)						 const;
 
 	// Return time after stepping to next multiple of given frame rate 
 	// (Will change to next multiple when already at a multiple)
 	CTimeValue StepToNext(const SAnimData::EFrameRate frameRate)	 const { return StepToNext(SAnimData::GetFrameRateValue(frameRate)); }
-	CTimeValue StepToNext(const uint frameRate)							 const { return (*this + "0.0001").SnapToNext(frameRate); }
+	CTimeValue StepToNext(const uint frameRate)						 const { return (*this + "0.0001").SnapToNext(frameRate); }
 
 	// Return time after stepping to previous multiple of given frame rate 
 	// (Will change to previous multiple when already at a multiple)
 	CTimeValue StepToPrev(const SAnimData::EFrameRate frameRate)	 const { return StepToPrev(SAnimData::GetFrameRateValue(frameRate));  }
-	CTimeValue StepToPrev(const uint frameRate)							 const { return (*this - "0.0001").SnapToPrev(frameRate); }
+	CTimeValue StepToPrev(const uint frameRate)						 const { return (*this - "0.0001").SnapToPrev(frameRate); }
 
 //**
 //** Miscellaneous other functions.
 //**
 	// PERSONAL IMPROVE: Memory usage should probably be tracked for optimizing mpfloat size/etc.
-	void GetMemoryUsage(class ICrySizer* pSizer)		  const { /*todo*/ }
+	void GetMemoryUsage(class ICrySizer* pSizer)	  const { /*todo*/ }
 	void GetMemoryStatistics(class ICrySizer* pSizer) const { /*todo*/ }
 
 	// See mpfloat func description
 	void memHACK(){ m_lValue.memHACK(); }
+	void fixSet() { m_lValue.fixSet(); }
 
 	//! Useful for periodic events (e.g. water wave, blinking).
 	//! Changing TimePeriod can results in heavy changes in the returned value.
@@ -263,8 +264,7 @@ public:
 				*/
 				assert(false && "Should not be using legacy names anymore!");
 			}
-		}
-		else {
+		} else {
 			keyNode->setAttr(pName, m_lValue);
 		}
 	}
@@ -274,24 +274,16 @@ public:
 	void Split(mpfloat* pHours, mpfloat* pMinutes, mpfloat* pSeconds, mpfloat* pMilliseconds) const
 	{
 		if (pHours)
-		{
 			*pHours = GetSeconds() / (60 * 60);
-		}
 
 		if (pMinutes)
-		{
 			*pMinutes = GetSeconds() / 60;
-		}
 
 		if (pSeconds)
-		{
 			*pSeconds = GetSeconds();
-		}
 
 		if (pMilliseconds)
-		{
 			*pMilliseconds = GetMilliSeconds();
-		}
 	}
 
 	// Type-Info generation
@@ -302,7 +294,7 @@ public:
 };
 
 // TypeInfo related conversions
-TVOnly string ToString(T const& val)			 { return val.str(); }
+TVOnly string ToString(T const& val)		  { return val.str(); }
 TVOnly bool FromString(T& val, const char* s) { val = T(s); return true; }
 
 //** 
@@ -330,7 +322,7 @@ TVOnly bool FromString(T& val, const char* s) { val = T(s); return true; }
 //**
 	ILINE CTimeValue ceil(const CTimeValue& time) { return CTimeValue(int_ceil(time.GetSeconds())); }
 
-	ILINE CTimeValue abs(const CTimeValue& time) { return (time >= CTimeValue(0)) ? time : -time; }
+	ILINE CTimeValue abs(const CTimeValue& time)  { return (time >= CTimeValue(0)) ? time : -time; }
 
 	// Used during inrange()
 	ILINE int32 isneg(const CTimeValue& time) { return (time < 0) ? 1 : 0; }
