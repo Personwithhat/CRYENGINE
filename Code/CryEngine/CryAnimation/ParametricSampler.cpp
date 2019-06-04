@@ -15,10 +15,12 @@
 const f32 fRenderPosBS1 = 7.0f;
 const f32 fRenderPosBS2 = -21.0f;
 
+static const mpfloat blendZero[MAX_LMG_ANIMS] = {0};
+
 nTime SParametricSamplerInternal::Parameterizer(const CAnimationSet* pAnimationSet, const CDefaultSkeleton* pDefaultSkeleton, const CAnimation& rCurAnim, const CTimeValue& fFrameDeltaTime, const mpfloat& fPlaybackScale, bool AllowDebug)
 {
 	int32 nAnimID = rCurAnim.GetAnimationId();
-	memset(m_fBlendWeight, 0, sizeof(m_fBlendWeight));
+	memcpy(&m_fBlendWeight, &blendZero, sizeof(m_fBlendWeight));
 
 	//check if ParaGroup is invalid
 	const ModelAnimationHeader* pAnim = pAnimationSet->GetModelAnimationHeader(nAnimID);
@@ -2006,7 +2008,7 @@ void SParametricSamplerInternal::CombinedBlendSpaces(GlobalAnimationHeaderLMG& r
 	off[0] = Vec3(fRenderPosBS1, 0, 0.01f);
 	off[1] = Vec3(fRenderPosBS2, 0, 0.01f);
 
-	memset(m_fBlendWeight, 0, sizeof(m_fBlendWeight));
+	memcpy(&m_fBlendWeight, &blendZero, sizeof(m_fBlendWeight));
 
 	//--- Filter the used bspace based on any ChooseBlendSpace flags,
 	//--- In the case of multiple bspaces matching the criteria the first will be used

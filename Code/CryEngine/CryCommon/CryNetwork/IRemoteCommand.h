@@ -93,7 +93,7 @@ public:
 
 	ILINE IDataWriteStream& operator<<(const mpfloat& val)
 	{
-		WriteString(val.str());
+		Write8(&val);
 		return *this;
 	}
 
@@ -175,7 +175,7 @@ public:
 	//! Write mpfloat value to stream.
 	ILINE void WriteFloatMP(const mpfloat val)
 	{
-		WriteString(val.str());
+		Write8(&val);
 	}
 
 	//! Write CTimeValue to stream.
@@ -274,7 +274,7 @@ public:
 
 	ILINE IDataReadStream& operator<<(mpfloat& val)
 	{
-		val = ReadString().c_str();
+		Read8(&val);
 		return *this;
 	}
 
@@ -366,10 +366,12 @@ public:
 		return val;
 	}
 
-	//! Read mpfloat from stream. Non-POD type so read/write as str.
+	//! Read mpfloat from stream
 	ILINE mpfloat ReadFloatMP()
 	{
-		return mpfloat(ReadString().c_str());
+		mpfloat val = 0;
+		Read8(&val);	 // PERSONAL VERIFY: Proper sizing here/elsewhere in this file.
+		return val;
 	}
 
 	//! Read CTimeValue from stream.

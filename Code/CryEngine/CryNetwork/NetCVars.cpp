@@ -33,6 +33,17 @@ CNetCVars::CNetCVars()
 {
 	memset(this, 0, sizeof(*this));
 
+	// Fix CTimeValues post mem-set. Better to do this explicitly.
+	NetworkConnectivityDetectionInterval.fixSet();
+	InactivityTimeout.fixSet();		InactivityTimeoutDevmode.fixSet();  BackoffTimeout.fixSet();
+	socketMaxTimeout.fixSet();		socketBoostTimeout.fixSet();		socketMaxTimeoutMultiplayer.fixSet();
+	KeepAliveTime.fixSet();			PingTime.fixSet();					StallEndTime.fixSet();
+	net_PacketLagMin.fixSet();		net_PacketLagMax.fixSet();			net_fragment_expiration_time.fixSet();
+	HighLatencyThreshold.fixSet();	HighLatencyTimeLimit.fixSet();		SchedulerSendExpirationPeriod.fixSet();
+#if LOCK_NETWORK_FREQUENCY == 0
+	channelLocalSleepTime.fixSet();
+#endif // LOCK_NETWORK_FREQUENCY == 0
+
 	NET_ASSERT(!s_pThis);
 	s_pThis = this;
 

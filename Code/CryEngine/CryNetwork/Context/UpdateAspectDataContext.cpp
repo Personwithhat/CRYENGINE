@@ -82,7 +82,9 @@ void CUpdateAspectDataContext::FetchDataFromGame(NetworkAspectID i)
 	// timestamped aspects need the timestamp as the first part of the stored buffer
 	if (m_pNetContext->TimestampedAspects() & aspectBit)
 	{
-		stm.PutTyped<CTimeValue>() = m_localPhysicsTime;
+		CTimeValue* tmp = &stm.PutTyped<CTimeValue>();
+		tmp->fixSet();
+		*tmp = m_localPhysicsTime;
 	}
 	CCompressionManager& cman = CNetwork::Get()->GetCompressionManager();
 	uint8 readProfile = (m_obj.vAspectProfiles[i] >= MaxProfilesPerAspect ? 0 : m_obj.vAspectProfiles[i]);

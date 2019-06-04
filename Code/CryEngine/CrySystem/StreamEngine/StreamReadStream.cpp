@@ -345,6 +345,10 @@ void CReadStream::Reset()
 	m_Params = StreamReadParams();
 	// WTHF
 	memset((void*)&m_nRefCount, 0, (char*)(this + 1) - (char*)(&m_nRefCount));
+#ifdef STREAMENGINE_ENABLE_STATS
+	m_requestTime.fixSet();
+	m_ReadTime.fixSet();
+#endif
 }
 
 void CReadStream::SetUserData(DWORD_PTR dwUserData)

@@ -110,6 +110,7 @@ struct OcclusionTestClient
 #endif
 };
 
+static const CTimeValue lodZero[MAX_STATOBJ_LODS_NUM] = { 0 };
 struct SRenderNodeTempData
 {
 	struct SUserData
@@ -144,8 +145,8 @@ public:
 	SRenderNodeTempData()  {
 		ZeroStruct(userData); hasValidRenderObjects = invalidRenderObjects = false; 
 
-		// Due to memset(0), plus it's used in ComputeDissolve() etc. before set! Have to set to 0 here.
-		for (auto &v : userData.arrLodLastTimeUsed) { v = CTimeValue(0); }
+		// Due to memset(0), plus it's used in ComputeDissolve() etc. before set!
+		memcpy(&userData.arrLodLastTimeUsed, &lodZero, sizeof(lodZero));
 	}
 	~SRenderNodeTempData() { Free(); }
 

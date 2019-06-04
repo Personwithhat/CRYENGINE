@@ -534,11 +534,11 @@ void CAsyncIOFileRequest::Reset()
 	m_decryptionCTRInitialisedAgainst = m_pakFile;
 #endif
 
-	// Reset POD members of the structure
 	memset(&m_nSortKey, 0, ((char*)(this + 1) - (char*)&m_nSortKey));
 
-	// These are non-POD, assign them after reset .-.
-	m_readTime = m_unzipTime = m_verifyTime = m_decryptTime = m_startTime = m_completionTime = CTimeValue(0);
+	// Fix mpfloat/ctimevalue's post memset.
+	m_readTime.fixSet(); m_unzipTime.fixSet(); m_verifyTime.fixSet(); 
+	m_decryptTime.fixSet(); m_startTime.fixSet(); m_completionTime.fixSet();
 }
 
 void CAsyncIOFileRequest::Init(EStreamTaskType eType)

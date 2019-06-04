@@ -52,13 +52,14 @@ public: // Misc.
 
 	// WARNING: memset, in general, does not work with mpfloats!
 	// Exception is memset(0) which causes m_data to be nullptr => crashes if comparison/etc. is done before an assignment happens.
-	// And memcpy of course is bad because mpfloat/CTimeValue are not POD types. Alternative solutions include not using memcpy (heh), or converting to std::copy()
 	/*
 		PERSONAL IMPROVE: Used as a HACK in some scenarios!
 		This is a 'fix' for un-initialized mpfloat heap and is_unused() checks.
 		Possible memory leak for allocate_dynamically MPFR and regular GMP. Stack is zero'd out for allocate_stack MPFR.
 	*/
-	void memHACK(){ memset(&backend(), 0, sizeof(Backend)); }
+	void memHACK() { m_backend.setInvalid();  }
+	void fixSet()  { m_backend.fixSet(); }
+	ILINE bool valid() const { return backend().valid(); } // Check if this var was memset/etc. and zero'd out.
 
 public: // Constructors and assignment operators
 	// PERSONAL NOTE: Previous attempts at overloads/etc.
@@ -82,8 +83,8 @@ public: // Constructors and assignment operators
 				}
 		*/
 
-	ILINE constexpr newNum() {};
-	ILINE constexpr newNum(const Backend& n) : m_backend(n) {};
+	ILINE constexpr newNum() { };
+	ILINE constexpr newNum(const Backend& n) : m_backend(n) { };
 
 	// Allows implicit conversion (0 can become newNum(0) etc.) but only for matches, 
 	//	e.g. newNum(float), float won't implicitly convert to int and become a 'valid' constructor.
@@ -154,10 +155,10 @@ public: // Math operations
 	#undef Operation
 
 	// Increment/Deincrement
-		ILINE rType& operator++()   { using default_ops::eval_increment; eval_increment(m_backend); return *this; }
-		ILINE rType& operator--()   { using default_ops::eval_decrement; eval_decrement(m_backend); return *this; }
-		ILINE rType operator++(int) { using default_ops::eval_increment; rType temp(*this); eval_increment(m_backend); return BOOST_MP_MOVE(temp); }
-		ILINE rType operator--(int) { using default_ops::eval_decrement; rType temp(*this); eval_decrement(m_backend); return BOOST_MP_MOVE(temp);}
+		ILINE rType& operator++()   { using default_ops::eval_increment; eval_increment(backend()); return *this; }
+		ILINE rType& operator--()   { using default_ops::eval_decrement; eval_decrement(backend()); return *this; }
+		ILINE rType operator++(int) { using default_ops::eval_increment; rType temp(*this); eval_increment(backend()); return BOOST_MP_MOVE(temp); }
+		ILINE rType operator--(int) { using default_ops::eval_decrement; rType temp(*this); eval_decrement(backend()); return BOOST_MP_MOVE(temp); }
 
 	// Sign reversal
 	rType operator-() const { rType ret; ret.backend() = backend(); ret.backend().negate(); return ret; };
@@ -201,17 +202,18 @@ public: // Comparisons
 		#undef boiler 
 
 public: // Other re-implimented boost::number<> functions and helpers.
-	ILINE bool valid()	 const { return backend().valid(); } 			// Check if this var was memset/etc. and zero'd out.
-	ILINE bool IsNaN()	 const { return mpfr_nan_p(backend().data()); }	// Check if this value is NaN
-	ILINE bool is_zero() const { using default_ops::eval_is_zero;  return eval_is_zero(m_backend);  }
-	ILINE int  sign()	 const { using default_ops::eval_get_sign; return eval_get_sign(m_backend); }
+
+	ILINE void SetNaN()		   { mpfr_set_nan(backend().data()); } // Sets Quiet NaN, will propogate.
+	ILINE bool IsNaN()	 const { return mpfr_nan_p(backend().data()); }
+	ILINE bool is_zero() const { using default_ops::eval_is_zero;  return eval_is_zero(backend());  }
+	ILINE int  sign()	 const { using default_ops::eval_get_sign; return eval_get_sign(backend()); }
 
 	// Backend()
 	ILINE Backend& backend() 						{ return m_backend; }
 	ILINE constexpr const Backend& backend() const  { return m_backend; }
 
 	// Canonical_value
-	static ILINE constexpr const Backend& canonical_value(const rType& v)  { return v.m_backend; }
+	static ILINE constexpr const Backend& canonical_value(const rType& v)  { return v.backend(); }
 	static ILINE typename detail::canonical<string, Backend>::type canonical_value(const string& v)  { return v.c_str(); }
 
 	template <class V> static ILINE constexpr typename 
@@ -441,8 +443,8 @@ public: // To string conversion
 	// Near-copy of Boosts's implementation. Uses CryTek's string instead of std::string with an extra skipZero flag convenience.
    string str(std::streamsize digits = 0, std::ios_base::fmtflags f = 0) const
    {
+		BOOST_ASSERT(valid());
 		auto m_data = backend().data();
-      BOOST_ASSERT(m_data[0]._mpfr_d);
 		if (digits != 0 && f == 0) { f = std::ios_base::dec; }		// Default precision is "Digits after decimal point". Don't pad zeroes.
 
 		bool scientific = (f & std::ios_base::scientific) == std::ios_base::scientific;
@@ -556,7 +558,7 @@ private:
 	// Conversion operator implementation.
 	template <class T> T convert_to()	const { T result; convert_to_imp(&result); return result; }
 	template <class T>
-	void convert_to_imp(T* result)		const { using default_ops::eval_convert_to; eval_convert_to(result, m_backend); }
+	void convert_to_imp(T* result)		const { using default_ops::eval_convert_to; eval_convert_to(result, backend()); }
 	void convert_to_imp(string* result)	const { *result = this->str(); }
 
 	// Backend, can be changed (with a few small edits) to a different base. 
@@ -615,7 +617,7 @@ private:
 }} // END boost::multiprecision namespaces
 
 // String buffer size for MPFloats, used for sscanf() etc. PERSONAL DEBUG & PERSONAL IMPROVE!!!
-#define MP_SIZE 125u
+#define MP_SIZE 60u
 
 // Is-mpfloat-type test
 #define isMP   std::is_base_of<boost::multiprecision::newNum<T>, T>::value
@@ -638,8 +640,8 @@ private:
 namespace boost { namespace multiprecision {\
 	class name : public newNum<name> {\
 	public:\
-		ILINE constexpr name()					: newNum()	{}\
-		ILINE constexpr name(const name& n) : newNum(n.backend())	{};\
+		ILINE constexpr name()				: newNum() {}\
+		ILINE constexpr name(const name& n) : newNum(n.backend()) {};\
 		\
 		name& operator=(const name& inRhs) { backend() = inRhs.backend(); return *this; }\
 		\

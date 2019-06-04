@@ -1253,7 +1253,7 @@ void CStreamEngine::DrawStatistics()
 		         (float)stats.hddInfo.nActualReadBandwidth / (1024 * 1024), (float)stats.hddInfo.nAverageActualReadBandwidth / (1024 * 1024));
 		DrawText(tx, ty += ystep, clText, "\t  Seek: %1.2f GB - Active: %2.1f%%(%2.1f%%)",
 		         (float)stats.hddInfo.nAverageSeekOffset / (1024 * 1024),
-		         stats.hddInfo.fActiveDuringLastSecond, stats.hddInfo.fAverageActiveTime);
+		         (float)stats.hddInfo.fActiveDuringLastSecond, stats.hddInfo.fAverageActiveTime);
 	}
 	// Optical stats
 	if (stats.discInfo.nTotalRequestCount > 0)
@@ -1265,7 +1265,7 @@ void CStreamEngine::DrawStatistics()
 		         (float)stats.discInfo.nActualReadBandwidth / (1024 * 1024), (float)stats.discInfo.nAverageActualReadBandwidth / (1024 * 1024));
 		DrawText(tx, ty += ystep, clText, "\t  Seek: %1.2f GB - Active: %2.1f%%(%2.1f%%)",
 		         (float)stats.discInfo.nAverageSeekOffset / (1024 * 1024),
-		         stats.discInfo.fActiveDuringLastSecond, stats.discInfo.fAverageActiveTime);
+		         (float)stats.discInfo.fActiveDuringLastSecond, stats.discInfo.fAverageActiveTime);
 	}
 	DrawText(tx, ty += ystep, clText, "Mem : Request: %3d|%5d (%4d MB)",
 	         stats.memoryInfo.nRequestCount, stats.memoryInfo.nTotalRequestCount, (stats.memoryInfo.nTotalBytesRead / (1024 * 1024)));

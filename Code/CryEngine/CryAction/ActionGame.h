@@ -80,13 +80,12 @@ struct SBreakEvent
 		iPrim[0] = iPrim[1] = -1;
 	}
 
-	/*SBreakEvent& operator=(const SBreakEvent& in)
+	SBreakEvent& operator=(const SBreakEvent& in)
 	{
-		// PERSONAL DEBUG: Can't memcpy timevalue. Will FP-exceptions still happen though?
 		// Stop floating-point exceptions when copying this class around
 		memcpy(this, &in, sizeof(in));
 		return *this;
-	}*/
+	}
 
 	void Serialize(TSerialize ser)
 	{
