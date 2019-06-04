@@ -42,6 +42,14 @@ const float CPerfHUD::TEXT_SIZE_NORM = 14.f;
 const float CPerfHUD::TEXT_SIZE_WARN = 18.f;
 const float CPerfHUD::TEXT_SIZE_ERROR = 26.f;
 
+// PERSONAL TODO: DrMemory testing, fails with UNADDRESSABLE ACCESS here even when MPFR itself has no bugs/etc.
+// const boost::multiprecision::static_mpfr_float_50 ACTIVATE_TIME_FROM_HUD2(0.1);   // This doesn't fail DrMemory test
+// const boost::multiprecision::static_mpfr_float_50 ACTIVATE_TIME_FROM_HUD3("0.1"); // Consistently fails
+
+// std::string and string same thing, and also std::string("0.1").c_str() etc.
+//const char TEST[52] = "0.1111111111111111111111111111111111111111111111118";
+//const CTimeValue CPerfHUD::ACTIVATE_TIME_FROM_GAME = TEST; // Consistently fails
+
 const CTimeValue CPerfHUD::ACTIVATE_TIME_FROM_GAME = 1;
 const CTimeValue CPerfHUD::ACTIVATE_TIME_FROM_HUD = "0.1";
 

@@ -3320,7 +3320,7 @@ struct EventPhysSimFinished : EventPhysMono
 {
 	enum entype { id = 18, flagsCall = 0, flagsLog = 0 };
 	EventPhysSimFinished() { idval = id; }
-	float time;
+	float time; // PERSONAL TODO: Need to make this proper CTimeValue?
 	void* frameData;
 	int   numColl;
 };
