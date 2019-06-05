@@ -82,6 +82,8 @@ public:
 	bool Hash(const uint8* pBuf, const size_t bufSize);
 	bool FinishAndRestartHash(HashResult& result);
 
+	void operator delete(void* p) { delete[] p; }
+
 private:
 	explicit CTomCryptSha256Hmac(int shaIdx, size_t secretSize);
 	bool FinishHash(HashResult& result);
