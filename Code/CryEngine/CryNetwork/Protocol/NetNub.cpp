@@ -1881,6 +1881,8 @@ void CNetNub::ProcessKeyExchange1(const TNetAddress& from, const uint8* pData, u
 	// now that we have established the private key, let's go create the channel
 	
 	CreateChannel(from, std::move(securityInit), connectionString, con.socketCaps, con.profileTokenPair.profile, con.session, CNubConnectingLock());
+
+	delete[] pConnectionStringBuf.release();
 }
 
 bool CNetNub::ProcessConnectionString(uint8* pBuf, const size_t bufSize, ChannelSecurity::CCipher& inputCipher, string& outConnectionString)
