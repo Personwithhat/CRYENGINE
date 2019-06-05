@@ -71,8 +71,7 @@ void ShutdownTomCrypt()
 		return nullptr;
 	}
 
-	CTomCryptAesState* pKey = new (reinterpret_cast<void*>(p.get())) CTomCryptAesState();
-	p.release();
+	CTomCryptAesState* pKey = new (reinterpret_cast<void*>(p.release())) CTomCryptAesState();
 	return TSharedPtr(pKey);
 }
 
@@ -238,8 +237,7 @@ CTomCryptSha256Hmac::CTomCryptSha256Hmac(int shaIdx, size_t secretSize)
 		return nullptr;
 	}
 
-	CTomCryptSha256Hmac* pKey = new (reinterpret_cast<void*>(p.get())) CTomCryptSha256Hmac(shaIdx, secretSize);
-	p.release();
+	CTomCryptSha256Hmac* pKey = new (reinterpret_cast<void*>(p.release())) CTomCryptSha256Hmac(shaIdx, secretSize);
 	return TSharedPtr(pKey);
 }
 
