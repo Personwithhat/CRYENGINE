@@ -203,6 +203,11 @@ C3DEngine::C3DEngine(ISystem* pSystem)
 	m_fMaxViewDistLowSpec = 1000;
 	m_fTerrainDetailMaterialsViewDistRatio = 1.f;
 
+	m_fSkyBoxStretching = 0.0f;
+	m_fSkyBoxAngle = 0.0f;
+	m_vSkyBoxExposure = Vec3(IDENTITY);
+	m_vSkyBoxOpacity = Vec3(IDENTITY);
+
 	for (int skyTypeIdx = 0; skyTypeIdx < eSkySpec_NumSkySpecs; ++skyTypeIdx)
 		m_pSkyMat[skyTypeIdx] = nullptr;
 
