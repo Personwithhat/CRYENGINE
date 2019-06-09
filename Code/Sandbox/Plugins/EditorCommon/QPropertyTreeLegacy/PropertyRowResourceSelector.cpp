@@ -110,7 +110,7 @@ void ResourceSelectorMenuHandler::onMenuJumpTo()
 PropertyRowResourceSelector::PropertyRowResourceSelector()
 	: provider_(0), id_(0), searchHandle_(0), bActive_(false), selector_(0)
 {
-	CRY_ASSERT(GetIEditor() && GetIEditor()->GetResourceSelectorHost());
+	CRY_ASSERT(!gEnv || (GetIEditor() && GetIEditor()->GetResourceSelectorHost()));
 }
 
 property_tree::InplaceWidget* PropertyRowResourceSelector::createWidget(PropertyTreeLegacy* tree)
