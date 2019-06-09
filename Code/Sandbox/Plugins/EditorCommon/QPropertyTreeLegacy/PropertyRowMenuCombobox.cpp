@@ -285,7 +285,4 @@ void QComboBoxHandler::actionTriggered(QAction* pAction)
 		tree_->model()->rowChanged(comboboxRow_);
 	}
 }
-
-REGISTER_PROPERTY_ROW(StringListStaticValue, PropertyRowStaticMenuCombobox)
-REGISTER_PROPERTY_ROW(StringListValue, PropertyRowMenuCombobox)
 }
