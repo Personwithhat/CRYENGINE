@@ -988,6 +988,7 @@ void CAssetBrowser::WaitUntilAssetsAreReady()
 CAssetBrowser::~CAssetBrowser()
 {
 	m_pFoldersView->SetFilteredFolders(nullptr);
+	delete m_pAttributeFilterProxyModel.release();
 	CAssetManager::GetInstance()->signalScanningCompleted.DisconnectById((uintptr_t)this);
 }
 
