@@ -2014,7 +2014,7 @@ size_t GetSizeInAddressRange(void* pBase, size_t length, DWORD commitStatus)
 	while (pBase < pRegionEnd)
 	{
 		MEMORY_BASIC_INFORMATION memInfo;
-		if (VirtualQuery(pBase, &memInfo, length) != sizeof(MEMORY_BASIC_INFORMATION))
+		if (VirtualQuery(pBase, &memInfo, sizeof(MEMORY_BASIC_INFORMATION)) != sizeof(MEMORY_BASIC_INFORMATION))
 			break;
 		if (memInfo.State == commitStatus)
 		{
@@ -2030,7 +2030,7 @@ CMemReplay::NTSTATUS NTAPI CMemReplay::NtAllocateVirtualMemory_Detour(HANDLE Pro
 	if (AllocationType & MEM_COMMIT)
 	{
 		MEMREPLAY_SCOPE_INTERNAL(EMemReplayAllocClass::UserPointer, EMemReplayUserPointerClass::VirtualAlloc);
-		size_t alreadyCommitted = BaseAddress != 0 ? GetSizeInAddressRange(BaseAddress, *RegionSize, MEM_COMMIT) : 0;
+		size_t alreadyCommitted = *BaseAddress != NULL ? GetSizeInAddressRange(BaseAddress, *RegionSize, MEM_COMMIT) : 0;
 		NTSTATUS status = s_originalNtAllocateVirtualMemory(ProcessHandle, BaseAddress, ZeroBits, RegionSize, AllocationType, Protect);
 		if (status == 0L)
 			MEMREPLAY_SCOPE_ALLOC_INTERNAL(*BaseAddress, *RegionSize - alreadyCommitted, 0);
