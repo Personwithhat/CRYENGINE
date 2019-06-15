@@ -38,6 +38,9 @@
 		"r_motionblur": 					"0", <-- Motion Blur? No thanks. -->
 		"r_nohwgamma": 						"1", <-- Disable overriding of gamma, great for windowed mode. -->
 
+		"r_VSync":							"0", <-- Has to be off for FPS control -->
+		"sys_MaxFps": 						"60",<--  FPS Limit, doesn't work in sandbox. -->
+
 		<-- Custom project CVars -->
 		"cl_DefaultNearPlane": 				"0.05"
 	},

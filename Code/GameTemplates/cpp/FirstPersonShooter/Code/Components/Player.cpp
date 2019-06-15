@@ -213,7 +213,7 @@ void CPlayerComponent::UpdateMovementRequest(float frameTime)
 
 	Vec3 velocity = ZERO;
 
-	const float moveSpeed = 20.5f;
+	const float moveSpeed = 5.0f; //20.5f;
 
 	if (m_inputFlags & EInputFlag::MoveLeft)
 	{
@@ -272,7 +272,7 @@ void CPlayerComponent::UpdateLookDirectionRequest(float frameTime)
 
 void CPlayerComponent::UpdateAnimation(float frameTime)
 {
-	const float angularVelocityTurningThreshold = 0.174; // [rad/s]
+	/*const float angularVelocityTurningThreshold = 0.174; // [rad/s]
 
 	// Update tags and motion parameters used for turning
 	const bool isTurning = std::abs(m_averagedHorizontalAngularVelocity.Get()) > angularVelocityTurningThreshold;
@@ -284,10 +284,10 @@ void CPlayerComponent::UpdateAnimation(float frameTime)
 
 		const float turnDuration = 1.0f; // Expect the turning motion to take approximately one second.
 		m_pAnimationComponent->SetMotionParameter(eMotionParamID_TurnAngle, m_horizontalAngularVelocity * turnDuration);
-	}
+	}*/
 
 	// Update active fragment
-	const FragmentID& desiredFragmentId = m_pCharacterController->IsWalking() ? m_walkFragmentId : m_idleFragmentId;
+	const FragmentID& desiredFragmentId = m_walkFragmentId;
 	if (m_activeFragmentId != desiredFragmentId)
 	{
 		m_activeFragmentId = desiredFragmentId;
@@ -303,6 +303,12 @@ void CPlayerComponent::UpdateAnimation(float frameTime)
 
 	// Send updated transform to the entity, only orientation changes
 	GetEntity()->SetPosRotScale(GetEntity()->GetWorldPos(), correctedOrientation, Vec3(1, 1, 1));
+
+	// Sleep for 30 ms every other frame.
+	//static bool flip = false;
+	//flip = !flip;
+	//if(flip)
+	//	CryLowLatencySleep(30);
 }
 
 void CPlayerComponent::UpdateCamera(float frameTime)
