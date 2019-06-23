@@ -62,7 +62,6 @@
         <file alias="CreateEditor/Add_To_Scene_Geom_Entity.ico">icons/assets_geom_entity.ico</file>
         <file alias="CreateEditor/Add_To_Scene_Misc.ico">icons/assets_misc.ico</file>
         <file alias="CreateEditor/Add_To_Scene_Particle_Entity.ico">icons/assets_particle_entity.ico</file>
-        <file alias="CreateEditor/Add_To_Scene_Prefab.ico">icons/assets_prefab.ico</file>
         <file alias="CreateEditor/Add_To_Scene_Road.ico">icons/assets_road.ico</file>
         <file alias="CreateEditor/Add_To_Scene_Components.ico">icons/assets_components.ico</file>
         <file alias="CreateEditor/Add_To_Scene_Particle_Emitter.ico">icons/assets_particle_emitter.ico</file>

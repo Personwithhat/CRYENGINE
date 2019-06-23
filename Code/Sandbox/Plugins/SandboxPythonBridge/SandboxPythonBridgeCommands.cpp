@@ -104,4 +104,4 @@ string PyGeneratePythonEditorAutocompleteFiles()
 
 
 REGISTER_PYTHON_COMMAND(PyGeneratePythonEditorAutocompleteFiles, pythoneditor, generate_pythoneditor_autocomplete_files,
-                        CCommandDescription("Generate autocomplete data for PythonEditor. Returns output folder"));
+                        CCommandDescription("Generate autocomplete data for PythonEditor Returns output folder"));
