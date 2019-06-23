@@ -43,7 +43,8 @@ struct SAnimationEntry
 		playbackWeight(1.0f),
 		weightList(0)
 	{
-		memset(blendChannels, 0, sizeof(float) * MANN_NUMBER_BLEND_CHANNELS);
+		for (int i = 0; i < MANN_NUMBER_BLEND_CHANNELS; i++)
+			blendChannels[i] = 0;
 	}
 
 	ILINE bool IsEmpty() const

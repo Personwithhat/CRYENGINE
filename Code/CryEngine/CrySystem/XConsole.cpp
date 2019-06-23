@@ -1059,14 +1059,17 @@ ICVar* CXConsole::Register(const char* sName, T* src, const T& fValue, int nFlag
 	ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);\
 	if (pCVar)\
 	{\
-		gEnv->pLog->LogError("[CVARS]: [DUPLICATE] CXConsole::Register(mpfloat): variable [%s] is already registered", pCVar->GetName());\
 		/* No log-stack here. Shouldn't be an issue?*/\
+		if (pCVar->GetFlags() & VF_CONST_CVAR)\
+			*src = pCVar->GetMPVal().conv<T>();\
+		else\
+			gEnv->pLog->LogError("[CVARS]: [DUPLICATE] CXConsole::Register(mpfloat): variable [%s] is already registered", pCVar->GetName()); \
 		return pCVar;\
 	}\
 	if (!allowModify)\
 		nFlags |= VF_CONST_CVAR;\
-	pCVar = new CXConsoleVariableMPType<T&>(this, sName, *src, nFlags, help, true);\
 	*src = fValue;\
+	pCVar = new CXConsoleVariableMPType<T&>(this, sName, *src, nFlags, help, true);\
 	RegisterVar(pCVar, pChangeFunc);\
 	return pCVar;\
 }
@@ -1080,16 +1083,17 @@ ICVar* CXConsole::Register(const char* sName, CTimeValue* src, const CTimeValue&
 	ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
 	if (pCVar)
 	{
-		gEnv->pLog->LogError("[CVARS]: [DUPLICATE] CXConsole::Register(CTimeValue): variable [%s] is already registered", pCVar->GetName());
-#if LOG_CVAR_INFRACTIONS_CALLSTACK
-		gEnv->pSystem->debug_LogCallStack();
-#endif // LOG_CVAR_INFRACTIONS_CALLSTACK
+		/* No log-stack here. Shouldn't be an issue?*/
+		if (pCVar->GetFlags() & VF_CONST_CVAR)
+			*src = pCVar->GetTime();
+		else
+			gEnv->pLog->LogError("[CVARS]: [DUPLICATE] CXConsole::Register(CTimeValue): variable [%s] is already registered", pCVar->GetName());
 		return pCVar;
 	}
 	if (!allowModify)
 		nFlags |= VF_CONST_CVAR;
-	pCVar = new CXConsoleVariableTimeValRef(this, sName, *src, nFlags, help, true);
 	*src = fValue;
+	pCVar = new CXConsoleVariableTimeValRef(this, sName, *src, nFlags, help, true);
 	RegisterVar(pCVar, pChangeFunc);
 	return pCVar;
 }
