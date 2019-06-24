@@ -709,7 +709,7 @@ bool CFileChangeMonitor::MonitorItem(const string& sItem)
 	const QFileInfo fileInfo(QtUtil::ToQString(PathUtil::RemoveSlash(sItem.GetString())));
 	if (!fileInfo.exists())
 	{	
-		assert(0 && "Trying to monitor nonexistant directory or file.");
+		CRY_ASSERT_MESSAGE(false, "Trying to monitor nonexistant directory or file.");
 		return false;
 	}
 

@@ -58,7 +58,7 @@ static string CanonicalizePath(const char* szPath)
 	return string(szPath);
 }
 
-static string StanderdizePath(const char* szPath)
+static string StandardizePath(const char* szPath)
 {
 	const char* szProjectRoot = GetISystem()->GetIProjectManager()->GetCurrentProjectDirectoryAbsolute();
 
@@ -87,7 +87,7 @@ void CEditorFileMonitor::MonitorDirectories()
 	// NOTE: Instead of monitoring each sub-directory we monitor the whole root
 	// folder. This is needed since if the sub-directory does not exist when
 	// we register it it will never get monitored properly.
-	CFileChangeMonitor::Instance()->MonitorItem(StanderdizePath(PathUtil::GetGameFolder()));
+	CFileChangeMonitor::Instance()->MonitorItem(StandardizePath(PathUtil::GetGameFolder()));
 
 	// Add mod paths too
 	for (int index = 0;; index++)
@@ -95,14 +95,14 @@ void CEditorFileMonitor::MonitorDirectories()
 		const char* sModPath = gEnv->pCryPak->GetMod(index);
 		if (!sModPath)
 			break;
-		CFileChangeMonitor::Instance()->MonitorItem(StanderdizePath(sModPath));
+		CFileChangeMonitor::Instance()->MonitorItem(StandardizePath(sModPath));
 	}
 
 	// Add root editor directory for scripts
-	CFileChangeMonitor::Instance()->MonitorItem(StanderdizePath(PathUtil::Make(PathUtil::GetEnginePath(), "Editor")));
+	CFileChangeMonitor::Instance()->MonitorItem(StandardizePath(PathUtil::Make(PathUtil::GetEnginePath(), "Editor")));
 
 	// Add root shader source folder
-	CFileChangeMonitor::Instance()->MonitorItem(StanderdizePath(PathUtil::Make(PathUtil::GetEnginePath(), "Engine/Shaders")));
+	CFileChangeMonitor::Instance()->MonitorItem(StandardizePath(PathUtil::Make(PathUtil::GetEnginePath(), "Engine/Shaders")));
 }
 
 bool CEditorFileMonitor::RegisterListener(IFileChangeListener* pListener, const char* szFolderRelativeToGame, const char* sExtension)
