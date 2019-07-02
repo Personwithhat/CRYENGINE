@@ -945,10 +945,10 @@ void CountRenderItems(T& permanentRenderItems, std::atomic<size_t> (&addedItems)
 	assert(numItems < 128); // Sanity check, otherwise too many chunks in the mesh
 	for (size_t i = 0; i < numItems; i++)
 	{
-		auto& RESTRICT_REFERENCE pri = permanentRenderItems[i];
+		auto* const __restrict pri = &permanentRenderItems[i];
 
 		SShaderItem shaderItem;
-		SRendItem::ExtractShaderItem(pri.m_sortValue, pri.m_nBatchFlags, shaderItem);
+		SRendItem::ExtractShaderItem(pri->m_sortValue, pri->m_nBatchFlags, shaderItem);
 
 		CShaderResources* const __restrict pShaderResources = (CShaderResources*)shaderItem.m_pShaderResources;
 
@@ -960,7 +960,7 @@ void CountRenderItems(T& permanentRenderItems, std::atomic<size_t> (&addedItems)
 			if (shadowView)
 				renderList = ERenderListID(frustumSide);
 			else
-				renderList = pri.m_nRenderList;
+				renderList = pri->m_nRenderList;
 
 			++addedItems[renderList];
 		}
