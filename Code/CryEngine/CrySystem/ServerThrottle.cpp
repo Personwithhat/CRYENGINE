@@ -57,7 +57,7 @@ public:
 
 private:
 	ITimer*    m_pTimer;
-	CTimeValue m_lastUpdate = 0.f;
+	CTimeValue m_lastUpdate = 0;
 	FILETIME   m_lastKernel, m_lastUser, m_lastTime;
 	int        m_nCPUs;
 };

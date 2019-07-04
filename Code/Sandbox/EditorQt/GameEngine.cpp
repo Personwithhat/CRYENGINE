@@ -1503,20 +1503,20 @@ void CGameEngine::Update()
 		const int maxFPS = pSysMaxFPS->GetIVal();
 		if (maxFPS > 0)
 		{
-			const ITimer* pTimer = gEnv->pTimer;
-			if (!m_lastViewportRenderTime)
+			const ITimer* pTimer = GetGTimer();
+			if (m_lastViewportRenderTime == 0)
 			{
-				m_lastViewportRenderTime = pTimer->GetAsyncTime().GetMicroSecondsAsInt64();
+				m_lastViewportRenderTime = pTimer->GetAsyncTime();
 			}
-			const int64 currentTime = pTimer->GetAsyncTime().GetMicroSecondsAsInt64();
-			const int64 microSecPassed = currentTime - m_lastViewportRenderTime;
-			const int64 targetMicroSecPassed = static_cast<int64>((1.0f / maxFPS) * 1000000.0f);
+			const CTimeValue currentTime = pTimer->GetAsyncTime();
+			const CTimeValue timePassed = currentTime - m_lastViewportRenderTime;
+			const CTimeValue targetFrameInterval = mpfloat(1) / maxFPS;
 
-			if (microSecPassed < targetMicroSecPassed)
+			if (timePassed < targetFrameInterval)
 			{
 				return;
 			}
-			m_lastViewportRenderTime = pTimer->GetAsyncTime().GetMicroSecondsAsInt64();
+			m_lastViewportRenderTime = pTimer->GetAsyncTime();
 		}
 
 		GetIEditorImpl()->GetAI()->EarlyUpdate();

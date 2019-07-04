@@ -654,6 +654,9 @@ namespace boost { namespace multiprecision {\
 		static name Min() { return limits::lowest().backend(); }\
 		static name Max() { return limits::max().backend(); }\
 	};\
+	/* Workaround to avoid BINARY_OP_FUNCTOR() conflicts during this check: is_compatible_arithmetic_type<Arithmetic, number<Backend, et_off>> */\
+	template <expression_template_option ExpressionTemplates>\
+	class number<name, ExpressionTemplates> {};\
 }}\
 using boost::multiprecision::name;\
 /* Just to get debugStr() accessible in debugger memory regardless of whether it was called in scope or not! */\

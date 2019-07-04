@@ -278,7 +278,7 @@ protected:
 
 	bool                      m_isOnPaint;
 	static CRenderViewport*   m_pPrimaryViewport;
-	int64                     m_lastViewportRenderTime;
+	CTimeValue                m_lastViewportRenderTime;
 
 	static void*              m_currentContextWnd;
 
