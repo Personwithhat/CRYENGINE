@@ -49,8 +49,8 @@ struct SEntityClassRegistration : public ISerializable
 	{
 	}
 
-	string name;
 	uint16 id;
+	string name;
 
 	virtual void SerializeWith(TSerialize ser)
 	{
