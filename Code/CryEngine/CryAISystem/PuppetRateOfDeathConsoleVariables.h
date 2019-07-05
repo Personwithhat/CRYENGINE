@@ -8,26 +8,26 @@ struct SAIConsoleVarsLegacyPuppetROD
 {
 	void Init();
 
-	float RODAliveTime;
-	float RODMoveInc;
-	float RODStanceInc;
-	float RODDirInc;
-	float RODAmbientFireInc;
-	float RODKillZoneInc;
+	CTimeValue RODAliveTime;
+	CTimeValue RODMoveInc;
+	CTimeValue RODStanceInc;
+	CTimeValue RODDirInc;
+	CTimeValue RODAmbientFireInc;
+	CTimeValue RODKillZoneInc;
 	float RODFakeHitChance;
 
 	float RODKillRangeMod;
 	float RODCombatRangeMod;
 
-	float RODReactionTime;
-	float RODReactionSuperDarkIllumInc;
-	float RODReactionDarkIllumInc;
-	float RODReactionMediumIllumInc;
-	float RODReactionDistInc;
-	float RODReactionDirInc;
-	float RODReactionLeanInc;
+	CTimeValue RODReactionTime;
+	CTimeValue RODReactionSuperDarkIllumInc;
+	CTimeValue RODReactionDarkIllumInc;
+	CTimeValue RODReactionMediumIllumInc;
+	CTimeValue RODReactionDistInc;
+	CTimeValue RODReactionDirInc;
+	CTimeValue RODReactionLeanInc;
 
-	float RODLowHealthMercyTime;
+	CTimeValue RODLowHealthMercyTime;
 
-	float RODCoverFireTimeMod;
+	mpfloat RODCoverFireTimeMod;
 };

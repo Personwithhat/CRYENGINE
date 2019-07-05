@@ -56,17 +56,6 @@ public:
 		return WriteBytes(out, &value, sizeof(value));
 	}
 
-	bool ReadValue(CCommInputStream& in, CTimeValue& value, CArithModel* pModel, uint32 age) const
-	{
-		value = pModel->ReadTime(in, eTS_Network);
-		return true;
-	}
-	bool WriteValue(CCommOutputStream& out, CTimeValue value, CArithModel* pModel, uint32 age) const
-	{
-		pModel->WriteTime(out, eTS_Network, value);
-		return true;
-	}
-
 	bool ReadValue(CCommInputStream& in, ScriptAnyValue& value, CArithModel* pModel, uint32 age) const
 	{
 		NET_ASSERT(!"script values not supported");

@@ -23,7 +23,7 @@ CParticleComponentRuntime::CParticleComponentRuntime(CParticleEmitter* pEmitter,
 	, m_pComponent(pComponent)
 	, m_bounds(AABB::RESET)
 	, m_alive(true)
-	, m_deltaTime(-1.0f)
+	, m_deltaTime(-1)
 	, m_isPreRunning(false)
 	, m_chaos(0)
 	, m_chaosV(0)
@@ -102,12 +102,12 @@ void CParticleComponentRuntime::Clear()
 {
 	Container().Clear();
 	RemoveAllSpawners();
-	m_deltaTime = -1.0f;
+	m_deltaTime.SetSeconds(-1);
 }
 
 void CParticleComponentRuntime::RunParticles(uint count, float deltaTime)
 {
-	m_deltaTime = deltaTime;
+	m_deltaTime = BADTIME(deltaTime);
 	m_isPreRunning = true;
 	
 	Container().BeginSpawn();
@@ -120,12 +120,12 @@ void CParticleComponentRuntime::RunParticles(uint count, float deltaTime)
 
 	CalculateBounds();
 	m_pEmitter->UpdatePhysEnv();
-	m_deltaTime = deltaTime;
+	m_deltaTime = BADTIME(deltaTime);
 	UpdateParticles();
 	CalculateBounds();
 	m_isPreRunning = false;
 
-	m_deltaTime = -1.0f;
+	m_deltaTime.SetSeconds(-1);
 }
 
 void CParticleComponentRuntime::UpdateAll()
@@ -511,7 +511,7 @@ void CParticleComponentRuntime::InitParticles()
 	{
 		m_deltaTime = max(GetEmitter()->GetDeltaTime(), ComponentParams().m_maxParticleLife);
 		GetComponent()->PastUpdateParticles(*this);
-		m_deltaTime = -1.0f;
+		m_deltaTime.SetSeconds(-1);
 	}
 }
 
@@ -579,17 +579,17 @@ void CParticleComponentRuntime::AgeUpdate()
 	}
 }
 
-void CParticleComponentRuntime::GetMaxParticleCounts(int& total, int& perFrame, float minFPS, float maxFPS) const
+void CParticleComponentRuntime::GetMaxParticleCounts(int& total, int& perFrame, const rTime& minFPS, const rTime& maxFPS) const
 {
 	SMaxParticleCounts counts;
 	m_pComponent->GetDynamicData(*this, ESDT_ParticleCounts, &counts, EDD_None, SUpdateRange(0,1));
 
 	total = counts.burst;
-	const float rate = counts.rate + counts.perFrame * maxFPS;
-	const float extendedLife = ComponentParams().m_maxParticleLife + rcp(minFPS); // Particles stay 1 frame after death
-	if (rate > 0.0f && valueisfinite(extendedLife))
-		total += int_ceil(rate * extendedLife);
-	perFrame = int(counts.burst + counts.perFrame) + int_ceil(counts.rate / minFPS);
+	const rTime rate = BADrT(counts.rate) + counts.perFrame * maxFPS;
+	const CTimeValue extendedLife = ComponentParams().m_maxParticleLife + mpfloat(1)/minFPS; // Particles stay 1 frame after death
+	if (rate > 0 && IsValid(extendedLife))
+		total += (int)int_ceil(rate * extendedLife);
+	perFrame = int(counts.burst + counts.perFrame) + (int)int_ceil(BADrT(counts.rate) / minFPS);
 
 	if (auto parent = ParentRuntime())
 	{
@@ -623,7 +623,7 @@ void CParticleComponentRuntime::UpdateGPURuntime()
 
 	gpu_pfx2::SUpdateParams params;
 
-	params.deltaTime = DeltaTime();
+	params.deltaTime = BADTIME(DeltaTime());
 	params.emitterPosition = m_pEmitter->GetLocation().t;
 	params.emitterOrientation = m_pEmitter->GetLocation().q;
 	params.physAccel = m_pEmitter->GetPhysicsEnv().m_UniformForces.vAccel;
@@ -712,7 +712,7 @@ pfx2::STimingParams CParticleComponentRuntime::GetMaxTimings() const
 	STimingParams timings = ComponentParams();
 
 	// Adjust lifetimes to include child lifetimes
-	float maxChildEq = 0.0f, maxChildLife = 0.0f;
+	CTimeValue maxChildEq = 0, maxChildLife = 0;
 	for (const auto& pChild : m_pComponent->GetChildComponents())
 	{
 		if (auto pSubRuntime = m_pEmitter->GetRuntimeFor(pChild))
@@ -723,14 +723,14 @@ pfx2::STimingParams CParticleComponentRuntime::GetMaxTimings() const
 		}
 	}
 
-	const float moreEq = maxChildEq - FiniteOr(timings.m_maxParticleLife, 0.0f);
-	if (moreEq > 0.0f)
+	const CTimeValue moreEq = maxChildEq - (IsValid(timings.m_maxParticleLife) ? timings.m_maxParticleLife : 0);
+	if (moreEq > 0)
 	{
 		timings.m_stableTime += moreEq;
 		timings.m_equilibriumTime += moreEq;
 	}
-	const float moreLife = maxChildLife - FiniteOr(timings.m_maxParticleLife, 0.0f);
-	if (moreLife > 0.0f)
+	const CTimeValue moreLife = maxChildLife - (IsValid(timings.m_maxParticleLife) ? timings.m_maxParticleLife : 0);
+	if (moreLife > 0)
 	{
 		timings.m_maxTotalLife += moreLife;
 	}
@@ -792,7 +792,7 @@ CRenderObject* CParticleComponentRuntime::GetRenderObject(uint threadId, ERender
 
 float CParticleComponentRuntime::DeltaTime() const
 {
-	return m_deltaTime >= 0.0f ? m_deltaTime : m_pEmitter->GetDeltaTime();
+	return (m_deltaTime >= 0? m_deltaTime : m_pEmitter->GetDeltaTime()).BADGetSeconds();
 }
 
 }

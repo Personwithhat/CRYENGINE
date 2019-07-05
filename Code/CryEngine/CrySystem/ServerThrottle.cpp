@@ -28,8 +28,8 @@ public:
 
 	float* Update()
 	{
-		CTimeValue frameTime = gEnv->pTimer->GetFrameStartTime();
-		if (frameTime - m_lastUpdate > 5.0f)
+		CTimeValue frameTime = GetGTimer()->GetFrameStartTime();
+		if ((frameTime - m_lastUpdate).GetSeconds() > 5)
 		{
 			m_lastUpdate = frameTime;
 
@@ -57,7 +57,7 @@ public:
 
 private:
 	ITimer*    m_pTimer;
-	CTimeValue m_lastUpdate = 0.f;
+	CTimeValue m_lastUpdate = 0;
 	FILETIME   m_lastKernel, m_lastUser, m_lastTime;
 	int        m_nCPUs;
 };

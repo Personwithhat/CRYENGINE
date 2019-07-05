@@ -104,7 +104,7 @@ void SAIConsoleVarsLegacyFiring::Init()
 	REGISTER_CVAR2("ai_AmbientFireQuota", &AmbientFireQuota, 2, 0,
 		"Number of units allowed to hit the player at a time.");
 
-	REGISTER_CVAR2("ai_AmbientFireUpdateInterval", &AmbientFireUpdateInterval, 1.0f, VF_NULL,
+	REGISTER_CVAR2("ai_AmbientFireUpdateInterval", &AmbientFireUpdateInterval, CTimeValue(1), VF_NULL,
 		"Ambient fire update interval. Controls how often puppet's ambient fire status is updated.");
 
 	REGISTER_CVAR2("ai_DrawFireEffectDecayRange", &DrawFireEffectDecayRange, 30.0f, VF_CHEAT | VF_CHEAT_NOCHECK,
@@ -119,7 +119,7 @@ void SAIConsoleVarsLegacyFiring::Init()
 	REGISTER_CVAR2("ai_DrawFireEffectMaxAngle", &DrawFireEffectMaxAngle, 5.0f, VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Maximum angle actors actors are allowed to go away from their aiming direction during draw fire.");
 
-	REGISTER_CVAR2("ai_DrawFireEffectTimeScale", &DrawFireEffectTimeScale, 1.0f, VF_NULL,
+	REGISTER_CVAR2("ai_DrawFireEffectTimeScale", &DrawFireEffectTimeScale, mpfloat(1), VF_NULL,
 		"Scale for the weapon's draw fire time setting.");
 
 	REGISTER_CVAR2("ai_CoolMissesBoxSize", &CoolMissesBoxSize, 10.0f, VF_NULL,
@@ -137,12 +137,12 @@ void SAIConsoleVarsLegacyFiring::Init()
 	REGISTER_CVAR2("ai_CoolMissesProbability", &CoolMissesProbability, 0.35f, VF_NULL,
 		"Agents' chance to perform a cool miss!");
 
-	REGISTER_CVAR2("ai_CoolMissesCooldown", &CoolMissesCooldown, 0.25f, VF_NULL,
+	REGISTER_CVAR2("ai_CoolMissesCooldown", &CoolMissesCooldown, CTimeValue("0.25"), VF_NULL,
 		"Global time between potential cool misses.");
 
 	REGISTER_CVAR2("ai_LobThrowMinAllowedDistanceFromFriends", &LobThrowMinAllowedDistanceFromFriends, 15.0f, VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Minimum distance a grenade (or any object thrown using a lob) should land from mates to accept the throw trajectory.");
-	REGISTER_CVAR2("ai_LobThrowTimePredictionForFriendPositions", &LobThrowTimePredictionForFriendPositions, 2.0f, VF_CHEAT | VF_CHEAT_NOCHECK,
+	REGISTER_CVAR2("ai_LobThrowTimePredictionForFriendPositions", &LobThrowTimePredictionForFriendPositions, CTimeValue(2), VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Time frame used to predict the next position of moving mates to score the landing position of the lob throw");
 	REGISTER_CVAR2("ai_LobThrowPercentageOfDistanceToTargetUsedForInaccuracySimulation", &LobThrowPercentageOfDistanceToTargetUsedForInaccuracySimulation, 0.0,
 		VF_CHEAT | VF_CHEAT_NOCHECK, "This value identifies percentage of the distance to the target that will be used to simulate human inaccuracy with parabolic throws.");

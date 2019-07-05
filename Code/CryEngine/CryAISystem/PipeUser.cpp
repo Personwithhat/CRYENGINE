@@ -66,7 +66,7 @@ CPipeUser::CPipeUser()
 	, m_AttTargetType(AITARGET_NONE)
 	, m_bPathToFollowIsSpline(false)
 	, m_lastLiveTargetPos(ZERO)
-	, m_timeSinceLastLiveTarget(-1.0f)
+	, m_timeSinceLastLiveTarget(-1)
 	, m_refShape(0)
 	, m_looseAttentionId(0)
 	, m_aimState(AI_AIM_NONE)
@@ -75,7 +75,7 @@ CPipeUser::CPipeUser()
 	, m_eNavSOMethod(nSOmNone)
 	, m_idLastUsedSmartObject(0)
 	, m_actorTargetReqId(1)
-	, m_spreadFireTime(0.0f)
+	, m_spreadFireTime(0)
 	, m_lastExecutedGoalop(eGO_LAST)
 	, m_paused(0)
 	, m_bEnableUpdateLookTarget(true)
@@ -264,8 +264,8 @@ void CPipeUser::Reset(EObjectResetType type)
 	m_bFirstUpdate = true;
 
 	m_lastLiveTargetPos.zero();
-	m_timeSinceLastLiveTarget = -1.0f;
-	m_spreadFireTime = 0.0f;
+	m_timeSinceLastLiveTarget.SetSeconds(-1);
+	m_spreadFireTime.SetSeconds(0);
 
 	m_bPathToFollowIsSpline = false;
 
@@ -475,7 +475,7 @@ bool CPipeUser::GetBranchCondition(QGoal& Goal)
 	case IF_TARGET_LOST_TIME_MORE:
 		{
 			CPuppet* pPuppet = CastToCPuppet();
-			if (pPuppet && pPuppet->m_targetLostTime > Goal.params.fValue)
+			if (pPuppet && pPuppet->m_targetLostTime > BADTIME(Goal.params.fValue))
 				return true;
 		}
 		break;
@@ -483,7 +483,7 @@ bool CPipeUser::GetBranchCondition(QGoal& Goal)
 	case IF_TARGET_LOST_TIME_LESS:
 		{
 			CPuppet* pPuppet = CastToCPuppet();
-			if (pPuppet && pPuppet->m_targetLostTime <= Goal.params.fValue)
+			if (pPuppet && pPuppet->m_targetLostTime <= BADTIME(Goal.params.fValue))
 				return true;
 		}
 		break;
@@ -766,7 +766,7 @@ void CPipeUser::Update(EUpdateType type)
 
 	CAIActor::Update(type);
 
-	UpdateCovers(type, gEnv->pTimer->GetFrameTime());
+	UpdateCovers(type, GetGTimer()->GetFrameTime());
 
 	CAIObject* pAttentionTarget = m_refAttentionTarget.GetAIObject();
 
@@ -970,12 +970,12 @@ void CPipeUser::Update(EUpdateType type)
 					m_AttTargetType = m_State.eTargetType = AITARGET_MEMORY;
 					m_State.nTargetType = pAttTarget->GetType();
 					m_State.bTargetEnabled = true;
-					m_stimulusStartTime = GetAISystem()->GetFrameStartTimeSeconds();
+					m_stimulusStartTime = GetAISystem()->GetFrameStartTime();
 					break;
 
 				case AITARGET_MEMORY:
 				case AITARGET_SOUND:
-					if (GetAISystem()->GetFrameStartTimeSeconds() - m_stimulusStartTime >= 5.f)
+					if (GetAISystem()->GetFrameStartTime() - m_stimulusStartTime >= 5)
 					{
 						m_State.nTargetType = -1;
 						m_State.bTargetEnabled = false;
@@ -1122,7 +1122,7 @@ void CPipeUser::SetCoverCompromised()
 		SetSignal(GetAISystem()->GetSignalManager()->CreateSignal(AISIGNAL_DEFAULT, GetAISystem()->GetSignalManager()->GetBuiltInSignalDescriptions().GetOnCoverCompromised()));
 
 		if (CoverID coverID = m_pCoverUser->GetCoverID())
-			SetCoverBlacklisted(coverID, true, 10.0f);
+			SetCoverBlacklisted(coverID, true, 10);
 
 		SetCoverState(ICoverUser::EStateFlags::None);
 
@@ -1149,7 +1149,7 @@ void CPipeUser::SetCoverInvalidated(CoverID coverID, ICoverUser* pCoverUser)
 		m_pCoverUser->SetNextCoverID(CoverID());
 	}
 
-	SetCoverBlacklisted(coverID, true, 10.0f);
+	SetCoverBlacklisted(coverID, true, 10);
 }
 
 //
@@ -1334,7 +1334,7 @@ void CPipeUser::FillCoverEyes(DynArray<Vec3>& eyesContainer)
 	}
 }
 
-void CPipeUser::UpdateCovers(EUpdateType type, float updateTime)
+void CPipeUser::UpdateCovers(EUpdateType type, const CTimeValue& updateTime)
 {
 	CRY_ASSERT(m_pCoverUser);
 	if (!m_pCoverUser)
@@ -1349,7 +1349,7 @@ void CPipeUser::UpdateCovers(EUpdateType type, float updateTime)
 	}
 }
 
-void CPipeUser::SetCoverBlacklisted(const CoverID& coverID, bool blacklist, float time)
+void CPipeUser::SetCoverBlacklisted(const CoverID& coverID, bool blacklist, const CTimeValue& time)
 {
 	CRY_ASSERT(m_pCoverUser);
 	if (!m_pCoverUser)
@@ -1623,7 +1623,7 @@ void CPipeUser::GetStateFromActiveGoals(SOBJECTSTATE& state)
 			m_lastExecutedGoalop = Goal.op;
 
 			/*
-			   ITimer *pTimer = gEnv->pTimer;
+			   ITimer *pTimer = GetGTimer();
 			   int val = gAIEnv.CVars.ProfileGoals;
 
 			   CTimeValue timeLast;
@@ -2784,7 +2784,7 @@ static int GetTargetScore(CAIObject* pAI, CAIObject* pTarget)
 //====================================================================
 Vec3 CPipeUser::GetProbableTargetPosition()
 {
-	if (m_timeSinceLastLiveTarget >= 0.0f && m_timeSinceLastLiveTarget < 2.0f)
+	if (m_timeSinceLastLiveTarget >= 0 && m_timeSinceLastLiveTarget < 2)
 	{
 		// The current target is fresh, use it.
 		return m_lastLiveTargetPos;
@@ -2833,8 +2833,8 @@ Vec3 CPipeUser::GetProbableTargetPosition()
 			if (pPuppet)
 			{
 				// Find nearest fresh live target.
-				float otherTargetTime = pPuppet->GetTimeSinceLastLiveTarget();
-				if (otherTargetTime >= 0.0f && otherTargetTime < 2.0f && otherTargetTime < m_timeSinceLastLiveTarget)
+				CTimeValue otherTargetTime = pPuppet->GetTimeSinceLastLiveTarget();
+				if (otherTargetTime >= 0 && otherTargetTime < 2 && otherTargetTime < m_timeSinceLastLiveTarget)
 				{
 					float dist = Distance::Point_PointSq(nearestKnownTarget, pPuppet->GetLastLiveTargetPosition());
 					if (dist < nearestLiveDist)
@@ -3748,7 +3748,7 @@ void CPipeUser::SetFireMode(EFireMode mode)
 		return;
 	m_fireMode = mode;
 	m_fireModeUpdated = true;
-	m_spreadFireTime = cry_random(0.0f, 10.0f);
+	m_spreadFireTime = cry_random<CTimeValue>(0, 10);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -4341,7 +4341,7 @@ void CPipeUser::HandleVisualStimulus(SAIEVENT* pAIEvent)
 			if (IsHostile(pEventOwnerAI))
 			{
 				m_State.nTargetType = static_cast<CAIObject*>(pEventOwnerAI)->GetType();
-				m_stimulusStartTime = GetAISystem()->GetFrameStartTimeSeconds();
+				m_stimulusStartTime = GetAISystem()->GetFrameStartTime();
 
 				m_AttTargetThreat = m_State.eTargetThreat = AITHREAT_AGGRESSIVE;
 				m_AttTargetType = m_State.eTargetType = AITARGET_VISUAL;
@@ -4387,7 +4387,7 @@ void CPipeUser::HandleSoundEvent(SAIEVENT* pAIEvent)
 				if ((m_AttTargetType != AITARGET_MEMORY) && (m_AttTargetType != AITARGET_VISUAL))
 				{
 					m_State.nTargetType = static_cast<CAIObject*>(pEventOwnerAI)->GetType();
-					m_stimulusStartTime = GetAISystem()->GetFrameStartTimeSeconds();
+					m_stimulusStartTime = GetAISystem()->GetFrameStartTime();
 
 					m_AttTargetThreat = m_State.eTargetThreat = AITHREAT_AGGRESSIVE;
 					m_AttTargetType = m_State.eTargetType = AITARGET_SOUND;

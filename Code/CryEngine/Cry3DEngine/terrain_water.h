@@ -18,7 +18,6 @@ public:
 	virtual bool  IsVisible(const AABB& nodeBox, const float nodeDistance, const SRenderingPassInfo& passInfo) const override;
 
 	void          SetLastFov(float fLastFov) { m_fLastFov = fLastFov; }
-	static void   SetTimer(ITimer* pTimer);
 
 	static float  GetWave(const Vec3& pPosition, int32 nFrameID);
 	static uint32 GetVisiblePixelsCount();
@@ -71,7 +70,7 @@ private:
 	class CREOcclusionQuery* m_pREOcclusionQueries[CYCLE_BUFFERS_NUM];
 	IShader*                 m_pShaderOcclusionQuery;
 	float                    m_fLastFov;
-	mutable float            m_fLastVisibleFrameTime;
+	mutable CTimeValue       m_fLastVisibleFrameTime;
 	int32                    m_nLastVisibleFrameId;
 	static uint32            m_nVisiblePixelsCount;
 
@@ -92,7 +91,5 @@ private:
 	std::vector<SVF_P3F_C4B_T2F> m_wvVertices[RT_COMMAND_BUF_COUNT];
 	std::vector<uint16>          m_wvIndices[RT_COMMAND_BUF_COUNT];
 
-	static ITimer*               m_pOceanTimer;
 	static CREWaterOcean*        m_pOceanRE;
-
 };

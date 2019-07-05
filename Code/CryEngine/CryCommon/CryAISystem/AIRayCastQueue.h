@@ -41,7 +41,7 @@ struct SRequestDebugInfo
 		, entityId(requesterInfo.entityId)
 		, priorityClass(priorityClass)
 		, state(EState::Queued)
-		, queuedTime(gEnv->pTimer->GetAsyncTime())
+		, queuedTime(GetGTimer()->GetAsyncTime())
 		, queuedFrame(gEnv->nMainFrameID)
 	{}
 
@@ -149,7 +149,7 @@ protected:
 			if (it != m_pendingRequestsMap.end())
 			{
 				SRequestDebugInfo& completedRequest = it->second;
-				completedRequest.completedTime = gEnv->pTimer->GetAsyncTime();
+				completedRequest.completedTime = GetGTimer()->GetAsyncTime();
 				completedRequest.completedFrame = gEnv->nMainFrameID;
 				completedRequest.state = SRequestDebugInfo::EState::Completed;
 				m_completedRequests.push_back(completedRequest);

@@ -44,7 +44,7 @@ private:
 
 	bool         OnExportSequence();
 	bool         OnImportSequence();
-	bool         OnUnitsChanged(SAnimTime::EDisplayMode mode);
+	bool         OnUnitsChanged(SAnimData::EDisplayMode mode);
 	bool         OnRender();
 	bool         OnDeleteSequence();
 	bool         OnSequenceProperties();

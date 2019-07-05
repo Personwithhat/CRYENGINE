@@ -37,7 +37,7 @@ IPlatformOS* IPlatformOS::Create(const uint8 createParams)
 CPlatformOS_PC::CPlatformOS_PC(const uint8 createParams)
 	: m_fpsWatcher(15.0f, 3.0f, 7.0f)
 	, m_listeners(4)
-	, m_delayLevelStartIcon(0.0f)
+	, m_delayLevelStartIcon(0)
 	, m_bSignedIn(false)
 	, m_bSaving(false)
 	, m_bLevelLoad(false)
@@ -57,14 +57,14 @@ CPlatformOS_PC::~CPlatformOS_PC()
 	gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 }
 
-void CPlatformOS_PC::Tick(float realFrameTime)
+void CPlatformOS_PC::Tick(const CTimeValue& realFrameTime)
 {
-	if (m_delayLevelStartIcon)
+	if (m_delayLevelStartIcon.GetSeconds())
 	{
 		m_delayLevelStartIcon -= realFrameTime;
-		if (m_delayLevelStartIcon <= 0.0f)
+		if (m_delayLevelStartIcon.GetSeconds() <= 0)
 		{
-			m_delayLevelStartIcon = 0.0f;
+			m_delayLevelStartIcon.SetSeconds(0);
 
 			IPlatformOS::SPlatformEvent event(0);
 			event.m_eEventType = IPlatformOS::SPlatformEvent::eET_FileWrite;
@@ -88,7 +88,7 @@ void CPlatformOS_PC::OnPlatformEvent(const IPlatformOS::SPlatformEvent& _event)
 		{
 			if (_event.m_uParams.m_fileWrite.m_type == SPlatformEvent::eFWT_CheckpointLevelStart)
 			{
-				m_delayLevelStartIcon = 5.0f;
+				m_delayLevelStartIcon.SetSeconds(5);
 			}
 			break;
 		}
@@ -657,7 +657,15 @@ bool CPlatformOS_PC::SxmlMissingFromHDD(ZipDir::FileEntryTree* pZipRoot, const c
 
 void SetTimerResolution(bool setToBackgroundMode)
 	{
-#if CRY_PLATFORM_WINDOWS
+	// PERSONAL NOTE: 
+	// This might affect accuracy of certain processes when alt-tabbing, until this is tested disabling this section.
+	// At least should be off for networking.
+	// How it's setup currently, with 'high resolution' timers separate, also doesn't make sense.
+	// Keeping timer-resolution control as a one-off thing at system launch/stop.
+	// (Also changed sys_system_timer_resolution to be in units of nanoseconds)
+	return;
+
+#if CRY_PLATFORM_WINDOWS && BOGUS_DEF
 		// Handle system timer resolution
 		// The smaller the resolution, the more accurate a thread will wake up from a suspension 
 		// Example: 
@@ -756,14 +764,14 @@ void CPlatformOS_PC::SaveDirtyFiles()
 
 	if (m_bSaving)
 	{
-		if (!m_delayLevelStartIcon)
+		if (m_delayLevelStartIcon != 0)
 		{
 			IPlatformOS::SPlatformEvent event(0);
 			event.m_eEventType = IPlatformOS::SPlatformEvent::eET_FileWrite;
 			event.m_uParams.m_fileWrite.m_type = SPlatformEvent::eFWT_SaveStart;
 			NotifyListeners(event);
 		}
-		if (m_bSaving && !m_delayLevelStartIcon)
+		if (m_bSaving && m_delayLevelStartIcon != 0)
 		{
 			IPlatformOS::SPlatformEvent event(0);
 			event.m_eEventType = IPlatformOS::SPlatformEvent::eET_FileWrite;

@@ -67,8 +67,8 @@ public:
 	void                         SetPlaybackStart();
 	void                         SetPlaybackEnd();
 	void                         ResetPlaybackRange();
-	void                         SetPlaybackRange(TRange<SAnimTime> markers);
-	TRange<SAnimTime>            GetPlaybackRange() const;
+	void                         SetPlaybackRange(TRange<CTimeValue> markers);
+	TRange<CTimeValue>           GetPlaybackRange() const;
 
 	void                         OnAddSelectedEntities();
 	void                         OnAddNode(EAnimNodeType nodeType);
@@ -79,9 +79,9 @@ public:
 	void                         OnSlideKeys();
 	void                         OnScaleKeys();
 
-	void                         SetFramerate(SAnimTime::EFrameRate newFramerate);
-	void                         SetDisplayMode(SAnimTime::EDisplayMode newDisplayMode);
-	void                         SetPlaybackSpeed(float newPlaybackSpeed);
+	void                         SetFramerate(SAnimData::EFrameRate newFramerate);
+	void                         SetDisplayMode(SAnimData::EDisplayMode newDisplayMode);
+	void                         SetPlaybackSpeed(const mpfloat& newPlaybackSpeed);
 	void                         SetSnapMode(ETrackViewSnapMode newSnapMode);
 	void                         SetKeysMoveMode(ETrackViewKeyMoveMode moveMode);
 	void                         SetKeysSlideMode(ETrackViewKeySlideMode slideMode);
@@ -101,31 +101,31 @@ public:
 	void                         RemoveAnimEntityDefaultTrackType(CAnimParamType paramType);
 	bool                         IsContainsAnimEntityDefaultTrackType(CAnimParamType paramType) const;
 
-	float                        GetCurrentPlaybackSpeed() const                              { return m_playbackSpeed; }
+	const mpfloat&               GetCurrentPlaybackSpeed() const                              { return m_playbackSpeed; }
 	ETrackViewSnapMode           GetCurrentSnapMode() const                                   { return m_SnapMode; }
 	ETrackViewKeyMoveMode        GetCurrentKeyMoveMode() const                                { return m_keyMoveMode; }
 	ETrackViewKeySlideMode       GetCurrentKeySlideMode() const                               { return m_keySlideMode; }
-	SAnimTime::EFrameRate        GetCurrentFramerate() const                                  { return m_animTimeSettings.fps; }
-	SAnimTime::EDisplayMode      GetCurrentDisplayMode() const                                { return m_animTimeSettings.displayMode; }
+	SAnimData::EFrameRate        GetCurrentFramerate() const                                  { return m_animTimeSettings.fps; }
+	SAnimData::EDisplayMode      GetCurrentDisplayMode() const                                { return m_animTimeSettings.displayMode; }
 	void                         GetCurrentProperties(Serialization::SStructs& structs) const { structs = m_currentProperties; }
 
 	CTrackViewSequence*          GetSequenceByGUID(CryGUID sequenceGUID) const;
 	CTrackViewComponentsManager* GetComponentsManager() const { return m_pTrackViewComponentsManager; }
 
-	const SAnimTime::Settings*   GetAnimTimeSettings() const  { return &m_animTimeSettings; }
+	const SAnimData::Settings*   GetAnimTimeSettings() const  { return &m_animTimeSettings; }
 
 private:
 	void                         SpawnDefaultTracksForBundle(const CTrackViewAnimNodeBundle& bundle);
 	void                         SetProperties(Serialization::SStructs& structs, EPropertyDataSource source);
 
-	float                        m_playbackSpeed;
+	mpfloat                      m_playbackSpeed;
 	CryGUID                      m_activeSequenceUId;
 	ETrackViewSnapMode           m_SnapMode;
 	ETrackViewKeyMoveMode        m_keyMoveMode;
 	ETrackViewKeySlideMode       m_keySlideMode;
 	Serialization::SStructs      m_currentProperties;
 	CTrackViewComponentsManager* m_pTrackViewComponentsManager;
-	SAnimTime::Settings          m_animTimeSettings;
+	SAnimData::Settings          m_animTimeSettings;
 	std::vector<CAnimParamType>  m_animEntityDefaultTracks;
 
 	bool                         m_bLockProperties;

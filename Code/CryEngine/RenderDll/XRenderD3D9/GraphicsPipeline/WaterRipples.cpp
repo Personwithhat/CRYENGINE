@@ -18,8 +18,8 @@ CWaterRipplesStage::CWaterRipplesStage(CGraphicsPipeline& graphicsPipeline)
 	, m_ripplesGenTechName("WaterRipplesGen")
 	, m_ripplesHitTechName("WaterRipplesHit")
 	, m_frameID(-1)
-	, m_lastSpawnTime(0.0f)
-	, m_lastUpdateTime(0.0f)
+	, m_lastSpawnTime(0)
+	, m_lastUpdateTime(0)
 	, m_simGridSnapRange(5.0f)
 	, m_simOrigin(0.0f)
 	, m_updateMask(0)
@@ -142,7 +142,7 @@ bool CWaterRipplesStage::RefreshParameters()
 	UpdateAndDrawDebugInfo();
 #endif
 
-	const float fTime = m_graphicsPipeline.GetAnimationTime().GetSeconds();
+	const CTimeValue fTime = m_graphicsPipeline.GetAnimationTime();
 	const uint32 gpuCount = gRenDev->GetActiveGPUCount();
 
 	const float simGridSize = static_cast<float>(SWaterRippleInfo::WaveSimulationGridSize);
@@ -160,16 +160,16 @@ bool CWaterRipplesStage::RefreshParameters()
 	// only allow updates every 25ms - for lower frames, would need to iterate multiple times
 	if (gpuCount == 1)
 	{
-		if (std::abs(fTime - m_lastUpdateTime) < 0.025f)
+		if (abs(fTime - m_lastUpdateTime) < "0.025")
 		{
 			return false;
 		}
 
-		m_lastUpdateTime = fTime - fmodf(fTime - m_lastUpdateTime, 0.025f);
+		m_lastUpdateTime = fTime - (fTime - m_lastUpdateTime) % "0.025";
 	}
 	else
 	{
-		if (fTime - m_lastUpdateTime <= 0.0f)
+		if (fTime - m_lastUpdateTime <= 0)
 		{
 			return false;
 		}
@@ -317,8 +317,8 @@ CTexture* CWaterRipplesStage::GetWaterRippleTex() const
 bool CWaterRipplesStage::IsVisible() const
 {
 	const CRenderView* pRenderView = RenderView();
-	const float fTimeOut = 10.0f; // 10 seconds
-	const bool bSimTimeOut = (gEnv->pTimer->GetCurrTime() - m_lastSpawnTime) > fTimeOut;
+	const CTimeValue fTimeOut = 10; // 10 seconds
+	const bool bSimTimeOut = (GetGTimer()->GetFrameStartTime() - m_lastSpawnTime) > fTimeOut;
 
 	auto& waterRipples = pRenderView->GetWaterRipples();
 	const bool bEmpty = waterRipples.empty()
@@ -402,13 +402,13 @@ void CWaterRipplesStage::UpdateAndDrawDebugInfo()
 {
 #if !defined(_RELEASE)
 	const CRenderView* pRenderView = RenderView();
-	const float maxLifetime = 2.0f;
-	const float frameTime = std::max(0.0f, gEnv->pTimer->GetFrameTime());
+	const CTimeValue maxLifetime = 2;
+	const CTimeValue frameTime = std::max(CTimeValue(0), GetGTimer()->GetFrameTime());
 
 	// process lifetime.
 	for (auto& debugInfo : m_debugRippleInfos)
 	{
-		if (debugInfo.lifetime > 0.0f)
+		if (debugInfo.lifetime > 0)
 		{
 			debugInfo.lifetime -= frameTime;
 		}
@@ -419,7 +419,7 @@ void CWaterRipplesStage::UpdateAndDrawDebugInfo()
 	const auto remainingRippleDebugCount = std::count_if(m_debugRippleInfos.begin(), m_debugRippleInfos.end(),
 	                                                     [](const SWaterRippleRecord& record)
 	{
-		return (record.lifetime > 0.0f);
+		return (record.lifetime > 0);
 	});
 	const auto deadRippleDebugCount = m_debugRippleInfos.size() - remainingRippleDebugCount;
 	const auto maxRippleDebugCount = 2 * SWaterRippleInfo::MaxWaterRipplesInScene; // assign enough size to hold debug infos.
@@ -439,7 +439,7 @@ void CWaterRipplesStage::UpdateAndDrawDebugInfo()
 		for_each(removeBegin, std::next(removeBegin, removedCount),
 		         [](SWaterRippleRecord& record)
 		{
-			record.lifetime = 0.0f;
+			record.lifetime.SetSeconds(0);
 		});
 	}
 
@@ -449,7 +449,7 @@ void CWaterRipplesStage::UpdateAndDrawDebugInfo()
 		auto element = std::find_if(m_debugRippleInfos.begin(), m_debugRippleInfos.end(),
 		                            [](const SWaterRippleRecord& record)
 		{
-			return (record.lifetime <= 0.0f);
+			return (record.lifetime <= 0);
 		});
 
 		if (element != m_debugRippleInfos.end())
@@ -475,7 +475,7 @@ void CWaterRipplesStage::UpdateAndDrawDebugInfo()
 
 		for (auto& debugInfo : m_debugRippleInfos)
 		{
-			if (debugInfo.lifetime > 0.0f)
+			if (debugInfo.lifetime > 0)
 			{
 				Vec3 vHitPos(debugInfo.info.position.x, debugInfo.info.position.y, debugInfo.info.position.z);
 				pAuxRenderer->DrawSphere(vHitPos, 0.15f, ColorB(255, 0, 0, 255));

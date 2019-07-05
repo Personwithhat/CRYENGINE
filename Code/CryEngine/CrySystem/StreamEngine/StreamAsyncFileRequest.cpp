@@ -534,8 +534,11 @@ void CAsyncIOFileRequest::Reset()
 	m_decryptionCTRInitialisedAgainst = m_pakFile;
 #endif
 
-	// Reset POD members of the structure
 	memset(&m_nSortKey, 0, ((char*)(this + 1) - (char*)&m_nSortKey));
+
+	// Fix mpfloat/ctimevalue's post memset.
+	m_readTime.fixSet(); m_unzipTime.fixSet(); m_verifyTime.fixSet(); 
+	m_decryptTime.fixSet(); m_startTime.fixSet(); m_completionTime.fixSet();
 }
 
 void CAsyncIOFileRequest::Init(EStreamTaskType eType)
@@ -548,7 +551,7 @@ void CAsyncIOFileRequest::Init(EStreamTaskType eType)
 	m_eType = eType;
 
 #ifdef STREAMENGINE_ENABLE_STATS
-	m_startTime = gEnv->pTimer->GetAsyncTime();
+	m_startTime = GetGTimer()->GetAsyncTime();
 #endif
 
 	if (g_pStreamingOpenStatistics)
@@ -777,7 +780,7 @@ uint32 CAsyncIOFileRequest::ReadFileInPages(CStreamingIOThread* pIOThread, CCryF
 #endif
 
 #ifdef STREAMENGINE_ENABLE_STATS
-			CTimeValue t0 = gEnv->pTimer->GetAsyncTime();
+			CTimeValue t0 = GetGTimer()->GetAsyncTime();
 #endif
 
 			//printf("[StreamRead] %p %i %p %i %i\n", this, m_bCompressedBuffer, pReadTarget, m_nPageReadStart + m_nPageReadCurrent, nPageSize);
@@ -802,7 +805,7 @@ uint32 CAsyncIOFileRequest::ReadFileInPages(CStreamingIOThread* pIOThread, CCryF
 #endif
 
 #ifdef STREAMENGINE_ENABLE_STATS
-				m_readTime += gEnv->pTimer->GetAsyncTime() - t0;
+				m_readTime += GetGTimer()->GetAsyncTime() - t0;
 #endif
 
 				//release external mem lock, allows jobs to be cancelled mid stream
@@ -949,7 +952,7 @@ void CAsyncIOFileRequest::ComputeSortKey(uint64 nCurrentKeyInProgress)
 			m_nDiskOffset += m_nRequestedOffset;
 
 		// group items by priority, then by snapped request time, then sort by disk offset
-		m_nTimeGroup = (uint64)(gEnv->pTimer->GetAsyncTime().GetSeconds() / max(1, g_cvars.sys_streaming_requests_grouping_time_period));
+		m_nTimeGroup = (uint32)(GetGTimer()->GetAsyncTime().GetSeconds() / max(1, g_cvars.sys_streaming_requests_grouping_time_period));
 		m_nSweep = (m_nTimeGroup == nCurrentTG)
 		           ? nCurrentSweep
 		           : 0;

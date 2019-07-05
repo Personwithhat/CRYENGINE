@@ -475,7 +475,7 @@ INavMeshQuery::EQueryStatus CNavMeshQuery::Run(INavMeshQueryProcessing& queryPro
 	CRY_PROFILE_FUNCTION(PROFILE_AI);
 
 #ifdef NAV_MESH_QUERY_DEBUG
-	const CTimeValue timeAtStart = gEnv->pTimer->GetAsyncCurTime();
+	const CTimeValue timeAtStart = GetGTimer()->GetAsyncCurTime();
 #endif // NAV_MESH_QUERY_DEBUG
 
 	if (m_status == INavMeshQuery::EQueryStatus::Uninitialized)
@@ -510,9 +510,9 @@ INavMeshQuery::EQueryStatus CNavMeshQuery::Run(INavMeshQueryProcessing& queryPro
 #ifdef NAV_MESH_QUERY_DEBUG
 void CNavMeshQuery::DebugQueryResult(const CTimeValue& timeAtStart)
 {
-	const CTimeValue timeAtEnd = gEnv->pTimer->GetAsyncCurTime();
-	const float elapsedTimeInMs = timeAtEnd.GetDifferenceInSeconds(timeAtStart) * 1000;
-	const INavMeshQueryDebug::SBatchData queryBatch(m_batchCount++, m_trianglesDebug.size(), elapsedTimeInMs, m_triangleIterator.GetNavMesh(), m_trianglesDebug);
+	const CTimeValue timeAtEnd = GetGTimer()->GetAsyncCurTime();
+	const CTimeValue elapsedTime = timeAtEnd - timeAtStart;
+	const INavMeshQueryDebug::SBatchData queryBatch(m_batchCount++, m_trianglesDebug.size(), elapsedTime, m_triangleIterator.GetNavMesh(), m_trianglesDebug);
 	m_queryDebug.AddBatchToHistory(queryBatch);
 	DebugDrawQueryBatch(queryBatch);
 }
@@ -562,7 +562,7 @@ void CNavMeshQuery::DebugDrawQueryBatch(const MNM::INavMeshQueryDebug::SBatchDat
 		{
 			Cry::UDR::CScope_FixedString statisticsScope("Statistics");
 			stack_string itemText;
-			itemText.Format("Id/b: %lu/%lu \tSize: %lu \tTime: %2.5f ms \tCaller: %s", m_queryId, queryBatch.batchNumber, queryBatch.triangleDataArray.size(), queryBatch.elapsedTimeInMs, m_queryConfig.szCallerName);
+			itemText.Format("Id/b: %lu/%lu \tSize: %lu \tTime: %2.5f ms \tCaller: %s", m_queryId, queryBatch.batchNumber, queryBatch.triangleDataArray.size(), (float)queryBatch.elapsedTime.GetMilliSeconds(), m_queryConfig.szCallerName);
 			Cry::UDR::CScope_FixedString itemScope(itemText.c_str());
 		}
 	}

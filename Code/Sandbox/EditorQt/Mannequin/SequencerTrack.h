@@ -21,7 +21,7 @@ public:
 	//! Remove specified key.
 	virtual void RemoveKey(int num);
 
-	int          CreateKey(float time);
+	int          CreateKey(const CTimeValue& time);
 	int          CloneKey(int fromKey);
 	int          CopyKey(CSequencerTrack* pFromTrack, int nFromKey);
 
@@ -41,7 +41,7 @@ public:
 	 */
 	virtual bool Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks = true);
 
-	virtual bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected = false, float fTimeOffset = 0);
+	virtual bool SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected = false, const CTimeValue& fTimeOffset = 0);
 
 	/** Serialize single key of this track.
 	    Override this in derived classes.
@@ -117,7 +117,7 @@ inline bool TSequencerTrack<KeyType >::Serialize(XmlNodeRef& xmlNode, bool bLoad
 	{
 		int num = xmlNode->getChildCount();
 
-		Range timeRange;
+		TRange<CTimeValue> timeRange;
 		int flags = GetFlags();
 		xmlNode->getAttr("Flags", flags);
 		xmlNode->getAttr("StartTime", timeRange.start);
@@ -158,7 +158,7 @@ inline bool TSequencerTrack<KeyType >::Serialize(XmlNodeRef& xmlNode, bool bLoad
 
 //////////////////////////////////////////////////////////////////////////
 template<class KeyType>
-inline bool TSequencerTrack<KeyType >::SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset)
+inline bool TSequencerTrack<KeyType >::SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, const CTimeValue& fTimeOffset)
 {
 	if (bLoading)
 	{
@@ -204,7 +204,7 @@ inline bool TSequencerTrack<KeyType >::SerializeSelection(XmlNodeRef& xmlNode, b
 
 //////////////////////////////////////////////////////////////////////////
 template<class KeyType>
-inline int TSequencerTrack<KeyType >::CreateKey(float time)
+inline int TSequencerTrack<KeyType >::CreateKey(const CTimeValue& time)
 {
 	KeyType key, akey;
 	int nkey = GetNumKeys();

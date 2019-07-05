@@ -330,11 +330,11 @@ void AnimationDrivenSamples::Reset()
 	count = 0;
 }
 
-void AnimationDrivenSamples::Add(const float fTime, const Vec3& pos)
+void AnimationDrivenSamples::Add(const CTimeValue& fTime, const Vec3& pos)
 {
 	if (time >= updateTime)
 	{
-		time = 0.0f;
+		time.SetSeconds(0);
 
 		count++;
 		if (count > maxCount)
@@ -493,7 +493,7 @@ PlaybackOptions::PlaybackOptions()
 	, wrapTimelineSlider(false)
 	, smoothTimelineSlider(false)
 	, playFromTheStart(false)
-	, playbackSpeed(1.0f)
+	, playbackSpeed(1)
 {
 }
 
@@ -531,13 +531,13 @@ CharacterDocument::CharacterDocument(System* system)
 	, m_characterManager(0)
 	, m_pPhysicalEntity(0)
 	, m_pDefaultMaterial(0)
-	, m_AverageFrameTime(0.0f)
+	, m_AverageFrameTime(0)
 	, m_compressionMachine(new CompressionMachine())
 	, m_playbackState(PLAYBACK_UNAVAILABLE)
-	, m_playbackTime(0.0f)
-	, m_playbackDuration(1.0f/30.0f)
+	, m_playbackTime(0)
+	, m_playbackDuration(mpfloat(1)/30)
 	, m_layerIdxMaxPlaybackDurationOfAllEnabledLayers(0)
-	, m_maxPlaybackDurationOfAllEnabledLayers(1.0f/30.0f)
+	, m_maxPlaybackDurationOfAllEnabledLayers(mpfloat(1)/30)
 	, m_bindPoseEnabled(false)
 	, m_displayOptions(new DisplayOptions())
 	, m_updateCameraTarget(false)
@@ -1249,10 +1249,10 @@ void CharacterDocument::TriggerAnimationPreview(int previewFlags)
 	{
 		if (m_system->scene->animEventPlayer.get())
 			m_system->scene->animEventPlayer->Reset();
-		m_playbackTime = 0.0f;
-		m_NormalizedTime = 0.0f;
-		m_NormalizedTimeRate = 0.0f;
-		m_NormalizedTimeSmooth = 0.0f;
+		m_playbackTime.SetSeconds(0);
+		m_NormalizedTime = 0;
+		m_NormalizedTimeRate = 0;
+		m_NormalizedTimeSmooth = 0;
 		SignalPlaybackTimeChanged();
 		PreviewAnimationEntry(forceRecompile);
 		IdleUpdate();
@@ -1409,13 +1409,13 @@ void CharacterDocument::IdleUpdate()
 		{
 			if (skeletonAnimation.GetNumAnimsInFIFO(layer) > 0)
 			{
-				float animationDurationSeconds = skeletonAnimation.CalculateCompleteBlendSpaceDuration(*animation);
-				if (animationDurationSeconds < 0.0f)
-					animationDurationSeconds = 0.0f;
-				float animationTimeNormalized = skeletonAnimation.GetAnimationNormalizedTime(animation);
-				float animationTimeSeconds = animationTimeNormalized * animationDurationSeconds;
-				if (animationTimeSeconds < 0.0f)
-					animationTimeSeconds = 0.0f;
+				CTimeValue animationDurationSeconds = skeletonAnimation.CalculateCompleteBlendSpaceDuration(*animation);
+				if (animationDurationSeconds < 0)
+					animationDurationSeconds.SetSeconds(0);
+				nTime animationTimeNormalized = skeletonAnimation.GetAnimationNormalizedTime(animation);
+				CTimeValue animationTimeSeconds = animationTimeNormalized * animationDurationSeconds;
+				if (animationTimeSeconds < 0)
+					animationTimeSeconds.SetSeconds(0);
 				if (animationTimeSeconds != m_playbackTime ||
 				    animationDurationSeconds != m_playbackDuration)
 				{
@@ -1432,18 +1432,18 @@ void CharacterDocument::IdleUpdate()
 					SignalPlaybackTimeChanged();
 				}
 
-				bool animationEnded = animationTimeNormalized == 1.0f;
+				bool animationEnded = animationTimeNormalized == 1;
 				if (m_playbackState == PLAYBACK_PLAY && animationEnded)
 				{
 					// For animations that were not looping we rewind and pause
 					m_playbackState = PLAYBACK_PAUSE;
 					if (m_playbackOptions.firstFrameAtEndOfTimeline)
 					{
-						m_compressionMachine->Play(0.0f);
-						m_playbackTime = 0.0f;
-						m_NormalizedTime = 0.0f;
-						m_NormalizedTimeSmooth = 0.0f;
-						m_NormalizedTimeRate = 0.0f;
+						m_compressionMachine->Play(0);
+						m_playbackTime.SetSeconds(0);
+						m_NormalizedTime = 0;
+						m_NormalizedTimeSmooth = 0;
+						m_NormalizedTimeRate = 0;
 					}
 					Pause();
 					SignalPlaybackStateChanged();
@@ -1457,9 +1457,9 @@ void CharacterDocument::IdleUpdate()
 void CharacterDocument::DetermineLayerWithMaxPlaybackDurationOfAllEnabledLayers()
 {
 	uint32& layerIdxMaxDuration = m_layerIdxMaxPlaybackDurationOfAllEnabledLayers;
-	float& maxDuration = m_maxPlaybackDurationOfAllEnabledLayers;
+	CTimeValue& maxDuration = m_maxPlaybackDurationOfAllEnabledLayers;
 
-	maxDuration = 1.0f/30.0f;
+	maxDuration = CTimeValue(mpfloat(1)/30);
 	layerIdxMaxDuration = 0;
 
 	const auto& layers = m_system->scene->layers.layers;
@@ -1473,7 +1473,7 @@ void CharacterDocument::DetermineLayerWithMaxPlaybackDurationOfAllEnabledLayers(
 		{
 			if (CAnimation* animation = &skeletonAnimation.GetAnimFromFIFO(l, 0))
 			{
-				float layerDuration = skeletonAnimation.CalculateCompleteBlendSpaceDuration(*animation);
+				CTimeValue layerDuration = skeletonAnimation.CalculateCompleteBlendSpaceDuration(*animation);
 				if (layerDuration > maxDuration)
 				{
 					layerIdxMaxDuration = l;
@@ -1572,7 +1572,7 @@ static void SetDesiredMotionParameters(ISkeletonAnim& skeletonAnimation, int lay
 	}
 }
 
-static void SetCharacterAnimationNormalizedTime(ICharacterInstance* character, float normalizedTime, int activeLayer = -1)
+static void SetCharacterAnimationNormalizedTime(ICharacterInstance* character, const nTime& normalizedTime, int activeLayer = -1)
 {
 	if (!character)
 		return;
@@ -1584,8 +1584,8 @@ static void SetCharacterAnimationNormalizedTime(ICharacterInstance* character, f
 		CAnimation* animation = &skeletonAnimation.GetAnimFromFIFO(layerId, 0);
 		if (!animation)
 			return;
-		const float oldTimeNormalized = skeletonAnimation.GetAnimationNormalizedTime(animation);
-		const float newTimeNormalized = clamp_tpl(normalizedTime, 0.f, 1.f);
+		const nTime oldTimeNormalized = skeletonAnimation.GetAnimationNormalizedTime(animation);
+		const nTime newTimeNormalized = CLAMP(normalizedTime, 0, 1);
 		skeletonAnimation.SetAnimationNormalizedTime(animation, newTimeNormalized);
 	}
 }
@@ -1614,7 +1614,7 @@ void CharacterDocument::PreRender(const SRenderContext& context)
 	ICharacterInstance* pInstanceBase = m_compressedCharacter;
 	if (pInstanceBase && !featureTestOverridesUpdate)
 	{
-		f32 FrameTime = GetIEditor()->GetSystem()->GetITimer()->GetFrameTime();
+		CTimeValue FrameTime = GetIEditor()->GetSystem()->GetITimer()->GetFrameTime();
 		m_AverageFrameTime = pInstanceBase->GetAverageFrameTime();
 
 		pInstanceBase->GetISkeletonPose()->SetForceSkeletonUpdate(1);
@@ -1651,7 +1651,7 @@ void CharacterDocument::PreRender(const SRenderContext& context)
 				dir->SetState(enabled);
 				if (enabled)
 				{
-					dir->SetPolarCoordinatesSmoothTimeSeconds(aimParameters.smoothTime);
+					dir->SetPolarCoordinatesSmoothTime(aimParameters.smoothTime);
 					dir->SetLayer(layer);
 					if (aimParameters.direction == aimParameters.AIM_CAMERA)
 						dir->SetTarget(context.camera->GetPosition());
@@ -1703,7 +1703,7 @@ void CharacterDocument::PreRender(const SRenderContext& context)
 					//At this point the animation pose was already fully updated by StartAnimationProcessing(params)
 					relMove = m_lastCalculateRelativeMovement;  //if we set a new time with 'scrubbing' then we have to work with one frame delay (or we will see foot-sliding at low framerate)
 					//Read back the new 'locator movement' immediately and use it next frame.
-					m_lastCalculateRelativeMovement = skeletonAnim.CalculateRelativeMovement(-1.0f); //there is no "delta-time" in scrub-mode
+					m_lastCalculateRelativeMovement = skeletonAnim.CalculateRelativeMovement(-1); //there is no "delta-time" in scrub-mode
 				}
 				else
 				{
@@ -1715,8 +1715,9 @@ void CharacterDocument::PreRender(const SRenderContext& context)
 		// In case of scrubbing [paused animation]: set normalized time on all layers 
 		if (m_bPaused)
 		{
-			const f32 fSmoothTime = m_playbackOptions.smoothTimelineSlider ? 0.2f : 0.0f;
+			const CTimeValue fSmoothTime = m_playbackOptions.smoothTimelineSlider ? "0.2" : "0";
 			SmoothCD(m_NormalizedTimeSmooth, m_NormalizedTimeRate, FrameTime, m_NormalizedTime, fSmoothTime);
+
 			for (auto& it : m_system->scene->layers.layers)
 			{
 				const int& layerId = it.layerId;
@@ -1859,7 +1860,7 @@ void CharacterDocument::PreRender(const SRenderContext& context)
 
 			PhysicsVars* pVars = gEnv->pPhysicalWorld->GetPhysVars();
 			pVars->helperOffset.zero();
-			pVars->timeScalePlayers = 1.0f;
+			pVars->timeScalePlayers = 1;
 
 			pe_action_move am;
 			am.dir.zero();
@@ -1979,7 +1980,7 @@ void CharacterDocument::DrawCharacter(ICharacterInstance* pInstanceBase, const S
 
 	m_pAuxRenderer->SetRenderFlags(e_Def3DPublicRenderflags);
 
-	f32 FrameTime = GetIEditor()->GetSystem()->GetITimer()->GetFrameTime();
+	CTimeValue FrameTime = GetIEditor()->GetSystem()->GetITimer()->GetFrameTime();
 
 	// draw joint names
 	if (m_displayOptions->skeleton.showJointNames)
@@ -2242,8 +2243,8 @@ void CharacterDocument::PreviewAnimationEntry(bool forceRecompile)
 			continue;
 	}
 
-	float normalizedTime = 0.0f;
-	if (m_playbackDuration > 0.0f)
+	nTime normalizedTime = 0;
+	if (m_playbackDuration > 0)
 		normalizedTime = m_playbackTime / m_playbackDuration;
 
 	if (!m_system->scene->layers.layers.empty())
@@ -2256,7 +2257,7 @@ void CharacterDocument::PreviewAnimationEntry(bool forceRecompile)
 
 }
 
-void CharacterDocument::TriggerAnimEventsInRange(float timeFrom, float timeTo)
+void CharacterDocument::TriggerAnimEventsInRange(const CTimeValue& timeFrom, const CTimeValue& timeTo)
 {
 	ExplorerEntry* explorerEntry = GetActiveAnimationEntry();
 	if (!explorerEntry)
@@ -2265,8 +2266,8 @@ void CharacterDocument::TriggerAnimEventsInRange(float timeFrom, float timeTo)
 	if (!animation)
 		return;
 
-	float normalizedFrom = m_playbackDuration > 0.0f ? timeFrom / m_playbackDuration : 0.0f;
-	float normalizedTo = m_playbackDuration > 0.0f ? timeTo / m_playbackDuration : 0.0f;
+	nTime normalizedFrom = m_playbackDuration > 0 ? timeFrom / m_playbackDuration : 0;
+	nTime normalizedTo = m_playbackDuration > 0 ? timeTo / m_playbackDuration : 0;
 	const std::vector<AnimEvent>& events = animation->content.events;
 	int numEvents = (int)events.size();
 	for (int i = 0; i < numEvents; ++i)
@@ -2281,15 +2282,15 @@ void CharacterDocument::TriggerAnimEventsInRange(float timeFrom, float timeTo)
 	}
 }
 
-void CharacterDocument::ScrubTime(float time, bool scrubThrough)
+void CharacterDocument::ScrubTime(const CTimeValue& time, bool scrubThrough)
 {
 	Pause();
 
 	if (time != m_playbackTime || m_playbackOptions != m_lastScrubPlaybackOptions)
 	{
-		float normalizedTime = m_playbackDuration > 0.0f ? time / m_playbackDuration : 0.0f;
+		nTime normalizedTime = m_playbackDuration > 0 ? time / m_playbackDuration : 0;
 		if (m_playbackOptions.loopAnimation && !m_playbackOptions.firstFrameAtEndOfTimeline)
-			normalizedTime = min(1.0f - FLT_EPSILON, normalizedTime);
+			normalizedTime = min((1 - MP_EPSILON).conv<nTime>(), normalizedTime);
 
 		if (time > m_playbackTime && scrubThrough)
 		{
@@ -2309,12 +2310,12 @@ void CharacterDocument::Play()
 	if (m_playbackState != PLAYBACK_UNAVAILABLE)
 	{
 		m_bPaused = false;
-		if (m_playbackOptions.playFromTheStart || m_NormalizedTime == 1.0f)
+		if (m_playbackOptions.playFromTheStart || m_NormalizedTime == 1)
 		{
-			m_NormalizedTime = 0.0f;
-			m_NormalizedTimeSmooth = 0.0f;
-			m_NormalizedTimeRate = 0.0f;
-			m_playbackTime = 0.0f;
+			m_NormalizedTime = 0;
+			m_NormalizedTimeSmooth = 0;
+			m_NormalizedTimeRate = 0;
+			m_playbackTime.SetSeconds(0);
 			SetCharacterAnimationNormalizedTime(m_compressedCharacter, 0);
 			SetCharacterAnimationNormalizedTime(m_uncompressedCharacter, 0);
 		}
@@ -2345,11 +2346,11 @@ void CharacterDocument::Pause()
 	m_bPaused = true;
 	if (m_compressedCharacter)
 	{
-		m_compressedCharacter->SetPlaybackScale(0.0f);
+		m_compressedCharacter->SetPlaybackScale(0);
 		AllowAnimEventsToTriggerAgain(m_compressedCharacter);
 	}
 	if (m_uncompressedCharacter)
-		m_uncompressedCharacter->SetPlaybackScale(0.0f);
+		m_uncompressedCharacter->SetPlaybackScale(0);
 }
 
 void CharacterDocument::EnableAudio(bool enable)

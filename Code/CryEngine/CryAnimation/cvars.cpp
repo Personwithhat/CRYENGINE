@@ -193,8 +193,8 @@ void Console::Init()
 	// if this is not empty string, the animations of characters with the given model will be logged
 	DefineConstIntCVar(ca_DebugSkeletonEffects, 0, VF_CHEAT, "If true, dump log messages when skeleton effects are handled.");
 	DefineConstIntCVar(ca_SkeletonEffectsPlayAudioInEngine, 0, VF_CHEAT, "If true, skeleton audio effects are spawned and played within CE. Otherwise, audio events have to be handled by game code (as it has been done historically).");
-	DefineConstIntCVar(ca_lipsync_phoneme_offset, 20, VF_CHEAT, "Offset phoneme start time by this value in milliseconds");
-	DefineConstIntCVar(ca_lipsync_phoneme_crossfade, 70, VF_CHEAT, "Cross fade time between phonemes in milliseconds");
+	REGISTER_CVAR(ca_lipsync_phoneme_offset, CTimeValue().SetMilliSeconds(20), VF_CHEAT, "Offset phoneme start time by this value");
+	REGISTER_CVAR(ca_lipsync_phoneme_crossfade, CTimeValue().SetMilliSeconds(70), VF_CHEAT, "Cross fade time between phonemes");
 	DefineConstIntCVar(ca_eyes_procedural, 1, 0, "Enables/Disables procedural eyes animation");
 	DefineConstIntCVar(ca_lipsync_debug, 0, VF_CHEAT, "Enables facial animation debug draw");
 	DefineConstIntCVar(ca_DebugFacial, 0, VF_CHEAT, "Debug facial playback info");
@@ -234,8 +234,8 @@ void Console::Init()
 	DefineConstIntCVar(ca_thread1Affinity, 3, VF_DUMPTODISK, "Affinity of second Animation Thread.");
 
 	// DBA unloading timings
-	DefineConstIntCVar(ca_DBAUnloadUnregisterTime, 2, VF_CHEAT, "DBA Unload Timing: CAF Unregister Time.");
-	DefineConstIntCVar(ca_DBAUnloadRemoveTime, 4, VF_CHEAT, "DBA Unload Timing: DBA Remove Time.");
+	REGISTER_CVAR(ca_DBAUnloadUnregisterTime, CTimeValue(2), VF_CHEAT, "DBA Unload Timing: CAF Unregister Time.");
+	REGISTER_CVAR(ca_DBAUnloadRemoveTime, CTimeValue(4), VF_CHEAT, "DBA Unload Timing: DBA Remove Time.");
 
 	// Animation data caching behavior (PC specific)
 	DefineConstIntCVar(ca_PrecacheAnimationSets, 0, VF_NULL, "Enable Precaching of Animation Sets per Character.");
@@ -249,7 +249,7 @@ void Console::Init()
 	// Quasi static animation optimization
 	DefineConstIntCVar(ca_CullQuasiStaticAnimationUpdates, 0, VF_NULL, "Drops the animation updates of objects marked as 'quasi-static' when they sleep");
 	DefineConstIntCVar(ca_DebugQuasiStaticAnimationCulling, 0, VF_NULL, "Whether to display debug information about what updates are being culled.");
-	DefineConstIntCVar(ca_QuasiStaticAnimationSleepTimeoutMs, 2500, VF_NULL, "How much to wait (ms) before sleeping on quasi-static objects.");
+	REGISTER_CVAR(ca_QuasiStaticAnimationSleepTimeout, CTimeValue("2.5"), VF_NULL, "How much to wait before sleeping on quasi-static objects.");
 
 	// vars in console .cfgs
 	REGISTER_CVAR(ca_DrawVEGInfo, 0.0f, VF_CHEAT, "if set to 1, the VEG debug info is drawn");
@@ -281,7 +281,7 @@ void Console::Init()
 	//motion blur
 	REGISTER_CVAR(ca_MotionBlurMovementThreshold, 0.0f, 0, "\"advanced\" Set motion blur movement threshold for discarding skinned object");
 
-	REGISTER_CVAR(ca_DeathBlendTime, 0.3f, VF_CHEAT, "Specifies the blending time between low-detail dead body skeleton and current skeleton");
+	REGISTER_CVAR(ca_DeathBlendTime, CTimeValue("0.3"), VF_CHEAT, "Specifies the blending time between low-detail dead body skeleton and current skeleton");
 	REGISTER_CVAR(ca_OverrideBlendWeightSimulatedSockets, 1.0f, 0, "Override helper joint value for blending between socket simulation and animation pose\n 0.0 - full animation\n 1.0 - full simulation (override disabled)");
 	REGISTER_CVAR(ca_lipsync_vertex_drag, 1.2f, VF_CHEAT, "Vertex drag coefficient when blending morph targets");
 	REGISTER_CVAR(ca_lipsync_phoneme_strength, 1.0f, 0, "LipSync phoneme strength");
@@ -292,7 +292,7 @@ void Console::Init()
 	REGISTER_CVAR(ca_VClothMode, 1, 0, "0 - disabled (disable rendering & simulation)\n1 - enabled (default)\n2 - force skinning (disable simulation)");
 
 	//cloth
-	REGISTER_CVAR(ca_cloth_max_timestep, 0.0f, 0, "");
+	//REGISTER_CVAR(ca_cloth_max_timestep, 0.0f, 0, "");
 	REGISTER_CVAR(ca_cloth_max_safe_step, 0.0f, 0, "if a segment stretches more than this (in *relative* units), its length is reinforced");
 	REGISTER_CVAR(ca_cloth_stiffness, 0.0f, 0, "stiffness for stretching");
 	REGISTER_CVAR(ca_cloth_thickness, 0.0f, 0, "thickness for collision checks");

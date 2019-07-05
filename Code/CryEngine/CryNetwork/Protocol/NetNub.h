@@ -178,7 +178,7 @@ private:
 
 	struct SKeyExchangeStuff
 	{
-		SKeyExchangeStuff() : kes(eKES_NotStarted), kesStart(0.0f) {}
+		SKeyExchangeStuff() : kes(eKES_NotStarted), kesStart(0) {}
 		EKeyExchangeState                 kes;
 #if ENCRYPTION_GENERATE_KEYS
 		CExponentialKeyExchange           exchange;
@@ -281,7 +281,7 @@ private:
 	// someone we're currently connecting with (waiting for game)
 	struct SConnecting : public SKeyExchangeStuff
 	{
-		SConnecting() : lastNotify(0.0f) {}
+		SConnecting() : lastNotify(0) {}
 
 		uint32           socketCaps;
 		CTimeValue       lastNotify;

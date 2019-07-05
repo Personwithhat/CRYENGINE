@@ -184,7 +184,7 @@ public:
 	~CAIManager() override;
 	void Init(ISystem* system);
 
-	void Update(const CTimeValue frameStartTime, const float frameDeltaTime, uint32 updateFlags);
+	void Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, uint32 updateFlags);
 
 	// IAutoEditorNotifyListener
 	virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
@@ -308,7 +308,7 @@ private:
 	bool                         m_navigationUpdatePaused;
 
 	CTimeValue                   m_frameStartTime;
-	float                        m_frameDeltaTime;
+	CTimeValue                   m_frameDeltaTime;
 
 	struct SNavigationUpdateProgress
 	{

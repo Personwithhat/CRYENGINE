@@ -10,5 +10,5 @@ struct SAIConsoleVarsLegacySmartObjects
 
 	DeclareConstIntCVar(DrawSmartObjects, 0);
 
-	float BannedNavSoTime;
+	CTimeValue BannedNavSoTime;
 };

@@ -133,6 +133,19 @@ constexpr const char* GetCVarOverride(const char* szName, const char* defaultVal
 	return detail::GetCVarOverrideImpl(g_engineCvarStringOverrides, CRY_ARRAY_COUNT(g_engineCvarStringOverrides), CCrc32::ComputeLowercase_CompileTime(szName), defaultValue, 0);
 }
 
+template <class T, typename boost::enable_if_c<isMP>::type* = 0>
+T GetCVarOverride(const char* szName, const T& defaultValue)
+{
+	return GetCVarOverride(szName, defaultValue.str().c_str());
+}
+
+template <class T, typename boost::enable_if_c<isTV>::type* = 0>
+T GetCVarOverride(const char* szName, const T& defaultValue)
+{
+	return GetCVarOverride(szName, defaultValue.m_lValue);
+}
+
+
 #else // USE_RUNTIME_CVAR_OVERRIDES
 
 template<class T>

@@ -28,16 +28,16 @@ namespace Cry
 			virtual void                                          AddCone(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color) override;
 			virtual void                                          AddCylinder(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color) override;
 			
-			virtual void                                          AddSphereWithDebugDrawDuration(const Vec3& pos, float radius, const ColorF& color, const float duration) override;
-			virtual void                                          AddLineWithDebugDrawDuration(const Vec3& pos1, const Vec3& pos2, const ColorF& color, const float duration) override;
-			virtual void                                          AddTriangleWithDebugDrawDuration(const Vec3& vtx1, const Vec3& vtx2, const Vec3& vtx3, const ColorF& color, const float duration) override;
-			virtual void                                          AddTextWithDebugDrawDuration(const Vec3& pos, float size, const ColorF& color, const float duration, const char* szFormat, ...) override PRINTF_PARAMS(6, 7);
-			virtual void                                          AddArrowWithDebugDrawDuration(const Vec3& from, const Vec3& to, float coneRadius, float coneHeight, const ColorF& color, const float duration) override;
-			virtual void                                          AddAxesWithDebugDrawDuration(const Vec3& pos, const Matrix33& axes, const float duration) override;
-			virtual void                                          AddAABBWithDebugDrawDuration(const AABB& aabb, const ColorF& color, const float duration) override;
-			virtual void                                          AddOBBWithDebugDrawDuration(const OBB& obb, const Vec3& pos, const ColorF& color, const float duration) override;
-			virtual void                                          AddConeWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const float duration) override;
-			virtual void                                          AddCylinderWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const float duration) override;
+			virtual void                                          AddSphereWithDebugDrawDuration(const Vec3& pos, float radius, const ColorF& color, const CTimeValue& duration) override;
+			virtual void                                          AddLineWithDebugDrawDuration(const Vec3& pos1, const Vec3& pos2, const ColorF& color, const CTimeValue& duration) override;
+			virtual void                                          AddTriangleWithDebugDrawDuration(const Vec3& vtx1, const Vec3& vtx2, const Vec3& vtx3, const ColorF& color, const CTimeValue& duration) override;
+			virtual void                                          AddTextWithDebugDrawDuration(const Vec3& pos, float size, const ColorF& color, const CTimeValue& duration, const char* szFormat, ...) override PRINTF_PARAMS(6, 7);
+			virtual void                                          AddArrowWithDebugDrawDuration(const Vec3& from, const Vec3& to, float coneRadius, float coneHeight, const ColorF& color, const CTimeValue& duration) override;
+			virtual void                                          AddAxesWithDebugDrawDuration(const Vec3& pos, const Matrix33& axes, const CTimeValue& duration) override;
+			virtual void                                          AddAABBWithDebugDrawDuration(const AABB& aabb, const ColorF& color, const CTimeValue& duration) override;
+			virtual void                                          AddOBBWithDebugDrawDuration(const OBB& obb, const Vec3& pos, const ColorF& color, const CTimeValue& duration) override;
+			virtual void                                          AddConeWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const CTimeValue& duration) override;
+			virtual void                                          AddCylinderWithDebugDrawDuration(const Vec3& pos, const Vec3& dir, const float radius, const float height, const ColorF& color, const CTimeValue& duration) override;
 			// ~IRenderPrimitiveCollection
 
 			CTimeMetadata                                         GetTimeMetadataMin() const;

@@ -711,7 +711,7 @@ public:
 	{
 		return false;
 	}
-	virtual bool SetTimer(ETimer which, float timeInSeconds) override
+	virtual bool SetTimer(ETimer which, const CTimeValue& timeInSeconds) override
 	{
 		return false;
 	}

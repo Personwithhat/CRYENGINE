@@ -55,8 +55,8 @@ protected:
 	bool                     m_bTriggerAreasOnMove = false;
 	bool                     m_bMoveWithEntity = false;
 
-	float                    m_minDelay = 0.0f;
-	float                    m_maxDelay = 1000.0f;
+	CTimeValue               m_minDelay = 0;
+	CTimeValue               m_maxDelay = 1;
 	float                    m_radius = 10.0f;
 	float                    m_fadeValue = 0.0;
 	bool                     m_bEnabled = true;

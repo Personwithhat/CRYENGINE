@@ -17,6 +17,7 @@
 #include <CrySerialization/yasli/KeyValue.h>
 #include <CrySerialization/yasli/KeyValueDictionary.h>
 #include <CrySerialization/yasli/TypeID.h>
+#include <CrySystem\MPFloat.h>
 
 #define YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(type) template <> struct IsDefaultSerializaeble<type> { static const bool value = true; };
 
@@ -134,6 +135,11 @@ public:
 	virtual bool operator()(u64& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
 	virtual bool operator()(float& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
 	virtual bool operator()(double& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
+
+	virtual bool operator()(CTimeValue& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
+	#define MP_FUNCTION(T) 	virtual bool operator()(T& value, const char* name = "", const char* label = 0) { notImplemented(); return false; }
+	#include <CrySystem\mpfloat.types>
+	#undef MP_FUNCTION
 
 	virtual bool operator()(StringInterface& value, const char* name = "", const char* label = 0)    { notImplemented(); return false; }
 	virtual bool operator()(WStringInterface& value, const char* name = "", const char* label = 0)    { notImplemented(); return false; }
@@ -450,6 +456,10 @@ YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(u64)
 YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(float)
 YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(double)
 
+YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(CTimeValue)
+#define MP_FUNCTION(T) YASLI_HELPERS_DECLARE_DEFAULT_SERIALIZEABLE_TYPE(T)
+#include <CrySystem\mpfloat.types>
+#undef MP_FUNCTION
 }
 
 

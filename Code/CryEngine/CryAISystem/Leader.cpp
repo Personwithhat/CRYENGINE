@@ -229,6 +229,8 @@ void CLeader::ProcessSignal(const AISignals::SignalSharedPtr pSignal)
 
 	if (pSignal->GetSignalDescription() == gEnv->pAISystem->GetSignalManager()->GetBuiltInSignalDescriptions().GetOnOrderAttack_DEPRECATED())
 	{
+		// PERSONAL DEBUG: How to update and trace AI signals better?? More'n likely missed Signal time creation & reading....
+		// Hard to grep/trace down.....SignalCRC's don't help much.
 		ELeaderActionSubType attackType = static_cast<ELeaderActionSubType>(data.iValue);
 		LeaderActionParams params;
 		params.type = LA_ATTACK;
@@ -236,7 +238,7 @@ void CLeader::ProcessSignal(const AISignals::SignalSharedPtr pSignal)
 		params.unitProperties = data.iValue2;
 		params.id = data.nID;
 		params.pAIObject = gAIEnv.pAIObjectManager->GetAIObjectByName(data.GetObjectName());
-		params.fDuration = data.fValue;
+		params.fDuration = data.tVal;
 		params.vPoint = data.point;
 		params.name = data.GetObjectName();
 		Attack(&params);

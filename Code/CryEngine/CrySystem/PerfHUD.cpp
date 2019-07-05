@@ -42,8 +42,16 @@ const float CPerfHUD::TEXT_SIZE_NORM = 14.f;
 const float CPerfHUD::TEXT_SIZE_WARN = 18.f;
 const float CPerfHUD::TEXT_SIZE_ERROR = 26.f;
 
-const float CPerfHUD::ACTIVATE_TIME_FROM_GAME = 1.f;
-const float CPerfHUD::ACTIVATE_TIME_FROM_HUD = 0.1f;
+// PERSONAL TODO: DrMemory testing, fails with UNADDRESSABLE ACCESS here even when MPFR itself has no bugs/etc.
+// const boost::multiprecision::static_mpfr_float_50 ACTIVATE_TIME_FROM_HUD2(0.1);   // This doesn't fail DrMemory test
+// const boost::multiprecision::static_mpfr_float_50 ACTIVATE_TIME_FROM_HUD3("0.1"); // Consistently fails
+
+// std::string and string same thing, and also std::string("0.1").c_str() etc.
+//const char TEST[52] = "0.1111111111111111111111111111111111111111111111118";
+//const CTimeValue CPerfHUD::ACTIVATE_TIME_FROM_GAME = TEST; // Consistently fails
+
+const CTimeValue CPerfHUD::ACTIVATE_TIME_FROM_GAME = 1;
+const CTimeValue CPerfHUD::ACTIVATE_TIME_FROM_HUD = "0.1";
 
 CRYREGISTER_SINGLETON_CLASS(CPerfHUD)
 CPerfHUD::CPerfHUD() :
@@ -56,7 +64,7 @@ CPerfHUD::CPerfHUD() :
 	m_R2Pressed(false),
 	m_changingState(false),
 	m_hwMouseEnabled(false),
-	m_triggersDownStartTime(-1.f),
+	m_triggersDownStartTime(-1),
 	m_hudState(eHudOff),
 	m_hudLastState(eHudOff)
 {
@@ -718,14 +726,14 @@ bool CPerfHUD::OnInputEvent(const SInputEvent& rInputEvent)
 			//if(checkState&&m_L1Pressed&&m_L2Pressed&&m_R1Pressed&&m_R2Pressed)
 			if (checkState && m_L1Pressed && m_R1Pressed)
 			{
-				m_triggersDownStartTime = gEnv->pTimer->GetAsyncCurTime();
+				m_triggersDownStartTime = GetGTimer()->GetAsyncCurTime();
 			}
 		}
 		else if (rInputEvent.state == eIS_Down)
 		{
-			float activateTime = (m_hudState == eHudOff) ? ACTIVATE_TIME_FROM_GAME : ACTIVATE_TIME_FROM_HUD;
+			CTimeValue activateTime = (m_hudState == eHudOff) ? ACTIVATE_TIME_FROM_GAME : ACTIVATE_TIME_FROM_HUD;
 
-			if (m_triggersDownStartTime > 0.f && gEnv->pTimer->GetAsyncCurTime() - m_triggersDownStartTime > activateTime)
+			if (m_triggersDownStartTime > 0 && GetGTimer()->GetAsyncCurTime() - m_triggersDownStartTime > activateTime)
 			{
 				m_changingState = true;
 
@@ -787,7 +795,7 @@ bool CPerfHUD::OnInputEvent(const SInputEvent& rInputEvent)
 
 			if (triggerReleased)
 			{
-				m_triggersDownStartTime = 0.f;
+				m_triggersDownStartTime.SetSeconds(0);
 
 				if (m_changingState)
 				{
@@ -949,7 +957,7 @@ void CPerfHUD::DisableWidget(ICryPerfHUDWidget::EWidgetID id)
 //////////////////////////////////////////////////////////////////////////
 // Widget Specific Interface
 //////////////////////////////////////////////////////////////////////////
-void CPerfHUD::AddWarning(float duration, const char* fmt, va_list argList)
+void CPerfHUD::AddWarning(const CTimeValue& duration, const char* fmt, va_list argList)
 {
 	if (m_hudState != eHudOff)
 	{
@@ -987,7 +995,7 @@ bool CPerfHUD::WarningsWindowEnabled() const
 	return false;
 }
 
-const std::vector<ICryPerfHUD::PerfBucket>* CPerfHUD::GetFpsBuckets(float& totalTime) const
+const std::vector<ICryPerfHUD::PerfBucket>* CPerfHUD::GetFpsBuckets(CTimeValue& totalTime) const
 {
 	const int nWidgets = m_widgets.size();
 
@@ -1053,8 +1061,8 @@ void CFpsWidget::LoadBudgets(XmlNodeRef PerfXML)
 				m_perfBuckets[BUCKET_GPU].buckets.push_back(bucket);
 			}
 
-			m_perfBuckets[BUCKET_FPS].totalTime = 0.f;
-			m_perfBuckets[BUCKET_GPU].totalTime = 0.f;
+			m_perfBuckets[BUCKET_FPS].totalTime.SetSeconds(0);
+			m_perfBuckets[BUCKET_GPU].totalTime.SetSeconds(0);
 		}
 		//Auto generated buckets based on max fps and bucket size
 		else if ((xmlNode = PerfXML->findChild("fpsBucketMax")))
@@ -1085,8 +1093,8 @@ void CFpsWidget::LoadBudgets(XmlNodeRef PerfXML)
 				targetFPS -= m_fpsBucketSize;
 			}
 
-			m_perfBuckets[BUCKET_FPS].totalTime = 0.f;
-			m_perfBuckets[BUCKET_GPU].totalTime = 0.f;
+			m_perfBuckets[BUCKET_FPS].totalTime.SetSeconds(0);
+			m_perfBuckets[BUCKET_GPU].totalTime.SetSeconds(0);
 		}
 
 		//DP buckets - explicit bucket values
@@ -1107,7 +1115,7 @@ void CFpsWidget::LoadBudgets(XmlNodeRef PerfXML)
 
 				m_perfBuckets[BUCKET_DP].buckets.push_back(bucket);
 			}
-			m_perfBuckets[BUCKET_DP].totalTime = 0.f;
+			m_perfBuckets[BUCKET_DP].totalTime.SetSeconds(0);
 		}
 		//DPs auto values
 		else if ((xmlNode = PerfXML->findChild("drawPrimBucketMax")))
@@ -1136,17 +1144,17 @@ void CFpsWidget::LoadBudgets(XmlNodeRef PerfXML)
 
 				nDPs += m_dpBucketSize;
 			}
-			m_perfBuckets[BUCKET_DP].totalTime = 0.f;
+			m_perfBuckets[BUCKET_DP].totalTime.SetSeconds(0);
 		}
 	}
 }
 
 template<bool LESS_THAN>
-void CFpsWidget::UpdateBuckets(PerfBucketsStat& bucketStat, float frameTime, const char* name, float stat)
+void CFpsWidget::UpdateBuckets(PerfBucketsStat& bucketStat, const CTimeValue& frameTime, const char* name, float stat)
 {
 	const uint32 numBuckets = bucketStat.buckets.size();
 
-	if (frameTime > 0.f)
+	if (frameTime > 0)
 	{
 		bucketStat.totalTime += frameTime;
 
@@ -1169,7 +1177,7 @@ void CFpsWidget::UpdateBuckets(PerfBucketsStat& bucketStat, float frameTime, con
 		}
 	}
 
-	if (bucketStat.totalTime > 0.f)
+	if (bucketStat.totalTime > 0)
 	{
 		char entryBuffer[CMiniInfoBox::MAX_TEXT_LENGTH];
 
@@ -1182,7 +1190,7 @@ void CFpsWidget::UpdateBuckets(PerfBucketsStat& bucketStat, float frameTime, con
 			for (uint32 i = 0; i < numBuckets; i++)
 			{
 				//inclusive time
-				float timeAtTarget = bucketStat.buckets[i].timeAtTarget;
+				CTimeValue timeAtTarget = bucketStat.buckets[i].timeAtTarget;
 
 				if (i > 0)
 				{
@@ -1190,12 +1198,12 @@ void CFpsWidget::UpdateBuckets(PerfBucketsStat& bucketStat, float frameTime, con
 					timeAtTarget -= bucketStat.buckets[i - 1].timeAtTarget;
 
 					//Add info to gui
-					float percentAtTarget = 100.f * (timeAtTarget / bucketStat.totalTime);
+					float percentAtTarget = 100.f * BADF(timeAtTarget / bucketStat.totalTime);
 					cry_sprintf(entryBuffer, "%.2f%%%% of time %.1f -> %.1f FPS", percentAtTarget, bucketStat.buckets[i].target, bucketStat.buckets[i - 1].target);
 				}
 				else
 				{
-					float percentAtTarget = 100.f * (bucketStat.buckets[i].timeAtTarget / bucketStat.totalTime);
+					float percentAtTarget = 100.f * BADF(bucketStat.buckets[i].timeAtTarget / bucketStat.totalTime);
 					cry_sprintf(entryBuffer, "%.2f%%%% of time >= %.1f FPS", percentAtTarget, bucketStat.buckets[i].target);
 				}
 				m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_NORM, CPerfHUD::TEXT_SIZE_NORM);
@@ -1205,7 +1213,7 @@ void CFpsWidget::UpdateBuckets(PerfBucketsStat& bucketStat, float frameTime, con
 		{
 			for (uint32 i = 0; i < numBuckets; i++)
 			{
-				float percentAtTarget = 100.f * (bucketStat.buckets[i].timeAtTarget / bucketStat.totalTime);
+				float percentAtTarget = 100.f * BADF(bucketStat.buckets[i].timeAtTarget / bucketStat.totalTime);
 				cry_sprintf(entryBuffer, "%.2f%%%% of time %s %.1f", percentAtTarget, LESS_THAN ? "<=" : ">=", bucketStat.buckets[i].target);
 				m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_NORM, CPerfHUD::TEXT_SIZE_NORM);
 			}
@@ -1221,20 +1229,20 @@ void CFpsWidget::Update()
 	// FPS
 	//
 	{
-		float frameTime = gEnv->pTimer->GetRealFrameTime();
-		UpdateBuckets<false>(m_perfBuckets[BUCKET_FPS], frameTime, "FPS", 1.f / frameTime);
+		CTimeValue frameTime = GetGTimer()->GetRealFrameTime();
+		UpdateBuckets<false>(m_perfBuckets[BUCKET_FPS], frameTime, "FPS", BADF(1 / frameTime));
 	}
 
 	//
 	// GPU FPS
 	//
 	{
-		float gpuFrameTime = gEnv->pRenderer->GetGPUFrameTime();
+		CTimeValue gpuFrameTime = gEnv->pRenderer->GetGPUFrameTime();
 
-		if (gpuFrameTime > 0.f)
+		if (gpuFrameTime > 0)
 		{
 			m_pInfoBox->AddEntry("", CPerfHUD::COL_NORM, CPerfHUD::TEXT_SIZE_NORM);
-			UpdateBuckets<false>(m_perfBuckets[BUCKET_GPU], gpuFrameTime, "GPU FPS", 1.f / gpuFrameTime);
+			UpdateBuckets<false>(m_perfBuckets[BUCKET_GPU], gpuFrameTime, "GPU FPS", BADF(1 / gpuFrameTime));
 		}
 	}
 
@@ -1245,7 +1253,7 @@ void CFpsWidget::Update()
 		//ugly, but buckets are float only at the moment
 		float nDPs = (float)gEnv->pRenderer->GetCurrentNumberOfDrawCalls();
 		m_pInfoBox->AddEntry("", CPerfHUD::COL_NORM, CPerfHUD::TEXT_SIZE_NORM);
-		UpdateBuckets<true>(m_perfBuckets[BUCKET_DP], 1.f, "DPs", nDPs);
+		UpdateBuckets<true>(m_perfBuckets[BUCKET_DP], 1, "DPs", nDPs);
 	}
 }
 
@@ -1272,7 +1280,7 @@ void CFpsWidget::Init()
 
 	for (uint32 i = 0; i < BUCKET_TYPE_NUM; i++)
 	{
-		m_perfBuckets[i].totalTime = 0.f;
+		m_perfBuckets[i].totalTime.SetSeconds(0);
 	}
 }
 
@@ -1288,10 +1296,10 @@ void CFpsWidget::Reset()
 		//Init fps buckets
 		for (uint32 j = 0; j < nBuckets; j++)
 		{
-			stat.buckets[j].timeAtTarget = 0.f;
+			stat.buckets[j].timeAtTarget.SetSeconds(0);
 		}
 
-		stat.totalTime = 0.f;
+		stat.totalTime.SetSeconds(0);
 	}
 }
 
@@ -1324,7 +1332,7 @@ void CFpsWidget::SaveStats(XmlNodeRef statsXML)
 		{
 			PerfBucketsStat& perfBucket = m_perfBuckets[i];
 
-			if (perfBucket.totalTime > 0.f)
+			if (perfBucket.totalTime > 0)
 			{
 				if ((fpsNode = statsXML->newChild(perfBucketTypeStr[i])))
 				{
@@ -1334,7 +1342,7 @@ void CFpsWidget::SaveStats(XmlNodeRef statsXML)
 
 					for (uint32 j = 0; j < numBuckets; j++)
 					{
-						float percentAtTarget = 100.f * (perfBucket.buckets[j].timeAtTarget / perfBucket.totalTime);
+						float percentAtTarget = 100.f * BADF(perfBucket.buckets[j].timeAtTarget / perfBucket.totalTime);
 
 						if ((child = fpsNode->newChild("bucket")))
 						{
@@ -1352,7 +1360,7 @@ void CFpsWidget::SaveStats(XmlNodeRef statsXML)
 	}
 }
 
-const std::vector<ICryPerfHUD::PerfBucket>* CFpsWidget::GetFpsBuckets(float& totalTime) const
+const std::vector<ICryPerfHUD::PerfBucket>* CFpsWidget::GetFpsBuckets(CTimeValue& totalTime) const
 {
 	totalTime = m_perfBuckets[BUCKET_FPS].totalTime;
 	return &m_perfBuckets[BUCKET_FPS].buckets;
@@ -1365,7 +1373,7 @@ const std::vector<ICryPerfHUD::PerfBucket>* CFpsWidget::GetFpsBuckets(float& tot
 CRenderStatsWidget::CRenderStatsWidget(IMiniCtrl* pParentMenu, ICryPerfHUD* pPerfHud) : ICryPerfHUDWidget(eWidget_RenderStats)
 {
 	m_pPerfHUD = pPerfHud;
-	m_fpsBudget = 30.f;
+	m_fpsBudget = 30;
 	m_dpBudget = 2000;
 	m_polyBudget = 500000;
 	m_postEffectBudget = 3;
@@ -1479,7 +1487,7 @@ void CRenderStatsWidget::Update()
 	//
 	// FPS
 	//
-	m_runtimeData.fps = min(9999.f, gEnv->pTimer->GetFrameRate());
+	m_runtimeData.fps = min(rTime(9999), GetGTimer()->GetFrameRate());
 
 	cry_sprintf(entryBuffer, "FPS: %.2f (%.2f)", m_runtimeData.fps, m_fpsBudget);
 
@@ -1490,7 +1498,7 @@ void CRenderStatsWidget::Update()
 	else
 	{
 		m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-		CryPerfHUDWarning(1.f, "FPS Too Low: %.2f", m_runtimeData.fps);
+		CryPerfHUDWarning(1, "FPS Too Low: %.2f", m_runtimeData.fps);
 
 		//PerfHud  / AuxRenderer causes us to be RenderThread limited
 		//Need to investigate vertex buffer locks in AuxRenderer before enabling
@@ -1522,11 +1530,11 @@ void CRenderStatsWidget::Update()
 	//
 	// GPU Time
 	//
-	float gpuTime = pRenderer->GetGPUFrameTime();
+	CTimeValue gpuTime = pRenderer->GetGPUFrameTime();
 
-	if (gpuTime > 0.f)
+	if (gpuTime > 0)
 	{
-		float gpuFPS = 1.f / gpuTime;
+		rTime gpuFPS = 1 / gpuTime;
 
 		cry_sprintf(entryBuffer, "GPU FPS: %.2f (%.2f)", gpuFPS, m_fpsBudget);
 		if (gpuFPS >= m_fpsBudget)
@@ -1536,7 +1544,7 @@ void CRenderStatsWidget::Update()
 		else
 		{
 			m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-			CryPerfHUDWarning(1.f, "GPU FPS Too Low: %.2f", gpuFPS);
+			CryPerfHUDWarning(1, "GPU FPS Too Low: %.2f", gpuFPS);
 		}
 	}
 
@@ -1550,7 +1558,7 @@ void CRenderStatsWidget::Update()
 		m_runtimeData.hdrEnabled = true;
 		if (!m_runtimeData.hdrEnabled)
 		{
-			CryPerfHUDWarning(1.f, "HDR Disabled");
+			CryPerfHUDWarning(1, "HDR Disabled");
 		}
 	}
 
@@ -1571,7 +1579,7 @@ void CRenderStatsWidget::Update()
 			cry_sprintf(entryBuffer, "Render Thread Disabled");
 			m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
 			m_runtimeData.renderThreadEnabled = false;
-			CryPerfHUDWarning(1.f, "Render Thread Disabled");
+			CryPerfHUDWarning(1, "Render Thread Disabled");
 		}
 	}
 
@@ -1600,7 +1608,7 @@ void CRenderStatsWidget::Update()
 	else
 	{
 		m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-		CryPerfHUDWarning(1.f, "Too Many Draw Calls: %u", m_runtimeData.nDrawPrims);
+		CryPerfHUDWarning(1, "Too Many Draw Calls: %u", m_runtimeData.nDrawPrims);
 	}
 
 	cry_sprintf(entryBuffer, "Num Tris: %u (%u)", m_runtimeData.nPolys, m_polyBudget);
@@ -1612,7 +1620,7 @@ void CRenderStatsWidget::Update()
 	else
 	{
 		m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-		CryPerfHUDWarning(1.f, "Too Many Tris: %d", m_runtimeData.nPolys);
+		CryPerfHUDWarning(1, "Too Many Tris: %d", m_runtimeData.nPolys);
 	}
 
 	//
@@ -1629,7 +1637,7 @@ void CRenderStatsWidget::Update()
 	else
 	{
 		m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-		CryPerfHUDWarning(1.f, "Too Many Post Effects: %d", m_runtimeData.nPostEffects);
+		CryPerfHUDWarning(1, "Too Many Post Effects: %d", m_runtimeData.nPostEffects);
 	}
 
 	//
@@ -1666,7 +1674,7 @@ void CRenderStatsWidget::Update()
 			else
 			{
 				m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-				CryPerfHUDWarning(1.f, "Too Many Fwd Shadow Casting Lights: %d", nShadowCastingLights);
+				CryPerfHUDWarning(1, "Too Many Fwd Shadow Casting Lights: %d", nShadowCastingLights);
 			}
 		}
 
@@ -1695,7 +1703,7 @@ void CRenderStatsWidget::Update()
 		else
 		{
 			m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-			CryPerfHUDWarning(1.f, "Too Many Particles: %d", (int)particleCounts.particles.rendered);
+			CryPerfHUDWarning(1, "Too Many Particles: %d", (int)particleCounts.particles.rendered);
 		}
 	}
 
@@ -1714,7 +1722,7 @@ void CRenderStatsWidget::Update()
 		else
 		{
 			m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-			CryPerfHUDWarning(1.f, "Too Many Geometry: %.2fMB", fMeshRequiredMB);
+			CryPerfHUDWarning(1, "Too Many Geometry: %.2fMB", fMeshRequiredMB);
 		}
 	}
 
@@ -1733,7 +1741,7 @@ void CRenderStatsWidget::Update()
 		else
 		{
 			m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-			CryPerfHUDWarning(1.f, "Too Many Textures: %.2fMB", fTexRequiredMB);
+			CryPerfHUDWarning(1, "Too Many Textures: %.2fMB", fTexRequiredMB);
 		}
 	}
 }
@@ -1911,7 +1919,7 @@ void CStreamingStatsWidget::Update()
 	else
 	{
 		m_pInfoBox->AddEntry(entryBuffer, CPerfHUD::COL_ERROR, CPerfHUD::TEXT_SIZE_NORM);
-		CryPerfHUDWarning(1.f, "Too Many Geometry: %.2fMB", fMeshRequiredMB);
+		CryPerfHUDWarning(1, "Too Many Geometry: %.2fMB", fMeshRequiredMB);
 	}
 }
 
@@ -1976,7 +1984,7 @@ void CWarningsWidget::Update()
 		}
 	}
 
-	float frameTime = gEnv->pTimer->GetRealFrameTime();
+	CTimeValue frameTime = GetGTimer()->GetRealFrameTime().GetSeconds();
 
 	//delete old warnings
 	// [K01]: fixing Linux crash
@@ -1986,7 +1994,7 @@ void CWarningsWidget::Update()
 		SWarning* pW = &(*iter);
 		pW->remainingDuration -= frameTime;
 
-		if (pW->remainingDuration <= 0.f)
+		if (pW->remainingDuration <= 0)
 			iter = m_warnings.erase(iter);
 		else
 			++iter;
@@ -2033,7 +2041,7 @@ void CWarningsWidget::SaveStats(XmlNodeRef statsXML)
 	}
 }
 
-void CWarningsWidget::AddWarningV(float duration, const char* fmt, va_list argList)
+void CWarningsWidget::AddWarningV(const CTimeValue& duration, const char* fmt, va_list argList)
 {
 	char warningText[WARNING_LENGTH];
 
@@ -2042,7 +2050,7 @@ void CWarningsWidget::AddWarningV(float duration, const char* fmt, va_list argLi
 	AddWarning(duration, warningText);
 }
 
-void CWarningsWidget::AddWarning(float duration, const char* warning)
+void CWarningsWidget::AddWarning(const CTimeValue& duration, const char* warning)
 {
 	if (CryGetCurrentThreadId() == m_nMainThreadId)
 	{

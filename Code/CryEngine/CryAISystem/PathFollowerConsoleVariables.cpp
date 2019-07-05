@@ -15,10 +15,10 @@ void SAIConsoleVarsPathFollower::Init()
 
 	REGISTER_CVAR2("ai_UseSmartPathFollower_LookAheadDistance", &SmartPathFollower_LookAheadDistance, 10.0f, VF_NULL, "LookAheadDistance of SmartPathFollower");
 
-	REGISTER_CVAR2("ai_SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathWalk", &SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathWalk, 0.5f, VF_NULL,
+	REGISTER_CVAR2("ai_SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathWalk", &SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathWalk, CTimeValue("0.5"), VF_NULL,
 		"Defines the time frame the AI is allowed to look ahead while moving strictly along a path to decide whether to cut towards the next point. (Walk only)\n");
 
-	REGISTER_CVAR2("ai_SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathRunAndSprint", &SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathRunAndSprint, 0.25f, VF_NULL,
+	REGISTER_CVAR2("ai_SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathRunAndSprint", &SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathRunAndSprint, CTimeValue("0.25"), VF_NULL,
 		"Defines the time frame the AI is allowed to look ahead while moving strictly along a path to decide whether to cut towards the next point. (Run and Sprint only)\n");
 
 	REGISTER_CVAR2("ai_SmartPathFollower_decelerationHuman", &SmartPathFollower_decelerationHuman, 7.75f, VF_NULL, "Deceleration multiplier for non-vehicles");

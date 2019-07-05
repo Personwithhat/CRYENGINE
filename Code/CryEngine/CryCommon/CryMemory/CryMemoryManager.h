@@ -20,7 +20,7 @@
 #include <cstddef>
 
 #if !defined(_RELEASE)
-//! Enable this to check for heap corruption on windows systems by walking the crt.
+//! Enable this to check for heap corruption on windows systems by walking the crt. PERSONAL TODO: check this out for helpful debugging!?
 	#define MEMORY_ENABLE_DEBUG_HEAP 0
 #endif
 
@@ -334,11 +334,12 @@ private:
 //! \return Non-0 if it's valid and 0 if not valid.
 ILINE int IsHeapValid()
 {
-	#if (defined(_DEBUG) && !defined(RELEASE_RUNTIME) && CRY_PLATFORM_WINAPI) || (defined(DEBUG_MEMORY_MANAGER))
+	// PERSONAL NOTE: Temporary for Dr.Memory testing, this keeps triggering during debug/etc.
+	/*#if (defined(_DEBUG) && !defined(RELEASE_RUNTIME) && CRY_PLATFORM_WINAPI) || (defined(DEBUG_MEMORY_MANAGER))
 	return _CrtCheckMemory();
-	#else
+	#else*/
 	return true;
-	#endif
+	//#endif
 }
 
 	#ifdef DEBUG_MEMORY_MANAGER

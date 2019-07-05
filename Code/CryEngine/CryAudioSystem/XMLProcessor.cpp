@@ -245,7 +245,7 @@ bool CXMLProcessor::ParseControlsData(char const* const szFolderPath, ContextId 
 	CryFixedStringT<MaxFilePathLength> sRootFolderPath(szFolderPath);
 
 #if defined(CRY_AUDIO_USE_DEBUG_CODE)
-	CTimeValue const startTime(gEnv->pTimer->GetAsyncTime());
+	CTimeValue const startTime(GetGTimer()->GetAsyncTime());
 #endif // CRY_AUDIO_USE_DEBUG_CODE
 
 	if (g_pIImpl != nullptr)
@@ -304,8 +304,8 @@ bool CXMLProcessor::ParseControlsData(char const* const szFolderPath, ContextId 
 	}
 
 #if defined(CRY_AUDIO_USE_DEBUG_CODE)
-	float const duration = (gEnv->pTimer->GetAsyncTime() - startTime).GetMilliSeconds();
-	Cry::Audio::Log(ELogType::Comment, R"(Parsed controls data in "%s" for context "%s" in %.3f ms!)", szFolderPath, szContextName, duration);
+	CTimeValue const duration = GetGTimer()->GetAsyncTime() - startTime;
+	Cry::Audio::Log(ELogType::Comment, R"(Parsed controls data in "%s" for context "%s" in %.3f ms!)", szFolderPath, szContextName, (float)duration.GetMilliSeconds());
 #endif // CRY_AUDIO_USE_DEBUG_CODE
 
 	return contextExists;
@@ -403,7 +403,7 @@ void CXMLProcessor::ParsePreloadsData(char const* const szFolderPath, ContextId 
 	CryFixedStringT<MaxFilePathLength> rootFolderPath(szFolderPath);
 
 #if defined(CRY_AUDIO_USE_DEBUG_CODE)
-	CTimeValue const startTime(gEnv->pTimer->GetAsyncTime());
+	CTimeValue const startTime(GetGTimer()->GetAsyncTime());
 #endif // CRY_AUDIO_USE_DEBUG_CODE
 
 	if (g_pIImpl != nullptr)
@@ -485,8 +485,8 @@ void CXMLProcessor::ParsePreloadsData(char const* const szFolderPath, ContextId 
 
 #if defined(CRY_AUDIO_USE_DEBUG_CODE)
 	char const* const szContextName = stl::find_in_map(g_contextLookup, contextId, "unknown");
-	float const duration = (gEnv->pTimer->GetAsyncTime() - startTime).GetMilliSeconds();
-	Cry::Audio::Log(ELogType::Comment, R"(Parsed preloads data in "%s" for context "%s" in %.3f ms!)", szFolderPath, szContextName, duration);
+	mpfloat const duration = (GetGTimer()->GetAsyncTime() - startTime).GetMilliSeconds();
+	Cry::Audio::Log(ELogType::Comment, R"(Parsed preloads data in "%s" for context "%s" in %.3f ms!)", szFolderPath, szContextName, (float)duration);
 #endif // CRY_AUDIO_USE_DEBUG_CODE
 }
 

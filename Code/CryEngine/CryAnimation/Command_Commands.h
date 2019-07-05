@@ -151,7 +151,7 @@ struct SampleAddPoseFull
 	uint8 m_nCommand;
 	uint8 m_flags;
 	int16 m_nEAnimID;
-	f32   m_fETimeNew; //this is a percentage value between 0-1
+	f32   m_fETimeNew; //this is a percentage value between 0-1					PERSONAL TODO: This and the other 2 time/weight setups here can be nTime etc. now, since CTimeValue now POD safe.
 	f32   m_fWeight;
 	void  Execute(const CState& state, CEvaluationContext& context) const;
 };

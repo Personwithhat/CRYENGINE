@@ -123,7 +123,7 @@ CTrackViewAnimNode* CTrackViewTrack::GetAnimNode() const
 	return m_pTrackAnimNode;
 }
 
-bool CTrackViewTrack::SnapTimeToPrevKey(SAnimTime& time) const
+bool CTrackViewTrack::SnapTimeToPrevKey(CTimeValue& time) const
 {
 	CTrackViewKeyHandle prevKey = const_cast<CTrackViewTrack*>(this)->GetPrevKey(time);
 
@@ -136,7 +136,7 @@ bool CTrackViewTrack::SnapTimeToPrevKey(SAnimTime& time) const
 	return false;
 }
 
-bool CTrackViewTrack::SnapTimeToNextKey(SAnimTime& time) const
+bool CTrackViewTrack::SnapTimeToNextKey(CTimeValue& time) const
 {
 	CTrackViewKeyHandle prevKey = const_cast<CTrackViewTrack*>(this)->GetNextKey(time);
 
@@ -155,17 +155,17 @@ CTrackViewTrack* CTrackViewTrack::GetSubTrack(uint index)
 	return static_cast<CTrackViewTrack*>(GetChild(index));
 }
 
-CTrackViewKeyHandle CTrackViewTrack::GetPrevKey(const SAnimTime time)
+CTrackViewKeyHandle CTrackViewTrack::GetPrevKey(const CTimeValue& time)
 {
 	CTrackViewKeyHandle keyHandle;
 
-	const SAnimTime startTime = time;
-	SAnimTime closestTime = SAnimTime::Min();
+	const CTimeValue startTime = time;
+	CTimeValue closestTime = CTimeValue::Min();
 
 	const int numKeys = m_pAnimTrack->GetNumKeys();
 	for (int i = 0; i < numKeys; ++i)
 	{
-		const SAnimTime keyTime = m_pAnimTrack->GetKeyTime(i);
+		const CTimeValue keyTime = m_pAnimTrack->GetKeyTime(i);
 		if (keyTime < startTime && keyTime > closestTime)
 		{
 			keyHandle = CTrackViewKeyHandle(this, i);
@@ -176,17 +176,17 @@ CTrackViewKeyHandle CTrackViewTrack::GetPrevKey(const SAnimTime time)
 	return keyHandle;
 }
 
-CTrackViewKeyHandle CTrackViewTrack::GetNextKey(const SAnimTime time)
+CTrackViewKeyHandle CTrackViewTrack::GetNextKey(const CTimeValue& time)
 {
 	CTrackViewKeyHandle keyHandle;
 
-	const SAnimTime startTime = time;
-	SAnimTime closestTime = SAnimTime::Max();
+	const CTimeValue startTime = time;
+	CTimeValue closestTime = CTimeValue::Max();
 
 	const int numKeys = m_pAnimTrack->GetNumKeys();
 	for (int i = 0; i < numKeys; ++i)
 	{
-		const SAnimTime keyTime = m_pAnimTrack->GetKeyTime(i);
+		const CTimeValue keyTime = m_pAnimTrack->GetKeyTime(i);
 		if (keyTime > startTime && keyTime < closestTime)
 		{
 			keyHandle = CTrackViewKeyHandle(this, i);
@@ -210,7 +210,7 @@ CTrackViewKeyBundle CTrackViewTrack::GetSelectedKeys()
 	}
 	else
 	{
-		bundle = GetKeys(true, SAnimTime::Min(), SAnimTime::Max());
+		bundle = GetKeys(true, CTimeValue::Min(), CTimeValue::Max());
 	}
 
 	return bundle;
@@ -229,13 +229,13 @@ CTrackViewKeyBundle CTrackViewTrack::GetAllKeys()
 	}
 	else
 	{
-		bundle = GetKeys(false, SAnimTime::Min(), SAnimTime::Max());
+		bundle = GetKeys(false, CTimeValue::Min(), CTimeValue::Max());
 	}
 
 	return bundle;
 }
 
-CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const SAnimTime t0, const SAnimTime t1)
+CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const CTimeValue& t0, const CTimeValue& t1)
 {
 	CTrackViewKeyBundle bundle;
 
@@ -254,14 +254,14 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeysInTimeRange(const SAnimTime t0, cons
 	return bundle;
 }
 
-CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const SAnimTime t0, const SAnimTime t1)
+CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const CTimeValue& t0, const CTimeValue& t1)
 {
 	CTrackViewKeyBundle bundle;
 
 	const int keyCount = m_pAnimTrack->GetNumKeys();
 	for (int keyIndex = 0; keyIndex < keyCount; ++keyIndex)
 	{
-		const SAnimTime keyTime = m_pAnimTrack->GetKeyTime(keyIndex);
+		const CTimeValue keyTime = m_pAnimTrack->GetKeyTime(keyIndex);
 		const bool timeRangeOk = (t0 <= keyTime && keyTime <= t1);
 
 		if ((!bOnlySelected || IsKeySelected(keyIndex)) && timeRangeOk)
@@ -274,7 +274,7 @@ CTrackViewKeyBundle CTrackViewTrack::GetKeys(const bool bOnlySelected, const SAn
 	return bundle;
 }
 
-CTrackViewKeyHandle CTrackViewTrack::CreateKey(const SAnimTime time)
+CTrackViewKeyHandle CTrackViewTrack::CreateKey(const CTimeValue& time)
 {
 	const int keyIndex = m_pAnimTrack->CreateKey(time);
 	m_keySelectionStates.insert(m_keySelectionStates.begin() + keyIndex, false);
@@ -316,7 +316,7 @@ CTrackViewKeyConstHandle CTrackViewTrack::GetKey(unsigned int index) const
 	return CTrackViewKeyConstHandle();
 }
 
-CTrackViewKeyHandle CTrackViewTrack::GetKeyByTime(const SAnimTime time)
+CTrackViewKeyHandle CTrackViewTrack::GetKeyByTime(const CTimeValue& time)
 {
 	if (m_bIsCompoundTrack)
 	{
@@ -453,7 +453,7 @@ void CTrackViewTrack::SelectKey(unsigned int keyIndex, bool bSelect)
 	}
 }
 
-SAnimTime CTrackViewTrack::GetKeyTime(const uint index) const
+CTimeValue CTrackViewTrack::GetKeyTime(const uint index) const
 {
 	return m_pAnimTrack->GetKeyTime(index);
 }
@@ -482,7 +482,7 @@ void CTrackViewTrack::GetSelectedKeysIndices(SAnimKeysIndicesByIndex& selectedKe
 	}
 }
 
-void CTrackViewTrack::SerializeSelectedKeys(XmlNodeRef& xmlNode, bool bLoading, const SAnimTime time, size_t index)
+void CTrackViewTrack::SerializeSelectedKeys(XmlNodeRef& xmlNode, bool bLoading, const CTimeValue& time, size_t index)
 {
 	if (m_bIsCompoundTrack)
 	{
@@ -633,7 +633,7 @@ void CTrackViewTrack::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlyS
 	xmlNode->addChild(trackXML);
 }
 
-void CTrackViewTrack::PasteKeys(XmlNodeRef xmlNode, const SAnimTime time)
+void CTrackViewTrack::PasteKeys(XmlNodeRef xmlNode, const CTimeValue& time)
 {
 	assert(CUndo::IsRecording());
 
@@ -686,7 +686,7 @@ void CTrackViewTrack::OffsetKeys(const TMovieSystemValue& offset)
 	}
 }
 
-void CTrackViewTrack::SetValue(const SAnimTime time, const TMovieSystemValue& value)
+void CTrackViewTrack::SetValue(const CTimeValue& time, const TMovieSystemValue& value)
 {
 	if (IsCompoundTrack())
 	{
@@ -747,7 +747,7 @@ bool CTrackViewTrack::KeysHaveDuration() const
 	return m_pAnimTrack->KeysDeriveTrackDurationKey();
 }
 
-SAnimTime CTrackViewTrack::GetKeyDuration(const uint index) const
+CTimeValue CTrackViewTrack::GetKeyDuration(const uint index) const
 {
 	if (m_pAnimTrack->KeysDeriveTrackDurationKey())
 	{
@@ -756,7 +756,7 @@ SAnimTime CTrackViewTrack::GetKeyDuration(const uint index) const
 		return pDurationKey->m_duration;
 	}
 
-	return SAnimTime(0);
+	return 0;
 }
 
 void CTrackViewTrack::Serialize(Serialization::IArchive& ar)

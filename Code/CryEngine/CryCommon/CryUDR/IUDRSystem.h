@@ -34,7 +34,7 @@ namespace Cry
 			//! Updates the UDR system. Should be called exactly once per frame.
 			//! \param frameStartTime Start time of the frame.
 			//! \param frameDeltaTime Duration of the frame.
-			virtual void                  Update(const CTimeValue frameStartTime, const float frameDeltaTime) = 0;
+			virtual void                  Update(const CTimeValue frameStartTime, const CTimeValue& frameDeltaTime) = 0;
 		
 			virtual ITreeManager&         GetTreeManager() = 0;
 			virtual INodeStack&           GetNodeStack() = 0;

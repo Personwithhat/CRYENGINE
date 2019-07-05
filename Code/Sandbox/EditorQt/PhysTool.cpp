@@ -82,7 +82,7 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 	{
 		if (flags & MK_SHIFT)
 		{
-			if (!vars->lastTimeStep)
+			if (vars->lastTimeStep == 0)
 			{
 				bool hitExisting = false;
 				if (m_pRagdoll && m_maskConstr)
@@ -153,7 +153,7 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 				}
 				return true;
 			}
-			m_timeHit = gEnv->pTimer->GetCurrTime();
+			m_timeHit = GetGTimer()->GetFrameStartTime();
 			return true;
 		}
 		if (nHits)
@@ -235,7 +235,7 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 					sp.minEnergy = -1;
 					m_pRope->SetParams(&sp);
 					pe_player_dynamics pd;
-					pd.timeImpulseRecover = 2;
+					pd.timeImpulseRecover.SetSeconds(2);
 					hit.pCollider->SetParams(&pd);
 				}
 				break;
@@ -255,7 +255,7 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 					hit.pCollider->Action(&aac, (1 - m_pEntAttach->SetParams(&pp)) >> 31);
 				}
 			}
-			if (!vars->lastTimeStep && hit.pCollider != m_pEntPull && hit.pCollider != m_pRagdoll && CanUseIK(hit.pCollider))
+			if (vars->lastTimeStep == 0 && hit.pCollider != m_pEntPull && hit.pCollider != m_pRagdoll && CanUseIK(hit.pCollider))
 			{
 				ClearRagdollConstraints();
 				(m_pRagdoll = hit.pCollider)->AddRef();
@@ -263,7 +263,7 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 			}
 			(m_pEntPull = hit.pCollider)->AddRef();
 			m_attachDist = view->GetViewTM().GetColumn1() * (pp.pos - org);
-			m_timeMove = gEnv->pTimer->GetCurrTime();
+			m_timeMove = GetGTimer()->GetFrameStartTime();
 			m_lastAttachPos = pp.pos;
 		}
 		return true;
@@ -298,7 +298,7 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 			if (!m_IKapplied)
 				m_pEntPull->Action(&aa);
 			IEntity *pEnt = (IEntity*)m_pEntPull->GetForeignData(PHYS_FOREIGN_ID_ENTITY);
-			if (pEnt && m_IKapplied && !gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep)
+			if (pEnt && m_IKapplied && gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep == 0)
 				if (CEntityObject *pEditorObj = CEntityObject::FindFromEntityId(pEnt->GetId()))
 				{
 					CUndo undo("Apply IK");
@@ -309,18 +309,18 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 			m_pEntPull = 0;
 			ReleasePhysEnt(m_pRope);
 			aa.bAwake = 0;
-			m_pEntAttach->Action(&aa, gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep ? -1 : 0);
+			m_pEntAttach->Action(&aa, gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep != 0 ? -1 : 0);
 			return true;
 		}
-		else if (m_timeHit)
+		else if (m_timeHit != 0)
 		{
-			float t = gEnv->pTimer->GetCurrTime();
+			CTimeValue t = GetGTimer()->GetFrameStartTime();
 			if (flags & MK_CONTROL)
 			{
 				pe_explosion expl;
 				expl.epicenter = expl.epicenterImp = hit.pt;
 				expl.rmin = (expl.r = expl.rmax = cv_HitExplR) * 0.2f;
-				expl.impulsivePressureAtR = cv_HitExplPress0 + min(2.0f, t - m_timeHit) * (cv_HitExplPress1 - cv_HitExplPress0) * 0.5f;
+				expl.impulsivePressureAtR = cv_HitExplPress0 + min(CTimeValue(2), t - m_timeHit).BADGetSeconds() * (cv_HitExplPress1 - cv_HitExplPress0) * 0.5f;
 				expl.rminOcc = 0.05f;
 				expl.nOccRes = 16;
 				gEnv->pPhysicalWorld->SimulateExplosion(&expl, 0, 0, ent_static | ent_sleeping_rigid | ent_rigid | ent_living | ent_independent);
@@ -340,13 +340,13 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 			else if (hit.pCollider && hit.pCollider->GetType() != PE_STATIC && hit.pCollider->GetType() != PE_ROPE)
 			{
 				pe_player_dynamics pd;
-				pd.timeImpulseRecover = 4;
+				pd.timeImpulseRecover.SetSeconds(4);
 				hit.pCollider->SetParams(&pd);
 				pe_status_dynamics sd;
 				hit.pCollider->GetStatus(&sd);
 				pe_action_impulse ai;
 				ai.pGridRefEnt = WORLD_ENTITY;
-				ai.impulse = dir.normalized() * sd.mass * (cv_HitVel0 + min(2.0f, max(0.0f, t - m_timeHit - 0.3f)) * (cv_HitVel1 - cv_HitVel0) * 0.5f);
+				ai.impulse = dir.normalized() * sd.mass * (cv_HitVel0 + min(CTimeValue(2), max(CTimeValue(0), t - m_timeHit - "0.3")).BADGetSeconds() * (cv_HitVel1 - cv_HitVel0) * 0.5f);
 				ai.point = hit.pt;
 				if (hit.pCollider->GetType() == PE_LIVING)
 				{
@@ -367,7 +367,7 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 			}
 			else
 			{
-				m_timeBullet = 0;
+				m_timeBullet.SetSeconds(0);
 				ReleasePhysEnt(m_pBullet);
 				ISurfaceType* pSurf = gEnv->p3DEngine->GetMaterialManager()->GetSurfaceTypeByName("mat_metal");
 				pe_params_pos pp;
@@ -376,15 +376,15 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 				pe_params_particle ppt;
 				ppt.flags = particle_single_contact | pef_log_collisions;
 				ppt.heading = dir.normalized();
-				ppt.velocity = cv_HitProjVel0 + min(2.0f, t - m_timeHit) * (cv_HitProjVel1 - cv_HitProjVel0) * 0.5f;
+				ppt.velocity = cv_HitProjVel0 + min(CTimeValue(2), t - m_timeHit).BADGetSeconds() * (cv_HitProjVel1 - cv_HitProjVel0) * 0.5f;
 				ppt.mass = cv_HitProjMass;
 				ppt.surface_idx = pSurf ? pSurf->GetId() : 0;
 				ppt.size = 0.02f;
 				bullet->SetParams(&ppt);
 				(m_pBullet = bullet)->AddRef();
-				m_timeBullet = 2.0f;
+				m_timeBullet.SetSeconds(2);
 			}
-			m_timeHit = 0;
+			m_timeHit.SetSeconds(0);
 			return true;
 		}
 	}
@@ -394,7 +394,7 @@ bool CPhysPullTool::MouseCallback(CViewport* view, EMouseEvent event, CPoint& po
 		switch (m_pEntPull->GetType())
 		{
 		case PE_ARTICULATED:
-			if (CanUseIK(m_pEntPull) && !gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep)
+			if (CanUseIK(m_pEntPull) && gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep == 0)
 			{
 				pe_action_resolve_constraints arc;
 				arc.lastDist = cv_IKprec;
@@ -494,11 +494,11 @@ void CPhysPullTool::Display(SDisplayContext& dc)
 	}
 	if (drawPull)
 		gEnv->pPhysicalWorld->DrawEntityHelperInformation(gEnv->pSystem->GetIPhysRenderer(), gEnv->pPhysicalWorld->GetPhysicalEntityId(m_pEntPull), 24354);
-	float t = gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI);
-	if (m_timeHit && t > m_timeHit + 0.3f)
+	CTimeValue t = GetGTimer()->GetFrameStartTime(ITimer::ETIMER_UI);
+	if (m_timeHit != 0 && t > m_timeHit + "0.3")
 	{
 		dc.SetColor(RGB(180, 0, 0), 0.4f);
-		dc.DrawBall(SMiniCamera(dc.camera).Screen2World(m_lastMousePos, 1), min(2.0f, t - m_timeHit - 0.3f) * 0.01f);
+		dc.DrawBall(SMiniCamera(dc.camera).Screen2World(m_lastMousePos, 1), min(CTimeValue(2), t - m_timeHit - "0.3").BADGetSeconds() * 0.01f);
 	}
 	ReleasePhysEnt(m_pBullet, (m_timeBullet -= vars->lastTimeStep * (1 - vars->bSingleStepMode)) <= 0);
 
@@ -539,7 +539,7 @@ void CPhysPullTool::Display(SDisplayContext& dc)
 	{
 		bool shift = !!(GetKeyState(VK_SHIFT) & 0x8000), ctrl = !!(GetKeyState(VK_CONTROL) & 0x8000);
 		icur = shift ? 2 : (ctrl ? 1 : 0);
-		bool checkIK = shift && !vars->lastTimeStep;
+		bool checkIK = shift && vars->lastTimeStep == 0;
 		if (!m_pEntPull && (ctrl || checkIK))
 		{
 			ray_hit hit;
@@ -569,11 +569,11 @@ void CPhysPullTool::UpdateAttachPos(const SMiniCamera& cam, const CPoint& point)
 		pp.pos = cam.Screen2World(point, m_attachDist);
 		pp.q = Quat(cam.mtx);
 		m_pEntAttach->SetParams(&pp);
-		float t = gEnv->pTimer->GetCurrTime();
-		if (t > m_timeMove + gEnv->pTimer->GetFrameTime() * 0.5f)
+		CTimeValue t = GetGTimer()->GetFrameStartTime();
+		if (t > m_timeMove + GetGTimer()->GetFrameTime() * "0.5")
 		{
 			pe_action_set_velocity asv;
-			asv.v = gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep ? (pp.pos - m_lastAttachPos) / (t - m_timeMove) : Vec3(ZERO);
+			asv.v = gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep != 0 ? (pp.pos - m_lastAttachPos) / (t - m_timeMove).BADGetSeconds() : Vec3(ZERO);
 			m_pEntAttach->Action(&asv);
 			m_lastAttachPos = pp.pos;
 			m_timeMove = t;
@@ -652,7 +652,7 @@ CPhysPullTool::~CPhysPullTool()
 	ReleasePhysEnt(m_pBullet);
 	ReleasePhysEnt(m_pEntAttach);
 	ClearRagdollConstraints();
-	m_timeBullet = 0;
+	m_timeBullet.SetSeconds(0);
 	GetIEditorImpl()->UnregisterNotifyListener(this);
 	if (QAction* pAction = GetIEditorImpl()->GetICommandManager()->GetAction("physics.set_physics_tool"))
 		pAction->setChecked(false);

@@ -466,7 +466,7 @@ void CVisAreaManager::PortalsDrawDebug()
 	    for(int p=0; p<m_pCurArea->m_lstConnections.Count(); p++)
 	    {
 	      CVisArea * pPortal = m_pCurArea->m_lstConnections[p];
-	      float fBlink = gEnv->pTimer->GetFrameStartTime().GetPeriodicFraction(1.0f)>0.5f ? 1.0f : 0.0f;
+	      float fBlink = GetGTimer()->GetFrameStartTime().GetPeriodicFraction(1.0f)>0.5f ? 1.0f : 0.0f;
 	      float fError = pPortal->IsPortalValid() ? 1.0f : fBlink;
 	      GetRenderer()->SetMaterialColor(fError,fError*(pPortal->m_lstConnections.Count()<2),0,0.25f);
 	      DrawBBox(pPortal->m_boxArea.min, pPortal->m_boxArea.max, DPRIM_SOLID_BOX);
@@ -490,7 +490,7 @@ void CVisAreaManager::PortalsDrawDebug()
 		{
 			CVisArea* pPortal = m_lstPortals[v];
 
-			float fBlink = gEnv->pTimer->GetFrameStartTime().GetPeriodicFraction(1.0f) > 0.5f ? 1.0f : 0.0f;
+			float fBlink = GetGTimer()->GetFrameStartTime().GetPeriodicFraction(1) > "0.5" ? 1.0f : 0.0f;
 			float fError = pPortal->IsPortalValid() ? 1.f : fBlink;
 
 			ColorB col(
@@ -1401,7 +1401,7 @@ void CVisAreaManager::PrecacheLevel(bool bPrecacheAllVisAreas, Vec3* pPrecachePo
 	//  gEnv->pLog->UpdateLoadingScreen(0);
 
 #if !defined(EXCLUDE_NORMAL_LOG)
-	float fPrecacheTimeStart = GetTimer()->GetAsyncCurTime();
+	CTimeValue fPrecacheTimeStart = GTimer(render)->GetAsyncCurTime();
 #endif
 
 	int nRenderingFlags = SHDF_ZPASS | SHDF_ALLOWHDR | SHDF_ALLOWPOSTPROCESS | SHDF_ALLOW_WATER | SHDF_ALLOW_AO | SHDF_ALLOW_SKY;
@@ -1498,8 +1498,8 @@ void CVisAreaManager::PrecacheLevel(bool bPrecacheAllVisAreas, Vec3* pPrecachePo
 	GetRenderer()->EnableSwapBuffers(true);
 
 #if !defined(EXCLUDE_NORMAL_LOG)
-	float fPrecacheTime = GetTimer()->GetAsyncCurTime() - fPrecacheTimeStart;
-	CryLog("Level Precache finished in %.2f seconds", fPrecacheTime);
+	CTimeValue fPrecacheTime = GTimer(render)->GetAsyncCurTime() - fPrecacheTimeStart;
+	CryLog("Level Precache finished in %.2f seconds", (float)fPrecacheTime.GetSeconds());
 #endif
 }
 

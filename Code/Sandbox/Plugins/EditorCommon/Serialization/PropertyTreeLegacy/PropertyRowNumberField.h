@@ -31,15 +31,15 @@ public:
 	void                          onMouseStill(const PropertyDragEvent& e) override;
 	bool                          getHoverInfo(PropertyHoverInfo* hit, const Point& cursorPos, const PropertyTreeLegacy* tree) const override;
 
-	virtual void                  startIncrement() = 0;
-	virtual void                  endIncrement(PropertyTreeLegacy* tree) = 0;
-	virtual void                  incrementLog(float screenFraction, float valueFieldFraction) = 0;
-	virtual void                  increment(PropertyTreeLegacy* tree, int mouseDiff, Modifier modifier) {}
-	virtual bool                  setValueFromString(const char* str) = 0;
-	virtual double                minValue() const = 0;
-	virtual double                maxValue() const = 0;
-	virtual void                  addValue(PropertyTreeLegacy* tree, double value) {}
-	virtual double                singlestep() const = 0;
+	virtual void						startIncrement() = 0;
+	virtual void						endIncrement(PropertyTreeLegacy* tree) = 0;
+	virtual void						incrementLog(const mpfloat& screenFraction, const mpfloat& valueFieldFraction) = 0;
+	virtual void						increment(PropertyTreeLegacy* tree, int mouseDiff, Modifier modifier) {};
+	virtual bool						setValueFromString(const char* str) = 0;
+	virtual double						minValueD() const = 0;
+	virtual double						maxValueD() const = 0;
+	virtual void						add(PropertyTreeLegacy* tree) {}
+	virtual void						sub(PropertyTreeLegacy* tree) {}
 
 	mutable RowWidthCache widthCache_;
 	Point                 lastMouseMove_;

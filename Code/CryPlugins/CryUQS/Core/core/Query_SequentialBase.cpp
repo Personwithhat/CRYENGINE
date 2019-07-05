@@ -55,9 +55,9 @@ namespace UQS
 
 			while (1)
 			{
-				const CTimeValue timestampBefore = gEnv->pTimer->GetAsyncTime();
+				const CTimeValue timestampBefore = GetGTimer()->GetAsyncTime();
 				const EUpdateState state = m_pCurrentlyRunningChildQuery->Update(remainingTimeBudget, error);
-				const CTimeValue elapsedTime = gEnv->pTimer->GetAsyncTime() - timestampBefore;
+				const CTimeValue elapsedTime = GetGTimer()->GetAsyncTime() - timestampBefore;
 
 				remainingTimeBudget -= elapsedTime;
 
@@ -90,7 +90,7 @@ namespace UQS
 					// the derived class has successfully instantiated the next child
 					// => keep the update loop running if we have some time left (to make optimal use of the remaining time budget)
 
-					if (remainingTimeBudget.GetValue() > 0)
+					if (remainingTimeBudget > 0)
 					{
 						// keep the update loop running
 						continue;

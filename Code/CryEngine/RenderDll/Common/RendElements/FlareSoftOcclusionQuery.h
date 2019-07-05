@@ -21,7 +21,7 @@ public:
 	{
 	}
 
-	float UpdateVisibility(const float newTargetVisibility, const float duration);
+	float UpdateVisibility(const float newTargetVisibility, const CTimeValue& duration);
 
 	TimelineFloat m_TimeLine;
 	float         m_fTargetVisibility;

@@ -91,6 +91,12 @@ public:
 		return *this;
 	}
 
+	ILINE IDataWriteStream& operator<<(const mpfloat& val)
+	{
+		Write8(&val);
+		return *this;
+	}
+
 	ILINE IDataWriteStream& operator<<(const float& val)
 	{
 		Write4(&val);
@@ -164,6 +170,18 @@ public:
 	ILINE void WriteFloat(const float val)
 	{
 		Write4(&val);
+	}
+
+	//! Write mpfloat value to stream.
+	ILINE void WriteFloatMP(const mpfloat val)
+	{
+		Write8(&val);
+	}
+
+	//! Write CTimeValue to stream.
+	ILINE void WriteTime(const CTimeValue val)
+	{
+		WriteFloatMP(val.m_lValue);
 	}
 };
 
@@ -254,6 +272,12 @@ public:
 		return *this;
 	}
 
+	ILINE IDataReadStream& operator<<(mpfloat& val)
+	{
+		Read8(&val);
+		return *this;
+	}
+
 	//! Bool is saved by writing an 8 bit value to make it portable.
 	ILINE IDataReadStream& operator<<(bool& val)
 	{
@@ -340,6 +364,20 @@ public:
 		float val = 0.0f;
 		Read4(&val);
 		return val;
+	}
+
+	//! Read mpfloat from stream
+	ILINE mpfloat ReadFloatMP()
+	{
+		mpfloat val = 0;
+		Read8(&val);	 // PERSONAL VERIFY: Proper sizing here/elsewhere in this file.
+		return val;
+	}
+
+	//! Read CTimeValue from stream.
+	ILINE CTimeValue ReadTime()
+	{
+		return CTimeValue(ReadFloatMP());
 	}
 };
 
@@ -544,7 +582,7 @@ public:
 //! CryString serialization helper (read).
 ILINE IDataReadStream& operator<<(IDataReadStream& stream, string& outString)
 {
-	const uint32 kMaxTempString = 256;
+	const uint32 kMaxTempString = 256u < MP_SIZE ? MP_SIZE : 256u;
 
 	// read length
 	uint32 length = 0;

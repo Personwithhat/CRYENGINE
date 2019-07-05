@@ -52,11 +52,11 @@ struct SPeakRecord
 	float peakValue;
 	float averageValue;
 	float variance;
-	int   pageFaults;  //!< Number of page faults at this frame.
-	int   count;       //!< Number of times called for peak.
-	uint  frame;       //!< When it happened.
-	float timeSeconds; //!< When it happened.
-	BYTE  waiting;     //!< If it needs to go in separate waiting peak list
+	int   pageFaults; 	//!< Number of page faults at this frame.
+	int   count;		//!< Number of times called for peak.
+	uint  frame;		//!< When it happened.
+	float timeSeconds;	//!< When it happened.
+	BYTE  waiting;		//!< If it needs to go in separate waiting peak list
 };
 
 struct ICryProfilerFrameListener;
@@ -96,7 +96,7 @@ struct SCountUpdateTraits
 
 struct STickUpdateTraits
 {
-	static float ToFloat(TProfilingValue val) { return gEnv->pTimer->TicksToSeconds(val) * 1000.0f; }
+	static float ToFloat(TProfilingValue val) { return BADF GetGTimer()->TicksToTime(val).GetMilliSeconds(); }
 };
 
 struct SMemoryUpdateTraits

@@ -12,13 +12,13 @@ namespace Cry
 		{
 			struct SPrimitiveWithDuration
 			{
-				SPrimitiveWithDuration(const std::shared_ptr<CRenderPrimitiveBase>& primitive_, const float duration_)
+				SPrimitiveWithDuration(const std::shared_ptr<CRenderPrimitiveBase>& primitive_, const CTimeValue& duration_)
 					: primitive(primitive_)
 					, duration(duration_)
 				{}
 
 				std::shared_ptr<CRenderPrimitiveBase> primitive;
-				float                                 duration = 0.0f;
+				CTimeValue                            duration = 0;
 			};
 
 		public:
@@ -28,7 +28,7 @@ namespace Cry
 			// IUDRSystem
 			virtual bool                  Initialize() override;
 			virtual void                  Reset() override;
-			virtual void                  Update(const CTimeValue frameStartTime, const float frameDeltaTime) override;
+			virtual void                  Update(const CTimeValue frameStartTime, const CTimeValue& frameDeltaTime) override;
 			
 			virtual ITreeManager&         GetTreeManager() override;
 			virtual INodeStack&           GetNodeStack() override;
@@ -52,7 +52,7 @@ namespace Cry
 			//! \param pPrimitive Primitive to be rendered on the screen.
 			//! \param duration Duration in seconds that the primitive should persist on the screen. Default value is 0.0f which renders the primitive for only one frame.
 			//! \note Primitives are added to a queue and will be drawn during the Update function.
-			void                          DebugDraw(const std::shared_ptr<CRenderPrimitiveBase>& pPrimitive, const float duration = 0.0f);
+			void                          DebugDraw(const std::shared_ptr<CRenderPrimitiveBase>& pPrimitive, const CTimeValue& duration = 0);
 
 			CUDRSystem&                   operator=(const CUDRSystem&) = delete;
 			CUDRSystem&                   operator=(CUDRSystem&&) = delete;
@@ -84,7 +84,7 @@ namespace Cry
 
 			CTimeMetadata                       m_timeMetadataBase;
 			CTimeValue                          m_frameStartTime;
-			float                               m_frameDeltaTime = 0;
+			CTimeValue                          m_frameDeltaTime;
 			
 		};
 	}

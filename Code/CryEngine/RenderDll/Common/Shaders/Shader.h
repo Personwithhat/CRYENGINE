@@ -949,8 +949,8 @@ public:
 
 	CLightStyle() : m_Color(Col_White),
 		m_vPosOffset(ZERO),
-		m_TimeIncr(60.0f),
-		m_LastTime(0.0f),
+		m_TimeIncr(60),
+		m_LastTime(0),
 		m_bRandColor(0),
 		m_bRandIntensity(0),
 		m_bRandPosOffset(0),
@@ -964,8 +964,8 @@ public:
 	ColorF                      m_Color;      // xyz: color, w: spec mult
 	Vec3                        m_vPosOffset; // position offset
 
-	float                       m_TimeIncr;
-	float                       m_LastTime;
+	mpfloat                     m_TimeIncr;
+	CTimeValue                  m_LastTime;
 
 	uint8                       m_bRandColor     : 1;
 	uint8                       m_bRandIntensity : 1;
@@ -985,7 +985,7 @@ public:
 		pSizer->AddObject(m_Map);
 	}
 
-	static inline CLightStyle* mfGetStyle(uint32 nStyle, float fTime)
+	static inline CLightStyle* mfGetStyle(uint32 nStyle, const CTimeValue& fTime)
 	{
 		if (nStyle >= s_LStyles.Num() || !s_LStyles[nStyle])
 			return NULL;
@@ -993,7 +993,7 @@ public:
 		return s_LStyles[nStyle];
 	}
 
-	void mfUpdate(float fTime);
+	void mfUpdate(const CTimeValue& fTime);
 };
 
 //=========================================================================
@@ -1067,7 +1067,8 @@ struct SShaderPass
 	}
 
 private:
-	SShaderPass& operator=(const SShaderPass& sl);
+	// Allowed access for TArray, used there during std::copy
+	//SShaderPass& operator=(const SShaderPass& sl);
 };
 
 //===================================================================================

@@ -122,6 +122,21 @@ inline void cutTrailingZeros(const char* str)
 			return;
 }
 
+MemoryWriter& MemoryWriter::operator<<(const CTimeValue& value)
+{
+	return operator<<(value.m_lValue);
+}
+
+#define MP_FUNCTION(T)\
+MemoryWriter& MemoryWriter::operator<<(const T& value)\
+{\
+	char buffer[MP_SIZE];\
+	sprintf(buffer, "%s", value.str());\
+	return operator<<((const char*)buffer);\
+}
+#include <CrySystem\mpfloat.types>
+#undef MP_FUNCTION
+
 MemoryWriter& MemoryWriter::operator<<(double value)
 {
 	appendAsString(value, false);

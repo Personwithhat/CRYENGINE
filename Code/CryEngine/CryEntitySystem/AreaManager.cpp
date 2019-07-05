@@ -130,7 +130,7 @@ class CUpdateAreaProfileHistory
 {
 public:
 	typedef CSamplesHistory<size_t, 64> TSamplesHistoryCount;
-	typedef CSamplesHistory<float, 64> TSamplesHistoryTime;
+	typedef CSamplesHistory<CTimeValue, 64> TSamplesHistoryTime;
 
 	struct SAreaHistory
 	{
@@ -144,9 +144,9 @@ public:
 
 	void Add(const SUpdateEntityAreaDebug& updateInfo)
 	{
-		ITimer* pTimer = gEnv->pTimer;
+		ITimer* pTimer = GetGTimer();
 		const CTimeValue now = pTimer->GetFrameStartTime();
-		auto ticksToMs = [pTimer](int64 ticks) { return pTimer->TicksToSeconds(ticks) * 1000.0f; };
+		auto ticksToMs = [pTimer](int64 ticks) { return pTimer->TicksToTime(ticks); };
 		
 		auto addToHistory = [&](const SUpdateEntityAreaDebug::SAreaInfo& info, SAreaHistory& history)
 		{
@@ -178,14 +178,14 @@ public:
 
 	void Draw(SDebugLogDrawer& draw, float posX, float& posY)
 	{
-		const CTimeValue now = gEnv->pTimer->GetFrameStartTime();
+		const CTimeValue now = GetGTimer()->GetFrameStartTime();
 		float const fColor[4] = { 0.0f, 1.0f, 0.0f, 0.7f };
 
 		auto drawHistory = [&](const char* szPrefix, const char* szAreaName, SAreaHistory& history)
 		{
-			const float avgUpdateTime = history.entityUpdateTime.GetAverage();
-			const float minUpdateTime = history.entityUpdateTime.GetMin();
-			const float maxUpdateTime = history.entityUpdateTime.GetMax();
+			const CTimeValue avgUpdateTime = history.entityUpdateTime.GetAverage();
+			const CTimeValue minUpdateTime = history.entityUpdateTime.GetMin();
+			const CTimeValue maxUpdateTime = history.entityUpdateTime.GetMax();
 
 			const size_t avgUpdated = history.entityProcessCount.GetAverage();
 			const size_t minUpdated = history.entityProcessCount.GetMin();
@@ -197,7 +197,7 @@ public:
 				"updated %" PRISIZE_T " [%" PRISIZE_T "..%" PRISIZE_T "]; "
 				"lastUpdated %.2f",
 				szPrefix, szAreaName,
-				avgUpdateTime, minUpdateTime, maxUpdateTime,
+				(float)avgUpdateTime.GetMilliSeconds(), (float)minUpdateTime.GetMilliSeconds(), (float)maxUpdateTime.GetMilliSeconds(),
 				avgUpdated, minUpdated, maxUpdated,
 				(now - history.lastUpdated).GetSeconds()
 			);
@@ -219,7 +219,7 @@ public:
 private:
 	void RemoveOldRecords(CTimeValue now)
 	{
-		const CTimeValue ageThreshold = 10.0f;
+		const CTimeValue ageThreshold = 10;
 		auto removeFunc = [=](const SAreaHistory& history)
 		{
 			return (now - history.lastUpdated) > ageThreshold;
@@ -476,7 +476,7 @@ void CAreaManager::Update()
 			debugPosY += 12.0f;
 		}
 
-		auto ticksToMs = [](int64 ticks) { return gEnv->pTimer->TicksToSeconds(ticks) * 1000.0f; };
+		auto ticksToMs = [](int64 ticks) { return GetGTimer()->TicksToTime(ticks).BADGetSeconds(); };
 #endif // INCLUDE_ENTITYSYSTEM_PRODUCTION_CODE
 		SUpdateEntityAreaDebug updateEntityDebug;
 
@@ -876,7 +876,7 @@ void CAreaManager::ProcessArea(
 				{
 					RetrieveEnvironmentAmount(pArea, 1.0f, 0.0f, INVALID_ENTITYID, areaEnvironments);
 
-					SEntityEvent event(entityId, 0, 0, 0, 1.0f, 0.0f, 0.0f, pos);
+					SEntityEvent event(entityId, 0, 0, 0, 1.0f, 0.0f, 0.0f, pos, 0);
 					event.event = ENTITY_EVENT_MOVEINSIDEAREA;
 					pArea->AddCachedEvent(event);
 				}
@@ -919,7 +919,7 @@ void CAreaManager::ProcessArea(
 				RetrieveEnvironmentAmount(pArea, 0.0f, distance, INVALID_ENTITYID, areaEnvironments);
 
 				CRY_ASSERT(areaCacheEntry.bNear && !areaCacheEntry.bInside); // We must be near but not inside yet!
-				SEntityEvent event(entityId, 0, 0, 0, distance, 0.0f, 0.0f, Closest3d);
+				SEntityEvent event(entityId, 0, 0, 0, distance, 0.0f, 0.0f, Closest3d, 0);
 				event.event = ENTITY_EVENT_MOVENEARAREA;
 				pArea->AddCachedEvent(event);
 			}

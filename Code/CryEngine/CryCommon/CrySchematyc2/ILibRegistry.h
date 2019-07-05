@@ -5,6 +5,8 @@
 #include "CrySchematyc2/Prerequisites.h"
 
 #include <CryCore/BoostHelpers.h>
+#include <CrySystem/ISystem.h>
+
 #include <CrySchematyc2/TemplateUtils/TemplateUtils_Delegate.h>
 #include <CrySchematyc2/TemplateUtils/TemplateUtils_Signalv2.h>
 

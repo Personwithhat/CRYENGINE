@@ -4,7 +4,7 @@
 	"logRoot": "LOGS/instance1/",	<-- Instead of storing logs all over the place, stores all logs here. -->
 	"info": {
 		"name": "SampleFPS",
-		"guid": "18848a42-b446-94c0-8317-cb2b0eff8774" <-- This ID has to be unique! For GUID, you can go to:
+		"guid": "C969CB3E-138E-4E4B-A27E-91A96D00C8D9" <-- This ID has to be unique! For GUID, you can go to:
 													       VStudio->Tools->"Create GUID in registry format" -->
 	},
 	"content": {
@@ -19,7 +19,7 @@
 		]
 	},
 	"require": {
-		"engine": "ce-improved", <-- The engine version this project should load, currently on your custom Github-CE version. --> 
+		"engine": "engine-5.5-personal", <-- The engine version this project should load, currently on your custom Github-CE version. --> 
 		"plugins": [
 			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },		   <-- You need this to run the engine :) -->
 			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },	   <-- Gotta load this module since you compiled with it via CMake -->
@@ -34,6 +34,7 @@
 		
 		"t_Smoothing":						"0", <-- Don't smooth/average frame times -->
 		"sys_physics_enable_MT": 		    "0", <-- Don't run physics in separate thread -->
+		"t_Debug":							"1", <-- Debugging Timer.cpp -->
 
 		"r_motionblur": 					"0", <-- Motion Blur? No thanks. -->
 		"r_nohwgamma": 						"1", <-- Disable overriding of gamma, great for windowed mode. -->

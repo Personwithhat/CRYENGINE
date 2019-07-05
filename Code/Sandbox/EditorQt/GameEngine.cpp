@@ -738,14 +738,14 @@ bool CGameEngine::LoadAI(const string& levelName, const string& missionName)
 	if (!IsLevelLoaded())
 		return false;
 
-	float fStartTime = m_pISystem->GetITimer()->GetAsyncCurTime();
+	CTimeValue fStartTime = m_pISystem->GetITimer()->GetAsyncCurTime();
 	CryLog("Loading AI data %s, %s", (const char*)levelName, (const char*)missionName);
 	gEnv->pAISystem->FlushSystemNavigation();
 
 	// Load only navmesh data, all other working systems are currently restored when editor objects are loaded
 	gEnv->pAISystem->LoadLevelData(levelName, missionName, eAILoadDataFlag_MNM);
 
-	CryLog("Finished Loading AI data in %6.3f secs", m_pISystem->GetITimer()->GetAsyncCurTime() - fStartTime);
+	CryLog("Finished Loading AI data in %6.3f secs", (float)(m_pISystem->GetITimer()->GetAsyncCurTime() - fStartTime).GetSeconds());
 
 	return true;
 }
@@ -1503,20 +1503,20 @@ void CGameEngine::Update()
 		const int maxFPS = pSysMaxFPS->GetIVal();
 		if (maxFPS > 0)
 		{
-			const ITimer* pTimer = gEnv->pTimer;
-			if (!m_lastViewportRenderTime)
+			const ITimer* pTimer = GetGTimer();
+			if (m_lastViewportRenderTime == 0)
 			{
-				m_lastViewportRenderTime = pTimer->GetAsyncTime().GetMicroSecondsAsInt64();
+				m_lastViewportRenderTime = pTimer->GetAsyncTime();
 			}
-			const int64 currentTime = pTimer->GetAsyncTime().GetMicroSecondsAsInt64();
-			const int64 microSecPassed = currentTime - m_lastViewportRenderTime;
-			const int64 targetMicroSecPassed = static_cast<int64>((1.0f / maxFPS) * 1000000.0f);
+			const CTimeValue currentTime = pTimer->GetAsyncTime();
+			const CTimeValue timePassed = currentTime - m_lastViewportRenderTime;
+			const CTimeValue targetFrameInterval = mpfloat(1) / maxFPS;
 
-			if (microSecPassed < targetMicroSecPassed)
+			if (timePassed < targetFrameInterval)
 			{
 				return;
 			}
-			m_lastViewportRenderTime = pTimer->GetAsyncTime().GetMicroSecondsAsInt64();
+			m_lastViewportRenderTime = pTimer->GetAsyncTime();
 		}
 
 		GetIEditorImpl()->GetAI()->EarlyUpdate();
@@ -1526,7 +1526,7 @@ void CGameEngine::Update()
 			notifier->OnPreEditorUpdate();
 		}
 
-		gEnv->GetJobManager()->SetFrameStartTime(gEnv->pTimer->GetAsyncTime());
+		gEnv->GetJobManager()->SetFrameStartTime(GetGTimer()->GetAsyncTime());
 
 		Cry::IPluginManager* const pPluginManager = gEnv->pSystem->GetIPluginManager();
 		pPluginManager->UpdateBeforeSystem();
@@ -1814,7 +1814,7 @@ void CGameEngine::UpdateAIManagerFromEditor(const uint32 updateFlags)
 		return;
 	}
 
-	pAiManager->Update(gEnv->pTimer->GetFrameStartTime(), gEnv->pTimer->GetFrameTime(), updateFlags);
+	pAiManager->Update(GetGTimer()->GetFrameStartTime(), GetGTimer()->GetFrameTime(), updateFlags);
 }
 
 namespace Private_EditorCommands

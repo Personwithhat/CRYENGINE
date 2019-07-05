@@ -13,7 +13,7 @@ namespace MNM
 		CNavMeshQueryDebug(const INavMeshQuery& query)
 			: m_query(query)
 		{
-			m_data.timeAtStart = gEnv->pTimer->GetAsyncCurTime();
+			m_data.timeAtStart = GetGTimer()->GetAsyncCurTime();
 		}
 
 		virtual  const INavMeshQuery& GetQuery() const override
@@ -35,10 +35,10 @@ namespace MNM
 
 			m_data.batchHistory.insert(queryBatch.batchNumber, queryBatch);
 			m_data.trianglesCount += queryBatch.triangleDataArray.size();
-			m_data.elapsedTimeRunningInMs += queryBatch.elapsedTimeInMs;
+			m_data.elapsedTimeRunning += queryBatch.elapsedTime;
 
-			const CTimeValue& now = gEnv->pTimer->GetAsyncCurTime();
-			m_data.elapsedTimeTotalInMs = now.GetDifferenceInSeconds(m_data.timeAtStart) * 1000;
+			const CTimeValue& now = GetGTimer()->GetAsyncCurTime();
+			m_data.elapsedTimeTotal = now - m_data.timeAtStart;
 
 			return true;
 		}

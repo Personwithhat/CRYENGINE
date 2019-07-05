@@ -281,7 +281,7 @@ public:
 
 	// Timesliced update within the main AI thread
 	// Ideally performs just housekeeping and manages the asynchronous subtasks
-	virtual void Update(const float fBudgetSeconds) override;
+	virtual void Update(const CTimeValue& fBudgetSeconds) override;
 
 	// Get a new query ID, to allow us to build a new query
 	virtual TPSQueryID  CreateQueryID(const char* psName) override;
@@ -522,8 +522,8 @@ private:
 			nFoundBestN = 0;
 			owner = 0;
 			bPersistent = false;
-			timePlaced.SetValue(0);
-			timeErase.SetValue(0);
+			timePlaced.SetSeconds(0);
+			timeErase.SetSeconds(0);
 			postureQueryID = 0;
 
 			visibleRayID = 0;
@@ -719,7 +719,7 @@ private:
 		int   TacticalPointsDebugDrawMode;
 		int   TacticalPointsDebugFadeMode;
 		float TacticalPointsDebugScaling;
-		float TacticalPointsDebugTime;
+		CTimeValue TacticalPointsDebugTime;
 		int   TacticalPointsWarnings;
 	};
 

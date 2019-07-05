@@ -166,8 +166,6 @@
 extern "C" IGameStartup * CreateGameStartup();
 #endif //!CrySharedLibrarySupported
 
-#define DEFAULT_BAN_TIMEOUT     (30.0f)
-
 #define PROFILE_CONSOLE_NO_SAVE (0)     // For console demo's which don't save their player profile
 
 #if PROFILE_CONSOLE_NO_SAVE
@@ -181,7 +179,7 @@ CCryAction* CCryAction::m_pThis = 0;
 
 static const int s_saveGameFrameDelay = 3; // Enough to render enough frames to display the save warning icon before the save generation.
 
-static const float s_loadSaveDelay = 0.5f;  // Delay between load/save operations.
+static const CTimeValue s_loadSaveDelay = "0.5";  // Delay between load/save operations.
 
 //////////////////////////////////////////////////////////////////////////
 struct CSystemEventListener_Action : public ISystemEventListener
@@ -260,7 +258,6 @@ CCryAction::CCryAction(SSystemInitParams& initParams)
 	m_p3DEngine(0),
 	m_pScriptSystem(0),
 	m_pEntitySystem(0),
-	m_pTimer(0),
 	m_pLog(0),
 	m_pGameToEditor(nullptr),
 	m_pGame(0),
@@ -323,8 +320,8 @@ CCryAction::CCryAction(SSystemInitParams& initParams)
 	m_pGFListeners(0),
 	m_pBreakEventListener(NULL),
 	m_nextFrameCommand(0),
-	m_lastSaveLoad(0.0f),
-	m_lastFrameTimeUI(0.0f),
+	m_lastSaveLoad(0),
+	m_lastFrameTimeUI(0),
 	m_pbSvEnabled(false),
 	m_pbClEnabled(false),
 	m_pGameStatistics(0),
@@ -1017,7 +1014,7 @@ void CCryAction::LegacyStatusCmd(IConsoleCmdArgs* args)
 #if !defined(EXCLUDE_NORMAL_LOG)
 			INetChannel* pNetChannel = iter->second->GetNetChannel();
 			const char* ip = pNetChannel->GetName();
-			int ping = (int)(pNetChannel->GetPing(true) * 1000);
+			int ping = (int)pNetChannel->GetPing(true).GetMilliSeconds();
 			int state = pNetChannel->GetChannelConnectionState();
 			int profileId = pNetChannel->GetProfileId();
 
@@ -1243,7 +1240,7 @@ void CCryAction::BanPlayerCmd(IConsoleCmdArgs* pArgs)
 
 		if (ICVar* pBanTimeout = gEnv->pConsole->GetCVar("ban_timeout"))
 		{
-			timeout = pBanTimeout->GetFVal();
+			timeout = (float)pBanTimeout->GetIVal(); // CVar is int, in minutes.
 		}
 
 		switch (pArgs->GetArgCount())
@@ -1432,11 +1429,11 @@ void CCryAction::ConnectRepeatedlyCmd(IConsoleCmdArgs* args)
 {
 	ConnectCmd(args);
 
-	float timeSeconds = gEnv->pTimer->GetFrameStartTime().GetSeconds();
+	CTimeValue timeSeconds = GetGTimer()->GetFrameStartTime();
 	IConsole* pConsole = gEnv->pConsole;
 
 	int numAttempts = pConsole->GetCVar("connect_repeatedly_num_attempts")->GetIVal();
-	float timeBetweenAttempts = pConsole->GetCVar("connect_repeatedly_time_between_attempts")->GetFVal();
+	CTimeValue timeBetweenAttempts = pConsole->GetCVar("connect_repeatedly_time_between_attempts")->GetTime();
 
 	GetCryAction()->m_connectRepeatedly.m_enabled = true;
 	GetCryAction()->m_connectRepeatedly.m_numAttemptsLeft = numAttempts;
@@ -1781,7 +1778,7 @@ bool CCryAction::Initialize(SSystemInitParams& startupParams)
 	m_p3DEngine = gEnv->p3DEngine;
 	m_pScriptSystem = gEnv->pScriptSystem;
 	m_pEntitySystem = gEnv->pEntitySystem;
-	m_pTimer = gEnv->pTimer;
+	SetGTimer(GetGTimer(), GTimers::action);
 	m_pLog = gEnv->pLog;
 
 #if defined(USE_CD_KEYS)
@@ -2535,7 +2532,7 @@ bool CCryAction::PostSystemUpdate(bool haveFocus, CEnumFlags<ESystemUpdateFlags>
 {
 	CRY_PROFILE_SECTION(PROFILE_GAME, "CCryAction::PostSystemUpdate");
 
-	float frameTime = gEnv->pTimer->GetFrameTime();
+	CTimeValue frameTime = GetGTimer()->GetFrameTime();
 
 	LARGE_INTEGER updateStart, updateEnd;
 	updateStart.QuadPart = 0;
@@ -2599,13 +2596,13 @@ bool CCryAction::PostSystemUpdate(bool haveFocus, CEnumFlags<ESystemUpdateFlags>
 			if (!useDeferredViewSystemUpdate)
 			{
 				if (!isGamePaused && !wasGamePaused) // don't update view if paused
-					m_pViewSystem->Update(min(frameTime, 0.1f));
+					m_pViewSystem->Update(min(frameTime, CTimeValue("0.1")));
 			}
 		}
 	}
 
 	// These things need to be updated in game mode and ai/physics mode
-	m_pPersistantDebug->Update(gEnv->pTimer->GetFrameTime());
+	m_pPersistantDebug->Update(GetGTimer()->GetFrameTime());
 
 	m_pActionMapManager->Update();
 
@@ -2682,7 +2679,7 @@ void CCryAction::PreFinalizeCamera(CEnumFlags<ESystemUpdateFlags> updateFlags)
 		}
 	}
 
-	float delta = gEnv->pTimer->GetFrameTime();
+	CTimeValue delta = GetGTimer()->GetFrameTime();
 	const bool bGameIsPaused = gEnv->pGameFramework->IsGamePaused(); // slightly different from m_paused (check's gEnv->pTimer as well)
 
 	if (!bGameIsPaused)
@@ -2695,7 +2692,7 @@ void CCryAction::PreFinalizeCamera(CEnumFlags<ESystemUpdateFlags> updateFlags)
 	const bool useDeferredViewSystemUpdate = m_pViewSystem->UseDeferredViewSystemUpdate();
 	if (useDeferredViewSystemUpdate)
 	{
-		m_pViewSystem->Update(min(delta, 0.1f));
+		m_pViewSystem->Update(min(delta, CTimeValue("0.1")));  // PERSONAL CRYTEK: Clamping time
 	}
 }
 
@@ -2712,7 +2709,7 @@ void CCryAction::PostRender(CEnumFlags<ESystemUpdateFlags> updateFlags)
 
 	if (updateFlags & ESYSUPDATE_EDITOR_AI_PHYSICS)
 	{
-		float frameTime = gEnv->pTimer->GetFrameTime();
+		CTimeValue frameTime = GetGTimer()->GetFrameTime();
 
 		if (m_pPersistantDebug)
 			m_pPersistantDebug->PostUpdate(frameTime);
@@ -2723,22 +2720,22 @@ void CCryAction::PostRender(CEnumFlags<ESystemUpdateFlags> updateFlags)
 		return;
 	}
 
-	float delta = gEnv->pTimer->GetFrameTime();
+	CTimeValue delta = GetGTimer()->GetFrameTime();
 
 	if (gEnv->pRenderer && m_pPersistantDebug)
 		m_pPersistantDebug->PostUpdate(delta);
 
 	CALL_FRAMEWORK_LISTENERS(OnPostUpdate(delta));
 
-	const float now = gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI);
-	float deltaUI = now - m_lastFrameTimeUI;
+	const CTimeValue now = GetGTimer()->GetFrameStartTime(ITimer::ETIMER_UI);
+	CTimeValue deltaUI = now - m_lastFrameTimeUI;
 	m_lastFrameTimeUI = now;
 
-	if (m_lastSaveLoad)
+	if (m_lastSaveLoad != 0)
 	{
 		m_lastSaveLoad -= deltaUI;
-		if (m_lastSaveLoad < 0.0f)
-			m_lastSaveLoad = 0.0f;
+		if (m_lastSaveLoad < 0)
+			m_lastSaveLoad.SetSeconds(0);
 	}
 
 	if (gEnv->pFlashUI)
@@ -2807,7 +2804,7 @@ void CCryAction::Reset(bool clients)
 		m_pGameplayRecorder->Event(0, GameplayEvent(eGE_GameReset));
 }
 
-void CCryAction::PauseGame(bool pause, bool force, unsigned int nFadeOutInMS)
+void CCryAction::PauseGame(bool pause, bool force)
 {
 	// we should generate some events here
 	// who is up to receive them ?
@@ -2819,7 +2816,7 @@ void CCryAction::PauseGame(bool pause, bool force, unsigned int nFadeOutInMS)
 
 	if (m_paused != pause || m_forcedpause != force)
 	{
-		gEnv->pTimer->PauseTimer(ITimer::ETIMER_GAME, pause);
+		GetGTimer()->PauseSimulation(pause);
 
 		// no game input should happen during pause
 		// LEAVE THIS COMMENTED CODE IN - we might still need to uncommented it if this would give any issues
@@ -2828,7 +2825,7 @@ void CCryAction::PauseGame(bool pause, bool force, unsigned int nFadeOutInMS)
 		REINST("notify the audio system!");
 
 		if (pause && gEnv->pInput) //disable rumble
-			gEnv->pInput->ForceFeedbackEvent(SFFOutputEvent(eIDT_Gamepad, eFF_Rumble_Basic, SFFTriggerOutputData::Initial::ZeroIt, 0.0f, 0.0f, 0.0f));
+			gEnv->pInput->ForceFeedbackEvent(SFFOutputEvent(eIDT_Gamepad, eFF_Rumble_Basic, SFFTriggerOutputData::Initial::ZeroIt, 0, 0.0f, 0.0f));
 
 		gEnv->p3DEngine->GetTimeOfDay()->SetPaused(pause);
 
@@ -2863,7 +2860,7 @@ void CCryAction::PauseGame(bool pause, bool force, unsigned int nFadeOutInMS)
 
 bool CCryAction::IsGamePaused()
 {
-	return m_paused || !gEnv->pTimer->IsTimerEnabled();
+	return m_paused || !GetGTimer()->IsTimerEnabled();
 }
 
 bool CCryAction::IsGameStarted()
@@ -3277,10 +3274,10 @@ bool CCryAction::SaveGame(const char* path, bool bQuick, bool bForceImmediate, E
 		}
 	}
 
-	if (m_lastSaveLoad > 0.0f)
+	if (m_lastSaveLoad > 0)
 	{
 		if (ignoreDelay)
-			m_lastSaveLoad = 0.0f;
+			m_lastSaveLoad.SetSeconds(0);
 		else
 			return false;
 	}
@@ -3337,13 +3334,13 @@ bool CCryAction::SaveGame(const char* path, bool bQuick, bool bForceImmediate, E
 		// check, if preSaveGame has been called already
 		if (m_pLocalAllocs && m_pLocalAllocs->m_delayedSaveGameName.empty())
 			OnActionEvent(SActionEvent(eAE_preSaveGame, (int) reason));
-		CTimeValue elapsed = -gEnv->pTimer->GetAsyncTime();
+		CTimeValue elapsed = -GetGTimer()->GetAsyncTime();
 		gEnv->pSystem->SerializingFile(bQuick ? 1 : 2);
 		bRet = m_pGameSerialize ? m_pGameSerialize->SaveGame(this, "xml", path, reason, checkPointName) : false;
 		gEnv->pSystem->SerializingFile(0);
 		OnActionEvent(SActionEvent(eAE_postSaveGame, (int) reason, bRet ? (checkPointName ? checkPointName : "") : 0));
 		m_lastSaveLoad = s_loadSaveDelay;
-		elapsed += gEnv->pTimer->GetAsyncTime();
+		elapsed += GetGTimer()->GetAsyncTime();
 
 		if (!bRet)
 			GameWarning("[CryAction] SaveGame: '%s' %s. [Duration=%.4f secs]", path, "failed", elapsed.GetSeconds());
@@ -3365,7 +3362,7 @@ bool CCryAction::SaveGame(const char* path, bool bQuick, bool bForceImmediate, E
 
 				cry_sprintf(text, "Saving Checkpoint '%s'\n", checkPointName ? checkPointName : "unknown");
 
-				pPersistantDebug->Add2DText(text, 2.f, colour, 10.0f);
+				pPersistantDebug->Add2DText(text, 2.f, colour, 10);
 			}
 		}
 #endif //_RELEASE
@@ -3402,10 +3399,10 @@ ELoadGameResult CCryAction::LoadGame(const char* path, bool quick, bool ignoreDe
 	if (gEnv->bMultiplayer)
 		return eLGR_Failed;
 
-	if (m_lastSaveLoad > 0.0f)
+	if (m_lastSaveLoad > 0)
 	{
 		if (ignoreDelay)
-			m_lastSaveLoad = 0.0f;
+			m_lastSaveLoad.SetSeconds(0);
 		else
 			return eLGR_Failed;
 	}
@@ -3429,7 +3426,7 @@ ELoadGameResult CCryAction::LoadGame(const char* path, bool quick, bool ignoreDe
 	if (!osSaveLoad.Allowed())
 		return eLGR_Failed;
 
-	CTimeValue elapsed = -gEnv->pTimer->GetAsyncTime();
+	CTimeValue elapsed = -GetGTimer()->GetAsyncTime();
 
 	gEnv->pSystem->SerializingFile(quick ? 1 : 2);
 
@@ -3469,7 +3466,7 @@ ELoadGameResult CCryAction::LoadGame(const char* path, bool quick, bool ignoreDe
 		// otherwise we could not have saved it beforehand
 		AllowSave(true);
 
-		elapsed += gEnv->pTimer->GetAsyncTime();
+		elapsed += GetGTimer()->GetAsyncTime();
 		CryLog("[LOAD GAME] LoadGame: '%s' done. [Duration=%.4f secs]", path, elapsed.GetSeconds());
 		m_lastSaveLoad = s_loadSaveDelay;
 #ifndef _RELEASE
@@ -3540,7 +3537,7 @@ IGameFramework::TSaveGameName CCryAction::CreateSaveGameName()
 	saveGameName += "_";
 	string timeString;
 
-	CTimeValue time = gEnv->pTimer->GetFrameStartTime() - m_levelStartTime;
+	CTimeValue time = GetGTimer()->GetFrameStartTime() - m_levelStartTime;
 	timeString.Format("%d", int_round(time.GetSeconds()));
 
 	saveGameName += timeString;
@@ -3562,10 +3559,11 @@ void CCryAction::OnEditorSetGameMode(int iMode)
 
 	if (iMode < 2)
 	{
+		// POINT OF INTEREST : Entity trigger/timer confusion etc.
 		/* AlexL: for now don't set time to 0.0
 		   (because entity timers might still be active and getting confused)
 		   if (iMode == 1)
-		   gEnv->pTimer->SetTimer(ITimer::ETIMER_GAME, 0.0f);
+		   GetGTimer()->SetTimer(ITimer::ETIMER_GAME, 0);
 		 */
 
 		if (iMode == 0)
@@ -3711,7 +3709,7 @@ void CCryAction::InitCVars()
 	REGISTER_INT("g_immersive", 1, 0, "If set, multiplayer physics will be enabled");
 
 	REGISTER_INT("sv_dumpstats", 1, 0, "Enables/disables dumping of level and player statistics, positions, etc. to files");
-	REGISTER_INT("sv_dumpstatsperiod", 1000, 0, "Time period of statistics dumping in milliseconds");
+	//REGISTER_INT("sv_dumpstatsperiod", 1000, 0, "Time period of statistics dumping in milliseconds"); Not used.
 	REGISTER_INT("g_EnableLoadSave", 1, 0, "Enables/disables saving and loading of savegames");
 
 	REGISTER_STRING("http_password", "password", 0, "Password for http administration");
@@ -3719,7 +3717,7 @@ void CCryAction::InitCVars()
 
 #if !defined(_RELEASE)
 	REGISTER_INT("connect_repeatedly_num_attempts", 5, 0, "the number of attempts to connect that connect_repeatedly tries");
-	REGISTER_FLOAT("connect_repeatedly_time_between_attempts", 10.0f, 0, "the time between connect attempts for connect_repeatedly");
+	REGISTER_TIME("connect_repeatedly_time_between_attempts", CTimeValue(10), VF_NULL, "the time between connect attempts for connect_repeatedly");
 	REGISTER_INT("g_displayCheckpointName", 0, VF_NULL, "Display checkpoint name when game is saved");
 #endif
 
@@ -3945,34 +3943,6 @@ IGameObjectExtension* CCryAction::QueryGameObjectExtension(EntityId id, const ch
 		return NULL;
 }
 
-#if defined(GAME_CHANNEL_SYNC_CLIENT_SERVER_TIME)
-CTimeValue CCryAction::GetServerTime()
-{
-	if (gEnv->bServer)
-		return gEnv->pTimer->GetAsyncTime();
-
-	if (CGameClientNub* pGameClientNub = GetGameClientNub())
-	{
-		if (CGameClientChannel* pGameClientChannel = pGameClientNub->GetGameClientChannel())
-		{
-			const CTimeValue localTime = gEnv->pTimer->GetAsyncTime();
-			const CTimeValue serverTime = localTime + pGameClientChannel->GetClock().GetServerTimeOffset();
-			return serverTime;
-		}
-	}
-
-	return CTimeValue(0.0f);
-}
-#else
-CTimeValue CCryAction::GetServerTime()
-{
-	if (gEnv->bServer)
-		return gEnv->pTimer->GetFrameStartTime();
-
-	return GetClientChannel() ? GetClientChannel()->GetRemoteTime() : CTimeValue(0.0f);
-}
-#endif
-
 uint16 CCryAction::GetGameChannelId(INetChannel* pNetChannel)
 {
 	if (gEnv->bServer)
@@ -4191,7 +4161,7 @@ void CCryAction::PreloadAnimatedCharacter(IScriptTable* pEntityScript)
 
 //------------------------------------------------------------------------
 // NOTE: This function must be thread-safe.
-void CCryAction::PrePhysicsTimeStep(float deltaTime)
+void CCryAction::PrePhysicsTimeStep(const CTimeValue& deltaTime)
 {
 	if (m_pVehicleSystem)
 		m_pVehicleSystem->OnPrePhysicsTimeStep(deltaTime);
@@ -4233,7 +4203,7 @@ void CCryAction::ClearTimers()
 	m_pCallbackTimer->Clear();
 }
 
-IGameFramework::TimerID CCryAction::AddTimer(CTimeValue interval, bool repeating, TimerCallback callback, void* userdata)
+IGameFramework::TimerID CCryAction::AddTimer(const CTimeValue& interval, bool repeating, TimerCallback callback, void* userdata)
 {
 	return m_pCallbackTimer->AddTimer(interval, repeating, callback, userdata);
 }
@@ -4570,12 +4540,12 @@ void CCryAction::CheckConnectRepeatedly()
 {
 	if (!gEnv->bServer && m_connectRepeatedly.m_enabled)
 	{
-		float timeSeconds = gEnv->pTimer->GetFrameStartTime().GetSeconds();
+		CTimeValue timeSeconds = GetGTimer()->GetFrameStartTime();
 
 		if (timeSeconds > m_connectRepeatedly.m_timeForNextAttempt)
 		{
 			IConsole* pConsole = gEnv->pConsole;
-			CryLogAlways("CCryAction::CheckConnectRepeatedly() currentTime (%f) is greater than timeForNextAttempt (%f). Seeing if another connect attempt is required", timeSeconds, m_connectRepeatedly.m_timeForNextAttempt);
+			CryLogAlways("CCryAction::CheckConnectRepeatedly() currentTime (%f) is greater than timeForNextAttempt (%f). Seeing if another connect attempt is required", (float)timeSeconds.BADGetSeconds(), m_connectRepeatedly.m_timeForNextAttempt);
 
 			INetChannel* pCh = GetCryAction()->GetClientChannel();
 			if (pCh)
@@ -4586,7 +4556,7 @@ void CCryAction::CheckConnectRepeatedly()
 				if (m_connectRepeatedly.m_numAttemptsLeft > 0)
 				{
 					CryLogAlways("CCryAction::CheckConnectRepeatedly() we still have %d attempts left. Waiting to see if we stay connected", m_connectRepeatedly.m_numAttemptsLeft);
-					m_connectRepeatedly.m_timeForNextAttempt = timeSeconds + pConsole->GetCVar("connect_repeatedly_time_between_attempts")->GetFVal();
+					m_connectRepeatedly.m_timeForNextAttempt = timeSeconds + pConsole->GetCVar("connect_repeatedly_time_between_attempts")->GetTime();
 				}
 				else
 				{
@@ -4603,7 +4573,7 @@ void CCryAction::CheckConnectRepeatedly()
 				if (m_connectRepeatedly.m_numAttemptsLeft > 0)
 				{
 					CryLogAlways("CCryAction::CheckConnectRepeatedly() we still have %d attempts left. Attempting a connect attempt", m_connectRepeatedly.m_numAttemptsLeft);
-					m_connectRepeatedly.m_timeForNextAttempt = timeSeconds + pConsole->GetCVar("connect_repeatedly_time_between_attempts")->GetFVal();
+					m_connectRepeatedly.m_timeForNextAttempt = timeSeconds + pConsole->GetCVar("connect_repeatedly_time_between_attempts")->GetTime();
 					gEnv->pConsole->ExecuteString("connect"); // any server params should have been set on the initial connect and will be used again here
 				}
 				else
@@ -4761,7 +4731,7 @@ void CCryAction::OnActionEvent(const SActionEvent& ev)
 		break;
 
 	case eAE_inGame:
-		m_levelStartTime = gEnv->pTimer->GetFrameStartTime();
+		m_levelStartTime = GetGTimer()->GetFrameStartTime();
 		break;
 
 	default:

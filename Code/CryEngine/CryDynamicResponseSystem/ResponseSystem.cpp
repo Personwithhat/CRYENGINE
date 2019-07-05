@@ -150,9 +150,9 @@ bool CResponseSystem::Init()
 		m_pDialogLineDatabase->InitFromFiles(m_filesFolder + CRY_NATIVE_PATH_SEPSTR "DialogLines");
 	}
 	
-	m_currentTime.SetSeconds(0.0f);
+	m_currentTime.SetSeconds(0);
 
-	m_pVariableCollectionManager->GetCollection(CVariableCollection::s_globalCollectionName)->CreateVariable("CurrentTime", 0.0f);
+	m_pVariableCollectionManager->GetCollection(CVariableCollection::s_globalCollectionName)->CreateVariable("CurrentTime", CTimeValue(0));
 
 	bool isLoaded = false;
 	if (!isDataPathEmpty)
@@ -179,9 +179,9 @@ void CResponseSystem::Update()
 		m_pendingResetRequest = DRS::IDynamicResponseSystem::eResetHint_Nothing;
 	}
 
-	m_currentTime += gEnv->pTimer->GetFrameTime();
+	m_currentTime += GetGTimer()->GetFrameTime();
 	
-	m_pVariableCollectionManager->GetCollection(CVariableCollection::s_globalCollectionName)->SetVariableValue("CurrentTime", m_currentTime.GetSeconds());
+	m_pVariableCollectionManager->GetCollection(CVariableCollection::s_globalCollectionName)->SetVariableValue("CurrentTime", m_currentTime);
 
 	m_bIsCurrentlyUpdating = true;
 	m_pVariableCollectionManager->Update();
@@ -360,7 +360,7 @@ void CResponseSystem::Serialize(Serialization::IArchive& ar)
 
 	m_pResponseManager->SerializeResponseStates(ar);
 
-	m_currentTime.SetSeconds(m_pVariableCollectionManager->GetCollection(CVariableCollection::s_globalCollectionName)->GetVariableValue("CurrentTime").GetValueAsFloat());  //we serialize our DRS time manually via the time variable
+	m_currentTime = m_pVariableCollectionManager->GetCollection(CVariableCollection::s_globalCollectionName)->GetVariableValue("CurrentTime").GetValueAsTime();  //we serialize our DRS time manually via the time variable
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -431,8 +431,8 @@ void CResponseSystem::InternalReset(uint32 resetFlags)
 	if (resetFlags & DRS::IDynamicResponseSystem::eResetHint_Variables)
 	{
 		m_pVariableCollectionManager->Reset();
-		m_currentTime.SetSeconds(0.0f);
-		m_pVariableCollectionManager->GetCollection(CVariableCollection::s_globalCollectionName)->SetVariableValue("CurrentTime", m_currentTime.GetSeconds());
+		m_currentTime.SetSeconds(0);
+		m_pVariableCollectionManager->GetCollection(CVariableCollection::s_globalCollectionName)->SetVariableValue("CurrentTime", m_currentTime);
 
 		//also reset the local variable collections (which are not managed by the variable collection manager)
 		for (CResponseActor* pActor : m_createdActors)
@@ -551,7 +551,7 @@ void CResponseSystem::SetCurrentState(const DRS::ValuesList& collectionsList)
 	{
 		m_pVariableCollectionManager->SetAllVariableCollections(itStartOfVariables, itEndOfVariables);
 		//we serialize our DRS time manually via the "CurrentTime" variable
-		m_currentTime.SetSeconds(m_pVariableCollectionManager->GetCollection(CVariableCollection::s_globalCollectionName)->GetVariableValue("CurrentTime").GetValueAsFloat());
+		m_currentTime = m_pVariableCollectionManager->GetCollection(CVariableCollection::s_globalCollectionName)->GetVariableValue("CurrentTime").GetValueAsTime();
 	}
 
 	if (itStartOfResponses != itEndOfResponses)

@@ -429,7 +429,7 @@ public:
 
 	int                          GetMML(int dist, int mmMin, int mmMax);
 
-	uint32                       GetLastTimeUsed() { return m_nLastTimeUsed; }
+	const CTimeValue&            GetLastTimeUsed() { return m_nLastTimeUsed; }
 
 	static void                  GenerateIndicesForAllSurfaces(IRenderMesh* pRM, int arrpNonBorderIdxNum[SRangeInfo::e_max_surface_types][4], int nBorderStartIndex, SSurfaceTypeInfo* pSurfaceTypeInfos, CUpdateTerrainTempData* pUpdateTerrainTempData = NULL);
 	void                         BuildIndices(CStripsInfo& si, const SRenderingPassInfo& passInfo);
@@ -482,7 +482,7 @@ public:
 	uint8  m_nTreeLevel;
 
 	uint16 m_nOriginX, m_nOriginY;             // sector origin
-	int    m_nLastTimeUsed = 0;                // basically last time rendered
+	CTimeValue m_nLastTimeUsed = 0;            // basically last time rendered
 	int    m_nSetLodFrameId = 0;
 	float  m_geomError = kGeomErrorNotSet;     // maximum height difference comparing to next more detailed lod
 

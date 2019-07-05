@@ -57,7 +57,7 @@ CTargetTrackGroup::CTargetTrackGroup(TargetTrackHelpers::ITargetTrackPoolProxy* 
 	}
 
 #ifdef TARGET_TRACK_DEBUG
-	m_fLastGraphUpdate = 0.0f;
+	m_fLastGraphUpdate.SetSeconds(0);
 	m_pDebugHistoryManager = gEnv->pGameFramework->CreateDebugHistoryManager();
 
 	memset(m_bDebugGraphOccupied, 0, sizeof(m_bDebugGraphOccupied));
@@ -180,7 +180,7 @@ void CTargetTrackGroup::Update(TargetTrackHelpers::ITargetTrackConfigProxy* pCon
 {
 	CRY_PROFILE_FUNCTION(PROFILE_AI);
 
-	const float fCurrTime = GetAISystem()->GetFrameStartTimeSeconds();
+	const CTimeValue fCurrTime = GetAISystem()->GetFrameStartTime();
 
 	m_SortedTracks.clear();
 	m_SortedTracks.reserve(m_TargetTracks.size());
@@ -604,9 +604,9 @@ void CTargetTrackGroup::DebugDrawTracks(TargetTrackHelpers::ITargetTrackConfigPr
 	const float fGraphHeight = 150.0f;
 	const float fGraphMargin = 5.0f;
 
-	static float s_fGraphUpdateInterval = 0.125f;
+	static CTimeValue s_fGraphUpdateInterval = "0.125";
 	bool bUpdateGraph = false;
-	const float fCurrTime = GetAISystem()->GetFrameStartTimeSeconds();
+	const CTimeValue fCurrTime = GetAISystem()->GetFrameStartTime();
 	if (fCurrTime - m_fLastGraphUpdate >= s_fGraphUpdateInterval)
 	{
 		m_fLastGraphUpdate = fCurrTime;
@@ -675,7 +675,7 @@ void CTargetTrackGroup::DebugDrawTargets(int nMode, int nTargetedCount, bool bEx
 	const ColorB invalidColor(120, 120, 120, 255);
 	const float fProbableRatio = 0.45f;
 
-	const float fCurrTime = GetAISystem()->GetFrameStartTimeSeconds();
+	const CTimeValue fCurrTime = GetAISystem()->GetFrameStartTime();
 
 	CWeakRef<CAIObject> refObject = gAIEnv.pObjectContainer->GetWeakRef(m_aiObjectId);
 	CAIObject* pObject = refObject.GetAIObject();

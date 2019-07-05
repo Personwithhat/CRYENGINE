@@ -588,7 +588,7 @@ struct STexAnim
 	int               m_Rand;
 	int               m_NumAnimTexs;
 	bool              m_bLoop;
-	float             m_Time;
+	CTimeValue        m_Time;
 
 	size_t            Size()
 	{
@@ -614,7 +614,7 @@ struct STexAnim
 		m_Rand = 0;
 		m_NumAnimTexs = 0;
 		m_bLoop = false;
-		m_Time = 0.0f;
+		m_Time.SetSeconds(0);;
 	}
 
 	~STexAnim()

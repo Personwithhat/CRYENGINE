@@ -598,7 +598,7 @@ void CVehicleSystem::BroadcastVehicleUsageEvent(const EVehicleEvent eventId, con
 }
 
 //------------------------------------------------------------------------
-void CVehicleSystem::Update(float deltaTime)
+void CVehicleSystem::Update(const CTimeValue& deltaTime)
 {
 #if ENABLE_VEHICLE_DEBUG
 	if (VehicleCVars().v_debug_mem > 0)
@@ -657,7 +657,7 @@ void CVehicleSystem::Update(float deltaTime)
 
 //------------------------------------------------------------------------
 // NOTE: This function must be thread-safe.
-void CVehicleSystem::OnPrePhysicsTimeStep(float deltaTime)
+void CVehicleSystem::OnPrePhysicsTimeStep(const CTimeValue& deltaTime)
 {
 	CryAutoCriticalSection lock(m_currentVehicleLock);
 	CVehicle* pVehicle = (CVehicle*)m_pCurrentClientVehicle;

@@ -31,7 +31,7 @@ public:
 
 protected:
 	int    m_lipsyncAnimationLayer;
-	float  m_lipsyncTransitionTime;
+	CTimeValue m_lipsyncTransitionTime;
 	string m_defaultLipsyncAnimationName;
 };
 
@@ -77,7 +77,7 @@ private:
 			, pActor(nullptr)
 			, pEntity(nullptr)
 			, pPickedLine(nullptr)
-			, finishTime(0.0f)
+			, finishTime(0)
 			, priority(0)
 			, bWasCanceled(false)
 		{}
@@ -87,7 +87,7 @@ private:
 		string                text;
 		CHashedString         lineID;
 		const CDialogLine*    pPickedLine;
-		float                 finishTime;
+		CTimeValue            finishTime;
 		int                   priority;
 
 		int                   voiceAttachmentIndex;      //cached index of the voice attachment index // -1 means invalid ID;
@@ -105,7 +105,7 @@ private:
 		CResponseActor* pActor;
 		CHashedString   lineID;
 		int             linePriority;
-		float           waitEndTime;
+		CTimeValue      waitEndTime;
 
 		bool operator==(const SWaitingInfo& other) const { return pActor == other.pActor && lineID == other.lineID; }  //no need to check prio or endTime, since we only allow one instance of the same lineId per speaker
 	};
@@ -121,7 +121,7 @@ private:
 	//the pure execution, without further checking if the line can be started (that should have happen before)
 	void ExecuteStartSpeaking(SSpeakInfo* pSpeakerInfoToUse);
 
-	void QueueLine(CResponseActor* pActor, const CHashedString& lineID, float maxQueueDuration, const int priority);
+	void QueueLine(CResponseActor* pActor, const CHashedString& lineID, const CTimeValue& maxQueueDuration, const int priority);
 
 	typedef std::vector<SSpeakInfo> SpeakerList;
 	SpeakerList m_activeSpeakers;
@@ -139,13 +139,13 @@ private:
 	CryAudio::ControlId                            m_audioParameterIdLocal;
 	CryAudio::ControlId                            m_audioParameterIdGlobal;
 
-	std::vector<std::pair<CResponseActor*, float>> m_recentlyFinishedSpeakers;
+	std::vector<std::pair<CResponseActor*, CTimeValue>> m_recentlyFinishedSpeakers;
 
 	// CVars
 	int          m_displaySubtitlesCVar;
 	int          m_samePrioCancelsLinesCVar;
-	float        m_defaultMaxQueueTime;
-	static float s_defaultPauseAfterLines;
+	CTimeValue   m_defaultMaxQueueTime;
+	static CTimeValue s_defaultPauseAfterLines;
 	ICVar*       m_pDrsDialogDialogRunningEntityParameterName;
 	ICVar*       m_pDrsDialogDialogRunningGlobalParameterName;
 };

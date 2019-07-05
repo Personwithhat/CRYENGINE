@@ -147,7 +147,7 @@ void CPlayerComponent::ProcessEvent(const SEntityEvent& event)
 		if(!m_isAlive)
 			return;
 		
-		const float frameTime = event.fParam[0];
+		const CTimeValue frameTime = event.tVal;
 
 		// Start by updating the movement request we want to send to the character controller
 		// This results in the physical representation of the character moving
@@ -205,7 +205,7 @@ bool CPlayerComponent::NetSerialize(TSerialize ser, EEntityAspects aspect, uint8
 	return true;
 }
 
-void CPlayerComponent::UpdateMovementRequest(float frameTime)
+void CPlayerComponent::UpdateMovementRequest(const CTimeValue& frameTime)
 {
 	// Don't handle input if we are in air
 	if (!m_pCharacterController->IsOnGround())
@@ -214,28 +214,29 @@ void CPlayerComponent::UpdateMovementRequest(float frameTime)
 	Vec3 velocity = ZERO;
 
 	const float moveSpeed = 5.0f; //20.5f;
+	const float tSecs = frameTime.BADGetSeconds();
 
 	if (m_inputFlags & EInputFlag::MoveLeft)
 	{
-		velocity.x -= moveSpeed * frameTime;
+		velocity.x -= moveSpeed * tSecs;
 	}
 	if (m_inputFlags & EInputFlag::MoveRight)
 	{
-		velocity.x += moveSpeed * frameTime;
+		velocity.x += moveSpeed * tSecs;
 	}
 	if (m_inputFlags & EInputFlag::MoveForward)
 	{
-		velocity.y += moveSpeed * frameTime;
+		velocity.y += moveSpeed * tSecs;
 	}
 	if (m_inputFlags & EInputFlag::MoveBack)
 	{
-		velocity.y -= moveSpeed * frameTime;
+		velocity.y -= moveSpeed * tSecs;
 	}
 
 	m_pCharacterController->AddVelocity(GetEntity()->GetWorldRotation() * velocity);
 }
 
-void CPlayerComponent::UpdateLookDirectionRequest(float frameTime)
+void CPlayerComponent::UpdateLookDirectionRequest(const CTimeValue& frameTime)
 {
 	const float rotationSpeed = 0.002f;
 	const float rotationLimitsMinPitch = -0.84f;
@@ -245,7 +246,7 @@ void CPlayerComponent::UpdateLookDirectionRequest(float frameTime)
 	m_mouseDeltaRotation = m_mouseDeltaSmoothingFilter.Push(m_mouseDeltaRotation).Get();
 
 	// Update angular velocity metrics
-	m_horizontalAngularVelocity = (m_mouseDeltaRotation.x * rotationSpeed) / frameTime;
+	m_horizontalAngularVelocity = (m_mouseDeltaRotation.x * rotationSpeed) / frameTime.BADGetSeconds();
 	m_averagedHorizontalAngularVelocity.Push(m_horizontalAngularVelocity);
 
 	if (m_mouseDeltaRotation.IsEquivalent(ZERO, MOUSE_DELTA_TRESHOLD))
@@ -270,7 +271,7 @@ void CPlayerComponent::UpdateLookDirectionRequest(float frameTime)
 	m_mouseDeltaRotation = ZERO;
 }
 
-void CPlayerComponent::UpdateAnimation(float frameTime)
+void CPlayerComponent::UpdateAnimation(const CTimeValue& frameTime)
 {
 	/*const float angularVelocityTurningThreshold = 0.174; // [rad/s]
 
@@ -311,7 +312,7 @@ void CPlayerComponent::UpdateAnimation(float frameTime)
 	//	CryLowLatencySleep(30);
 }
 
-void CPlayerComponent::UpdateCamera(float frameTime)
+void CPlayerComponent::UpdateCamera(const CTimeValue& frameTime)
 {
 	// Start with updating look orientation from the latest input
 	Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(m_lookOrientation));

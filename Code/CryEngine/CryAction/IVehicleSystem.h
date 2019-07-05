@@ -193,7 +193,7 @@ struct SVehicleStatus
 		health = 1.f;
 		passengerCount = 0;
 		altitude = 0.f;
-		flipped = 0.f;
+		flipped.SetSeconds(0);
 		contacts = 0;
 		submergedRatio = 0.f;
 		frameId = 0;
@@ -213,7 +213,7 @@ struct SVehicleStatus
 	float speed;
 	float health;
 	float altitude;
-	float flipped;
+	CTimeValue flipped;
 	int   passengerCount;
 	int   contacts;
 	float submergedRatio;
@@ -401,7 +401,7 @@ struct SDamageEffect
 	IVehicleHelper* pHelper;
 	bool            isGravityDirUsed;
 	Vec3            gravityDir;
-	float           pulsePeriod;
+	CTimeValue      pulsePeriod;
 
 	void            GetMemoryUsage(ICrySizer* s) const
 	{
@@ -412,7 +412,7 @@ struct SDamageEffect
 		: pHelper(NULL),
 		isGravityDirUsed(false),
 		gravityDir(ZERO),
-		pulsePeriod(0.f)
+		pulsePeriod(0)
 	{
 	}
 };
@@ -602,9 +602,9 @@ struct IVehicleObject
 	//   turret parts is implemented in this function.
 	// Parameters
 	//   deltaTime - total time for the update, in seconds
-	virtual void Update(const float deltaTime) = 0;
+	virtual void Update(const CTimeValue& deltaTime) = 0;
 
-	virtual void UpdateFromPassenger(const float deltaTime, EntityId playerId) {}
+	virtual void UpdateFromPassenger(const CTimeValue& deltaTime, EntityId playerId) {}
 
 	// Summary
 	//  Handle vehicle events
@@ -644,7 +644,7 @@ struct IVehicleAction
 	// IVehicleObject
 	virtual TVehicleObjectId GetId() const override = 0;
 	virtual void             Serialize(TSerialize ser, EEntityAspects aspects) override = 0;
-	virtual void             Update(const float deltaTime) override = 0;
+	virtual void             Update(const CTimeValue& deltaTime) override = 0;
 	// ~IVehicleObject
 };
 
@@ -699,7 +699,7 @@ struct IVehicle : public IGameObjectExtension
 	//   playerId - entity id of the passenger
 	virtual void UpdateView(SViewParams& viewParams, EntityId playerId = 0) = 0;
 
-	virtual void UpdatePassenger(float frameTime, EntityId playerId) = 0;
+	virtual void UpdatePassenger(const CTimeValue& frameTime, EntityId playerId) = 0;
 
 	//FIXME:move this to the gameside, its not really needed here, plus add callerId to the IActionListener interface
 	virtual void                        OnAction(const TVehicleActionId actionId, int activationMode, float value, EntityId callerId) = 0;
@@ -896,7 +896,7 @@ struct IVehicle : public IGameObjectExtension
 
 	// Summary:
 	//  Register Entity Timer. If timerId == -1, timerId will be assigned
-	virtual int SetTimer(int timerId, int ms, IVehicleObject* pObject) = 0;
+	virtual int SetTimer(int timerId, const CTimeValue& time, IVehicleObject* pObject) = 0;
 
 	// Summary:
 	//  Kill Entity Timer
@@ -1171,7 +1171,7 @@ struct IVehicleMovement
 	//   physics related attributes of the vehicle.
 	// Parameters:
 	//   deltaTime - time in seconds of the update
-	virtual void ProcessMovement(const float deltaTime) = 0;
+	virtual void ProcessMovement(const CTimeValue& deltaTime) = 0;
 
 	// Summary:
 	//   Enables/disables movement processing
@@ -1194,7 +1194,7 @@ struct IVehicleMovement
 	//   function of IVehicle.
 	// Parameters:
 	//   deltaTime - time in seconds of the update
-	virtual void Update(const float deltaTime) = 0;
+	virtual void Update(const CTimeValue& deltaTime) = 0;
 
 	// Summary:
 	//   Allows updates by the movement system after the view has updated
@@ -1287,7 +1287,7 @@ struct IVehicleView
 
 	// Summary
 	//		Performs computation which depends of the frame rate
-	virtual void Update(const float deltaTime) override = 0;
+	virtual void Update(const CTimeValue& deltaTime) override = 0;
 
 	virtual void SetDebugView(bool debug) = 0;
 	virtual bool IsDebugView() = 0;
@@ -1385,7 +1385,7 @@ struct IVehicleSeat
 	virtual void                    SetLocked(EVehicleSeatLockStatus status) = 0;
 	virtual EVehicleSeatLockStatus  GetLockedStatus() const = 0;
 
-	virtual void                    PrePhysUpdate(const float dt) = 0;
+	virtual void                    PrePhysUpdate(const CTimeValue& dt) = 0;
 
 	virtual void                    OnPassengerDeath() = 0;
 	virtual void                    UnlinkPassenger(bool ragdoll) = 0;
@@ -1695,7 +1695,7 @@ struct IVehiclePart
 	virtual int              GetIndex() const = 0;
 
 	virtual TVehicleObjectId GetId() const override = 0;
-	virtual void             Update(const float deltaTime) override = 0;
+	virtual void             Update(const CTimeValue& deltaTime) override = 0;
 	virtual void             Serialize(TSerialize ser, EEntityAspects aspects) override = 0;
 };
 
@@ -1860,7 +1860,7 @@ struct IVehicleDamageBehavior
 	virtual void             GetMemoryUsage(ICrySizer* pSizer) const = 0;
 	virtual TVehicleObjectId GetId() const override = 0;
 	virtual void             Serialize(TSerialize ser, EEntityAspects aspects) override = 0;
-	virtual void             Update(const float deltaTime) override = 0;
+	virtual void             Update(const CTimeValue& deltaTime) override = 0;
 
 	// Summary:
 	//   Sends an event message to the damage behavior
@@ -1892,14 +1892,14 @@ struct IVehicleSeatAction
 	virtual void             StopUsing() = 0;
 	virtual void             OnAction(const TVehicleActionId actionId, int activationMode, float value) = 0;
 
-	virtual void             PrePhysUpdate(const float dt) {}
+	virtual void             PrePhysUpdate(const CTimeValue& dt) {}
 
 	virtual void             GetMemoryUsage(ICrySizer* pSizer) const = 0;
 	// IVehicleObject
 	virtual TVehicleObjectId GetId() const override = 0;
 	virtual void             Serialize(TSerialize ser, EEntityAspects aspects) override = 0;
 	virtual void             PostSerialize() = 0;
-	virtual void             Update(const float deltaTime) override = 0;
+	virtual void             Update(const CTimeValue& deltaTime) override = 0;
 	// ~IVehicleObject
 
 	virtual const char* GetName() const { return m_name.c_str(); }
@@ -1954,18 +1954,18 @@ struct IVehicleAnimation
 	//   Changes the speed of the animation
 	// Parameters
 	//   speed - a value between 0 to 1
-	virtual void SetSpeed(float speed) = 0;
+	virtual void SetSpeed(const mpfloat& speed) = 0;
 
 	// Summary
 	//   Returns the current time in the animation
 	// Returns
 	//   a value usually between 0 to 1
-	virtual float GetAnimTime(bool raw = false) = 0;
+	virtual nTime GetAnimTime(bool raw = false) = 0;
 
 	virtual void  ToggleManualUpdate(bool isEnabled) = 0;
 	virtual bool  IsUsingManualUpdates() = 0;
 
-	virtual void  SetTime(float time, bool force = false) = 0;
+	virtual void  SetTime(const nTime& time, bool force = false) = 0;
 
 	virtual void  GetMemoryUsage(ICrySizer* pSizer) const = 0;
 };
@@ -2138,7 +2138,7 @@ struct IVehicleSystem
 	//   UnregisterVehicleEventListener
 	virtual void BroadcastVehicleUsageEvent(const EVehicleEvent eventId, const EntityId playerId, IVehicle* pVehicle) = 0;
 
-	virtual void Update(float deltaTime) = 0;
+	virtual void Update(const CTimeValue& deltaTime) = 0;
 };
 
 enum EVehicleDebugDraw

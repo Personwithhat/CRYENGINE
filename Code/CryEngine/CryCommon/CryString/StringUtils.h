@@ -5,6 +5,7 @@
 #include "CryStringUtils.h"
 #include "CryString.h"
 #include "UnicodeFunctions.h"
+#include <CrySystem\TimeValue.h>
 
 #include <CryCore/CryCrc32.h>
 
@@ -90,6 +91,16 @@ inline string toString(float nNumber)
 	char szNumber[128];
 	cry_sprintf(szNumber, "%f", nNumber);
 	return szNumber;
+}
+
+MPOnly inline string toString(const T& nNumber)
+{
+	return nNumber.str();
+}
+
+TVOnly inline string toString(const T& nNumber)
+{
+	return toString(nNumber.m_lValue);
 }
 
 inline string toString(bool nNumber)

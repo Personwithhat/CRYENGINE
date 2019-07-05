@@ -391,7 +391,7 @@ void JobManager::ThreadBackEnd::CThreadBackEndWorkerThread::ThreadEntry()
 		// store job start time
 #if defined(JOBMANAGER_SUPPORT_PROFILING)
 		SJobProfilingData* pJobProfilingData = gEnv->GetJobManager()->GetProfilingData(infoBlock.profilerIndex);
-		pJobProfilingData->startTime = gEnv->pTimer->GetAsyncTime();
+		pJobProfilingData->startTime = GetGTimer()->GetAsyncTime();
 		pJobProfilingData->isWaiting = false;
 		pJobProfilingData->nWorkerThread = GetWorkerThreadId();
 #endif
@@ -429,7 +429,7 @@ void JobManager::ThreadBackEnd::CThreadBackEndWorkerThread::ThreadEntry()
 			pJobState->SetStopped();
 		}
 #if defined(JOBMANAGER_SUPPORT_PROFILING)
-		pJobProfilingData->endTime = gEnv->pTimer->GetAsyncTime();
+		pJobProfilingData->endTime = GetGTimer()->GetAsyncTime();
 #endif
 
 	}

@@ -70,7 +70,7 @@ bool IsActorValidForMovementUpdateContextCreation(MovementActor& actor)
 }
 
 MovementUpdateContext CreateMovementUpdateContextFrom(
-  MovementActor& actor, MovementSystem& system, const CTimeValue frameStartTime, const float updateTime)
+  MovementActor& actor, MovementSystem& system, const CTimeValue& frameStartTime, const CTimeValue& updateTime)
 {
 	IPathFollower* pathFollower = actor.callbacks.getPathFollowerFunction();
 
@@ -104,8 +104,8 @@ private:
 
 MovementSystem::MovementSystem()
 	: m_nextUniqueRequestID(0)
-	, m_frameStartTime(0.0f)
-	, m_frameDeltaTime(0.0f)
+	, m_frameStartTime(0)
+	, m_frameDeltaTime(0)
 {
 }
 
@@ -224,7 +224,7 @@ void MovementSystem::GetRequestStatus(const MovementRequestID& requestID, Moveme
 	}
 }
 
-void MovementSystem::Update(const CTimeValue frameStartTime, const float frameDeltaTime)
+void MovementSystem::Update(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime)
 {
 	m_frameStartTime = frameDeltaTime;
 	m_frameDeltaTime = frameDeltaTime;

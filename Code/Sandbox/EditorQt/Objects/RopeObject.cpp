@@ -213,7 +213,7 @@ void CRopeObject::Display(CObjectRenderHelper& objRenderHelper)
 			nLinkedMask = pRopeNode->GetLinkedEndsMask();
 
 		m_endLinksDisplayUpdateCounter++;
-		if (pRopeNode && m_endLinksDisplayUpdateCounter > 10 && gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep == 0.0f)
+		if (pRopeNode && m_endLinksDisplayUpdateCounter > 10 && gEnv->pPhysicalWorld->GetPhysVars()->lastTimeStep == 0)
 		{
 			m_endLinksDisplayUpdateCounter = 0;
 
@@ -469,7 +469,7 @@ void CRopeObject::SerializeProperties(Serialization::IArchive& ar, bool bMultiEd
 		ar(m_ropeParams.maxForce, "max_force", "Max Force");
 		SerializeBitflag(ar, m_ropeParams.nFlags, IRopeRenderNode::eRope_Awake, "awake", "Awake");
 		ar(Serialization::Range(m_ropeParams.nMaxIters, 0, 100000, 1, 1000, 100), "solver_iter", "Solver Iterations");
-		ar(Serialization::Range(m_ropeParams.maxTimeStep, 0.001f, 1.0f, 0.001f, 0.1f, 0.01f), "max_timestep", "Max Timestep");
+		ar(Serialization::Range(m_ropeParams.maxTimeStep, CTimeValue("0.001"), CTimeValue("1"), CTimeValue("0.001"), CTimeValue("0.1"), CTimeValue("0.01")), "max_timestep", "Max Timestep");
 		ar(Serialization::Range(m_ropeParams.stiffness, 0.0f, 1000.0f, 0.0f, 100.0f, 1.0f), "stiffness", "Stiffness");
 		ar(Serialization::Range(m_ropeParams.hardness, 0.0f, 1000.0f, 0.0f, 100.0f, 1.0f), "hardness", "Contact Hardness");
 		ar(Serialization::Range(m_ropeParams.damping, 0.0f, 100.0f, 0.0f, 10.0f, 0.1f), "damping", "Damping");

@@ -863,7 +863,7 @@ void CGraphicsPipeline::GeneratePerViewConstantBuffer(const SRenderViewInfo* pVi
 
 		HLSL_PerViewGlobalConstantBuffer& cb = bufferData[i];
 
-		const float animTime = GetAnimationTime().GetSeconds();
+		const float animTime = GetAnimationTime().BADGetSeconds();
 		const bool bReverseDepth = (viewInfo.flags & SRenderViewInfo::eFlags_ReverseDepth) != 0;
 
 		cb.CV_HPosScale = viewInfo.downscaleFactor;

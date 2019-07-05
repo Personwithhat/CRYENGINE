@@ -38,7 +38,7 @@ CParticleFluidSimulation::CParticleFluidSimulation(CGraphicsPipeline* pGraphicsP
 	memset(&m_params.GetHostData(), 0x00, sizeof(SParticleFluidParametersInternal));
 
 	m_params->numberOfIterations = 2;
-	m_params->deltaTime = 0.008f;
+	m_params->deltaTime.SetSeconds("0.008");
 	m_params->stiffness = 60.0f;
 	m_params->gravityConstant = -1.f;
 	m_params->h = 0.5f;

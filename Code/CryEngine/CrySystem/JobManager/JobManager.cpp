@@ -363,7 +363,7 @@ const bool JobManager::CJobManager::WaitForJob(JobManager::SJobState& rJobState)
 
 #if defined(JOBMANAGER_SUPPORT_PROFILING)
 	SJobProfilingData* pJobProfilingData = gEnv->GetJobManager()->GetProfilingData(rJobState.GetProfilerIndex());
-	pJobProfilingData->startTime = gEnv->pTimer->GetAsyncTime();
+	pJobProfilingData->startTime = GetGTimer()->GetAsyncTime();
 	pJobProfilingData->isWaiting = true;
 	pJobProfilingData->nThreadId = CryGetCurrentThreadId();
 #endif
@@ -401,7 +401,7 @@ const bool JobManager::CJobManager::WaitForJob(JobManager::SJobState& rJobState)
 
 
 #if defined(JOBMANAGER_SUPPORT_PROFILING)
-	pJobProfilingData->endTime = gEnv->pTimer->GetAsyncTime();
+	pJobProfilingData->endTime = GetGTimer()->GetAsyncTime();
 	pJobProfilingData = NULL;
 #endif
 
@@ -863,13 +863,13 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 	CTimeValue frameEndTime = m_FrameStartTime[m_profilingData.GetPrevFrameIdx()];
 
 	// skip first frames still we have enough data
-	if (frameStartTime.GetValue() == 0)
+	if (frameStartTime == 0)
 		return;
 
 	// compute how long the displayed frame took
 	CTimeValue diffTime = frameEndTime - frameStartTime;
 	// round up to 5ms and convert to seconds
-	diffTime = CTimeValue(5 * crymath::ceil(diffTime.GetMilliSeconds() / 5) / 1000);
+	diffTime = CTimeValue(5 * ceil(diffTime.GetMilliSeconds() / 5) / 1000);
 
 	// get used thread ids
 	threadID nMainThreadId, nRenderThreadId;
@@ -894,7 +894,8 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 	const float fGraphHeight = fTextSizePixel;
 	const float fGraphWidth = (fScreenWidth - fInfoBoxSize) * 0.70f; // 70%
 
-	const float pixelPerTime = (float)fGraphWidth / diffTime.GetValue();
+	// Float inaccuracy is fine, debug/profiling
+	const rTime pixelPerSec = mpfloat().lossy(fGraphWidth) / diffTime;
 
 	const int nNumWorker = m_pThreadBackEnd->GetNumWorkerThreads();
 	const int numBlockingWorkers = m_pBlockingBackEnd->GetNumWorkerThreads();
@@ -976,7 +977,7 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 				continue;
 
 			// skip jobs which did never run
-			IF (profilingData.endTime.GetValue() == 0 || profilingData.startTime.GetValue() == 0, 0)
+			IF (profilingData.endTime == 0 || profilingData.startTime == 0, 0)
 				continue;
 
 			// get the job profiling rendering data structure
@@ -999,8 +1000,8 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 				CTimeValue startOffset = profilingData.startTime - frameStartTime;
 				CTimeValue endOffset = profilingData.endTime - frameStartTime;
 
-				int nGraphOffsetStart = (int)(startOffset.GetValue() * pixelPerTime);
-				int nGraphOffsetEnd = (int)(endOffset.GetValue() * pixelPerTime);
+				int nGraphOffsetStart = (int)(startOffset * pixelPerSec);
+				int nGraphOffsetEnd = (int)(endOffset * pixelPerSec);
 
 				if(profilingData.isWaiting)
 				{
@@ -1066,7 +1067,7 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 
 	{ // marker for the end of the main thread
 		ColorB red(255, 0, 0, 0);
-		const float markerOffset = (m_mainDoneTime[nFrameId] - frameStartTime).GetValue() * pixelPerTime;
+		const float markerOffset = float((m_mainDoneTime[nFrameId] - frameStartTime) * pixelPerSec);
 		Vec3 markerTop(fInfoBoxSize + fGraphSideOffset + markerOffset, fGraphTopOffset - 0.5f * fGraphHeight, 0);
 		Vec3 markerBottom(fInfoBoxSize + fGraphSideOffset + markerOffset, fGraphTopOffset + 1.5f * fGraphHeight, 0);
 		pAuxGeomRenderer->DrawLine(markerTop, red, markerBottom, red);
@@ -1080,7 +1081,7 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 
 	{ // marker for the end of the render thread
 		ColorB red(255, 0, 0, 0);
-		const float markerOffset = (m_renderDoneTime[nFrameId] - frameStartTime).GetValue() * pixelPerTime;
+		const float markerOffset = float((m_renderDoneTime[nFrameId] - frameStartTime) * pixelPerSec);
 		Vec3 markerTop(fInfoBoxSize + fGraphSideOffset + markerOffset, fGraphTopOffset - 0.5f * fGraphHeight, 0);
 		Vec3 markerBottom(fInfoBoxSize + fGraphSideOffset + markerOffset, fGraphTopOffset + 1.5f * fGraphHeight, 0);
 		pAuxGeomRenderer->DrawLine(markerTop, red, markerBottom, red);
@@ -1119,12 +1120,12 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 	}
 
 	// draw vertical line every 5ms
-	const int64 tickOf5Ms = CTimeValue(0.005f).GetValue();
-	const int64 markerCount = ((diffTime.GetMilliSecondsAsInt64() - 1) / 5);
+	const CTimeValue tickOf5Ms = CTimeValue("0.005");
+	const mpfloat markerCount = ((diffTime.GetMilliSeconds() - 1) / 5);
 	for(int64 i = 1; i <= markerCount; ++i)
 	{
-		Vec3 markerTop(fInfoBoxSize + fGraphSideOffset + i * tickOf5Ms * pixelPerTime, fTopOffset - fGraphHeight, 0);
-		Vec3 markerBottom(fInfoBoxSize + fGraphSideOffset + i * tickOf5Ms * pixelPerTime, fGraphTopOffset + fGraphHeight, 0);
+		Vec3 markerTop(fInfoBoxSize + fGraphSideOffset + float(i * tickOf5Ms * pixelPerSec), fTopOffset - fGraphHeight, 0);
+		Vec3 markerBottom(fInfoBoxSize + fGraphSideOffset + float(i * tickOf5Ms * pixelPerSec), fGraphTopOffset + fGraphHeight, 0);
 		pAuxGeomRenderer->DrawLine(markerTop, boxBorderColor, markerBottom, boxBorderColor);
 	}
 
@@ -1144,8 +1145,9 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 	CTimeValue accumulatedWorkerTime;
 	for (int i = 0; i < nNumWorker; ++i)
 	{
-		float runTimePercent = 100.0f / (frameEndTime - frameStartTime).GetValue() * arrWorkerProfilingRenderData[i].runTime.GetValue();
-		cry_sprintf(tmpBuffer, "Worker %d:    %5.2f ms %5.1f %%", i, arrWorkerProfilingRenderData[i].runTime.GetMilliSeconds(), runTimePercent);
+		// Float inaccuracy is fine, debug/profiling  Value/Value = Seconds/Seconds
+		float runTimePercent = float(100 / (frameEndTime - frameStartTime) * arrWorkerProfilingRenderData[i].runTime);
+		cry_sprintf(tmpBuffer, "Worker %d:    %5.2f ms %5.1f %%", i, (float)arrWorkerProfilingRenderData[i].runTime.GetMilliSeconds(), runTimePercent);
 		DrawUtils::WriteShortLabel(fTextSideOffset, fInfoBoxTextOffset, fTextSize, fTextColor, tmpBuffer, 30);
 		fInfoBoxTextOffset += fTextSizePixel;
 
@@ -1154,8 +1156,8 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 	}
 	for (int i = 0; i < numBlockingWorkers; ++i)
 	{
-		float runTimePercent = 100.0f / (frameEndTime - frameStartTime).GetValue() * arrBlockingWorkerProfilingRenderData[i].runTime.GetValue();
-		cry_sprintf(tmpBuffer, "Worker(B) %d: %5.2f ms %5.1f %%", i, arrBlockingWorkerProfilingRenderData[i].runTime.GetMilliSeconds(), runTimePercent);
+		mpfloat runTimePercent = 100 / (frameEndTime - frameStartTime) * arrBlockingWorkerProfilingRenderData[i].runTime;
+		cry_sprintf(tmpBuffer, "Worker(B) %d: %5.2f ms %5.1f %%", i, arrBlockingWorkerProfilingRenderData[i].runTime.GetMilliSeconds(), (float)runTimePercent);
 		DrawUtils::WriteShortLabel(fTextSideOffset, fInfoBoxTextOffset, fTextSize, fTextColor, tmpBuffer, 30);
 		fInfoBoxTextOffset += fTextSizePixel;
 
@@ -1167,20 +1169,21 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 	cry_sprintf(tmpBuffer, "--------------------------------");
 	DrawUtils::WriteShortLabel(fTextSideOffset, fInfoBoxTextOffset, fTextSize, fTextColor, tmpBuffer, 30);
 	fInfoBoxTextOffset += fTextSizePixel;
-	float accRunTimePercentage = 100.0f / ((frameEndTime - frameStartTime).GetValue() * nNumWorker) * accumulatedWorkerTime.GetValue();
-	cry_sprintf(tmpBuffer, "Sum:         %5.2f ms %5.1f %%", accumulatedWorkerTime.GetMilliSeconds(), accRunTimePercentage);
-	DrawUtils::WriteShortLabel(fTextSideOffset, fInfoBoxTextOffset, fTextSize, fTextColor, tmpBuffer, 30);
+	// Float inaccuracy is fine, debug/profiling  Value/Value = Seconds/Seconds
+	float accRunTimePercentage = float(100 / ((frameEndTime - frameStartTime) * nNumWorker) * accumulatedWorkerTime);
+	cry_sprintf(tmpBuffer, "Sum:         %5.2f ms %5.1f %%", (float)accumulatedWorkerTime.GetMilliSeconds(), accRunTimePercentage);
+	DrawUtils::WriteShortLabel(fTextSideOffset, fInfoBoxTextOffset, fTextSize, fTextColor, tmpBuffer, 27);
 	fInfoBoxTextOffset += fTextSizePixel;
 
 	// draw accumulated wait times of main and render thread
 	fInfoBoxTextOffset += 2.0f * fTextSizePixel;
-	cry_sprintf(tmpBuffer, "Frame Time  %5.2f ms", (frameEndTime - frameStartTime).GetMilliSeconds());
+	cry_sprintf(tmpBuffer, "Frame Time  %5.2f ms", (float)(frameEndTime - frameStartTime).GetMilliSeconds());
 	DrawUtils::WriteShortLabel(fTextSideOffset, fInfoBoxTextOffset, fTextSize, fTextColor, tmpBuffer, 30);
 	fInfoBoxTextOffset += fTextSizePixel;
-	cry_sprintf(tmpBuffer, "Main Wait   %5.2f ms", waitTimeMainThread.GetMilliSeconds());
+	cry_sprintf(tmpBuffer, "Main Wait   %5.2f ms", (float)waitTimeMainThread.GetMilliSeconds());
 	DrawUtils::WriteShortLabel(fTextSideOffset, fInfoBoxTextOffset, fTextSize, fTextColor, tmpBuffer, 30);
 	fInfoBoxTextOffset += fTextSizePixel;
-	cry_sprintf(tmpBuffer, "Render Wait %5.2f ms", waitTimeRenderThread.GetMilliSeconds());
+	cry_sprintf(tmpBuffer, "Render Wait %5.2f ms", (float)waitTimeRenderThread.GetMilliSeconds());
 	DrawUtils::WriteShortLabel(fTextSideOffset, fInfoBoxTextOffset, fTextSize, fTextColor, tmpBuffer, 30);
 	fInfoBoxTextOffset += fTextSizePixel;
 	fInfoBoxTextOffset += fTextSizePixel;
@@ -1211,8 +1214,8 @@ void JobManager::CJobManager::Update(int nJobSystemProfiler)
 
 		SJobProflingRenderData& rJobProfilingData = arrJobProfilingRenderData[i];
 		cry_sprintf(tmpBuffer, " %-35.35s %3d      %5.2f          %5.2f     %5.2f", rJobProfilingData.pName, rJobProfilingData.invocations,
-		            rJobProfilingData.runTime.GetMilliSeconds(), rJobProfilingData.waitTime.GetMilliSeconds(),
-		            rJobProfilingData.invocations ? rJobProfilingData.runTime.GetMilliSeconds() / rJobProfilingData.invocations : 0.0f);
+			(float)rJobProfilingData.runTime.GetMilliSeconds(), (float)rJobProfilingData.waitTime.GetMilliSeconds(),
+			rJobProfilingData.invocations ? (float)rJobProfilingData.runTime.GetMilliSeconds() / rJobProfilingData.invocations : 0.0f);
 
 		DrawUtils::WriteShortLabel(fJobInfoBoxSideOffset, fJobInfoBoxTextOffset - 1, fTextSize, fTextColor, tmpBuffer, 80);
 		DrawUtils::Draw2DBox(fJobInfoBoxSideOffset, fJobInfoBoxTextOffset + 2.0f, fTextSizePixel * 1.25f, fJobInfoBoxTextWidth, rJobProfilingData.color, fScreenHeight, fScreenWidth, pAuxGeomRenderer);

@@ -43,16 +43,16 @@ void SAIConsoleVarsCollisionAvoidance::Init()
 	REGISTER_CVAR2("ai_CollisionAvoidanceSmartObjectCutoffRange", &CollisionAvoidanceSmartObjectCutoffRange, 1.0f, VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Distance from it's next smart object for an agent to stop avoiding obstacles. Other actors will still avoid the agent.");
 
-	REGISTER_CVAR2("ai_CollisionAvoidanceTimestep", &CollisionAvoidanceTimeStep, 0.1f, VF_CHEAT | VF_CHEAT_NOCHECK,
+	REGISTER_CVAR2("ai_CollisionAvoidanceTimestep", &CollisionAvoidanceTimeStep, CTimeValue("0.1"), VF_CHEAT | VF_CHEAT_NOCHECK,
 		"TimeStep used to calculate an agent's collision free velocity.");
 	
 	REGISTER_CVAR2("ai_CollisionAvoidanceMinSpeed", &CollisionAvoidanceMinSpeed, 0.2f, VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Minimum speed allowed to be used by ORCA.");
 	
-	REGISTER_CVAR2("ai_CollisionAvoidanceAgentTimeHorizon", &CollisionAvoidanceAgentTimeHorizon, 2.5f, VF_CHEAT | VF_CHEAT_NOCHECK,
+	REGISTER_CVAR2("ai_CollisionAvoidanceAgentTimeHorizon", &CollisionAvoidanceAgentTimeHorizon, CTimeValue("2.5"), VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Time horizon used to calculate an agent's collision free velocity against other agents.");
 	
-	REGISTER_CVAR2("ai_CollisionAvoidanceObstacleTimeHorizon", &CollisionAvoidanceObstacleTimeHorizon, 1.5f, VF_CHEAT | VF_CHEAT_NOCHECK,
+	REGISTER_CVAR2("ai_CollisionAvoidanceObstacleTimeHorizon", &CollisionAvoidanceObstacleTimeHorizon, CTimeValue("1.5"), VF_CHEAT | VF_CHEAT_NOCHECK,
 		"Time horizon used to calculate an agent's collision free velocity against static obstacles.");
 	
 	REGISTER_CVAR2("ai_DebugCollisionAvoidanceForceSpeed", &DebugCollisionAvoidanceForceSpeed, 0.0f, VF_CHEAT | VF_CHEAT_NOCHECK,

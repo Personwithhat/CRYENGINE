@@ -74,7 +74,7 @@ void CCurveEditorWidget::CreateControls()
 	m_pCurveEdit = new CCurveEditor(this);
 	m_pCurveEdit->FillWithCurveToolsAndConnect(m_pCurveEditToolbar);
 	m_pCurveEdit->SetContent(&m_controller.GetCurveContent());
-	m_pCurveEdit->SetTimeRange(SAnimTime(0.0f), SAnimTime(m_animTimeSecondsIn24h));
+	m_pCurveEdit->SetTimeRange(0, CTimeValue(m_animTimeSecondsIn24h));
 	m_pCurveEdit->SetRulerVisible(true);
 	m_pCurveEdit->SetRulerHeight(Private_CurveEditorTab::gRulerHeight);
 	m_pCurveEdit->SetRulerTicksYOffset(Private_CurveEditorTab::gRulerGradientHeight);
@@ -132,9 +132,9 @@ void CCurveEditorWidget::OnAssetClosed()
 
 void CCurveEditorWidget::CurveEditTimeChanged()
 {
-	float time = m_pCurveEdit->Time().ToFloat();
+	CTimeValue time = m_pCurveEdit->Time();
 	time /= m_animTimeSecondsIn24h;
-	const float todTime = time * 24.0f;
+	const CTimeValue todTime = time * 24;
 
 	m_controller.SetCurrentTime(this, todTime);
 }
@@ -147,20 +147,20 @@ void CCurveEditorWidget::OnCurveDragging()
 	}
 
 	// User modifies curve. Need to reset time if curve point is moving along time axis
-	float minSelectedTime = std::numeric_limits<float>::max();
+	CTimeValue minSelectedTime = CTimeValue::Max();
 	for (const auto& curve : m_controller.GetCurveContent().m_curves)
 	{
 		for (auto& key : curve.m_keys)
 		{
 			if (key.m_bSelected)
-				minSelectedTime = std::min(minSelectedTime, key.m_time.ToFloat());
+				minSelectedTime = std::min(minSelectedTime, key.m_time);
 		}
 	}
 
-	float todTime = minSelectedTime / m_animTimeSecondsIn24h * 24.0f;
-	if (todTime < 0.0f)
+	CTimeValue todTime = minSelectedTime / m_animTimeSecondsIn24h * 24;
+	if (todTime < 0)
 	{
-		todTime = 0.0f;
+		todTime.SetSeconds(0);
 	}
 	m_controller.SetCurrentTime(nullptr, todTime);
 
@@ -203,7 +203,7 @@ void CCurveEditorWidget::DrawGradientBar(QPainter& painter, const QRect& rect, c
 
 		std::vector<Vec3> gradient;
 		gradient.resize(nRange);
-		variables.InterpolateVarInRange(selectedParam, visibleRange.start, visibleRange.end, nRange, &gradient[0]);
+		variables.InterpolateVarInRange(selectedParam, BADTIME(visibleRange.start), BADTIME(visibleRange.end), nRange, &gradient[0]);
 
 		if (ITimeOfDay::TYPE_COLOR == sVarInfo.type)
 		{
@@ -240,7 +240,7 @@ void CCurveEditorWidget::OnNewVariableSelected()
 	if (m_controller.GetSelectedVariableIndex() < 0)
 	{
 		m_pCurveEdit->SetFitMargin(0.0f);
-		m_pCurveEdit->ZoomToTimeRange(SAnimTime(0.0f), SAnimTime(m_animTimeSecondsIn24h));
+		m_pCurveEdit->ZoomToTimeRange(0, CTimeValue(m_animTimeSecondsIn24h));
 	}
 	else
 	{
@@ -254,7 +254,7 @@ void CCurveEditorWidget::OnNewVariableSelected()
 	UpdateCurveContent();
 }
 
-void CCurveEditorWidget::OnTimeChanged(QWidget* pSender, float newTime)
+void CCurveEditorWidget::OnTimeChanged(QWidget* pSender, const CTimeValue& newTime)
 {
 	if (pSender == this)
 	{
@@ -263,8 +263,8 @@ void CCurveEditorWidget::OnTimeChanged(QWidget* pSender, float newTime)
 
 	blockSignals(true);
 
-	const float splineTime = (newTime / 24.0f) * m_animTimeSecondsIn24h;
-	m_pCurveEdit->SetTime(SAnimTime(splineTime));
+	const CTimeValue splineTime = (newTime / 24) * m_animTimeSecondsIn24h;
+	m_pCurveEdit->SetTime(splineTime);
 
 	blockSignals(false);
 }
@@ -273,9 +273,9 @@ void CCurveEditorWidget::SetEngineTime()
 {
 	blockSignals(true);
 
-	float currTime = m_controller.GetCurrentTime();
-	const float splineTime = (currTime / 24.0f) * m_animTimeSecondsIn24h;
-	m_pCurveEdit->SetTime(SAnimTime(splineTime));
+	CTimeValue currTime = m_controller.GetCurrentTime();
+	const CTimeValue splineTime = (currTime / 24) * m_animTimeSecondsIn24h;
+	m_pCurveEdit->SetTime(splineTime);
 
 	blockSignals(false);
 }

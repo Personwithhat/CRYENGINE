@@ -253,7 +253,7 @@ void JobManager::BlockingBackEnd::CBlockingBackEndWorkerThread::ThreadEntry()
 			int iter = 0;
 			while (!pJobInfoBlockState->IsReady())
 			{
-				CrySleep(iter++ > 10 ? 1 : 0);
+				CryLowLatencySleep(iter++ > 10 ? "0.001" : "0");
 			}
 			;
 
@@ -279,7 +279,7 @@ void JobManager::BlockingBackEnd::CBlockingBackEndWorkerThread::ThreadEntry()
 
 #if defined(JOBMANAGER_SUPPORT_PROFILING)
 		SJobProfilingData* pJobProfilingData = gEnv->GetJobManager()->GetProfilingData(infoBlock.profilerIndex);
-		pJobProfilingData->startTime = gEnv->pTimer->GetAsyncTime();
+		pJobProfilingData->startTime = GetGTimer()->GetAsyncTime();
 		pJobProfilingData->isWaiting = false;
 		pJobProfilingData->nWorkerThread = GetWorkerThreadId();
 #endif
@@ -308,7 +308,7 @@ void JobManager::BlockingBackEnd::CBlockingBackEndWorkerThread::ThreadEntry()
 		}
 
 #if defined(JOBMANAGER_SUPPORT_PROFILING)
-		pJobProfilingData->endTime = gEnv->pTimer->GetAsyncTime();
+		pJobProfilingData->endTime = GetGTimer()->GetAsyncTime();
 #endif
 	}
 	while (m_bStop == false);

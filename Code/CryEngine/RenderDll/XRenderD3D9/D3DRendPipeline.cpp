@@ -105,7 +105,7 @@ void CD3D9Renderer::EF_Init()
 	m_waterUpdateInfo.m_LastWaterViewdirUpdate = Vec3(0, 0, 0);
 	m_waterUpdateInfo.m_LastWaterUpdirUpdate   = Vec3(0, 0, 0);
 	m_waterUpdateInfo.m_LastWaterPosUpdate     = Vec3(0, 0, 0);
-	m_waterUpdateInfo.m_fLastWaterUpdate       = 0;
+	m_waterUpdateInfo.m_fLastWaterUpdate.SetSeconds(0);
 	m_waterUpdateInfo.m_nLastWaterFrameID      = 0;
 
 	m_nMaterialAnisoHighSampler   = CDeviceObjectFactory::GetOrCreateSamplerStateHandle(SSamplerState(FILTER_ANISO16X, false));
@@ -176,7 +176,7 @@ int CD3D9Renderer::EF_Preprocess(SRendItem* ri, uint32 nums, uint32 nume, const 
 	SPreprocess Procs[512];
 	uint32 nProcs = 0;
 
-	CTimeValue time0 = iTimer->GetAsyncTime();
+	CTimeValue time0 = GTimer(d3d)->GetAsyncTime();
 
 	if (m_LogFile)
 		gRenDev->Logv("*** Start preprocess frame ***\n");
@@ -330,7 +330,7 @@ int CD3D9Renderer::EF_Preprocess(SRendItem* ri, uint32 nums, uint32 nume, const 
 	if (m_LogFile)
 		gRenDev->Logv("*** End preprocess frame ***\n");
 
-	m_frameRenderStats[m_nFillThreadID].m_fPreprocessTime += iTimer->GetAsyncTime().GetDifferenceInSeconds(time0);
+	m_frameRenderStats[m_nFillThreadID].m_fPreprocessTime += GTimer(d3d)->GetAsyncTime() - time0;
 
 	return nReturn;
 }
@@ -564,7 +564,7 @@ void CD3D9Renderer::RT_RenderScene(CRenderView* pRenderView)
 		pRenderView->SwitchUsageMode(CRenderView::eUsageModeReading);
 	}
 
-	const CTimeValue Time = iTimer->GetAsyncTime();
+	const CTimeValue Time = GTimer(d3d)->GetAsyncTime();
 
 	// Only Billboard rendering doesn't use CRenderOutput
 	if (!pRenderView->GetRenderOutput() && !pRenderView->IsBillboardGenView())
@@ -648,7 +648,7 @@ void CD3D9Renderer::RT_RenderScene(CRenderView* pRenderView)
 		pRenderView->SwitchUsageMode(CRenderView::eUsageModeReadingDone);
 	}
 
-	SRenderStatistics::Write().m_fRenderTime += iTimer->GetAsyncTime().GetDifferenceInSeconds(Time);
+	SRenderStatistics::Write().m_fRenderTime += (GTimer(d3d)->GetAsyncTime() - Time);
 
 	if (CRendererCVars::CV_r_FlushToGPU >= 1)
 		GetDeviceObjectFactory().FlushToGPU();
@@ -689,7 +689,7 @@ void CD3D9Renderer::SubmitRenderViewForRendering(int nFlags, const SRenderingPas
 
 	ExecuteRenderThreadCommand([=]()
 	{
-		CTimeValue timeRenderSceneBegin = iTimer->GetAsyncTime();
+		CTimeValue timeRenderSceneBegin = GTimer(d3d)->GetAsyncTime();
 
 		// when we are in video mode, don't execute the command
 		if (m_pRT->IsRenderThread() && m_pRT->m_eVideoThreadMode == SRenderThread::eVTM_Disabled)
@@ -720,7 +720,7 @@ void CD3D9Renderer::SubmitRenderViewForRendering(int nFlags, const SRenderingPas
 			}
 		}
 
-		SRenderStatistics::Write().m_Summary.sceneTime += iTimer->GetAsyncTime().GetDifferenceInSeconds(timeRenderSceneBegin);
+		SRenderStatistics::Write().m_Summary.sceneTime += (GTimer(d3d)->GetAsyncTime() - timeRenderSceneBegin);
 	}, ERenderCommandFlags::None);
 }
 
@@ -792,7 +792,7 @@ void CD3D9Renderer::RenderFrame(int nSceneRenderingFlags, const SRenderingPassIn
 	ReadPerFrameShaderConstants(passInfo, bSecondaryViewport);
 
 	{
-		CTimeValue time0 = iTimer->GetAsyncTime();
+		CTimeValue time0 = GTimer(d3d)->GetAsyncTime();
 #ifndef _RELEASE
 		if (CV_r_excludeshader->GetString()[0] != '0')
 		{
@@ -809,7 +809,7 @@ void CD3D9Renderer::RenderFrame(int nSceneRenderingFlags, const SRenderingPassIn
 
 		SubmitRenderViewForRendering(nSceneRenderingFlags, passInfo);
 
-		SRenderStatistics::Write().m_fSceneTimeMT += gEnv->pTimer->GetAsyncTime().GetDifferenceInSeconds(time0);
+		SRenderStatistics::Write().m_fSceneTimeMT += GetGTimer()->GetAsyncTime() - time0;
 	}
 }
 

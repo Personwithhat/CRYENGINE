@@ -193,8 +193,8 @@ public:
 	//Every frame (multiple time steps per frame possible?)		//TODO find out
 	//	currentTime - AI time since game start in seconds (GetCurrentTime)
 	//	frameTime - since last update (GetFrameTime)
-	virtual void                                  Update(const CTimeValue currentTime, const float frameTime) override;
-	virtual void                                  UpdateSubsystem(const CTimeValue currentTime, const float frameTime, const ESubsystemUpdateFlag subsystemUpdateFlag) override;
+	virtual void                                  Update(const CTimeValue& currentTime, const CTimeValue& frameTime) override;
+	virtual void                                  UpdateSubsystem(const CTimeValue& currentTime, const CTimeValue& frameTime, const ESubsystemUpdateFlag subsystemUpdateFlag) override;
 
 	virtual bool                                  RegisterSystemComponent(IAISystemComponent* pComponent) override;
 	virtual bool                                  UnregisterSystemComponent(IAISystemComponent* pComponent) override;
@@ -244,16 +244,16 @@ public:
 	// If it's set the subsystem will not get updated when executing Update(...) function but
 	// may get updated via UpdateSubsystem with the specific flag from Game code
 
-	void TrySubsystemUpdateVisionMap(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate);
-	void TrySubsystemUpdateAuditionMap(const CTimeValue frameStartTime,const float frameDeltaTime, const bool isAutomaticUpdate);
-	void TrySubsystemUpdateCoverSystem(const CTimeValue frameStartTime,const float frameDeltaTime, const bool isAutomaticUpdate);
-	void TrySubsystemUpdateNavigationSystem(const CTimeValue frameStartTime, const float frameDeltaTime,const bool isAutomaticUpdate);
+	void TrySubsystemUpdateVisionMap(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate);
+	void TrySubsystemUpdateAuditionMap(const CTimeValue& frameStartTime,const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate);
+	void TrySubsystemUpdateCoverSystem(const CTimeValue& frameStartTime,const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate);
+	void TrySubsystemUpdateNavigationSystem(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime,const bool isAutomaticUpdate);
 
-	void TrySubsystemUpdateMovementSystem(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate);
-	void TrySubsystemUpdateGlobalRayCaster(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate);
-	void TrySubsystemUpdateGlobalIntersectionTester(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate);
-	void TrySubsystemUpdateClusterDetector(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate);
-	void TrySubsystemUpdateBehaviorTreeManager(const CTimeValue frameStartTime, const float frameDeltaTime, const bool isAutomaticUpdate);
+	void TrySubsystemUpdateMovementSystem(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate);
+	void TrySubsystemUpdateGlobalRayCaster(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate);
+	void TrySubsystemUpdateGlobalIntersectionTester(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate);
+	void TrySubsystemUpdateClusterDetector(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate);
+	void TrySubsystemUpdateBehaviorTreeManager(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime, const bool isAutomaticUpdate);
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Time/Updates/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -269,24 +269,20 @@ public:
 	// Returns the current time (seconds since game began) that AI should be working with -
 	// This may be different from the system so that we can support multiple updates per
 	// game loop/update.
-	ILINE CTimeValue GetFrameStartTime() const
+	// PERSONAL IMPROVE: Have a separate AI timer for this instead, amongst the other global timers.
+	ILINE const CTimeValue& GetFrameStartTime() const
 	{
 		return m_frameStartTime;
 	}
 
-	ILINE float GetFrameStartTimeSeconds() const
-	{
-		return m_frameStartTimeSeconds;
-	}
-
 	// Time interval between this and the last update
-	ILINE float GetFrameDeltaTime() const
+	ILINE const CTimeValue& GetFrameDeltaTime() const
 	{
 		return m_frameDeltaTime;
 	}
 
 	// returns the basic AI system update interval
-	virtual float GetUpdateInterval() const override;
+	virtual CTimeValue GetUpdateInterval() const override;
 
 	// profiling
 	virtual int GetAITickCount() override;
@@ -339,8 +335,8 @@ public:
 	virtual bool IsRecording(const IAIObject* pTarget, IAIRecordable::e_AIDbgEvent event) const override;
 	virtual void Record(const IAIObject* pTarget, IAIRecordable::e_AIDbgEvent event, const char* pString) const override;
 	virtual void GetRecorderDebugContext(SAIRecorderDebugContext*& pContext) override;
-	virtual void AddDebugLine(const Vec3& start, const Vec3& end, uint8 r, uint8 g, uint8 b, float time) override;
-	virtual void AddDebugSphere(const Vec3& pos, float radius, uint8 r, uint8 g, uint8 b, float time) override;
+	virtual void AddDebugLine(const Vec3& start, const Vec3& end, uint8 r, uint8 g, uint8 b, const CTimeValue& time) override;
+	virtual void AddDebugSphere(const Vec3& pos, float radius, uint8 r, uint8 g, uint8 b, const CTimeValue& time) override;
 
 	virtual void DebugReportHitDamage(IEntity* pVictim, IEntity* pShooter, float damage, const char* material) override;
 	virtual void DebugReportDeath(IAIObject* pVictim) override;
@@ -463,8 +459,8 @@ public:
 	/// Fills the array with possible dangers, returns number of dangers.
 	virtual unsigned int GetDangerSpots(const IAIObject* requester, float range, Vec3* positions, unsigned int* types, unsigned int n, unsigned int flags) override;
 
-	virtual void         DynOmniLightEvent(const Vec3& pos, float radius, EAILightEventType type, EntityId shooterId, float time = 5.0f) override;
-	virtual void         DynSpotLightEvent(const Vec3& pos, const Vec3& dir, float radius, float fov, EAILightEventType type, EntityId shooterId, float time = 5.0f) override;
+	virtual void         DynOmniLightEvent(const Vec3& pos, float radius, EAILightEventType type, EntityId shooterId, const CTimeValue& time = 5) override;
+	virtual void         DynSpotLightEvent(const Vec3& pos, const Vec3& dir, float radius, float fov, EAILightEventType type, EntityId shooterId, const CTimeValue& time = 5) override;
 	virtual IAuditionMap* GetAuditionMap() override;
 	virtual IVisionMap*  GetVisionMap() override { return gAIEnv.pVisionMap; }
 	virtual IFactionMap& GetFactionMap() override { return *gAIEnv.pFactionMap; }
@@ -484,12 +480,6 @@ public:
 	void                         AddCombatClass(int combatClass, float* pScalesVector, int size, const char* szCustomSignal);
 	float                        ProcessBalancedDamage(IEntity* pShooterEntity, IEntity* pTargetEntity, float damage, const char* damageType);
 	void                         NotifyDeath(IAIObject* pVictim);
-
-	// !!! added to resolve merge conflict: to be removed in dev/c2 !!!
-	virtual float GetFrameStartTimeSecondsVirtual() const override
-	{
-		return GetFrameStartTimeSeconds();
-	}
 
 	//IAISystem/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -532,7 +522,7 @@ public:
 	IAIObject*     GetNearestToObjectInRange(IAIObject* pRef, unsigned short nType, float fRadiusMin, float fRadiusMax, float inCone = -1, bool bFaceAttTarget = false, bool bSeesAttTarget = false, bool bDevalue = true);
 
 	//// Devalues an AI object for the refence object only or for whole group.
-	void                  Devalue(IAIObject* pRef, IAIObject* pObject, bool group, float fDevalueTime = 20.f);
+	void                  Devalue(IAIObject* pRef, IAIObject* pObject, bool group, const CTimeValue& fDevalueTime = 20);
 
 	CAIObject*            GetPlayer() const;
 
@@ -671,10 +661,10 @@ public:
 	//AIObject Related Data structs:
 	AIActorSet m_enabledAIActorsSet;  // Set of enabled AI Actors
 	AIActorSet m_disabledAIActorsSet; // Set of disabled AI Actors
-	float      m_enabledActorsUpdateError;
+	rTime      m_enabledActorsUpdateError;
 	int        m_enabledActorsUpdateHead;
 	int        m_totalActorsUpdateCount;
-	float      m_disabledActorsUpdateError;
+	rTime      m_disabledActorsUpdateError;
 	int        m_disabledActorsHead;
 	bool       m_iteratingActorSet;
 
@@ -739,7 +729,7 @@ public:
 	// Stores level path for metadata - i.e. the code coverage data files {2009/02/17}
 	string                         m_sWorkingFolder;
 
-	float                          m_DEBUG_screenFlash;
+	CTimeValue                     m_DEBUG_screenFlash;
 
 	bool                           m_bCodeCoverageFailed;
 
@@ -748,8 +738,7 @@ public:
 
 	IVisArea*                      m_pAreaList[100];
 
-	float                          m_frameDeltaTime;
-	float                          m_frameStartTimeSeconds;
+	CTimeValue                     m_frameDeltaTime;
 	CTimeValue                     m_fLastPuppetUpdateTime;
 	CTimeValue                     m_frameStartTime;
 	CTimeValue                     m_lastVisBroadPhaseTime;
@@ -765,14 +754,14 @@ public:
 
 	struct SAIDelayedExpAccessoryUpdate
 	{
-		SAIDelayedExpAccessoryUpdate(CPuppet* pPuppet, int timeMs, bool state)
+		SAIDelayedExpAccessoryUpdate(CPuppet* pPuppet, const CTimeValue& time, bool state)
 			: pPuppet(pPuppet)
-			, timeMs(timeMs)
+			, time(time)
 			, state(state)
 		{
 		}
 		CPuppet* pPuppet;
-		int      timeMs;
+		CTimeValue time;
 		bool     state;
 	};
 	std::vector<SAIDelayedExpAccessoryUpdate> m_delayedExpAccessoryUpdates;
@@ -845,7 +834,7 @@ public:
 
 	struct SPerceptionDebugLine
 	{
-		SPerceptionDebugLine(const char* name_, const Vec3& start_, const Vec3& end_, const ColorB& color_, float time_, float thickness_)
+		SPerceptionDebugLine(const char* name_, const Vec3& start_, const Vec3& end_, const ColorB& color_, const CTimeValue& time_, float thickness_)
 			: start(start_)
 			, end(end_)
 			, color(color_)
@@ -857,7 +846,7 @@ public:
 
 		Vec3   start, end;
 		ColorB color;
-		float  time;
+		CTimeValue time;
 		float  thickness;
 		char   name[64];
 	};
@@ -865,10 +854,10 @@ public:
 
 	struct SDebugFakeDamageInd
 	{
-		SDebugFakeDamageInd(const Vec3& pos, float t) : p(pos), t(t), tmax(t) {}
+		SDebugFakeDamageInd(const Vec3& pos, const CTimeValue& t) : p(pos), t(t), tmax(t) {}
 		std::vector<Vec3> verts;
 		Vec3              p;
-		float             t, tmax;
+		CTimeValue        t, tmax;
 	};
 	std::vector<SDebugFakeDamageInd> m_DEBUG_fakeDamageInd;
 
@@ -938,14 +927,14 @@ public:
 	};
 	bool DebugDrawUpdateUnit(CAIActor* pTargetAIActor, int row, EDrawUpdateMode mode) const;
 
-	void DEBUG_AddFakeDamageIndicator(CAIActor* pShooter, float t);
+	void DEBUG_AddFakeDamageIndicator(CAIActor* pShooter, const CTimeValue& t);
 
 	void DebugDrawSelectedTargets();
 	void TryDebugDrawPhysicsAccess();
 
 	struct SDebugLine
 	{
-		SDebugLine(const Vec3& start_, const Vec3& end_, const ColorB& color_, float time_, float thickness_)
+		SDebugLine(const Vec3& start_, const Vec3& end_, const ColorB& color_, const CTimeValue& time_, float thickness_)
 			: start(start_)
 			, end(end_)
 			, color(color_)
@@ -954,7 +943,7 @@ public:
 		{}
 		Vec3   start, end;
 		ColorB color;
-		float  time;
+		CTimeValue  time;
 		float  thickness;
 	};
 	std::vector<SDebugLine> m_vecDebugLines;
@@ -963,7 +952,7 @@ public:
 
 	struct SDebugBox
 	{
-		SDebugBox(const Vec3& pos_, const OBB& obb_, const ColorB& color_, float time_)
+		SDebugBox(const Vec3& pos_, const OBB& obb_, const ColorB& color_, const CTimeValue& time_)
 			: pos(pos_)
 			, obb(obb_)
 			, color(color_)
@@ -972,13 +961,13 @@ public:
 		Vec3   pos;
 		OBB    obb;
 		ColorB color;
-		float  time;
+		CTimeValue  time;
 	};
 	std::vector<SDebugBox> m_vecDebugBoxes;
 
 	struct SDebugSphere
 	{
-		SDebugSphere(const Vec3& pos_, float radius_, const ColorB& color_, float time_)
+		SDebugSphere(const Vec3& pos_, float radius_, const ColorB& color_, const CTimeValue& time_)
 			: pos(pos_)
 			, radius(radius_)
 			, color(color_)
@@ -987,13 +976,13 @@ public:
 		Vec3   pos;
 		float  radius;
 		ColorB color;
-		float  time;
+		CTimeValue  time;
 	};
 	std::vector<SDebugSphere> m_vecDebugSpheres;
 
 	struct SDebugCylinder
 	{
-		SDebugCylinder(const Vec3& pos_, const Vec3& dir_, float radius_, float height_, const ColorB& color_, float time_)
+		SDebugCylinder(const Vec3& pos_, const Vec3& dir_, float radius_, float height_, const ColorB& color_, const CTimeValue& time_)
 			: pos(pos_)
 			, dir(dir_)
 			, height(height_)
@@ -1006,13 +995,13 @@ public:
 		float  radius;
 		float  height;
 		ColorB color;
-		float  time;
+		CTimeValue  time;
 	};
 	std::vector<SDebugCylinder> m_vecDebugCylinders;
 
 	struct SDebugCone
 	{
-		SDebugCone(const Vec3& pos_, const Vec3& dir_, float radius_, float height_, const ColorB& color_, float time_)
+		SDebugCone(const Vec3& pos_, const Vec3& dir_, float radius_, float height_, const ColorB& color_, const CTimeValue& time_)
 			: pos(pos_)
 			, dir(dir_)
 			, height(height_)
@@ -1025,7 +1014,7 @@ public:
 		float  radius;
 		float  height;
 		ColorB color;
-		float  time;
+		CTimeValue  time;
 	};
 	std::vector<SDebugCone> m_vecDebugCones;
 
@@ -1035,15 +1024,15 @@ public:
 	void DrawDebugShape(const SDebugCylinder&);
 	void DrawDebugShape(const SDebugCone&);
 	template<typename ShapeContainer>
-	void DrawDebugShapes(ShapeContainer& shapes, float dt);
+	void DrawDebugShapes(ShapeContainer& shapes, const CTimeValue& dt);
 
-	void AddDebugLine(const Vec3& start, const Vec3& end, const ColorB& color, float time, float thickness = 1.0f);
+	void AddDebugLine(const Vec3& start, const Vec3& end, const ColorB& color, const CTimeValue& time, float thickness = 1.0f);
 
-	void AddDebugBox(const Vec3& pos, const OBB& obb, uint8 r, uint8 g, uint8 b, float time);
-	void AddDebugCylinder(const Vec3& pos, const Vec3& dir, float radius, float length, const ColorB& color, float time);
-	void AddDebugCone(const Vec3& pos, const Vec3& dir, float radius, float length, const ColorB& color, float time);
+	void AddDebugBox(const Vec3& pos, const OBB& obb, uint8 r, uint8 g, uint8 b, const CTimeValue& time);
+	void AddDebugCylinder(const Vec3& pos, const Vec3& dir, float radius, float length, const ColorB& color, const CTimeValue& time);
+	void AddDebugCone(const Vec3& pos, const Vec3& dir, float radius, float length, const ColorB& color, const CTimeValue& time);
 
-	void AddPerceptionDebugLine(const char* tag, const Vec3& start, const Vec3& end, uint8 r, uint8 g, uint8 b, float time, float thickness);
+	void AddPerceptionDebugLine(const char* tag, const Vec3& start, const Vec3& end, uint8 r, uint8 g, uint8 b, const CTimeValue& time, float thickness);
 
 #endif //CRYAISYSTEM_DEBUG
 
@@ -1051,7 +1040,7 @@ public:
 	static bool CompareFloatsFPUBugWorkaround(float fLeft, float fRight);
 
 private:
-	bool        InitUpdate(const CTimeValue frameStartTime, const float frameDeltaTime);
+	bool        InitUpdate(const CTimeValue& frameStartTime, const CTimeValue& frameDeltaTime);
 	bool        InitializeSmartObjectsIfNotInitialized();
 	
 	bool        ShouldUpdateSubsystem(const IAISystem::ESubsystemUpdateFlag subsystemUpdateFlag, const bool isAutomaticUpdate) const;

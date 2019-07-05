@@ -59,6 +59,11 @@ public:
 	YASLI_INLINE bool operator()(ContainerInterface &ser, const char* name, const char* label) override;
 	YASLI_INLINE bool operator()(PointerInterface &ptr, const char* name, const char* label) override;
 
+	YASLI_INLINE bool operator()(CTimeValue& value, const char* name, const char* label) override;
+	#define MP_FUNCTION(T) YASLI_INLINE bool operator()(T& value, const char* name, const char* label) override;
+	#include <CrySystem\mpfloat.types>
+	#undef MP_FUNCTION
+
 	using Archive::operator();
 
 private:
@@ -107,6 +112,11 @@ public:
 	YASLI_INLINE bool operator()(const Serializer& ser, const char* name, const char* label) override;
 	YASLI_INLINE bool operator()(ContainerInterface& ser, const char* name, const char* label) override;
 	YASLI_INLINE bool operator()(PointerInterface& ptr, const char* name, const char* label) override;
+
+	YASLI_INLINE bool operator()(CTimeValue& value, const char* name, const char* label) override;
+	#define MP_FUNCTION(T) YASLI_INLINE bool operator()(T& value, const char* name, const char* label) override;
+	#include <CrySystem\mpfloat.types>
+	#undef MP_FUNCTION
 
 	using Archive::operator();
 

@@ -14,8 +14,8 @@ struct SAIConsoleVarsPathFollower
 	DeclareConstIntCVar(DrawPathFollower, 0);
 
 	float SmartPathFollower_LookAheadDistance;
-	float SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathWalk;
-	float SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathRunAndSprint;
+	CTimeValue SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathWalk;
+	CTimeValue SmartPathFollower_LookAheadPredictionTimeForMovingAlongPathRunAndSprint;
 	float SmartPathFollower_decelerationHuman;
 	float SmartPathFollower_decelerationVehicle;
 };

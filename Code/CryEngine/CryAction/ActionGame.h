@@ -68,7 +68,7 @@ struct SBreakEvent
 		, penetration(0.0f)
 		, energy(0.0f)
 		, radius(0.0f)
-		, time(0.0f)
+		, time(0)
 		, iBrokenObjectIndex(-1)
 		, iState(-1)
 		, seed(0)
@@ -136,7 +136,7 @@ struct SBreakEvent
 	float    penetration;
 	float    energy;
 	float    radius;
-	float    time;
+	CTimeValue time;
 
 	int16    iPrim[2];
 	int16    iBrokenObjectIndex;
@@ -177,8 +177,8 @@ struct SEntityCollHist
 	SEntityCollHist* pnext;
 	float            velImpact, velSlide2, velRoll2;
 	int              imatImpact[2], imatSlide[2], imatRoll[2];
-	float            timeRolling, timeNotRolling;
-	float            rollTimeout, slideTimeout;
+	CTimeValue       timeRolling, timeNotRolling;
+	CTimeValue       rollTimeout, slideTimeout;
 	float            mass;
 
 	void             GetMemoryUsage(ICrySizer* pSizer) const { /*nothing*/ }
@@ -194,7 +194,7 @@ struct SEntityHits
 	int          hitpoints;
 	int          maxdmg;
 	int          nMaxHits;
-	float        timeUsed, lifeTime;
+	CTimeValue   timeUsed, lifeTime;
 
 	void         GetMemoryUsage(ICrySizer* pSizer) const
 	{
@@ -227,11 +227,11 @@ struct SBrokenMeshSize
 		: pent(nullptr)
 		, partid(0)
 		, size(0)
-		, timeout(0.0f)
+		, timeout(0)
 		, fractureFX(nullptr)
 	{
 	}
-	SBrokenMeshSize(IPhysicalEntity* _pent, int _size, int _partid, float _timeout, const char* _fractureFX)
+	SBrokenMeshSize(IPhysicalEntity* _pent, int _size, int _partid, const CTimeValue& _timeout, const char* _fractureFX)
 	{ (pent = _pent)->AddRef(); size = _size; partid = _partid; timeout = _timeout; fractureFX = _fractureFX; }
 	SBrokenMeshSize(const SBrokenMeshSize& src) { if (pent = src.pent) pent->AddRef(); partid = src.partid; size = src.size; timeout = src.timeout; fractureFX = src.fractureFX; }
 	~SBrokenMeshSize() { if (pent) pent->Release(); }
@@ -251,7 +251,7 @@ struct SBrokenMeshSize
 	IPhysicalEntity* pent;
 	int              partid;
 	int              size;
-	float            timeout;
+	CTimeValue       timeout;
 	const char*      fractureFX;
 };
 
@@ -405,11 +405,11 @@ private:
 	void         RemoveEntFromBreakageReuse(IPhysicalEntity* pEntity, int bRemoveOnlyIfSecondary);
 	void         ClearTreeBreakageReuseLog();
 	int          FreeBrokenMesh(IPhysicalEntity* pent, SBrokenMeshSize& bm);
-	void         RegisterBrokenMesh(IPhysicalEntity*, IGeometry*, int partid = 0, IStatObj* pStatObj = 0, IGeometry* pSkel = 0, float timeout = 0.0f, const char* fractureFX = 0);
+	void         RegisterBrokenMesh(IPhysicalEntity*, IGeometry*, int partid = 0, IStatObj* pStatObj = 0, IGeometry* pSkel = 0, const CTimeValue& timeout = CTimeValue(0), const char* fractureFX = 0);
 	void         DrawBrokenMeshes();
 	static void  AddBroken2DChunkId(int id);
-	void         UpdateBrokenMeshes(float dt);
-	void         UpdateFadeEntities(float dt);
+	void         UpdateBrokenMeshes(const CTimeValue& dt);
+	void         UpdateFadeEntities(const CTimeValue& dt);
 
 	bool         ConditionHavePlayer(CGameClientChannel*);
 	bool         ConditionHaveConnection(CGameClientChannel*);
@@ -554,9 +554,9 @@ private:
 
 	struct SEntityFadeState
 	{
-		EntityId entId;       // Entity ID
-		float    time;        // Time since spawned
-		int      bCollisions; // Are collisions on
+		EntityId   entId;       // Entity ID
+		CTimeValue time;        // Time since spawned
+		int        bCollisions; // Are collisions on
 	};
 	DynArray<SEntityFadeState> m_fadeEntities;
 
@@ -583,8 +583,8 @@ private:
 	SBreakageThrottling m_throttling;
 
 #ifndef _RELEASE
-	float        m_timeToPromoteToServer;
-	static float g_hostMigrationServerDelay;
+	CTimeValue   m_timeToPromoteToServer;
+	static CTimeValue g_hostMigrationServerDelay;
 #endif
 };
 

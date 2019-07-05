@@ -234,7 +234,7 @@ public:
 
 	/// Returns the last live target position.
 	const Vec3&        GetLastLiveTargetPosition() const  { return m_lastLiveTargetPos; }
-	float              GetTimeSinceLastLiveTarget() const { return m_timeSinceLastLiveTarget; }
+	const CTimeValue&  GetTimeSinceLastLiveTarget() const { return m_timeSinceLastLiveTarget; }
 
 	virtual IAIObject* GetAttentionTargetAssociation() const override
 	{
@@ -283,14 +283,14 @@ public:
 	CoverHeight    CalculateEffectiveCoverHeight() const;
 	bool           IsMovingInCover() const;
 
-	void           SetCoverBlacklisted(const CoverID& coverID, bool blacklist, float time = 0.0f);
+	void           SetCoverBlacklisted(const CoverID& coverID, bool blacklist, const CTimeValue& time = 0);
 	bool           IsCoverBlacklisted(const CoverID& coverID) const;
 
 	ICoverUser*    GetCoverUser() const { return m_pCoverUser; }
 	void           SetCoverInvalidated(CoverID coverID, ICoverUser* pCoverUser);
 	// ~Cover
 
-	ILINE float GetLastUpdateInterval() const
+	ILINE const CTimeValue& GetLastUpdateInterval() const
 	{
 		return m_fTimePassed;
 	}
@@ -319,7 +319,7 @@ public:
 	CNavPath            m_OrigPath;
 	Vec3                m_PathDestinationPos;                      //! The last point on path before
 	bool                m_bPathfinderConsidersPathTargetDirection; //! Defines the way the movement to the target, true = strict, false = fastest, forget end direction.
-	float               m_fTimePassed;                             //! how much time passed since last full update
+	CTimeValue          m_fTimePassed;                             //! how much time passed since last full update
 
 	CWeakRef<CAIObject> m_refPathFindTarget;    //! The target object of the current path find request, if applicable.
 
@@ -411,7 +411,7 @@ protected:
 
 	virtual IPathFollower* CreatePathFollower(const PathFollowerParams& params);
 
-	void                   UpdateCovers(EUpdateType type, float updateTime);
+	void                   UpdateCovers(EUpdateType type, const CTimeValue& updateTime);
 
 	// Callbacks for Cover ability
 	void                   CreateMovementPlanCoverStartBlocks(DynArray<Movement::BlockPtr>& blocks, const MovementRequest& request);
@@ -437,14 +437,14 @@ protected:
 	VectorOGoals               m_DeferredActiveGoals;
 	bool                       m_bBlocked;
 	bool                       m_bStartTiming;
-	float                      m_fEngageTime;
+	CTimeValue                 m_fEngageTime;
 	CGoalPipe*                 m_pCurrentGoalPipe;
 	VectorSet<int>             m_notAllowedSubpipes; // sub-pipes that we tried to remove or cancel even before inserting them
 	bool                       m_bFirstUpdate;
 	int                        m_looseAttentionId;
 	IAISystem::ENavigationType m_CurrentNodeNavType;
 	EAimState                  m_aimState;
-	float                      m_spreadFireTime;
+	CTimeValue                 m_spreadFireTime;
 	Vec3                       m_vBodyTargetDir;
 	Vec3                       m_vDesiredBodyDirectionAtTarget;
 	unsigned int               m_movementContext;
@@ -460,7 +460,7 @@ protected:
 	CStrongRef<CAIObject> m_refSpecialObjects[COUNT_AISPECIAL];
 
 	Vec3            m_lastLiveTargetPos;
-	float           m_timeSinceLastLiveTarget;
+	CTimeValue      m_timeSinceLastLiveTarget;
 
 	/// path follower is only set if we're using that class to follow a path
 	IPathFollower* m_pPathFollower;

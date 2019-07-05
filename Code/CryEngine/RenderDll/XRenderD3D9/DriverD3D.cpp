@@ -1022,10 +1022,10 @@ void CD3D9Renderer::RT_BeginFrame(const SDisplayContextKey& displayContextKey, c
 		{
 			// NOTE: takes un-smoothed last frame's times
 			const auto& lastTimings = m_frameRenderStats[m_nFillThreadID].m_Summary;
-			static float fWaitForGPU;
-			float fSmooth = 5.0f;
-			fWaitForGPU = (lastTimings.gpuFrameTime + fWaitForGPU * fSmooth) / (fSmooth + 1.0f);
-			if (fWaitForGPU >= 0.004f)
+			static CTimeValue fWaitForGPU;
+			mpfloat fSmooth = 5;
+			fWaitForGPU = (lastTimings.gpuFrameTime + fWaitForGPU * fSmooth) / (fSmooth + 1);
+			if (fWaitForGPU >= "0.004")
 			{
 				if (m_nGPULimited < 1000)
 					m_nGPULimited++;
@@ -1480,14 +1480,14 @@ static int DebugIndexBufferSize(D3DIndexBuffer* pIB)
 }
 
 #if defined(ENABLE_SIMPLE_GPU_TIMERS)
-float CD3D9Renderer::GetGPUFrameTime()
+CTimeValue CD3D9Renderer::GetGPUFrameTime()
 {
 	// NOTE: returning un-smoothed data, smoothed can be requested using ID "RT_COMMAND_BUF_COUNT"
 	const SRenderStatistics::SFrameSummary& rtSummary = m_pPipelineProfiler->GetFrameSummary(GetMainThreadID());
 
 	float fGPUidle = rtSummary.gpuIdlePerc * 0.01f;     // normalise %
 	float fGPUload = 1.0f - fGPUidle;                   // normalised non-idle time
-	float fGPUtime = rtSummary.gpuFrameTime * fGPUload; // GPU time in seconds
+	CTimeValue fGPUtime = rtSummary.gpuFrameTime * BADMP(fGPUload); // GPU time in seconds
 	return fGPUtime;
 }
 
@@ -2111,7 +2111,7 @@ void CD3D9Renderer::DebugPerfBars(const SRenderStatistics& RStats, int nX, int n
 	nY += 20;
 
 	float fSmooth = 5.0f;
-	fFrameTime = (iTimer->GetFrameTime() + fFrameTime * fSmooth) / (fSmooth + 1.0f);
+	fFrameTime = (GTimer(d3d)->GetFrameTime().BADGetSeconds() + fFrameTime * fSmooth) / (fSmooth + 1.0f);
 
 	ColorF colF = Col_Orange;
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colF.r, false, "Frame: %.3fms", fFrameTime * 1000.0f);
@@ -2125,32 +2125,32 @@ void CD3D9Renderer::DebugPerfBars(const SRenderStatistics& RStats, int nX, int n
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fTimeDIPSum / fFrameTime * fMaxBar, nY + 12, Col_Yellow, 1.0f);
 	nY += nYst + 5;
 
-	fRTTimeProcess = (rtTimings.renderTime + fRTTimeProcess * fSmooth) / (fSmooth + 1.0f);
+	fRTTimeProcess = (rtTimings.renderTime.BADGetSeconds() + fRTTimeProcess * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colT.r, false, "RT process time: %.3fms", fRTTimeProcess * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fRTTimeProcess / fFrameTime * fMaxBar, nY + 12, Col_Gray, 1.0f);
 	nY += nYst;
 	nX += 5;
 
-	fRTTimeEndFrame = (rtTimings.endTime + fRTTimeEndFrame * fSmooth) / (fSmooth + 1.0f);
+	fRTTimeEndFrame = (rtTimings.endTime.BADGetSeconds() + fRTTimeEndFrame * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colT.r, false, "RT end frame: %.3fms", fRTTimeEndFrame * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fRTTimeEndFrame / fFrameTime * fMaxBar, nY + 12, Col_Gray, 1.0f);
 	nY += nYst;
 
-	fRTTimeFlashRender = (rtTimings.flashTime + fRTTimeFlashRender * fSmooth) / (fSmooth + 1.0f);
+	fRTTimeFlashRender = (rtTimings.flashTime.BADGetSeconds() + fRTTimeFlashRender * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colT.r, false, "RT flash render: %.3fms", fRTTimeFlashRender * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fRTTimeFlashRender / fFrameTime * fMaxBar, nY + 12, Col_Gray, 1.0f);
 	nY += nYst;
 
-	fRTTimeMiscRender = (rtTimings.miscTime + fRTTimeMiscRender * fSmooth) / (fSmooth + 1.0f);
+	fRTTimeMiscRender = (rtTimings.miscTime.BADGetSeconds() + fRTTimeMiscRender * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colT.r, false, "RT misc render: %.3fms", fRTTimeMiscRender * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fRTTimeMiscRender / fFrameTime * fMaxBar, nY + 12, Col_Gray, 1.0f);
 	nY += nYst;
 
-	fRTTimeSceneRender = (rtTimings.sceneTime + fRTTimeSceneRender * fSmooth) / (fSmooth + 1.0f);
+	fRTTimeSceneRender = (rtTimings.sceneTime.BADGetSeconds() + fRTTimeSceneRender * fSmooth) / (fSmooth + 1.0f);
 	IRenderAuxText::Draw2dLabel(nX, nY, fFSize, &colT.r, false, "RT scene render: %.3fms", fRTTimeSceneRender * 1000.0f);
 
 	AuxDrawQuad(nX + fOffs, nY + 4, nX + fOffs + fRTTimeSceneRender / fFrameTime * fMaxBar, nY + 12, Col_Gray, 1.0f);
@@ -2653,13 +2653,13 @@ void CD3D9Renderer::RT_RenderDebug(bool bRenderStats)
 	if (CV_r_showtimegraph)
 	{
 		static byte* fg;
-		static float fPrevTime = iTimer->GetCurrTime();
+		static CTimeValue fPrevTime = GTimer(d3d)->GetFrameStartTime();
 		static int sPrevWidth = 0;
 		static int sPrevHeight = 0;
 		static int nC;
 
-		float fCurTime = iTimer->GetCurrTime();
-		float frametime = fCurTime - fPrevTime;
+		CTimeValue fCurTime = GTimer(d3d)->GetFrameStartTime();
+		CTimeValue frametime = fCurTime - fPrevTime;
 		fPrevTime = fCurTime;
 		int wdt = pDC->GetViewport().width;
 		int hgt = pDC->GetViewport().height;
@@ -2692,7 +2692,7 @@ void CD3D9Renderer::RT_RenderDebug(bool bRenderStats)
 		}
 		else
 			fScale = 0.1f;
-		f = frametime / fScale;
+		f = frametime.BADGetSeconds() / fScale;
 		f = 255.0f - CLAMP(f * 255.0f, 0, 255.0f);
 		if (fg)
 		{
@@ -2802,7 +2802,7 @@ void CD3D9Renderer::RT_RenderDebug(bool bRenderStats)
 
 		if (sMask & 2)
 		{
-			f = RStats.m_fTexUploadTime / fScaleTimeUpl;
+			f = RStats.m_fTexUploadTime.BADGetSeconds() / fScaleTimeUpl;
 			f = 255.0f - CLAMP(f * 255.0f, 0, 255.0f);
 			fgTimeUpl[nC] = (byte)f;
 			Graph(fgTimeUpl, 0, hgt - 280, wdt, 256, nC, type, NULL, ColTimeUpl, fScaleTimeUpl);
@@ -3217,16 +3217,16 @@ void CD3D9Renderer::RT_EndFrame()
 		return;
 	}
 
-	CTimeValue TimeEndF = iTimer->GetAsyncTime();
+	CTimeValue TimeEndF = GTimer(d3d)->GetAsyncTime();
 
 	const ESystemGlobalState systemState = iSystem->GetSystemGlobalState();
 	if (systemState > ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_END)
 	{
-		CTimeValue time0 = iTimer->GetAsyncTime();
+		CTimeValue time0 = GTimer(d3d)->GetAsyncTime();
 
 		CTexture::Update();
 
-		SRenderStatistics::Write().m_fTexUploadTime += (iTimer->GetAsyncTime() - time0).GetSeconds();
+		SRenderStatistics::Write().m_fTexUploadTime += (GTimer(d3d)->GetAsyncTime() - time0).GetSeconds();
 	}
 
 #if defined(ENABLE_SIMPLE_GPU_TIMERS)
@@ -3246,7 +3246,7 @@ void CD3D9Renderer::RT_EndFrame()
 
 	EF_RemoveParticlesFromScene();
 
-	CTimeValue timePresentBegin = iTimer->GetAsyncTime();
+	CTimeValue timePresentBegin = GTimer(d3d)->GetAsyncTime();
 	GetS3DRend().SubmitFrameToHMD();
 
 #ifdef DO_RENDERLOG
@@ -3274,7 +3274,7 @@ void CD3D9Renderer::RT_EndFrame()
 	// NOTE: This flushes the start of the "BEGIN" label query
 	GetDeviceObjectFactory().OnEndFrame(gRenDev->GetRenderFrameID());
 
-	SRenderStatistics::Write().m_Summary.endTime = iTimer->GetAsyncTime().GetDifferenceInSeconds(TimeEndF);
+	SRenderStatistics::Write().m_Summary.endTime = (GTimer(d3d)->GetAsyncTime() - TimeEndF);
 
 	// Update downscaled viewport
 	m_PrevViewportScale = m_CurViewportScale;
@@ -3423,7 +3423,7 @@ void CD3D9Renderer::RT_EndFrame()
 		m_nFrameSwapID++;
 	}
 
-	SRenderStatistics::Write().m_Summary.waitForGPU_RT += iTimer->GetAsyncTime().GetDifferenceInSeconds(timePresentBegin);
+	SRenderStatistics::Write().m_Summary.waitForGPU_RT += (GTimer(d3d)->GetAsyncTime() - timePresentBegin);
 
 #ifdef ENABLE_BENCHMARK_SENSOR
 	m_benchmarkRendererSensor->afterSwapBuffers(GetDevice(), GetDeviceContext());
@@ -3504,7 +3504,7 @@ void CD3D9Renderer::RT_EndFrame()
 		m_mtxStopAtRenderFrameEnd.Unlock();
 	}
 
-	gEnv->GetJobManager()->SetRenderDoneTime(gEnv->pTimer->GetAsyncTime());
+	gEnv->GetJobManager()->SetRenderDoneTime(GetGTimer()->GetAsyncTime());
 #if defined(ENABLE_SIMPLE_GPU_TIMERS)
 	m_pPipelineProfiler->EndSection("END");
 	m_pPipelineProfiler->EndFrame();
@@ -3636,7 +3636,7 @@ bool CD3D9Renderer::RT_ScreenShot(const char* filename, CRenderDisplayContext* p
 #if defined(ENABLE_PROFILING_CODE)
 	iLog->LogWithType(ILog::eInputResponse, " ");
 	iLog->LogWithType(ILog::eInputResponse, "$5Drawcalls: %d", SRenderStatistics::Write().GetNumberOfDrawCalls());
-	iLog->LogWithType(ILog::eInputResponse, "$5FPS: %.1f (%.1f ms)", gEnv->pTimer->GetFrameRate(), gEnv->pTimer->GetFrameTime() * 1000.0f);
+	iLog->LogWithType(ILog::eInputResponse, "$5FPS: %.1f (%.1f ms)", GetGTimer()->GetFrameRate(), (float)GetGTimer()->GetFrameTime().GetMilliSeconds());
 #endif
 
 	int nPolygons, nShadowVolPolys;
@@ -5009,7 +5009,6 @@ void CD3D9Renderer::DebugShowRenderTarget()
 
 ILog* iLog;
 IConsole* iConsole;
-ITimer* iTimer;
 ISystem* iSystem;
 
 //////////////////////////////////////////////////////////////////////////
@@ -5154,7 +5153,7 @@ extern "C" DLL_EXPORT IRenderer * CreateCryRenderInterface(ISystem * pSystem)
 {
 	iConsole = gEnv->pConsole;
 	iLog = gEnv->pLog;
-	iTimer = gEnv->pTimer;
+	SetGTimer(GetGTimer(), GTimers::d3d);
 	iSystem = gEnv->pSystem;
 
 	gcpRendD3D->InitRenderer();

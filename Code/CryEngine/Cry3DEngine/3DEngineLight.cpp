@@ -422,7 +422,7 @@ void C3DEngine::PrepareLightSourcesForRendering_1(const SRenderingPassInfo& pass
 		{
 			const SRenderLight* pLight = m_lstDynLights[i];
 
-			float fSize = 0.05f * (sinf(GetCurTimeSec() * 10.f) + 2.0f);
+			float fSize = 0.05f * (sinf(GetGTimer()->GetFrameStartTime().BADGetSeconds() * 10.f) + 2.0f);
 			DrawSphere(pLight->m_Origin, fSize, pLight->m_Color);
 			IRenderAuxText::DrawLabelF(pLight->m_Origin, 1.3f, "id=%d, rad=%.1f, vdr=%d", pLight->m_Id, pLight->m_fRadius, (int)(pLight->m_pOwner ? pLight->m_pOwner->m_ucViewDistRatio : 0));
 		}
