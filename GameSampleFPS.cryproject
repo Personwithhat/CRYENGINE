@@ -1,0 +1,44 @@
+{
+	"version": 4,
+	"type": "CRYENGINE Project",
+	"info": {
+		"name": "SampleFPS",
+		"guid": "18848a42-b446-94c0-8317-cb2b0eff8774" <-- This ID has to be unique! For GUID, you can go to:
+													       VStudio->Tools->"Create GUID in registry format" -->
+	},
+	"content": {
+		"assets": [ "GameSampleFPS" ],    <-- Path to project Assets, relative to PROJECT root -->
+		"code": [ "Code/GameSampleFPS" ], <-- Not used anywhere -->
+		"libs": [
+			{
+				"name": "CE's First Person Shooter Template",
+				"shared": { "any": "SampleFPS", "win_x64": "", "win_x86": "" } <-- Library name + DLL below have to match
+																				   what's in your project's CMakeLists.txt file -->
+			}
+		]
+	},
+	"require": {
+		"engine": "official-engine-5.6", <-- The engine version this project should load, currently on your custom Github-CE version. --> 
+		"plugins": [
+			{ "type": "EPluginType::Native", "path": "CrySensorSystem" },		   <-- You need this to run the engine :) -->
+			{ "type": "EPluginType::Native", "path": "CryDefaultEntities" },	   <-- Gotta load this module since you compiled with it via CMake -->
+			{ "type": "EPluginType::Native", "path": "bin/win_x64/SampleFPS.dll" } <-- Path relative to PROJECT root. -->
+		]
+	},
+	"console_variables": {
+		"sys_target_platforms": 			"pc",
+		"sys_user_folder": 					"OFFICIAL_GameSampleFPS", <-- Custom name for C:\Users\XXX\Saved Games\user folder -->
+	<-- "sys_localization_folder": 			"OFFICIAL_Localization",  	  Custom name for AssetFolder/localization folder -->
+		"ed_popupMissingAssetResolver": 	"0",					  <-- Ignore some editor errors on missing assets -->
+		
+		"t_Smoothing":						"0", <-- Don't smooth/average frame times -->
+		"sys_physics_enable_MT": 		    "0", <-- Don't run physics in separate thread -->
+
+		"r_motionblur": 					"0", <-- Motion Blur? No thanks. -->
+		"r_nohwgamma": 						"1", <-- Disable overriding of gamma, great for windowed mode. -->
+
+		<-- Custom project CVars -->
+		"cl_DefaultNearPlane": 				"0.05"
+	},
+	"console_commands": { }
+}
