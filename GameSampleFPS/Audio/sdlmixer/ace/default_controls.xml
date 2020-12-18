@@ -1,26 +1,12 @@
-<AudioSystemData name="default_controls" version="3">
+<AudioSystemData name="default_controls" version="5">
  <Triggers>
-  <Trigger name="get_focus">
-   <WwiseEvent wwise_name="Set_g_event_unmute_all"/>
-   <FmodEvent fmod_name="do_nothing"/>
-  </Trigger>
-  <Trigger name="lose_focus">
-   <WwiseEvent wwise_name="Set_g_event_mute_all"/>
-   <FmodEvent fmod_name="do_nothing"/>
-  </Trigger>
-  <Trigger name="mute_all">
-   <WwiseEvent wwise_name="Set_g_event_mute_all"/>
-   <FmodEvent fmod_name="do_nothing"/>
-  </Trigger>
-  <Trigger name="unmute_all">
-   <WwiseEvent wwise_name="Set_g_event_unmute_all"/>
-   <FmodEvent fmod_name="do_nothing"/>
-  </Trigger>
+  <Trigger name="get_focus"/>
+  <Trigger name="lose_focus"/>
+  <Trigger name="mute_all"/>
+  <Trigger name="unmute_all"/>
+  <Trigger name="pause_all"/>
+  <Trigger name="resume_all"/>
  </Triggers>
- <Parameters>
-  <Parameter name="absolute_velocity"/>
-  <Parameter name="relative_velocity"/>
- </Parameters>
  <EditorData>
   <Library />
   <Folders />
