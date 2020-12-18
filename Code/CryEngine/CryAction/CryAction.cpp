@@ -2068,7 +2068,7 @@ bool CCryAction::InitGame(SSystemInitParams& startupParams)
 		CreateGameStartup = (IGameStartup::TEntryFunction)CryGetProcAddress(hGameDll, "CreateGameStartup");
 		if (!CreateGameStartup)
 		{
-			CryMessageBox("Failed to find the GameStartup Interface!", gameDLLName.c_str(), eMB_Error);
+			//CryMessageBox("Failed to find the GameStartup Interface!", gameDLLName.c_str(), eMB_Error);
 			CryFreeLibrary(hGameDll);
 			return false;
 		}
@@ -2079,7 +2079,7 @@ bool CCryAction::InitGame(SSystemInitParams& startupParams)
 	IGameStartup* pGameStartup = CreateGameStartup();
 	if (!pGameStartup)
 	{
-		CryMessageBox("Failed to find the GameStartup Interface!", gameDLLName.c_str(), eMB_Error);
+		//CryMessageBox("Failed to find the GameStartup Interface!", gameDLLName.c_str(), eMB_Error);
 		CryFreeLibrary(hGameDll);
 		return false;
 	}
